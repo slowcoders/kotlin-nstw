@@ -54,8 +54,12 @@ class LocalClassesInInlineLambdasLowering(val context: CommonBackendContext) : B
                 val inlineLambdas = mutableListOf<IrFunction>()
                 for (index in 0 until expression.valueArgumentsCount) {
                     val argument = expression.getValueArgument(index)
-                    val inlineLambda = (argument as? IrFunctionExpression)?.function
-                        ?.takeIf { rootCallee.valueParameters[index].isInlineParameter() }
+                    val inlineLambda = when (argument) {
+                       is IrFunctionExpression -> argument.function
+                       is IrBoundPropertyReference -> argument.getterFunction
+                       is IrBoundFunctionReference -> argument.invokeFunction
+                       else -> null
+                    }?.takeIf { rootCallee.valueParameters[index].isInlineParameter() }
                     if (inlineLambda == null)
                         expression.putValueArgument(index, argument?.transform(this, data))
                     else
@@ -80,6 +84,17 @@ class LocalClassesInInlineLambdasLowering(val context: CommonBackendContext) : B
 
                         override fun visitFunctionExpression(expression: IrFunctionExpression) {
                             expression.function.acceptChildrenVoid(this)
+                        }
+
+                        override fun visitBoundFunctionReference(expression: IrBoundFunctionReference) {
+                            expression.boundValues.forEach { it.acceptVoid(this)  }
+                            expression.invokeFunction.acceptChildrenVoid(this)
+                        }
+
+                        override fun visitBoundPropertyReference(expression: IrBoundPropertyReference) {
+                            expression.boundValues.forEach { it.acceptVoid(this)  }
+                            expression.getterFunction.acceptChildrenVoid(this)
+                            expression.setterFunction?.acceptChildrenVoid(this)
                         }
 
                         override fun visitFunction(declaration: IrFunction) {

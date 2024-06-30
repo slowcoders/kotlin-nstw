@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.types.Variance
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 import org.jetbrains.kotlin.utils.addIfNotNull
 import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
+import kotlin.math.exp
 
 fun IrElement.render(options: DumpIrTreeOptions = DumpIrTreeOptions()) =
     accept(RenderIrElementVisitor(options), null)
@@ -477,6 +478,13 @@ open class RenderIrElementVisitor(private val options: DumpIrTreeOptions = DumpI
         "FUNCTION_REFERENCE '${expression.symbol.renderReference()}' " +
                 "type=${expression.type.render()} origin=${expression.origin} " +
                 "reflectionTarget=${renderReflectionTarget(expression)}"
+
+    override fun visitBoundFunctionReference(expression: IrBoundFunctionReference, data: Nothing?): String =
+        "BOUND_FUNCTION_REFERENCE type=${expression.type.render()} origin=${expression.origin} " +
+                "reflectionTarget=${expression.reflectionTargetSymbol?.renderReference()}"
+
+    override fun visitBoundPropertyReference(expression: IrBoundPropertyReference, data: Nothing?): String =
+        "BOUND_PROPERTY_REFERENCE type=${expression.type.render()} origin=${expression.origin}"
 
     override fun visitRawFunctionReference(expression: IrRawFunctionReference, data: Nothing?): String =
         "RAW_FUNCTION_REFERENCE '${expression.symbol.renderReference()}' type=${expression.type.render()}"

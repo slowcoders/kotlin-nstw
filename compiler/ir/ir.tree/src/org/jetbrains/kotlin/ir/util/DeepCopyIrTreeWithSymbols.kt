@@ -889,4 +889,30 @@ open class DeepCopyIrTreeWithSymbols(
             explicitReceiver = expression.explicitReceiver?.transform()
             expression.arguments.transformTo(arguments)
         }.processAttributes(expression)
+
+    override fun visitBoundFunctionReference(expression: IrBoundFunctionReference): IrBoundFunctionReference {
+        return IrBoundFunctionReferenceImpl(
+            expression.startOffset, expression.endOffset,
+            expression.type.remapType(),
+            expression.reflectionTargetSymbol?.let { symbolRemapper.getReferencedFunction(it) },
+            symbolRemapper.getReferencedSimpleFunction(expression.overriddenFunctionSymbol),
+            expression.invokeFunction.transform(),
+            expression.origin
+        ).apply {
+            expression.boundValues.transformTo(boundValues)
+        }.processAttributes(expression)
+    }
+
+    override fun visitBoundPropertyReference(expression: IrBoundPropertyReference): IrBoundPropertyReference {
+        return IrBoundPropertyReferenceImpl(
+            expression.startOffset, expression.endOffset,
+            expression.type.remapType(),
+            expression.reflectionTargetSymbol?.let { symbolRemapper.getReferencedDeclarationWithAccessors(it) },
+            expression.getterFunction.transform(),
+            expression.setterFunction?.transform(),
+            expression.origin
+        ).apply {
+            expression.boundValues.transformTo(boundValues)
+        }.processAttributes(expression)
+    }
 }

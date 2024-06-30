@@ -316,6 +316,44 @@ fun IrFunctionExpressionImpl(
     origin = origin,
 )
 
+fun IrBoundFunctionReferenceImpl(
+    startOffset: Int,
+    endOffset: Int,
+    type: IrType,
+    reflectionTargetSymbol: IrFunctionSymbol?,
+    overriddenFunctionSymbol: IrSimpleFunctionSymbol,
+    invokeFunction: IrSimpleFunction,
+    origin: IrStatementOrigin? = null
+) = IrBoundFunctionReferenceImpl(
+    constructorIndicator = null,
+    startOffset = startOffset,
+    endOffset = endOffset,
+    type = type,
+    reflectionTargetSymbol = reflectionTargetSymbol,
+    overriddenFunctionSymbol = overriddenFunctionSymbol,
+    invokeFunction = invokeFunction,
+    origin = origin
+)
+
+fun IrBoundPropertyReferenceImpl(
+    startOffset: Int,
+    endOffset: Int,
+    type: IrType,
+    reflectionTargetSymbol: IrDeclarationWithAccessorsSymbol?,
+    getterFunction: IrSimpleFunction,
+    setterFunction: IrSimpleFunction?,
+    origin: IrStatementOrigin? = null
+) = IrBoundPropertyReferenceImpl(
+    constructorIndicator = null,
+    startOffset = startOffset,
+    endOffset = endOffset,
+    type = type,
+    reflectionTargetSymbol = reflectionTargetSymbol,
+    getterFunction = getterFunction,
+    setterFunction = setterFunction,
+    origin = origin
+)
+
 fun IrGetClassImpl(
     startOffset: Int,
     endOffset: Int,

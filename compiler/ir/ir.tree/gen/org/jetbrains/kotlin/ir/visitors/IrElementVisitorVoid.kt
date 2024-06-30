@@ -396,6 +396,22 @@ interface IrElementVisitorVoid : IrElementVisitor<Unit, Nothing?> {
         visitCallableReference(expression)
     }
 
+    override fun visitBoundFunctionReference(expression: IrBoundFunctionReference, data: Nothing?) {
+        visitBoundFunctionReference(expression)
+    }
+
+    fun visitBoundFunctionReference(expression: IrBoundFunctionReference) {
+        visitExpression(expression)
+    }
+
+    override fun visitBoundPropertyReference(expression: IrBoundPropertyReference, data: Nothing?) {
+        visitBoundPropertyReference(expression)
+    }
+
+    fun visitBoundPropertyReference(expression: IrBoundPropertyReference) {
+        visitExpression(expression)
+    }
+
     override fun visitClassReference(expression: IrClassReference, data: Nothing?) {
         visitClassReference(expression)
     }

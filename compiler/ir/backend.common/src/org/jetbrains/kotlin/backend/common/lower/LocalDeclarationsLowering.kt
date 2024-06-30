@@ -1047,6 +1047,17 @@ open class LocalDeclarationsLowering(
                     expression.function.acceptChildren(this, data)
                 }
 
+                override fun visitBoundFunctionReference(expression: IrBoundFunctionReference, data: Data) {
+                    expression.boundValues.forEach { it.accept(this, data) }
+                    expression.invokeFunction.acceptChildren(this, data)
+                }
+
+                override fun visitBoundPropertyReference(expression: IrBoundPropertyReference, data: Data) {
+                    expression.boundValues.forEach { it.accept(this, data) }
+                    expression.getterFunction.acceptChildren(this, data)
+                    expression.setterFunction?.acceptChildren(this, data)
+                }
+
                 override fun visitSimpleFunction(declaration: IrSimpleFunction, data: Data) {
                     if (functionsToSkip?.contains(declaration) == true) return
                     super.visitSimpleFunction(declaration, data.withInline(declaration.isInline))

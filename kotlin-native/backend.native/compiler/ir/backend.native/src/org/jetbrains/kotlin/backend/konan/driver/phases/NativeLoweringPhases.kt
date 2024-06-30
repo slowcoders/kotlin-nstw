@@ -145,15 +145,10 @@ private val annotationImplementationPhase = createFileLoweringPhase(
 )
 
 
-private val inlineCallableReferenceToLambdaPhase = createFileLoweringPhase(
-        lowering = { context: NativeGenerationState -> NativeInlineCallableReferenceToLambdaPhase(context) },
-        name = "NativeInlineCallableReferenceToLambdaPhase",
-)
-
 private val arrayConstructorPhase = createFileLoweringPhase(
         ::ArrayConstructorLowering,
         name = "ArrayConstructor",
-        prerequisite = setOf(inlineCallableReferenceToLambdaPhase)
+        prerequisite = setOf()
 )
 
 private val lateinitPhase = createFileLoweringPhase(
@@ -190,11 +185,6 @@ private val extractLocalClassesFromInlineBodies = createFileLoweringPhase(
         },
         name = "ExtractLocalClassesFromInlineBodies",
         prerequisite = setOf(sharedVariablesPhase),
-)
-
-private val wrapInlineDeclarationsWithReifiedTypeParametersLowering = createFileLoweringPhase(
-        ::WrapInlineDeclarationsWithReifiedTypeParametersLowering,
-        name = "WrapInlineDeclarationsWithReifiedTypeParameters",
 )
 
 private val postInlinePhase = createFileLoweringPhase(
@@ -308,6 +298,11 @@ private val finallyBlocksPhase = createFileLoweringPhase(
 private val testProcessorPhase = createFileLoweringPhase(
         lowering = ::TestProcessor,
         name = "TestProcessor",
+)
+
+private val upgradeCallableReferences = createFileLoweringPhase(
+        ::UpgradeCallableReferences,
+        name = "UpgradeCallableReferences",
 )
 
 private val delegationPhase = createFileLoweringPhase(
@@ -552,23 +547,24 @@ internal val constEvaluationPhase = createFileLoweringPhase(
 )
 
 internal fun KonanConfig.getLoweringsUpToAndIncludingSyntheticAccessors(): LoweringList = listOfNotNull(
-    assertionWrapperPhase,
-    lateinitPhase,
-    sharedVariablesPhase,
-    outerThisSpecialAccessorInInlineFunctionsPhase,
-    extractLocalClassesFromInlineBodies,
-    inlineCallableReferenceToLambdaPhase,
-    arrayConstructorPhase,
-    wrapInlineDeclarationsWithReifiedTypeParametersLowering,
-    inlineOnlyPrivateFunctionsPhase.takeUnless { this.configuration.getBoolean(KlibConfigurationKeys.NO_DOUBLE_INLINING) },
-    syntheticAccessorGenerationPhase.takeUnless { this.configuration.getBoolean(KlibConfigurationKeys.NO_DOUBLE_INLINING) },
+        upgradeCallableReferences,
+        assertionWrapperPhase,
+        lateinitPhase,
+        sharedVariablesPhase,
+        outerThisSpecialAccessorInInlineFunctionsPhase,
+        extractLocalClassesFromInlineBodies,
+        arrayConstructorPhase,
+
+        inlineOnlyPrivateFunctionsPhase.takeUnless { this.configuration.getBoolean(KlibConfigurationKeys.NO_DOUBLE_INLINING) },
+        syntheticAccessorGenerationPhase.takeUnless { this.configuration.getBoolean(KlibConfigurationKeys.NO_DOUBLE_INLINING) },
+
 )
 
 internal fun KonanConfig.getLoweringsAfterInlining(): LoweringList = listOfNotNull(
         removeExpectDeclarationsPhase,
         stripTypeAliasDeclarationsPhase,
         assertionRemoverPhase,
-        provisionalFunctionExpressionPhase,
+        constEvaluationPhase,
         volatilePhase,
         testProcessorPhase.takeIf { this.configuration.getNotNull(KonanConfigKeys.GENERATE_TEST_RUNNER) != TestRunnerKind.NONE },
         delegationPhase,

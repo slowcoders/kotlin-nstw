@@ -42,11 +42,11 @@ internal class NativeInlineFunctionResolver(
 
         val doubleInliningEnabled = !context.config.configuration.getBoolean(KlibConfigurationKeys.NO_DOUBLE_INLINING)
 
+        UpgradeCallableReferences(context).lower(function)
         NativeAssertionWrapperLowering(context).lower(function)
-
+        LateinitUsageLowering(context).lower(body, function)
         NullableFieldsForLateinitCreationLowering(context).lowerWithLocalDeclarations(function)
         NullableFieldsDeclarationLowering(context).lowerWithLocalDeclarations(function)
-        LateinitUsageLowering(context).lower(body, function)
 
         SharedVariablesLowering(context).lower(body, function)
 
@@ -60,9 +60,7 @@ internal class NativeInlineFunctionResolver(
         // LocalClassesInInlineFunctionsLowering(context).lower(body, function)
         // LocalClassesExtractionFromInlineFunctionsLowering(context).lower(body, function)
 
-        NativeInlineCallableReferenceToLambdaPhase(generationState).lower(function)
         ArrayConstructorLowering(context).lower(body, function)
-        WrapInlineDeclarationsWithReifiedTypeParametersLowering(context).lower(body, function)
 
         if (doubleInliningEnabled) {
             NativeIrInliner(generationState, inlineMode = InlineMode.PRIVATE_INLINE_FUNCTIONS).lower(body, function)

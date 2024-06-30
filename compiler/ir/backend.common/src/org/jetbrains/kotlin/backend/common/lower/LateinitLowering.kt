@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetFieldImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrSetFieldImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrSetValueImpl
+import org.jetbrains.kotlin.ir.symbols.IrPropertySymbol
 import org.jetbrains.kotlin.ir.types.isMarkedNullable
 import org.jetbrains.kotlin.ir.types.isPrimitiveType
 import org.jetbrains.kotlin.ir.types.makeNullable
@@ -38,6 +39,7 @@ import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.util.resolveFakeOverride
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
+import org.jetbrains.kotlin.utils.atMostOne
 
 /**
  * Creates nullable fields for lateinit properties.
@@ -189,13 +191,16 @@ class LateinitUsageLowering(val backendContext: CommonBackendContext) : BodyLowe
                 if (!Symbols.isLateinitIsInitializedPropertyGetter(expression.symbol)) return expression
 
                 return expression.extensionReceiver!!.replaceTailExpression {
-                    require(it is IrPropertyReference) { "isInitialized cannot be invoked on ${it.render()}" }
-                    val property = it.getter?.owner?.resolveFakeOverride()?.correspondingPropertySymbol?.owner
+                    val (property, dispatchReceiver) = when (it) {
+                        is IrPropertyReference -> it.getter?.owner?.resolveFakeOverride()?.correspondingPropertySymbol?.owner to it.dispatchReceiver
+                        is IrBoundPropertyReference -> (it.reflectionTargetSymbol as? IrPropertySymbol)?.owner?.resolveFakeOverride() to it.boundValues.atMostOne()
+                        else -> error("Unsupported argument for KProperty::isInitialized call: ${it.render()}")
+                    }
                     require(property?.isLateinit == true) { "isInitialized invoked on non-lateinit property ${property?.render()}" }
-                    val backingField = property?.backingField ?: error("Lateinit property is supposed to have a backing field")
+                    val backingField = property.backingField ?: error("Lateinit property is supposed to have a backing field")
                     // This is not the right scope symbol, but we don't use it anyway.
-                    backendContext.createIrBuilder(it.symbol, expression.startOffset, expression.endOffset).run {
-                        irNotEquals(irGetField(it.dispatchReceiver, backendContext.buildOrGetNullableField(backingField)), irNull())
+                    backendContext.createIrBuilder(property.symbol, expression.startOffset, expression.endOffset).run {
+                        irNotEquals(irGetField(dispatchReceiver, backendContext.buildOrGetNullableField(backingField)), irNull())
                     }
                 }
             }
