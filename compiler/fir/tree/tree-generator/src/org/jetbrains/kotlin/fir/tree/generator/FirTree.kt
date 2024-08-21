@@ -534,7 +534,7 @@ object FirTree : AbstractFirTreeBuilder() {
         +listField(contextReceiver, useMutableOrEmpty = true, withReplace = true, withTransform = true)
         +declaredSymbol(propertySymbolType)
         +referencedSymbol("delegateFieldSymbol", delegateFieldSymbolType, nullable = true)
-        +field("isLocal", boolean)
+        +field("isLocal", boolean, withReplace = true)
         +field("bodyResolveState", propertyBodyResolveStateType, withReplace = true)
         +typeParameters
     }
@@ -757,6 +757,18 @@ object FirTree : AbstractFirTreeBuilder() {
 
         +declaredSymbol(codeFragmentSymbolType)
         +field(block, withReplace = true, withTransform = true)
+    }
+
+    val replSnippet: Element by element(Declaration) {
+        parent(declaration)
+        parent(controlFlowGraphOwner)
+
+        +FieldSets.name
+        +declaredSymbol(replSnippetSymbolType)
+
+        +listField("receivers", scriptReceiverParameter, useMutableOrEmpty = true, withTransform = true)
+        +field("body", block, nullable = false, withTransform = true, withReplace = true)
+        +field("resultTypeRef", typeRef, withReplace = true, withTransform = true)
     }
 
     val packageDirective: Element by element(Other) {
