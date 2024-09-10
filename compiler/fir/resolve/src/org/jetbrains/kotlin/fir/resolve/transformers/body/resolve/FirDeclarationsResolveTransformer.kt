@@ -47,6 +47,7 @@ import org.jetbrains.kotlin.fir.types.impl.FirImplicitTypeRefImplWithoutSource
 import org.jetbrains.kotlin.fir.utils.exceptions.withFirEntry
 import org.jetbrains.kotlin.fir.visitors.FirTransformer
 import org.jetbrains.kotlin.fir.visitors.transformSingle
+import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.resolve.calls.inference.buildCurrentSubstitutor
 import org.jetbrains.kotlin.resolve.calls.inference.components.TypeVariableDirectionCalculator
 import org.jetbrains.kotlin.resolve.calls.inference.model.ProvideDelegateFixationPosition
@@ -777,6 +778,29 @@ open class FirDeclarationsResolveTransformer(
             transformDeclarationContent(script, data) as FirScript
         }
     }
+
+    open fun withReplSnippet(snippet: FirReplSnippet, action: () -> FirReplSnippet): FirReplSnippet {
+        val result = context.withReplSnippet(snippet, components) {
+            dataFlowAnalyzer.enterReplSnippet(snippet, buildGraph = transformer.buildCfgForScripts)
+            action()
+        }
+        dataFlowAnalyzer.exitReplSnippet()
+        return result
+    }
+
+    override fun transformReplSnippet(replSnippet: FirReplSnippet, data: ResolutionMode): FirReplSnippet =
+        if (transformer.buildCfgForScripts) {
+            withReplSnippet(replSnippet) {
+                replSnippet.transformBody (this, data)
+                val returnType = replSnippet.body.statements.lastOrNull()?.let {
+                    (it as? FirExpression)?.resolvedType
+                } ?: StandardClassIds.Unit.constructClassLikeType()
+                replSnippet.replaceResultTypeRef(
+                    returnType.toFirResolvedTypeRef(replSnippet.source?.fakeElement(KtFakeSourceElementKind.ImplicitFunctionReturnType))
+                )
+                replSnippet
+            }
+        } else replSnippet
 
     override fun transformCodeFragment(codeFragment: FirCodeFragment, data: ResolutionMode): FirCodeFragment {
         dataFlowAnalyzer.enterCodeFragment(codeFragment)

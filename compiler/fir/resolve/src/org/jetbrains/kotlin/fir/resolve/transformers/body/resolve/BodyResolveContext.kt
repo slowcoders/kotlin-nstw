@@ -15,10 +15,13 @@ import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
 import org.jetbrains.kotlin.fir.expressions.FirCallableReferenceAccess
 import org.jetbrains.kotlin.fir.expressions.FirWhenExpression
+import org.jetbrains.kotlin.fir.extensions.extensionService
+import org.jetbrains.kotlin.fir.extensions.replSnippetResolveExtensions
 import org.jetbrains.kotlin.fir.languageVersionSettings
 import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.calls.ImplicitExtensionReceiverValue
 import org.jetbrains.kotlin.fir.resolve.calls.ImplicitReceiverValue
+import org.jetbrains.kotlin.fir.resolve.calls.ImplicitReceiverValueForScriptOrSnippet
 import org.jetbrains.kotlin.fir.resolve.calls.InaccessibleImplicitReceiverValue
 import org.jetbrains.kotlin.fir.resolve.dfa.DataFlowAnalyzerContext
 import org.jetbrains.kotlin.fir.resolve.inference.FirInferenceSession
@@ -595,6 +598,52 @@ class BodyResolveContext(
 
         return withTowerDataContexts(newContexts) {
             withContainer(owner) {
+                f()
+            }
+        }
+    }
+
+    @OptIn(PrivateForInline::class)
+    fun <T> withReplSnippet(
+        replSnippet: FirReplSnippet,
+        holder: SessionHolder,
+        f: () -> T
+    ): T {
+        return withContainer(replSnippet) {
+            withTowerDataCleanup {
+
+                // TODO: robuster matching and error reporting on no extension
+                for (resolver in holder.session.extensionService.replSnippetResolveExtensions) {
+                    val scope = resolver.getSnippetScope(replSnippet)
+                    if (scope != null) {
+                        addNonLocalTowerDataElement(scope.asTowerDataElement(isLocal = true /* TODO: or false? */))
+                        break
+                    }
+                }
+
+                val localScope = replSnippet.body.statements.fold(FirLocalScope(holder.session)) { scope, statement ->
+                    when (statement) {
+                        is FirProperty -> scope.storeVariable(statement, holder.session)
+                        is FirSimpleFunction -> scope.storeFunction(statement, holder.session)
+                        is FirRegularClass -> scope.storeClass(statement, holder.session)
+                        else -> scope
+                    }
+                }
+                addLocalScope(localScope)
+
+                replSnippet.receivers.mapIndexed { index, receiver ->
+                    ImplicitReceiverValueForScriptOrSnippet(
+                        replSnippet.symbol,
+                        receiver.typeRef.coneType,
+                        holder.session,
+                        holder.scopeSession,
+                        receiverNumber = index
+                    )
+                }.asReversed().forEach {
+                    val additionalLabelName = it.type.abbreviatedTypeOrSelf.labelName(holder.session)
+                    addReceiver(null, it, additionalLabelName)
+                }
+
                 f()
             }
         }
