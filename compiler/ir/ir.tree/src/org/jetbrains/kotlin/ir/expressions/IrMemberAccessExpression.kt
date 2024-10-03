@@ -169,6 +169,13 @@ abstract class IrMemberAccessExpression<S : IrSymbol> : IrDeclarationReference()
         initializeTargetShapeFromSymbol(isFromTargetUpdate = true)
     }
 
+    /**
+     * Like [updateTargetSymbol], but doesn't validate that the initial shape is the same as that of the symbol.
+     */
+    fun forceUpdateShapeFromTargetSymbol() {
+        initializeTargetShapeFromSymbol(isFromTargetUpdate = false)
+    }
+
     private fun <S : IrBindableSymbol<*, D>, D : IrSymbolOwner> S.getRealOwner(): D {
         var symbol = this
         while (symbol is IrFakeOverrideSymbolBase<*, *, *>) {
