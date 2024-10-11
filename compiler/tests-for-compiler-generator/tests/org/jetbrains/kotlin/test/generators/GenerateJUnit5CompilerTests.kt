@@ -9,6 +9,8 @@ import org.jetbrains.kotlin.generators.TestGroup.TestClass
 import org.jetbrains.kotlin.generators.generateTestGroupSuiteWithJUnit5
 import org.jetbrains.kotlin.generators.util.TestGeneratorUtil
 import org.jetbrains.kotlin.test.TargetBackend
+import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives.RUN_PIPELINE_TILL
+import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives.TARGET_RUNNER_TIER
 import org.jetbrains.kotlin.test.runners.*
 import org.jetbrains.kotlin.test.runners.codegen.*
 import org.jetbrains.kotlin.test.runners.codegen.inlineScopes.*
@@ -16,6 +18,7 @@ import org.jetbrains.kotlin.test.runners.ir.*
 import org.jetbrains.kotlin.test.runners.ir.interpreter.AbstractJvmIrInterpreterAfterFirPsi2IrTest
 import org.jetbrains.kotlin.test.runners.ir.interpreter.AbstractJvmIrInterpreterAfterPsi2IrTest
 import org.jetbrains.kotlin.test.utils.CUSTOM_TEST_DATA_EXTENSION_PATTERN
+import java.io.File
 
 fun generateJUnit5CompilerTests(args: Array<String>, mainClassName: String?) {
     val excludedCustomTestdataPattern = CUSTOM_TEST_DATA_EXTENSION_PATTERN
@@ -499,3 +502,56 @@ fun generateJUnit5CompilerTests(args: Array<String>, mainClassName: String?) {
         }
     }
 }
+
+private val TIERED_DIRECTIVE = "// $RUN_PIPELINE_TILL:"
+private val TIERED_OVERRIDE_DIRECTIVE = "// $TARGET_RUNNER_TIER:"
+
+fun File.shouldBeRunByRunnerOf(vararg tiers: TestTierLabel): Boolean {
+    val lines = readLines()
+    val directiveParts = lines.find { it.startsWith(TIERED_OVERRIDE_DIRECTIVE) }?.split(TIERED_OVERRIDE_DIRECTIVE)
+        ?: lines.find { it.startsWith(TIERED_DIRECTIVE) }?.split(TIERED_DIRECTIVE)
+        ?: return false
+
+    val declaredTier = directiveParts
+        .getOrNull(1)?.trim()?.let(TestTierLabel::valueOf)
+        ?: return false
+
+    val minDeclaredTier = tiers.min()
+    val maxDeclaredTier = tiers.max()
+
+    return declaredTier in minDeclaredTier..maxDeclaredTier
+}
+
+fun configureTierModelsForDeclaredAs(
+    vararg tiers: TestTierLabel,
+    relativeRootPaths: List<String>,
+    excludeDirs: List<String>,
+    extension: String? = "kt",
+    pattern: String = if (extension == null) """^([^\.]+)$""" else "^(.+)\\.$extension\$",
+    excludedPattern: String? = null,
+): TestClass.() -> Unit = {
+    for (path in relativeRootPaths) {
+        model(
+            path,
+            excludeDirs = excludeDirs,
+            skipSpecificFile = { !it.shouldBeRunByRunnerOf(*tiers) },
+            skipTestAllFilesCheck = true,
+            generateEmptyTestClasses = false,
+            extension = extension,
+            pattern = pattern,
+            excludedPattern = excludedPattern,
+        )
+    }
+}
+
+fun configureTierModelsForDiagnosticTestsStating(vararg tiers: TestTierLabel) =
+    configureTierModelsForDeclaredAs(
+        *tiers,
+        relativeRootPaths = listOf(
+            "diagnostics/tests",
+            "diagnostics/testsWithStdLib",
+        ),
+        excludeDirs = listOf("declarations/multiplatform/k1"),
+        pattern = "^(.*)\\.kts?$",
+        excludedPattern = CUSTOM_TEST_DATA_EXTENSION_PATTERN,
+    )
