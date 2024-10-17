@@ -167,24 +167,11 @@ internal class PropertyDelegationLowering(val generationState: NativeGenerationS
                 immutableSymbols
             }.byRecieversCount[receiverTypes.size]
 
-            fun IrFunctionReference.convert(): IrExpression {
-                val builder = FunctionReferenceLowering.FunctionReferenceBuilder(
-                        irFile,
-                        irFile,
-                        this,
-                        generationState,
-                        irBuilder,
-                )
-                val (newClass, newExpression) = builder.build()
-                generatedClasses.add(newClass)
-                return newExpression
-            }
-
             +irCallWithSubstitutedType(constructor, receiverTypes + listOf(returnType)).apply {
                 putValueArgument(0, irString(expression.symbol.owner.name.asString()))
-                putValueArgument(1, getterCallableReference.convert())
+                putValueArgument(1, getterCallableReference)
                 if (setterCallableReference != null) {
-                    putValueArgument(2, setterCallableReference.convert())
+                    putValueArgument(2, setterCallableReference)
                 }
             }
         }

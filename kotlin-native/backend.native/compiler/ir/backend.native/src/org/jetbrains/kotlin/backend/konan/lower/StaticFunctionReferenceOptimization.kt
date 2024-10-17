@@ -10,12 +10,17 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
 import org.jetbrains.kotlin.backend.konan.Context
 import org.jetbrains.kotlin.backend.konan.lower.FunctionReferenceLowering.Companion.isLoweredFunctionReference
+import org.jetbrains.kotlin.ir.IrStatement
+import org.jetbrains.kotlin.ir.builders.IrBuilder
+import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irConstantObject
+import org.jetbrains.kotlin.ir.builders.irConstantPrimitive
 import org.jetbrains.kotlin.ir.declarations.IrFile
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.util.constructedClass
 import org.jetbrains.kotlin.ir.util.getArgumentsWithIr
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
+import kotlin.math.exp
 
 /**
  * Function references are lowered into instantion of on object of some "callable" type.
@@ -33,6 +38,22 @@ internal class StaticFunctionReferenceOptimization(val context: Context) : FileL
         val mutableSymbols = context.ir.symbols.mutablePropertiesConstructors
         addAll(mutableSymbols.byRecieversCount)
         add(mutableSymbols.local)
+    }.toSet()
+
+    private fun IrStatement.isEmptyBlock(): Boolean = this is IrBlock && statements.all { it is IrBlock && it !is IrReturnableBlock && it.isEmptyBlock() }
+
+    private fun IrBuilderWithScope.tryConvertToConst(expression: IrExpression?): IrConstantValue? = when (expression) {
+        is IrConst -> irConstantPrimitive(expression)
+        is IrReturnableBlock -> null
+        is IrBlock -> {
+            val singleExpression = if (expression.statements.count { !it.isEmptyBlock() } != 1)
+                null
+            else
+                expression.statements.lastOrNull() as? IrExpression
+            singleExpression?.let { tryConvertToConst(it) }
+        }
+        is IrConstantValue -> expression
+        else -> null
     }
 
     override fun lower(irFile: IrFile) {
@@ -43,17 +64,17 @@ internal class StaticFunctionReferenceOptimization(val context: Context) : FileL
                 val constructor = expression.symbol.owner
                 val constructedClass = constructor.constructedClass
 
-                if ((isLoweredFunctionReference(constructedClass) && constructor.valueParameters.isEmpty()) || expression.symbol in allPropertyReferenceSymbols) {
-                    val args = expression.getArgumentsWithIr().map { it.first as? IrConstantValue ?: return expression }
-                    val irBuilder = context.createIrBuilder(
+                return if ((isLoweredFunctionReference(constructedClass) && constructor.valueParameters.isEmpty()) || expression.symbol in allPropertyReferenceSymbols) {
+                    context.createIrBuilder(
                             currentScope!!.scope.scopeOwnerSymbol,
                             expression.startOffset,
                             expression.endOffset
-                    )
-
-                    return irBuilder.irConstantObject(expression.symbol, args, expression.getClassTypeArguments().map { it!! })
+                    ).run {
+                        val args = expression.getArgumentsWithIr().map { tryConvertToConst(it.second) ?: return expression }
+                        irConstantObject(expression.symbol, args, expression.getClassTypeArguments().map { it!! })
+                    }
                 } else {
-                    return expression
+                    expression
                 }
             }
         }, data = null)
