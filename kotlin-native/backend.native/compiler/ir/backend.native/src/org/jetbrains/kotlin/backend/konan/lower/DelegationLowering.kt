@@ -7,8 +7,7 @@ package org.jetbrains.kotlin.backend.konan.lower
 
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
-import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
-import org.jetbrains.kotlin.backend.common.lower.irBlock
+import org.jetbrains.kotlin.backend.common.lower.*
 import org.jetbrains.kotlin.backend.konan.NativeGenerationState
 import org.jetbrains.kotlin.backend.konan.descriptors.synthesizedName
 import org.jetbrains.kotlin.backend.konan.ir.KonanSymbols
@@ -53,55 +52,26 @@ internal class PropertyDelegationLowering(val generationState: NativeGenerationS
     private val immutableSymbols = context.ir.symbols.immutablePropertiesConstructors
     private val mutableSymbols = context.ir.symbols.mutablePropertiesConstructors
     private var tempIndex = 0
+    // TODO: was this caching really needed?
 
     override fun lower(irFile: IrFile) {
-        // Somehow there is no reasonable common ancestor for IrProperty and IrLocalDelegatedProperty,
-        // so index by IrDeclaration.
-        val kProperties = mutableMapOf<IrDeclaration, IrField>()
-        val generatedClasses = mutableListOf<IrClass>()
-
-        fun kPropertyField(value: IrExpressionBody, id:Int) =
-                context.irFactory.createField(
-                        SYNTHETIC_OFFSET,
-                        SYNTHETIC_OFFSET,
-                        DECLARATION_ORIGIN_KPROPERTIES_FOR_DELEGATION,
-                        "KPROPERTY${id}".synthesizedName,
-                        DescriptorVisibilities.PRIVATE,
-                        IrFieldSymbolImpl(),
-                        value.expression.type,
-                        isFinal = true,
-                        isStatic = true,
-                ).apply {
-                    parent = irFile
-                    annotations += buildSimpleAnnotation(context.irBuiltIns, startOffset, endOffset, context.ir.symbols.eagerInitialization.owner)
-                    initializer = value
-                }
-
         irFile.transformChildrenVoid(object : IrElementTransformerVoidWithContext() {
 
             override fun visitPropertyReference(expression: IrPropertyReference): IrExpression {
                 expression.transformChildrenVoid(this)
 
-                val startOffset = expression.startOffset
-                val endOffset = expression.endOffset
-                val irBuilder = context.createIrBuilder(currentScope!!.scope.scopeOwnerSymbol, startOffset, endOffset)
-                irBuilder.run {
-                    val receiversCount = listOf(expression.dispatchReceiver, expression.extensionReceiver).count { it != null }
-                    return when (receiversCount) {
-                        1 -> createKProperty(expression, this, irFile, generatedClasses) // Has receiver.
-
-                        2 -> error("Callable reference to properties with two receivers is not allowed: ${expression.symbol.owner.name}")
-
-                        else -> { // Cache KProperties with no arguments.
-                            val field = kProperties.getOrPut(expression.symbol.owner) {
-                                kPropertyField(
-                                    irExprBody(createKProperty(expression, this, irFile, generatedClasses)),
-                                    kProperties.size
-                                )
+                return context.createIrBuilder(currentScope!!.scope.scopeOwnerSymbol).at(expression).run {
+                    val generatedClasses = mutableListOf<IrClass>()
+                    val result = createKProperty(expression, this, irFile, generatedClasses)
+                    val parent = currentDeclarationParent
+                    irComposite {
+                        for (clazz in generatedClasses) {
+                            if (parent != null) {
+                                clazz.setDeclarationsParent(parent)
                             }
-
-                            irGetField(null, field)
+                            +clazz
                         }
+                        +result
                     }
                 }
             }
@@ -116,21 +86,13 @@ internal class PropertyDelegationLowering(val generationState: NativeGenerationS
                 if (receiversCount == 2)
                     throw AssertionError("Callable reference to properties with two receivers is not allowed: ${expression}")
                 else { // Cache KProperties with no arguments.
-                    // TODO: what about `receiversCount == 1` case?
-                    val field = kProperties.getOrPut(expression.symbol.owner) {
-                        val kProperty = irBuilder.createLocalKProperty(
-                                expression.symbol.owner.name.asString(),
-                                expression.getter.owner.returnType,
-                        )
-                        kPropertyField(irBuilder.irExprBody(kProperty), kProperties.size)
-                    }
-
-                    return irBuilder.irGetField(null, field)
+                    return irBuilder.createLocalKProperty(
+                            expression.symbol.owner.name.asString(),
+                            expression.getter.owner.returnType,
+                    )
                 }
             }
         })
-        irFile.declarations.addAll(0, kProperties.values)
-        irFile.declarations.addAll(generatedClasses)
     }
 
     private fun createKProperty(

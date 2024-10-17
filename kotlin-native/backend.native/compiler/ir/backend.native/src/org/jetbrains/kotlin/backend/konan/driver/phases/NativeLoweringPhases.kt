@@ -264,7 +264,7 @@ private val tailrecPhase = createFileLoweringPhase(
 private val volatilePhase = createFileLoweringPhase(
         ::VolatileFieldsLowering,
         name = "VolatileFields",
-        prerequisite = setOf(localFunctionsPhase)
+        prerequisite = setOf()
 )
 
 private val defaultParameterExtentPhase = createFileLoweringPhase(
@@ -576,7 +576,9 @@ internal fun KonanConfig.getLoweringsAfterInlining(): LoweringList = listOfNotNu
         assertionRemoverPhase,
         provisionalFunctionExpressionPhase,
         inventNamesForLocalClasses,
+        volatilePhase,
         functionReferencePhase,
+        delegationPhase,
         postInlinePhase,
         testProcessorPhase.takeIf { this.configuration.getNotNull(KonanConfigKeys.GENERATE_TEST_RUNNER) != TestRunnerKind.NONE },
         contractsDslRemovePhase,
@@ -590,13 +592,11 @@ internal fun KonanConfig.getLoweringsAfterInlining(): LoweringList = listOfNotNu
         initializersPhase,
         localFunctionsPhase,
         buildNamesForFunctionReferenceImpls,
-        volatilePhase,
         tailrecPhase,
         defaultParameterExtentPhase,
         innerClassPhase,
         dataClassesPhase,
         ifNullExpressionsFusionPhase,
-        delegationPhase,
         staticFunctionReferenceOptimizationPhase,
         singleAbstractMethodPhase,
         enumWhenPhase,
