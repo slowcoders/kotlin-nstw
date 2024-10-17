@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.ir.builders.irConstantObject
 import org.jetbrains.kotlin.ir.declarations.IrFile
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.util.constructedClass
+import org.jetbrains.kotlin.ir.util.getArgumentsWithIr
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 
 /**
@@ -24,6 +25,16 @@ import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
  * That's what this optimization pass does.
  */
 internal class StaticFunctionReferenceOptimization(val context: Context) : FileLoweringPass {
+    private val allPropertyReferenceSymbols = buildList {
+        val immutableSymbols = context.ir.symbols.immutablePropertiesConstructors
+        addAll(immutableSymbols.byRecieversCount)
+        add(immutableSymbols.local)
+
+        val mutableSymbols = context.ir.symbols.mutablePropertiesConstructors
+        addAll(mutableSymbols.byRecieversCount)
+        add(mutableSymbols.local)
+    }
+
     override fun lower(irFile: IrFile) {
         irFile.transform(object : IrElementTransformerVoidWithContext() {
             override fun visitConstructorCall(expression: IrConstructorCall): IrExpression {
@@ -32,11 +43,15 @@ internal class StaticFunctionReferenceOptimization(val context: Context) : FileL
                 val constructor = expression.symbol.owner
                 val constructedClass = constructor.constructedClass
 
-                if (isLoweredFunctionReference(constructedClass) && expression.valueArgumentsCount == 0) {
-                    val irBuilder = context.createIrBuilder(currentScope!!.scope.scopeOwnerSymbol,
-                            expression.startOffset, expression.endOffset)
+                if ((isLoweredFunctionReference(constructedClass) && constructor.valueParameters.isEmpty()) || expression.symbol in allPropertyReferenceSymbols) {
+                    val args = expression.getArgumentsWithIr().map { it.first as? IrConstantValue ?: return expression }
+                    val irBuilder = context.createIrBuilder(
+                            currentScope!!.scope.scopeOwnerSymbol,
+                            expression.startOffset,
+                            expression.endOffset
+                    )
 
-                    return irBuilder.irConstantObject(constructedClass, emptyMap(), expression.getClassTypeArguments().map { it!! })
+                    return irBuilder.irConstantObject(expression.symbol, args, expression.getClassTypeArguments().map { it!! })
                 } else {
                     return expression
                 }
