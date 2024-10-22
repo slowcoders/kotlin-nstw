@@ -321,12 +321,6 @@ private val functionReferencePhase = createFileLoweringPhase(
         name = "FunctionReference",
 )
 
-private val buildNamesForFunctionReferenceImpls = createFileLoweringPhase(
-        lowering = ::FunctionReferenceImplNamesBuilder,
-        name = "BuildNamesForFunctionReferenceImpls",
-        prerequisite = setOf(functionReferencePhase, localFunctionsPhase)
-)
-
 private val staticFunctionReferenceOptimizationPhase = createFileLoweringPhase(
         lowering = ::StaticFunctionReferenceOptimization,
         name = "StaticFunctionReferenceOptimization",
@@ -575,7 +569,6 @@ internal fun KonanConfig.getLoweringsAfterInlining(): LoweringList = listOfNotNu
         stripTypeAliasDeclarationsPhase,
         assertionRemoverPhase,
         provisionalFunctionExpressionPhase,
-        inventNamesForLocalClasses,
         volatilePhase,
         testProcessorPhase.takeIf { this.configuration.getNotNull(KonanConfigKeys.GENERATE_TEST_RUNNER) != TestRunnerKind.NONE },
         delegationPhase,
@@ -590,8 +583,8 @@ internal fun KonanConfig.getLoweringsAfterInlining(): LoweringList = listOfNotNu
         stringConcatenationTypeNarrowingPhase.takeIf { this.optimizationsEnabled },
         enumConstructorsPhase,
         initializersPhase,
+        inventNamesForLocalClasses,
         localFunctionsPhase,
-        buildNamesForFunctionReferenceImpls,
         tailrecPhase,
         defaultParameterExtentPhase,
         innerClassPhase,
