@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.fir.resolve.dfa.cfg.*
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.visitors.FirVisitorVoid
 import org.jetbrains.kotlin.name.SpecialNames
+import org.jetbrains.kotlin.psi.stubs.elements.KtPropertyElementType
 
 object UnusedChecker : AbstractFirPropertyInitializationChecker(MppCheckerKind.Common) {
     override fun analyze(data: VariableInitializationInfoData, reporter: DiagnosticReporter, context: CheckerContext) {
@@ -85,6 +86,8 @@ object UnusedChecker : AbstractFirPropertyInitializationChecker(MppCheckerKind.C
         override fun visitNode(node: CFGNode<*>) {}
 
         override fun visitVariableDeclarationNode(node: VariableDeclarationNode) {
+            if (node.fir.source?.elementType !is KtPropertyElementType) return
+
             val graph = node.owner.nearestNonInPlaceGraph()
             if (node.fir.initializer != null) {
                 data.unreadWrites[node.fir] = graph
