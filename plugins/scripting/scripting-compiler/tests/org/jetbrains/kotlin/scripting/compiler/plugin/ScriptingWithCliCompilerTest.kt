@@ -205,7 +205,7 @@ class ScriptingWithCliCompilerTest {
     @Test
     fun testCompileScriptWithRegularKotlin() {
 
-        fun compileVariant(vararg flags: String, withScriptInstance: Boolean = true): Pair<List<String>, ExitCode> {
+        fun compileVariant(vararg flags: String, withScriptInstance: Boolean = false): Pair<List<String>, ExitCode> {
             return withTempDir { tmpdir ->
                 val (_, err, exitCode) = captureOutErrRet {
                     CLICompiler.doMainNoExit(
@@ -246,7 +246,7 @@ class ScriptingWithCliCompilerTest {
             Assert.assertEquals(ExitCode.OK, exitCode)
         }
 
-        compileVariant(CommonCompilerArguments::languageVersion.cliArgument, "1.9").let { (errLines, exitCode) ->
+        compileVariant(CommonCompilerArguments::languageVersion.cliArgument, "1.9", withScriptInstance = true).let { (errLines, exitCode) ->
             if (errLines.none { it.endsWith(unresolvedScriptError) }) {
                 Assert.fail("Expecting unresolved reference: SimpleScript_main error, got:\n${errLines.joinToString("\n")}")
             }
@@ -255,8 +255,7 @@ class ScriptingWithCliCompilerTest {
 
         compileVariant(
             CommonCompilerArguments::languageVersion.cliArgument,
-            "1.9",
-            withScriptInstance = false
+            "1.9"
         ).let { (errLines, exitCode) ->
             Assert.assertTrue(errLines.none { it.startsWith(scriptInSourceRootWarning) })
             Assert.assertEquals(ExitCode.OK, exitCode)
