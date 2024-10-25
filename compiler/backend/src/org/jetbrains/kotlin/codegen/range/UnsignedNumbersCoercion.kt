@@ -34,6 +34,7 @@ fun coerceUnsignedToUInt(
 
     return StackValue.operation(Type.INT_TYPE, uIntKotlinType) { v ->
         stackValue.put(stackValue.type, valueKotlinType, v)
+        @Suppress("REDUNDANT_ELSE_IN_WHEN")
         when (valueUnsignedType) {
             UnsignedType.UBYTE -> {
                 v.iconst(0xFF)
@@ -69,6 +70,7 @@ fun coerceUnsignedToULong(
 
     return StackValue.operation(Type.LONG_TYPE, uLongKotlinType) { v ->
         stackValue.put(stackValue.type, valueKotlinType, v)
+        @Suppress("REDUNDANT_ELSE_IN_WHEN")
         when (valueUnsignedType) {
             UnsignedType.UBYTE -> {
                 v.cast(Type.INT_TYPE, Type.LONG_TYPE)
