@@ -52,7 +52,7 @@ import org.jetbrains.org.objectweb.asm.Type
     prerequisite = [JvmDefaultParameterCleaner::class]
 )
 internal class SpecialAccessLowering(
-    val context: JvmBackendContext
+    val context: JvmBackendContext,
 ) : IrElementTransformerVoidWithContext(), FileLoweringPass {
 
     private lateinit var inlineScopeResolver: IrInlineScopeResolver
@@ -214,7 +214,7 @@ internal class SpecialAccessLowering(
 
     private fun IrBuilderWithScope.irVararg(
         elementType: IrType,
-        values: List<IrExpression>
+        values: List<IrExpression>,
     ): IrExpression {
         return IrArrayBuilder(createBuilder(), context.irBuiltIns.arrayClass.typeWith(elementType)).apply {
             for (value in values) {
@@ -248,7 +248,7 @@ internal class SpecialAccessLowering(
     private fun IrBuilderWithScope.methodInvoke(
         method: IrExpression,
         receiver: IrExpression,
-        arguments: List<IrExpression>
+        arguments: List<IrExpression>,
     ): IrExpression =
         irCall(reflectSymbols.javaLangReflectMethodInvoke).apply {
             dispatchReceiver = method
@@ -258,7 +258,7 @@ internal class SpecialAccessLowering(
 
     private fun IrBuilderWithScope.getDeclaredConstructor(
         declaringClass: IrExpression,
-        signature: JvmMethodSignature
+        signature: JvmMethodSignature,
     ): IrExpression =
         irCall(reflectSymbols.getDeclaredConstructor).apply {
             dispatchReceiver = declaringClass
@@ -291,7 +291,7 @@ internal class SpecialAccessLowering(
         receiver: IrExpression?, // null => static method on `declaringClass`
         arguments: List<IrExpression>,
         returnType: IrType,
-        symbol: IrSymbol
+        symbol: IrSymbol,
     ): IrExpression =
         context.createJvmIrBuilder(symbol).irBlock(resultType = returnType) {
             val methodVar =
@@ -414,7 +414,7 @@ internal class SpecialAccessLowering(
         value: IrExpression,
         type: IrType,
         instance: IrExpression?,
-        symbol: IrSymbol
+        symbol: IrSymbol,
     ): IrExpression {
         return context.createJvmIrBuilder(symbol)
             .irBlock(resultType = type) {
@@ -445,6 +445,8 @@ internal class SpecialAccessLowering(
     private fun shouldUseAccessor(accessor: IrSimpleFunction): Boolean {
         return (context.generatorExtensions as StubGeneratorExtensions).isAccessorWithExplicitImplementation(accessor)
                 || accessor.correspondingPropertySymbol?.owner?.isDelegated == true
+                || (accessor.isFakeOverride && accessor.allOverridden(false)
+            .any { (context.generatorExtensions as StubGeneratorExtensions).isAccessorWithExplicitImplementation(it) })
     }
 
     // Returns a pair of the _type_ containing the field and the _instance_ on
