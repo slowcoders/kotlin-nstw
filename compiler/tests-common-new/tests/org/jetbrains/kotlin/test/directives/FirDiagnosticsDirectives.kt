@@ -112,6 +112,10 @@ object FirDiagnosticsDirectives : SimpleDirectivesContainer() {
         description = "Prevents the tiered test runners from complaining that the current tier could be upgraded. Use this directive if the test contains something obviously wrong, like disabling of some language features or cringe error suppression, causing failures on higher tiers"
     )
 
+    val DISABLE_JAVA_FACADE by directive(
+        description = "Disables javac for diagnostic tests containing incorrect Java code. Such tests must be fixed, but until they are, use this directive"
+    )
+
     val SCOPE_DUMP by stringDirective(
         description = """
             Dump hierarchies of overrides of classes listed in arguments

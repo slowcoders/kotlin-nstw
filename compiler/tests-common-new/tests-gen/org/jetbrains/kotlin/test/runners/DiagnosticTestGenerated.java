@@ -50702,6 +50702,12 @@ public class DiagnosticTestGenerated extends AbstractDiagnosticTest {
         }
 
         @Test
+        @TestMetadata("isBackendButLimitedToKlib.kt")
+        public void testIsBackendButLimitedToKlib() {
+          runTest("compiler/testData/diagnostics/testsWithStdLib/tieredFailures/fail/isBackendButLimitedToKlib.kt");
+        }
+
+        @Test
         @TestMetadata("isFir2IrButFir2IrPasses.kt")
         public void testIsFir2IrButFir2IrPasses() {
           runTest("compiler/testData/diagnostics/testsWithStdLib/tieredFailures/fail/isFir2IrButFir2IrPasses.kt");
@@ -50721,6 +50727,12 @@ public class DiagnosticTestGenerated extends AbstractDiagnosticTest {
         @Test
         public void testAllFilesPresentInGood() {
           KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/testsWithStdLib/tieredFailures/good"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(reversed|fir|ll|latestLV)\\.kts?$"), true);
+        }
+
+        @Test
+        @TestMetadata("isFir2IrButBackendFails.kt")
+        public void testIsFir2IrButBackendFails() {
+          runTest("compiler/testData/diagnostics/testsWithStdLib/tieredFailures/good/isFir2IrButBackendFails.kt");
         }
 
         @Test

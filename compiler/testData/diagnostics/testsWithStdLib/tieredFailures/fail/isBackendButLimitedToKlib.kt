@@ -1,0 +1,7 @@
+// RUN_PIPELINE_TILL: BACKEND
+// FIR_IDENTICAL
+// ISSUE: KT-67281
+// WITH_STDLIB
+// TARGET_PLATFORM: Common
+
+fun commonFunction() {}
