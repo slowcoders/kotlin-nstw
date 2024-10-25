@@ -2925,7 +2925,7 @@ public final class kotlin/comparisons/UComparisonsKt {
 	public static final fun minOf-t1qELG4 (S[S)S
 }
 
-public final class kotlin/concurrent/AtomicIntrinsicsKt {
+public final class kotlin/concurrent/internal/AtomicIntrinsicsKt {
 	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicBoolean;ZZ)Z
 	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicInteger;II)I
 	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicIntegerArray;III)I

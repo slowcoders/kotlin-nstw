@@ -4,7 +4,7 @@
  */
 
 @file:Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-package kotlin.concurrent
+package kotlin.concurrent.internal
 
 /**
  * Atomics and AtomicArrays from the `kotlin.concurrent` package provide a compareAndExchange method.
@@ -17,7 +17,6 @@ package kotlin.concurrent
  */
 
 @SinceKotlin("2.1")
-@Deprecated("Provided to implement kotlin.concurrent.AtomicInt.compareAndExchange for Java 8.", level = DeprecationLevel.HIDDEN)
 @PublishedApi
 internal fun java.util.concurrent.atomic.AtomicInteger.compareAndExchange(expected: Int, newValue: Int): Int {
     while(true) {
@@ -33,7 +32,6 @@ internal fun java.util.concurrent.atomic.AtomicInteger.compareAndExchange(expect
 }
 
 @SinceKotlin("2.1")
-@Deprecated("Provided to implement kotlin.concurrent.AtomicLong.compareAndExchange for Java 8.", level = DeprecationLevel.HIDDEN)
 @PublishedApi
 internal fun java.util.concurrent.atomic.AtomicLong.compareAndExchange(expected: Long, newValue: Long): Long {
     while(true) {
@@ -49,7 +47,6 @@ internal fun java.util.concurrent.atomic.AtomicLong.compareAndExchange(expected:
 }
 
 @SinceKotlin("2.1")
-@Deprecated("Provided to implement kotlin.concurrent.AtomicBoolean.compareAndExchange for Java 8.", level = DeprecationLevel.HIDDEN)
 @PublishedApi
 internal fun java.util.concurrent.atomic.AtomicBoolean.compareAndExchange(expected: Boolean, newValue: Boolean): Boolean {
     while(true) {
@@ -65,7 +62,6 @@ internal fun java.util.concurrent.atomic.AtomicBoolean.compareAndExchange(expect
 }
 
 @SinceKotlin("2.1")
-@Deprecated("Provided to implement kotlin.concurrent.AtomicReference<T>.compareAndExchange for Java 8.", level = DeprecationLevel.HIDDEN)
 @PublishedApi
 internal fun <T> java.util.concurrent.atomic.AtomicReference<T>.compareAndExchange(expected: T, newValue: T): T {
     while(true) {
@@ -81,7 +77,6 @@ internal fun <T> java.util.concurrent.atomic.AtomicReference<T>.compareAndExchan
 }
 
 @SinceKotlin("2.1")
-@Deprecated("Provided to implement kotlin.concurrent.AtomicIntArray.compareAndExchange for Java 8.", level = DeprecationLevel.HIDDEN)
 @PublishedApi
 internal fun java.util.concurrent.atomic.AtomicIntegerArray.compareAndExchange(index: Int, expected: Int, newValue: Int): Int {
     while(true) {
@@ -97,7 +92,6 @@ internal fun java.util.concurrent.atomic.AtomicIntegerArray.compareAndExchange(i
 }
 
 @SinceKotlin("2.1")
-@Deprecated("Provided to implement kotlin.concurrent.AtomicLongArray.compareAndExchange for Java 8.", level = DeprecationLevel.HIDDEN)
 @PublishedApi
 internal fun java.util.concurrent.atomic.AtomicLongArray.compareAndExchange(index: Int, expected: Long, newValue: Long): Long {
     while(true) {
@@ -113,7 +107,6 @@ internal fun java.util.concurrent.atomic.AtomicLongArray.compareAndExchange(inde
 }
 
 @SinceKotlin("2.1")
-@Deprecated("Provided to implement kotlin.concurrent.AtomicArray<T>.compareAndExchange for Java 8.", level = DeprecationLevel.HIDDEN)
 @PublishedApi
 internal fun <T> java.util.concurrent.atomic.AtomicReferenceArray<T>.compareAndExchange(index: Int, expected: T, newValue: T): T {
     while(true) {
