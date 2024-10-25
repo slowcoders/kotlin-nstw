@@ -210,9 +210,10 @@ class FirFallbackBuiltinSymbolProvider(
             val streamProvider = { path: String -> classLoader?.getResourceAsStream(path) ?: ClassLoader.getSystemResourceAsStream(path) }
             val packageFqNames = StandardClassIds.builtInsPackages
             packageFqNames.mapNotNull { fqName ->
-                BuiltInSerializerProtocol.getBuiltInFileInputStream(fqName, streamProvider)?.let { inputStream ->
-                    fqName to BuiltInsPackageFragment(inputStream)
-                }
+                val resourcePath = BuiltInSerializerProtocol.getBuiltInsFilePath(fqName)
+                val inputStream =
+                    streamProvider(resourcePath) ?: BuiltInSerializerProtocol.errorIfNotConcurrentPackageOrNull(resourcePath)
+                inputStream?.let { fqName to BuiltInsPackageFragment(it) }
             }.toMap()
         }
     }

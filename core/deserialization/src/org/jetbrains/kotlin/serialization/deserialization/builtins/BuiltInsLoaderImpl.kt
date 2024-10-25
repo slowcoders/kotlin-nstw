@@ -55,9 +55,9 @@ class BuiltInsLoaderImpl : BuiltInsLoader {
         loadResource: (String) -> InputStream?
     ): PackageFragmentProvider {
         val packageFragments = packageFqNames.mapNotNull { fqName ->
-            BuiltInSerializerProtocol.getBuiltInFileInputStream(fqName, loadResource)?.let { inputStream ->
-                BuiltInsPackageFragmentImpl.create(fqName, storageManager, module, inputStream, isFallback)
-            }
+            val resourcePath = BuiltInSerializerProtocol.getBuiltInsFilePath(fqName)
+            val inputStream = loadResource(resourcePath) ?: BuiltInSerializerProtocol.errorIfNotConcurrentPackageOrNull(resourcePath)
+            inputStream?.let { BuiltInsPackageFragmentImpl.create(fqName, storageManager, module, inputStream, isFallback) }
         }
         val provider = PackageFragmentProviderImpl(packageFragments)
 

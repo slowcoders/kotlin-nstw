@@ -32,7 +32,8 @@ abstract class BuiltinsVirtualFileProviderBaseImpl : BuiltinsVirtualFileProvider
     private val builtInUrls: Set<URL> by lazy {
         val classLoader = this::class.java.classLoader
         StandardClassIds.builtInsPackages.mapNotNullTo(mutableSetOf()) { builtInPackageFqName ->
-            BuiltInSerializerProtocol.loadBuiltInResource(builtInPackageFqName, classLoader)
+            val resourcePath = BuiltInSerializerProtocol.getBuiltInsFilePath(builtInPackageFqName)
+            classLoader.getResource(resourcePath) ?: BuiltInSerializerProtocol.errorIfNotConcurrentPackageOrNull(resourcePath)
         }
     }
 
