@@ -134,17 +134,17 @@ fun testJavaNullableProps() {
 
     a = when (JClass.integerProp) {
         null -> true
-        is Int -> false
+        <!USELESS_IS_CHECK!>is Int<!> -> false
     }
 
     a = when (JClass.stringProp) {
         null -> true
-        is String -> false
+        <!USELESS_IS_CHECK!>is String<!> -> false
     }
 
     a = when (JClass.objectProp) {
         null -> true
-        is Any -> false
+        <!USELESS_IS_CHECK!>is Any<!> -> false
     }
 }
 

@@ -944,7 +944,7 @@ abstract class FirDataFlowAnalyzer(
 
     fun exitSafeCall(safeCall: FirSafeCallExpression) {
         val node = graphBuilder.exitSafeCall()
-        node.mergeIncomingFlow { path, flow ->
+        node.mergeIncomingFlow(mergeImplications = false) { path, flow ->
             // If there is only 1 previous node, then this is LHS of `a?.b ?: c`; then the null-case
             // edge from `a` goes directly to `c` and this node's flow already assumes `b` executed.
             if (node.previousNodes.size < 2) return@mergeIncomingFlow
@@ -1454,6 +1454,7 @@ abstract class FirDataFlowAnalyzer(
     private var currentSmartCastPosition: Flow? = null
 
     private fun CFGNode<*>.buildDefaultFlow(
+        mergeImplications: Boolean,
         builder: (FlowPath, MutableFlow) -> Unit,
     ): MutableFlow {
         val previousFlows = mutableListOf<PersistentFlow>()
@@ -1480,7 +1481,7 @@ abstract class FirDataFlowAnalyzer(
             }
         }
 
-        val result = logicSystem.joinFlow(previousFlows, statementFlows, isUnion)
+        val result = logicSystem.joinFlow(previousFlows, statementFlows, isUnion, mergeImplications)
 
         if (graphBuilder.lastNodeOrNull == this) {
             if (currentSmartCastPosition == null || currentSmartCastPosition != previousFlows.singleOrNull()) {
@@ -1498,6 +1499,7 @@ abstract class FirDataFlowAnalyzer(
 
     private fun CFGNode<*>.buildAlternateFlow(
         path: FlowPath.CfgEdge,
+        mergeImplications: Boolean,
         builder: (FlowPath, MutableFlow) -> Unit,
     ): MutableFlow {
         val alternateFlowStart = this is FinallyBlockEnterNode
@@ -1526,7 +1528,7 @@ abstract class FirDataFlowAnalyzer(
             }
         }
 
-        val result = logicSystem.joinFlow(previousFlows, statementFlows, isUnion)
+        val result = logicSystem.joinFlow(previousFlows, statementFlows, isUnion, mergeImplications)
         builder(path, result)
         return result
     }
@@ -1535,21 +1537,23 @@ abstract class FirDataFlowAnalyzer(
     // In that case `mergeIncomingFlow` will automatically ensure consistency once called on that node.
     @OptIn(CfgInternals::class)
     private fun CFGNode<*>.mergeIncomingFlow(
+        mergeImplications: Boolean = true,
         builder: (FlowPath, MutableFlow) -> Unit = { _, _ -> },
     ) {
         // Always build the default flow path for all nodes.
-        val mutableDefaultFlow = buildDefaultFlow(builder)
+        val mutableDefaultFlow = buildDefaultFlow(mergeImplications, builder)
         val defaultFlow = mutableDefaultFlow.freeze().also { this.flow = it }
         if (currentSmartCastPosition === mutableDefaultFlow) {
             currentSmartCastPosition = defaultFlow
         }
 
         // Propagate alternate flows from previous nodes.
-        propagateAlternateFlows(builder)
+        propagateAlternateFlows(mergeImplications, builder)
     }
 
     @OptIn(CfgInternals::class)
     private fun CFGNode<*>.propagateAlternateFlows(
+        mergeImplications: Boolean,
         builder: (FlowPath, MutableFlow) -> Unit,
     ) {
         val propagatedPaths = mutableSetOf<FlowPath>()
@@ -1565,7 +1569,7 @@ abstract class FirDataFlowAnalyzer(
                 if (path !is FlowPath.CfgEdge || !graphBuilder.withinFinallyBlock(path.fir)) continue
 
                 if (propagatedPaths.add(path)) {
-                    addAlternateFlow(path, buildAlternateFlow(path, builder).freeze())
+                    addAlternateFlow(path, buildAlternateFlow(path, mergeImplications, builder).freeze())
                 }
             }
         }
@@ -1582,7 +1586,7 @@ abstract class FirDataFlowAnalyzer(
 
             if (createdLabels.add(edge.label)) {
                 val path = FlowPath.CfgEdge(edge.label, this.fir)
-                addAlternateFlow(path, buildAlternateFlow(path, builder).freeze())
+                addAlternateFlow(path, buildAlternateFlow(path, mergeImplications = true, builder).freeze())
             }
         }
     }

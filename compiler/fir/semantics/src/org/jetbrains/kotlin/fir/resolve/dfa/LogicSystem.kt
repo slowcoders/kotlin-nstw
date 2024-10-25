@@ -33,7 +33,7 @@ abstract class LogicSystem(private val context: ConeInferenceContext) {
      * flow.
      * @param union Determines if [TypeStatement]s from different flows should be combined with union or intersection logic.
      */
-    fun joinFlow(flows: Collection<PersistentFlow>, statementFlows: Collection<PersistentFlow>, union: Boolean): MutableFlow {
+    fun joinFlow(flows: Collection<PersistentFlow>, statementFlows: Collection<PersistentFlow>, union: Boolean, mergeImplications: Boolean): MutableFlow {
         when (flows.size) {
             0 -> return MutableFlow()
             1 -> return flows.first().fork()
@@ -51,7 +51,7 @@ abstract class LogicSystem(private val context: ConeInferenceContext) {
         }
         result.copyStatements(statementFlows, commonFlow, union)
         result.copyNegativeStatements(statementFlows, commonFlow, union)
-        result.copyImplications(statementFlows, union)
+        if (mergeImplications) result.copyImplications(statementFlows, union)
         return result
     }
 
