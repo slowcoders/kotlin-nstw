@@ -59765,6 +59765,12 @@ public class LLFirReversedBlackBoxCodegenBasedTestGenerated extends AbstractLLFi
     public void testTypeAliasSecondaryConstructor() {
       runTest("compiler/testData/codegen/box/typealias/typeAliasSecondaryConstructor.kt");
     }
+
+    @Test
+    @TestMetadata("typealiasOnExternalAnnotation.kt")
+    public void testTypealiasOnExternalAnnotation() {
+      runTest("compiler/testData/codegen/box/typealias/typealiasOnExternalAnnotation.kt");
+    }
   }
 
   @Nested
