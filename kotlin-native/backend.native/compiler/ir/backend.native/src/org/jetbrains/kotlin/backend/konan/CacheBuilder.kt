@@ -18,7 +18,9 @@ import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.library.isNativeStdlib
 import org.jetbrains.kotlin.library.metadata.isCInteropLibrary
 import org.jetbrains.kotlin.library.unresolvedDependencies
+import java.io.IOException
 import java.nio.file.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal fun KotlinLibrary.getAllTransitiveDependencies(allLibraries: Map<String, KotlinLibrary>): List<KotlinLibrary> {
     val allDependencies = mutableSetOf<KotlinLibrary>()
@@ -263,45 +265,103 @@ class CacheBuilder(
         val lockFile = File(lockFileName)
         // For now, per-file caches are only used for the incremental compilation which can't be run in parallel.
         val shouldUseLockFile = !makePerFileCache
+        var thread: Thread? = null
+        val stopRequested = AtomicBoolean(false)
         if (shouldUseLockFile) {
-            if (!tryCreateLockFile(lockFile, libraryCache, library))
-                return // Other compilation have built the cache or the timeout has expired.
+            when (tryCreateLockFile(lockFile, libraryCache, library)) {
+                LockFileCreationResult.AlreadyExists -> {
+                    // Other compilation have built the cache.
+                    return
+                }
+                LockFileCreationResult.Fail -> {
+                    // Failed to distribute the work between different processes.
+                    // Hopefully, this is a rare scenario, so just build the cache ourselves.
+                    // No need to handle lock file anyhow.
+                }
+                LockFileCreationResult.Created -> {
+                    // Touch the lock file every second to signal other processes that the build is in progress.
+                    thread = Thread {
+                        while (true) {
+                            if (stopRequested.get()) break
+                            Thread.sleep(1000)
+                            try {
+                                lockFile.appendBytes(ByteArray(4))
+                            } catch (t: IOException) {
+                                break
+                            }
+                        }
+                    }
+                    thread.start()
+                }
+            }
         }
 
-        tryBuildingLibraryCache(library, dependencies, dependencyCaches, libraryCacheDirectory, makePerFileCache, filesToCache, libraryCache)
+        try {
+            tryBuildingLibraryCache(library, dependencies, dependencyCaches, libraryCacheDirectory, makePerFileCache, filesToCache, libraryCache)
+        } finally {
+            if (thread != null) {
+                stopRequested.set(true)
+                thread.join()
+                lockFile.delete()
+            }
+        }
+    }
 
-        if (shouldUseLockFile)
-            lockFile.delete()
+    private enum class LockFileCreationResult {
+        Created,
+        AlreadyExists,
+        Fail
+    }
+
+    private inline fun getFileSizeSafe(path: Path, fallbackInCaseOfIOError: () -> Long) = try {
+        Files.size(path)
+    } catch (t: IOException) {
+        fallbackInCaseOfIOError()
     }
 
     private fun tryCreateLockFile(
             lockFile: File,
             libraryCache: File,
             library: KotlinLibrary,
-    ): Boolean {
+    ): LockFileCreationResult {
+        val absolutePath = Paths.get(lockFile.absolutePath)
         try {
-            Files.createFile(Paths.get(lockFile.absolutePath))
-            return true
+            Files.createFile(absolutePath)
+            return LockFileCreationResult.Created
         } catch (t: FileAlreadyExistsException) {
             var ok = false
             try {
-                for (i in 0..<120) {
+                var fileSize = getFileSizeSafe(absolutePath) { 0L }
+                var time = System.currentTimeMillis()
+                while (true) {
                     if (!lockFile.exists) {
                         ok = true
                         break
                     }
                     Thread.sleep(1000)
+                    val curFileSize = getFileSizeSafe(absolutePath) { fileSize }
+                    val curTime = System.currentTimeMillis()
+                    if (curFileSize == fileSize) {
+                        // Other process should change the file every second,
+                        // so if for 10 seconds there has been no change, something went wrong.
+                        if (curTime - time > 1000 * 10)
+                            break
+                    } else {
+                        fileSize = curFileSize
+                        time = curTime
+                    }
                 }
             } finally {
                 // Remove file just in case if the process building the cache crashed,
-                // otherwise the next build will hang here for 2 minutes for no reason.
+                // otherwise the next build will hang here for 10 seconds for no reason.
                 lockFile.delete() // It checks that file actually exists.
             }
-            check(ok && libraryCache.exists) {
-                "Failed to wait for cache to be built for ${library.libraryName}"
+
+            if (ok && libraryCache.exists) {
+                cacheRootDirectories[library] = libraryCache.absolutePath
+                return LockFileCreationResult.AlreadyExists
             }
-            cacheRootDirectories[library] = libraryCache.absolutePath
-            return false
+            return LockFileCreationResult.Fail
         }
     }
 
