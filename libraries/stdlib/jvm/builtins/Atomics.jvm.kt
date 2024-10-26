@@ -24,7 +24,7 @@ public actual class AtomicInt(value: Int) {
      *
      * Has the same memory effects as [java.util.concurrent.atomic.AtomicInteger.set].
      */
-    public actual fun store(value: Int)
+    public actual fun store(newValue: Int)
 
     /**
      * Atomically sets the value to the given [new value][newValue] and returns the old value.
@@ -44,7 +44,7 @@ public actual class AtomicInt(value: Int) {
     public actual fun compareAndSet(expectedValue: Int, newValue: Int): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
@@ -98,7 +98,7 @@ public actual class AtomicLong(value: Long) {
      *
      * Has the same memory effects as [java.util.concurrent.atomic.AtomicLong.set].
      */
-    public actual fun store(value: Long)
+    public actual fun store(newValue: Long)
 
     /**
      * Atomically sets the value to the given [new value][newValue] and returns the old value.
@@ -118,7 +118,7 @@ public actual class AtomicLong(value: Long) {
     public actual fun compareAndSet(expectedValue: Long, newValue: Long): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
@@ -192,7 +192,7 @@ public actual class AtomicBoolean (value: Boolean) {
     public actual fun compareAndSet(expectedValue: Boolean, newValue: Boolean): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
@@ -206,7 +206,7 @@ public actual class AtomicBoolean (value: Boolean) {
     public actual fun compareAndExchange(expectedValue: Boolean, newValue: Boolean): Boolean
 
     /**
-     * Returns the string representation of the underlying [Int] value.
+     * Returns the string representation of the underlying [Boolean] value.
      *
      * This operation does not provide any atomicity guarantees.
      */
@@ -252,7 +252,7 @@ public actual class AtomicReference<T> (value: T) {
     public actual fun compareAndSet(expectedValue: T, newValue: T): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
