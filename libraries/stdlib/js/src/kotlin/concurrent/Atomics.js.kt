@@ -44,14 +44,14 @@ public actual class AtomicInt public actual constructor(private var value: Int) 
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndExchange(expected: Int, newValue: Int): Int {
+    public actual fun compareAndExchange(expectedValue: Int, newValue: Int): Int {
         val oldValue = value
-        if (oldValue == expected) {
+        if (oldValue == expectedValue) {
             value = newValue
         }
         return oldValue
@@ -111,21 +111,21 @@ public actual class AtomicLong public actual constructor(private var value: Long
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndSet(expected: Long, newValue: Long): Boolean {
-        if (value != expected) return false
+    public actual fun compareAndSet(expectedValue: Long, newValue: Long): Boolean {
+        if (value != expectedValue) return false
         value = newValue
         return true
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndExchange(expected: Long, newValue: Long): Long {
+    public actual fun compareAndExchange(expectedValue: Long, newValue: Long): Long {
         val oldValue = value
-        if (oldValue == expected) {
+        if (oldValue == expectedValue) {
             value = newValue
         }
         return oldValue
@@ -186,21 +186,21 @@ public actual class AtomicBoolean public actual constructor(private var value: B
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndSet(expected: Boolean, newValue: Boolean): Boolean {
-        if (value != expected) return false
+    public actual fun compareAndSet(expectedValue: Boolean, newValue: Boolean): Boolean {
+        if (value != expectedValue) return false
         value = newValue
         return true
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndExchange(expected: Boolean, newValue: Boolean): Boolean {
+    public actual fun compareAndExchange(expectedValue: Boolean, newValue: Boolean): Boolean {
         val oldValue = value
-        if (oldValue == expected) {
+        if (oldValue == expectedValue) {
             value = newValue
         }
         return oldValue
@@ -243,21 +243,21 @@ public actual class AtomicReference<T> public actual constructor(private var val
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndSet(expected: T, newValue: T): Boolean {
-        if (value != expected) return false
+    public actual fun compareAndSet(expectedValue: T, newValue: T): Boolean {
+        if (value != expectedValue) return false
         value = newValue
         return true
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndExchange(expected: T, newValue: T): T {
+    public actual fun compareAndExchange(expectedValue: T, newValue: T): T {
         val oldValue = value
-        if (oldValue == expected) {
+        if (oldValue == expectedValue) {
             value = newValue
         }
         return oldValue

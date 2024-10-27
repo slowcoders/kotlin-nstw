@@ -53,14 +53,14 @@ public expect class AtomicInt public constructor(value: Int) {
     public fun compareAndSet(expectedValue: Int, newValue: Int): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Provides sequential consistent ordering guarantees and cannot fail spuriously.
      *
      * Comparison of values is done by value.
      */
-    public fun compareAndExchange(expected: Int, newValue: Int): Int
+    public fun compareAndExchange(expectedValue: Int, newValue: Int): Int
 
     /**
      * Atomically adds the [given value][delta] to the current value and returns the old value.
@@ -152,24 +152,24 @@ public expect class AtomicLong public constructor(value: Long) {
     public fun exchange(newValue: Long): Long
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
      * Provides sequential consistent ordering guarantees and cannot fail spuriously.
      *
      * Comparison of values is done by value.
      */
-    public fun compareAndSet(expected: Long, newValue: Long): Boolean
+    public fun compareAndSet(expectedValue: Long, newValue: Long): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Provides sequential consistent ordering guarantees and cannot fail spuriously.
      *
      * Comparison of values is done by value.
      */
-    public fun compareAndExchange(expected: Long, newValue: Long): Long
+    public fun compareAndExchange(expectedValue: Long, newValue: Long): Long
 
     /**
      * Atomically adds the [given value][delta] to the current value and returns the old value.
@@ -261,24 +261,24 @@ public expect class AtomicBoolean public constructor(value: Boolean) {
     public fun exchange(newValue: Boolean): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
      * Provides sequential consistent ordering guarantees and cannot fail spuriously.
      *
      * Comparison of values is done by value.
      */
-    public fun compareAndSet(expected: Boolean, newValue: Boolean): Boolean
+    public fun compareAndSet(expectedValue: Boolean, newValue: Boolean): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Provides sequential consistent ordering guarantees and cannot fail spuriously.
      *
      * Comparison of values is done by value.
      */
-    public fun compareAndExchange(expected: Boolean, newValue: Boolean): Boolean
+    public fun compareAndExchange(expectedValue: Boolean, newValue: Boolean): Boolean
 
     /**
      * Returns the string representation of the current [Boolean] value.
@@ -322,24 +322,24 @@ public expect class AtomicReference<T> public constructor(value: T) {
     public fun exchange(newValue: T): T
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
      * Provides sequential consistent ordering guarantees and cannot fail spuriously.
      *
      * Comparison of values is done by reference.
      */
-    public fun compareAndSet(expected: T, newValue: T): Boolean
+    public fun compareAndSet(expectedValue: T, newValue: T): Boolean
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Provides sequential consistent ordering guarantees and cannot fail spuriously.
      *
      * Comparison of values is done by reference.
      */
-    public fun compareAndExchange(expected: T, newValue: T): T
+    public fun compareAndExchange(expectedValue: T, newValue: T): T
 
     /**
      * Returns the string representation of the underlying object.
