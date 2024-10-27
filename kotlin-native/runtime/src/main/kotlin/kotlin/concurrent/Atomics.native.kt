@@ -13,7 +13,12 @@ import kotlin.concurrent.*
 import kotlin.native.concurrent.*
 
 /**
- * An [Int] value that may be updated atomically with guaranteed sequential consistent ordering.
+ * An [Int] value that may be updated atomically.
+ *
+ * Read operation [load] has the same memory effects as reading a [Volatile] property;
+ * Write operation [store] has the same memory effects as writing a [Volatile] property;
+ * Read-modify-write operations, like [exchange], [compareAndSet], [compareAndExchange], [fetchAndAdd], [addAndFetch],
+ * have the same memory effects as reading and writing a [Volatile] property.
  *
  * For additional details about atomicity guarantees for reads and writes see [kotlin.concurrent.Volatile].
  */
@@ -26,15 +31,11 @@ public actual class AtomicInt public actual constructor(
 ) {
     /**
      * Atomically gets the value of the atomic.
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public actual fun load(): Int = this::value.atomicGetField()
 
     /**
      * Atomically sets the value of the atomic to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public actual fun store(newValue: Int) { this::value.atomicSetField(value) }
 
@@ -47,21 +48,21 @@ public actual class AtomicInt public actual constructor(
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
     public actual fun compareAndSet(expectedValue: Int, newValue: Int): Boolean = this::value.compareAndSetField(expectedValue, newValue)
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndExchange(expected: Int, newValue: Int): Int = this::value.compareAndExchangeField(expected, newValue)
+    public actual fun compareAndExchange(expectedValue: Int, newValue: Int): Int = this::value.compareAndExchangeField(expectedValue, newValue)
 
     /**
      * Atomically adds the [given value][delta] to the current value and returns the old value.
@@ -124,7 +125,12 @@ public actual class AtomicInt public actual constructor(
 }
 
 /**
- * A [Long] value that may be updated atomically with guaranteed sequential consistent ordering.
+ * A [Long] value that may be updated atomically.
+ *
+ * Read operation [load] has the same memory effects as reading a [Volatile] property;
+ * Write operation [store] has the same memory effects as writing a [Volatile] property;
+ * Read-modify-write operations, like [exchange], [compareAndSet], [compareAndExchange], [fetchAndAdd], [addAndFetch],
+ * have the same memory effects as reading and writing a [Volatile] property.
  *
  * For additional details about atomicity guarantees for reads and writes see [kotlin.concurrent.Volatile].
  */
@@ -137,15 +143,11 @@ public actual class AtomicLong public actual constructor(
 )  {
     /**
      * Atomically gets the value of the atomic.
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public actual fun load(): Long = this::value.atomicGetField()
 
     /**
      * Atomically sets the value of the atomic to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public actual fun store(newValue: Long) { this::value.atomicSetField(value) }
 
@@ -155,24 +157,24 @@ public actual class AtomicLong public actual constructor(
     public actual fun exchange(newValue: Long): Long = this::value.getAndSetField(newValue)
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndSet(expected: Long, newValue: Long): Boolean = this::value.compareAndSetField(expected, newValue)
+    public actual fun compareAndSet(expectedValue: Long, newValue: Long): Boolean = this::value.compareAndSetField(expectedValue, newValue)
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndExchange(expected: Long, newValue: Long): Long = this::value.compareAndExchangeField(expected, newValue)
+    public actual fun compareAndExchange(expectedValue: Long, newValue: Long): Long = this::value.compareAndExchangeField(expectedValue, newValue)
 
     /**
      * Atomically adds the [given value][delta] to the current value and returns the old value.
@@ -235,7 +237,12 @@ public actual class AtomicLong public actual constructor(
 }
 
 /**
- * A [Boolean] value that may be updated atomically with guaranteed sequential consistent ordering.
+ * A [Boolean] value that may be updated atomically.
+ *
+ * Read operation [load] has the same memory effects as reading a [Volatile] property;
+ * Write operation [store] has the same memory effects as writing a [Volatile] property;
+ * Read-modify-write operations, like [exchange], [compareAndSet], [compareAndExchange],
+ * have the same memory effects as reading and writing a [Volatile] property.
  *
  * For additional details about atomicity guarantees for reads and writes see [kotlin.concurrent.Volatile].
  */
@@ -243,15 +250,11 @@ public actual class AtomicBoolean actual constructor(private var value: Boolean)
 
     /**
      * Atomically gets the value of the atomic.
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public actual fun load(): Boolean = this::value.atomicGetField()
 
     /**
      * Atomically sets the value of the atomic to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public actual fun store(newValue: Boolean) { this::value.atomicSetField(newValue) }
 
@@ -261,24 +264,24 @@ public actual class AtomicBoolean actual constructor(private var value: Boolean)
     public actual fun exchange(newValue: Boolean): Boolean = this::value.getAndSetField(newValue)
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndSet(expected: Boolean, newValue: Boolean): Boolean = this::value.compareAndSetField(expected, newValue)
+    public actual fun compareAndSet(expectedValue: Boolean, newValue: Boolean): Boolean = this::value.compareAndSetField(expectedValue, newValue)
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndExchange(expected: Boolean, newValue: Boolean): Boolean = this::value.compareAndExchangeField(expected, newValue)
+    public actual fun compareAndExchange(expectedValue: Boolean, newValue: Boolean): Boolean = this::value.compareAndExchangeField(expectedValue, newValue)
 
     /**
      * Returns the string representation of the underlying [Boolean] value.
@@ -289,7 +292,12 @@ public actual class AtomicBoolean actual constructor(private var value: Boolean)
 }
 
 /**
- * An object reference that may be updated atomically with guaranteed sequential consistent ordering.
+ * An object reference that may be updated atomically.
+ *
+ * Read operation [load] has the same memory effects as reading a [Volatile] property;
+ * Write operation [store] has the same memory effects as writing a [Volatile] property;
+ * Read-modify-write operations, like [exchange], [compareAndSet], [compareAndExchange],
+ * have the same memory effects as reading and writing a [Volatile] property.
  *
  * For additional details about atomicity guarantees for reads and writes see [kotlin.concurrent.Volatile].
  */
@@ -303,15 +311,11 @@ public actual class AtomicReference<T> actual constructor(
 
     /**
      * Atomically gets the value of the atomic.
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public actual fun load(): T = this::value.atomicGetField()
 
     /**
      * Atomically sets the value of the atomic to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public actual fun store(newValue: T) { this::value.atomicSetField(newValue) }
 
@@ -321,24 +325,24 @@ public actual class AtomicReference<T> actual constructor(
     public actual fun exchange(newValue: T): T = this::value.getAndSetField(newValue)
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by reference.
      */
-    public actual fun compareAndSet(expected: T, newValue: T): Boolean = this::value.compareAndSetField(expected, newValue)
+    public actual fun compareAndSet(expectedValue: T, newValue: T): Boolean = this::value.compareAndSetField(expectedValue, newValue)
 
     /**
-     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expected]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by reference.
      */
-    public actual fun compareAndExchange(expected: T, newValue: T): T = this::value.compareAndExchangeField(expected, newValue)
+    public actual fun compareAndExchange(expectedValue: T, newValue: T): T = this::value.compareAndExchangeField(expectedValue, newValue)
 
     /**
      * Atomically sets the value to the given [new value][newValue] and returns the old value.
