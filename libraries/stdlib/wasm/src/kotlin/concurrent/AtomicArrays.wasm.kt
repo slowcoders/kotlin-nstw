@@ -6,9 +6,10 @@
 package kotlin.concurrent
 
 /**
- * An array of ints which provides API of the common [AtomicIntArray].
+ * An array of ints in which elements may be updated atomically.
  *
- * Does not provide any atomicity guarantees since the WASM platform does not support multi-threading.
+ * Since the Wasm platform does not support multi-threading,
+ * the implementation is trivial and has no atomic synchronizations.
  */
 public actual class AtomicIntArray {
     private val array: IntArray
@@ -37,7 +38,7 @@ public actual class AtomicIntArray {
     /**
      * Gets the value of the element at the given [index].
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun loadAt(index: Int): Int {
         checkBounds(index)
@@ -47,7 +48,7 @@ public actual class AtomicIntArray {
     /**
      * Sets the value of the element at the given [index] to the [new value][newValue].
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun storeAt(index: Int, newValue: Int) {
         checkBounds(index)
@@ -58,7 +59,7 @@ public actual class AtomicIntArray {
      * Sets the value of the element at the given [index] to the [new value][newValue]
      * and returns the old value of the element.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun exchangeAt(index: Int, newValue: Int): Int {
         checkBounds(index)
@@ -74,7 +75,7 @@ public actual class AtomicIntArray {
      *
      * Comparison of values is done by value.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun compareAndSetAt(index: Int, expectedValue: Int, newValue: Int): Boolean {
         checkBounds(index)
@@ -89,7 +90,7 @@ public actual class AtomicIntArray {
      *
      * Comparison of values is done by value.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun compareAndExchangeAt(index: Int, expectedValue: Int, newValue: Int): Int {
         checkBounds(index)
@@ -103,7 +104,7 @@ public actual class AtomicIntArray {
     /**
      * Adds the given [delta] to the element at the given [index] and returns the old value of the element.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun fetchAndAddAt(index: Int, delta: Int): Int {
         checkBounds(index)
@@ -115,7 +116,7 @@ public actual class AtomicIntArray {
     /**
      * Adds the given [delta] to the element at the given [index] and returns the new value of the element.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun addAndFetchAt(index: Int, delta: Int): Int {
         checkBounds(index)
@@ -134,9 +135,10 @@ public actual class AtomicIntArray {
 }
 
 /**
- * An array of longs which provides API of the common [AtomicLongArray].
+ * An array of longs in which elements may be updated atomically.
  *
- * Does not provide any atomicity guarantees since the JS platform does not support multi-threading.
+ * Since the Wasm platform does not support multi-threading,
+ * the implementation is trivial and has no atomic synchronizations.
  */
 public actual class AtomicLongArray {
     private val array: LongArray
@@ -165,7 +167,7 @@ public actual class AtomicLongArray {
     /**
      * Gets the value of the element at the given [index].
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun loadAt(index: Int): Long {
         checkBounds(index)
@@ -175,7 +177,7 @@ public actual class AtomicLongArray {
     /**
      * Sets the value of the element at the given [index] to the [new value][newValue].
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun storeAt(index: Int, newValue: Long) {
         checkBounds(index)
@@ -186,7 +188,7 @@ public actual class AtomicLongArray {
      * Sets the value of the element at the given [index] to the [new value][newValue]
      * and returns the old value of the element.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun exchangeAt(index: Int, newValue: Long): Long {
         checkBounds(index)
@@ -202,7 +204,7 @@ public actual class AtomicLongArray {
      *
      * Comparison of values is done by value.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun compareAndSetAt(index: Int, expectedValue: Long, newValue: Long): Boolean {
         checkBounds(index)
@@ -217,7 +219,7 @@ public actual class AtomicLongArray {
      *
      * Comparison of values is done by value.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun compareAndExchangeAt(index: Int, expectedValue: Long, newValue: Long): Long {
         checkBounds(index)
@@ -231,7 +233,7 @@ public actual class AtomicLongArray {
     /**
      * Adds the given [delta] to the element at the given [index] and returns the old value of the element.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun fetchAndAddAt(index: Int, delta: Long): Long {
         checkBounds(index)
@@ -243,7 +245,7 @@ public actual class AtomicLongArray {
     /**
      * Adds the given [delta] to the element at the given [index] and returns the new value of the element.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun addAndFetchAt(index: Int, delta: Long): Long {
         checkBounds(index)
@@ -262,9 +264,10 @@ public actual class AtomicLongArray {
 }
 
 /**
- * An array of longs which provides API of the common [AtomicArray].
+ * A generic array of objects in which elements may be updated atomically.
  *
- * Does not provide any atomicity guarantees since the JS platform does not support multi-threading.
+ * Since the Wasm platform does not support multi-threading,
+ * the implementation is trivial and has no atomic synchronizations.
  */
 public actual class AtomicArray<T> {
     private val array: Array<T>
@@ -284,7 +287,7 @@ public actual class AtomicArray<T> {
     /**
      * Gets the value of the element at the given [index].
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun loadAt(index: Int): T {
         checkBounds(index)
@@ -294,7 +297,7 @@ public actual class AtomicArray<T> {
     /**
      * Sets the value of the element at the given [index] to the [new value][newValue].
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun storeAt(index: Int, newValue: T) {
         checkBounds(index)
@@ -305,7 +308,7 @@ public actual class AtomicArray<T> {
      * Sets the value of the element at the given [index] to the [new value][newValue]
      * and returns the old value of the element.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun exchangeAt(index: Int, newValue: T): T {
         checkBounds(index)
@@ -321,7 +324,7 @@ public actual class AtomicArray<T> {
      *
      * Comparison of values is done by value.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun compareAndSetAt(index: Int, expectedValue: T, newValue: T): Boolean {
         checkBounds(index)
@@ -336,7 +339,7 @@ public actual class AtomicArray<T> {
      *
      * Comparison of values is done by value.
      *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     * @throws IndexOutOfBoundsException if the [index] is out of bounds of this array.
      */
     public actual fun compareAndExchangeAt(index: Int, expectedValue: T, newValue: T): T {
         checkBounds(index)

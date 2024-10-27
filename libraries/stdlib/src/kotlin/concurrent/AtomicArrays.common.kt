@@ -8,7 +8,7 @@ package kotlin.concurrent
 import kotlin.internal.ActualizeByJvmBuiltinProvider
 
 /**
- * An array of ints in which elements may be updated atomically with guaranteed sequential consistent ordering.
+ * An array of ints in which elements may be updated atomically.
  *
  * Platform-specific implementation details:
  *
@@ -18,7 +18,7 @@ import kotlin.internal.ActualizeByJvmBuiltinProvider
  * When targeting the JVM, instances of [AtomicIntArray] are represented by [java.util.concurrent.atomic.AtomicIntegerArray].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  *
- * For JS and WASM [AtomicIntArray] is implemented trivially and is not thread-safe since these platforms do not support multi-threading.
+ * For JS and Wasm [AtomicIntArray] is implemented trivially and is not thread-safe since these platforms do not support multi-threading.
  */
 @ActualizeByJvmBuiltinProvider
 public expect class AtomicIntArray {
@@ -41,16 +41,12 @@ public expect class AtomicIntArray {
     /**
      * Atomically gets the value of the element at the given [index].
      *
-     * Provides sequential consistent ordering guarantees.
-     *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
     public fun loadAt(index: Int): Int
 
     /**
      * Atomically sets the value of the element at the given [index] to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
@@ -59,8 +55,6 @@ public expect class AtomicIntArray {
     /**
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * and returns the old value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
      *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
@@ -71,7 +65,7 @@ public expect class AtomicIntArray {
      * if the current value equals the [expected value][expectedValue].
      * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      *
@@ -83,7 +77,7 @@ public expect class AtomicIntArray {
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
      *
-     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      *
@@ -94,16 +88,12 @@ public expect class AtomicIntArray {
     /**
      * Atomically adds the given [delta] to the element at the given [index] and returns the old value of the element.
      *
-     * Provides sequential consistent ordering guarantees.
-     *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
     public fun fetchAndAddAt(index: Int, delta: Int): Int
 
     /**
      * Atomically adds the given [delta] to the element at the given [index] and returns the new value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
      *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
@@ -167,7 +157,7 @@ public fun AtomicIntArray.decrementAndFetchAt(index: Int): Int = this.addAndFetc
 public fun AtomicIntArray.fetchAndDecrementAt(index: Int): Int = this.fetchAndAddAt(index, -1)
 
 /**
- * An array of longs in which elements may be updated atomically with guaranteed sequential consistent ordering.
+ * An array of longs in which elements may be updated atomically.
  *
  * Platform-specific implementation details:
  *
@@ -177,7 +167,7 @@ public fun AtomicIntArray.fetchAndDecrementAt(index: Int): Int = this.fetchAndAd
  * When targeting the JVM, instances of [AtomicLongArray] are represented by [java.util.concurrent.atomic.AtomicLongArray].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  *
- * For JS and WASM [AtomicLongArray] is implemented trivially and is not thread-safe since these platforms do not support multi-threading.
+ * For JS and Wasm [AtomicLongArray] is implemented trivially and is not thread-safe since these platforms do not support multi-threading.
  */
 @ActualizeByJvmBuiltinProvider
 public expect class AtomicLongArray {
@@ -200,16 +190,12 @@ public expect class AtomicLongArray {
     /**
      * Atomically gets the value of the element at the given [index].
      *
-     * Provides sequential consistent ordering guarantees.
-     *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
     public fun loadAt(index: Int): Long
 
     /**
      * Atomically sets the value of the element at the given [index] to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
@@ -218,8 +204,6 @@ public expect class AtomicLongArray {
     /**
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * and returns the old value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
      *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
@@ -230,7 +214,7 @@ public expect class AtomicLongArray {
      * if the current value equals the [expected value][expectedValue].
      * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      *
@@ -242,7 +226,7 @@ public expect class AtomicLongArray {
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
      *
-     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      *
@@ -253,16 +237,12 @@ public expect class AtomicLongArray {
     /**
      * Atomically adds the given [delta] to the element at the given [index] and returns the old value of the element.
      *
-     * Provides sequential consistent ordering guarantees.
-     *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
     public fun fetchAndAddAt(index: Int, delta: Long): Long
 
     /**
      * Atomically adds the given [delta] to the element at the given [index] and returns the new value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
      *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
@@ -294,7 +274,39 @@ public inline fun AtomicLongArray(size: Int, init: (Int) -> Long): AtomicLongArr
 }
 
 /**
- * A generic array of objects in which elements may be updated atomically with guaranteed sequential consistent ordering.
+ * Atomically increments the element at the given [index] by one and returns the old value of the element.
+ *
+ * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+ */
+@ExperimentalStdlibApi
+public fun AtomicLongArray.fetchAndIncrementAt(index: Int): Long = this.fetchAndAddAt(index, 1)
+
+/**
+ * Atomically increments the element at the given [index] by one and returns the new value of the element.
+ *
+ * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+ */
+@ExperimentalStdlibApi
+public fun AtomicLongArray.incrementAndFetchAt(index: Int): Long = this.addAndFetchAt(index, 1)
+
+/**
+ * Atomically decrements the element at the given [index] by one and returns the new value of the element.
+ *
+ * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+ */
+@ExperimentalStdlibApi
+public fun AtomicLongArray.decrementAndFetchAt(index: Int): Long = this.addAndFetchAt(index, -1)
+
+/**
+ * Atomically decrements the element at the given [index] by one and returns the old value of the element.
+ *
+ * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+ */
+@ExperimentalStdlibApi
+public fun AtomicLongArray.fetchAndDecrementAt(index: Int): Long = this.fetchAndAddAt(index, -1)
+
+/**
+ * A generic array of objects in which elements may be updated atomically.
  *
  * Platform-specific implementation details:
  *
@@ -304,7 +316,7 @@ public inline fun AtomicLongArray(size: Int, init: (Int) -> Long): AtomicLongArr
  * When targeting the JVM, instances of [AtomicArray] are represented by [java.util.concurrent.atomic.AtomicReferenceArray].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  *
- * For JS and WASM [AtomicArray] is implemented trivially and is not thread-safe since these platforms do not support multi-threading.
+ * For JS and Wasm [AtomicArray] is implemented trivially and is not thread-safe since these platforms do not support multi-threading.
  */
 @ActualizeByJvmBuiltinProvider
 public expect class AtomicArray<T> {
@@ -322,16 +334,12 @@ public expect class AtomicArray<T> {
     /**
      * Atomically gets the value of the element at the given [index].
      *
-     * Provides sequential consistent ordering guarantees.
-     *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
     public fun loadAt(index: Int): T
 
     /**
      * Atomically sets the value of the element at the given [index] to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
@@ -340,8 +348,6 @@ public expect class AtomicArray<T> {
     /**
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * and returns the old value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
      *
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
@@ -352,7 +358,7 @@ public expect class AtomicArray<T> {
      * if the current value equals the [expected value][expectedValue].
      * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by reference.
      *
@@ -364,7 +370,7 @@ public expect class AtomicArray<T> {
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
      *
-     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by reference.
      *

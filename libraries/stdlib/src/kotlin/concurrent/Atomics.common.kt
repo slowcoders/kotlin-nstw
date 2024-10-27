@@ -8,7 +8,7 @@ package kotlin.concurrent
 import kotlin.internal.ActualizeByJvmBuiltinProvider
 
 /**
- * An [Int] value that may be updated atomically with guaranteed sequential consistent ordering.
+ * An [Int] value that may be updated atomically.
  *
  * Platform-specific implementation details:
  *
@@ -25,15 +25,11 @@ import kotlin.internal.ActualizeByJvmBuiltinProvider
 public expect class AtomicInt public constructor(value: Int) {
     /**
      * Atomically gets the value of the atomic.
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public fun load(): Int
 
     /**
      * Atomically sets the value of the atomic to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public fun store(newValue: Int)
 
@@ -46,7 +42,7 @@ public expect class AtomicInt public constructor(value: Int) {
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
@@ -56,7 +52,7 @@ public expect class AtomicInt public constructor(value: Int) {
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
@@ -117,7 +113,7 @@ public fun AtomicInt.decrementAndFetch(): Int = this.addAndFetch(-1)
 public fun AtomicInt.fetchAndDecrement(): Int = this.fetchAndAdd(-1)
 
 /**
- * A [Long] value that may be updated atomically with guaranteed sequential consistent ordering.
+ * A [Long] value that may be updated atomically.
  *
  * Platform-specific implementation details:
  *
@@ -134,15 +130,11 @@ public fun AtomicInt.fetchAndDecrement(): Int = this.fetchAndAdd(-1)
 public expect class AtomicLong public constructor(value: Long) {
     /**
      * Atomically gets the value of the atomic.
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public fun load(): Long
 
     /**
      * Atomically sets the value of the atomic to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public fun store(newValue: Long)
 
@@ -155,7 +147,7 @@ public expect class AtomicLong public constructor(value: Long) {
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
@@ -165,7 +157,7 @@ public expect class AtomicLong public constructor(value: Long) {
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
@@ -226,7 +218,7 @@ public fun AtomicLong.decrementAndFetch(): Long = this.addAndFetch(-1)
 public fun AtomicLong.fetchAndDecrement(): Long = this.fetchAndAdd(-1)
 
 /**
- * A [Boolean] value that may be updated atomically with guaranteed sequential consistent ordering.
+ * A [Boolean] value that may be updated atomically.
  *
  * Platform-specific implementation details:
  *
@@ -243,15 +235,11 @@ public fun AtomicLong.fetchAndDecrement(): Long = this.fetchAndAdd(-1)
 public expect class AtomicBoolean public constructor(value: Boolean) {
     /**
      * Atomically gets the value of the atomic.
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public fun load(): Boolean
 
     /**
      * Atomically sets the value of the atomic to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public fun store(newValue: Boolean)
 
@@ -264,7 +252,7 @@ public expect class AtomicBoolean public constructor(value: Boolean) {
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
@@ -274,7 +262,7 @@ public expect class AtomicBoolean public constructor(value: Boolean) {
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by value.
      */
@@ -287,7 +275,7 @@ public expect class AtomicBoolean public constructor(value: Boolean) {
 }
 
 /**
- * An object reference that may be updated atomically with guaranteed sequential consistent ordering.
+ * An object reference that may be updated atomically.
  *
  * Platform-specific implementation details:
  *
@@ -304,15 +292,11 @@ public expect class AtomicBoolean public constructor(value: Boolean) {
 public expect class AtomicReference<T> public constructor(value: T) {
     /**
      * Atomically gets the value of the atomic.
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public fun load(): T
 
     /**
      * Atomically sets the value of the atomic to the [new value][newValue].
-     *
-     * Provides sequential consistent ordering guarantees.
      */
     public fun store(newValue: T)
 
@@ -325,7 +309,7 @@ public expect class AtomicReference<T> public constructor(value: T) {
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by reference.
      */
@@ -335,7 +319,7 @@ public expect class AtomicReference<T> public constructor(value: T) {
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Provides sequential consistent ordering guarantees and cannot fail spuriously.
+     * Never fails spuriously.
      *
      * Comparison of values is done by reference.
      */

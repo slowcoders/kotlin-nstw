@@ -6,9 +6,10 @@
 package kotlin.concurrent
 
 /**
- * An [Int] value which provides API of the common [AtomicInt].
+ * An [Int] value that may be updated atomically.
  *
- * Does not provide any atomicity guarantees since the JS platform does not support multi-threading.
+ * Since the JS platform does not support multi-threading,
+ * the implementation is trivial and has no atomic synchronizations.
  */
 public actual class AtomicInt public actual constructor(private var value: Int) {
 
@@ -81,9 +82,10 @@ public actual class AtomicInt public actual constructor(private var value: Int) 
 }
 
 /**
- * An [Long] value which provides API of the common [AtomicLong].
+ * A [Long] value that may be updated atomically.
  *
- * Does not provide any atomicity guarantees since the JS platform does not support multi-threading.
+ * Since the JS platform does not support multi-threading,
+ * the implementation is trivial and has no atomic synchronizations.
  */
 public actual class AtomicLong public actual constructor(private var value: Long) {
     /**
@@ -155,9 +157,10 @@ public actual class AtomicLong public actual constructor(private var value: Long
 }
 
 /**
- * An [Boolean] value which provides API of the common [AtomicBoolean].
+ * A [Boolean] value that may be updated atomically.
  *
- * Does not provide any atomicity guarantees since the JS platform does not support multi-threading.
+ * Since the JS platform does not support multi-threading,
+ * the implementation is trivial and has no atomic synchronizations.
  */
 public actual class AtomicBoolean public actual constructor(private var value: Boolean) {
 
@@ -213,9 +216,10 @@ public actual class AtomicBoolean public actual constructor(private var value: B
 }
 
 /**
- * An object reference which provides API of the common [AtomicReference].
+ * An object reference that may be updated atomically.
  *
- * Does not provide any atomicity guarantees since the JS platform does not support multi-threading.
+ * Since the JS platform does not support multi-threading,
+ * the implementation is trivial and has no atomic synchronizations.
  */
 public actual class AtomicReference<T> public actual constructor(private var value: T) {
     /**
