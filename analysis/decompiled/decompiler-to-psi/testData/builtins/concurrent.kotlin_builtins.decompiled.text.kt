@@ -38,7 +38,7 @@ package kotlin.concurrent
 @kotlin.SinceKotlin public final class AtomicInt public constructor(value: kotlin.Int) {
     public final fun load(): kotlin.Int { /* compiled code */ }
 
-    public final fun store(value: kotlin.Int): kotlin.Unit { /* compiled code */ }
+    public final fun store(newValue: kotlin.Int): kotlin.Unit { /* compiled code */ }
 
     public final fun exchange(newValue: kotlin.Int): kotlin.Int { /* compiled code */ }
 
@@ -81,7 +81,7 @@ package kotlin.concurrent
 @kotlin.SinceKotlin public final class AtomicLong public constructor(value: kotlin.Long) {
     public final fun load(): kotlin.Long { /* compiled code */ }
 
-    public final fun store(value: kotlin.Long): kotlin.Unit { /* compiled code */ }
+    public final fun store(newValue: kotlin.Long): kotlin.Unit { /* compiled code */ }
 
     public final fun exchange(newValue: kotlin.Long): kotlin.Long { /* compiled code */ }
 
