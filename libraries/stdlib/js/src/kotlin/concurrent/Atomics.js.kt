@@ -14,17 +14,17 @@ package kotlin.concurrent
 public actual class AtomicInt public actual constructor(private var value: Int) {
 
     /**
-     * Gets the value of the atomic.
+     * Atomically gets the value of the atomic.
      */
     public actual fun load(): Int = value
 
     /**
-     * Sets the value of the atomic to the [new value][newValue].
+     * Atomically sets the value of the atomic to the [new value][newValue].
      */
     public actual fun store(newValue: Int) { value = newValue }
 
     /**
-     * Sets the value to the given [new value][newValue] and returns the old value.
+     * Atomically sets the value to the given [new value][newValue] and returns the old value.
      */
     public actual fun exchange(newValue: Int): Int {
         val oldValue = value
@@ -33,7 +33,7 @@ public actual class AtomicInt public actual constructor(private var value: Int) 
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
      * Comparison of values is done by value.
@@ -45,7 +45,7 @@ public actual class AtomicInt public actual constructor(private var value: Int) 
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
@@ -59,7 +59,7 @@ public actual class AtomicInt public actual constructor(private var value: Int) 
     }
 
     /**
-     * Adds the [given value][delta] to the current value and returns the old value.
+     * Atomically adds the [given value][delta] to the current value and returns the old value.
      */
     public actual fun fetchAndAdd(delta: Int): Int {
         val oldValue = value
@@ -68,7 +68,7 @@ public actual class AtomicInt public actual constructor(private var value: Int) 
     }
 
     /**
-     * Adds the [given value][delta] to the current value and returns the new value.
+     * Atomically adds the [given value][delta] to the current value and returns the new value.
      */
     public actual fun addAndFetch(delta: Int): Int {
         value += delta
@@ -89,17 +89,17 @@ public actual class AtomicInt public actual constructor(private var value: Int) 
  */
 public actual class AtomicLong public actual constructor(private var value: Long) {
     /**
-     * Gets the value of the atomic.
+     * Atomically gets the value of the atomic.
      */
     public actual fun load(): Long = value
 
     /**
-     * Sets the value of the atomic to the [new value][newValue].
+     * Atomically sets the value of the atomic to the [new value][newValue].
      */
     public actual fun store(newValue: Long) { value = newValue }
 
     /**
-     * Sets the value to the given [new value][newValue] and returns the old value.
+     * Atomically sets the value to the given [new value][newValue] and returns the old value.
      */
     public actual fun exchange(newValue: Long): Long {
         val oldValue = value
@@ -108,7 +108,7 @@ public actual class AtomicLong public actual constructor(private var value: Long
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
      * Comparison of values is done by value.
@@ -120,7 +120,7 @@ public actual class AtomicLong public actual constructor(private var value: Long
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
@@ -134,7 +134,7 @@ public actual class AtomicLong public actual constructor(private var value: Long
     }
 
     /**
-     * Adds the [given value][delta] to the current value and returns the old value.
+     * Atomically adds the [given value][delta] to the current value and returns the old value.
      */
     public actual fun fetchAndAdd(delta: Long): Long {
         val oldValue = value
@@ -143,7 +143,7 @@ public actual class AtomicLong public actual constructor(private var value: Long
     }
 
     /**
-     * Adds the [given value][delta] to the current value and returns the new value.
+     * Atomically adds the [given value][delta] to the current value and returns the new value.
      */
     public actual fun addAndFetch(delta: Long): Long {
         value += delta
@@ -165,17 +165,17 @@ public actual class AtomicLong public actual constructor(private var value: Long
 public actual class AtomicBoolean public actual constructor(private var value: Boolean) {
 
     /**
-     * Gets the value of the atomic.
+     * Atomically gets the value of the atomic.
      */
     public actual fun load(): Boolean = value
 
     /**
-     * Sets the value of the atomic to the [new value][newValue].
+     * Atomically sets the value of the atomic to the [new value][newValue].
      */
     public actual fun store(newValue: Boolean) { value = newValue }
 
     /**
-     * Sets the value to the given [new value][newValue] and returns the old value.
+     * Atomically sets the value to the given [new value][newValue] and returns the old value.
      */
     public actual fun exchange(newValue: Boolean): Boolean {
         val oldValue = value
@@ -184,7 +184,7 @@ public actual class AtomicBoolean public actual constructor(private var value: B
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
      * Comparison of values is done by value.
@@ -196,7 +196,7 @@ public actual class AtomicBoolean public actual constructor(private var value: B
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
@@ -223,17 +223,17 @@ public actual class AtomicBoolean public actual constructor(private var value: B
  */
 public actual class AtomicReference<T> public actual constructor(private var value: T) {
     /**
-     * Gets the value of the atomic.
+     * Atomically gets the value of the atomic.
      */
     public actual fun load(): T = value
 
     /**
-     * Sets the value of the atomic to the [new value][newValue].
+     * Atomically sets the value of the atomic to the [new value][newValue].
      */
     public actual fun store(newValue: T) { value = newValue }
 
     /**
-     * Sets the value to the given [new value][newValue] and returns the old value.
+     * Atomically sets the value to the given [new value][newValue] and returns the old value.
      */
     public actual fun exchange(newValue: T): T {
         val oldValue = value
@@ -242,7 +242,7 @@ public actual class AtomicReference<T> public actual constructor(private var val
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
      * Comparison of values is done by value.
@@ -254,7 +254,7 @@ public actual class AtomicReference<T> public actual constructor(private var val
     }
 
     /**
-     * Sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
+     * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
      * Comparison of values is done by value.
