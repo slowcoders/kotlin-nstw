@@ -33,7 +33,7 @@ abstract class BuiltinsVirtualFileProviderBaseImpl : BuiltinsVirtualFileProvider
         val classLoader = this::class.java.classLoader
         StandardClassIds.builtInsPackages.mapNotNullTo(mutableSetOf()) { builtInPackageFqName ->
             val resourcePath = BuiltInSerializerProtocol.getBuiltInsFilePath(builtInPackageFqName)
-            classLoader.getResource(resourcePath) ?: BuiltInSerializerProtocol.errorIfNotConcurrentPackageOrNull(resourcePath)
+            classLoader.getResource(resourcePath)
         }
     }
 

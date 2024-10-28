@@ -37,15 +37,6 @@ object BuiltInSerializerProtocol : SerializerExtensionProtocol(
             fqName
         )
 
-    // Do not throw an exception in case concurrent.kotlin_builtins file is not found,
-    // since it is only present in kotlin-stdlib starting from 2.1.20.
-    fun errorIfNotConcurrentPackageOrNull(builtInFileName: String) =
-        if (builtInFileName == "kotlin/concurrent/concurrent.kotlin_builtins") {
-            null
-        } else {
-            error("Resource for builtin $builtInFileName not found")
-        }
-
     fun getBuiltInsFileName(fqName: FqName): String =
         shortName(fqName) + DOT_DEFAULT_EXTENSION
 
