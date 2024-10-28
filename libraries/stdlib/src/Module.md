@@ -32,11 +32,7 @@ Helper functions for creating [Comparator][kotlin.Comparator] instances.
 
 # Package kotlin.concurrent
 
-* Common atomic types: [AtomicInt][kotlin.concurrent.AtomicInt], [AtomicLong][kotlin.concurrent.AtomicLong], 
-[AtomicBoolean][kotlin.concurrent.AtomicBoolean], [AtomicReference][kotlin.concurrent.AtomicReference].
-* Common atomic array types: [AtomicIntArray][kotlin.concurrent.AtomicIntArray], [AtomicLongArray][kotlin.concurrent.AtomicLongArray], [AtomicArray][kotlin.concurrent.AtomicArray].
-* [Volatile][kotlin.concurrent.Volatile] annotation.
-* Utility functions for concurrent programming.
+Low-level building blocks and utility functions for concurrent programming.
 
 # Package kotlin.contracts
 

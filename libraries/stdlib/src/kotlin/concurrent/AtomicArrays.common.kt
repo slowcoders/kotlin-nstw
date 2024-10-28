@@ -66,7 +66,8 @@ public expect class AtomicIntArray {
      * if the current value equals the [expected value][expectedValue].
      * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      *
@@ -78,7 +79,8 @@ public expect class AtomicIntArray {
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      *
@@ -216,7 +218,8 @@ public expect class AtomicLongArray {
      * if the current value equals the [expected value][expectedValue].
      * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      *
@@ -228,7 +231,8 @@ public expect class AtomicLongArray {
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      *
@@ -361,7 +365,8 @@ public expect class AtomicArray<T> {
      * if the current value equals the [expected value][expectedValue].
      * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by reference.
      *
@@ -373,7 +378,8 @@ public expect class AtomicArray<T> {
      * Atomically sets the value of the element at the given [index] to the [new value][newValue]
      * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by reference.
      *

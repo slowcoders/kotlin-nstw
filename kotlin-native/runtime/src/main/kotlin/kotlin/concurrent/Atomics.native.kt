@@ -48,7 +48,8 @@ public actual class AtomicInt public actual constructor(
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      */
@@ -58,7 +59,8 @@ public actual class AtomicInt public actual constructor(
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      */
@@ -160,7 +162,8 @@ public actual class AtomicLong public actual constructor(
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      */
@@ -170,7 +173,8 @@ public actual class AtomicLong public actual constructor(
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      */
@@ -267,7 +271,8 @@ public actual class AtomicBoolean actual constructor(private var value: Boolean)
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      */
@@ -277,7 +282,8 @@ public actual class AtomicBoolean actual constructor(private var value: Boolean)
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by value.
      */
@@ -328,7 +334,8 @@ public actual class AtomicReference<T> actual constructor(
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue],
      * returns true if the operation was successful and false only if the current value was not equal to the expected value.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by reference.
      */
@@ -338,7 +345,8 @@ public actual class AtomicReference<T> actual constructor(
      * Atomically sets the value to the given [new value][newValue] if the current value equals the [expected value][expectedValue]
      * and returns the old value in any case.
      *
-     * Never fails spuriously.
+     * This operation has so-called strong semantics,
+     * meaning that it returns false if and only if current and expected values are not equal.
      *
      * Comparison of values is done by reference.
      */
