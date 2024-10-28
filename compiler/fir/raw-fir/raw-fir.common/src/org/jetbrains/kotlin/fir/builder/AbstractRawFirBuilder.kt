@@ -1214,9 +1214,8 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
         valueParameterDeclaration: ValueParameterDeclaration,
         rawName: () -> String?,
     ): Name {
-        return if (valueParameterDeclaration == ValueParameterDeclaration.LAMBDA && rawName() == "_"
-            ||
-            valueParameterDeclaration == ValueParameterDeclaration.CATCH &&
+        return if (valueParameterDeclaration == ValueParameterDeclaration.LAMBDA && rawName() == "_" ||
+            (valueParameterDeclaration == ValueParameterDeclaration.CATCH || valueParameterDeclaration == ValueParameterDeclaration.CONTEXT_PARAMETER) &&
             safeName.asString() == "_"
         ) {
             SpecialNames.UNDERSCORE_FOR_UNUSED_VAR
@@ -1248,6 +1247,7 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
         SETTER(shouldExplicitParameterTypeBePresent = false),
         LAMBDA(shouldExplicitParameterTypeBePresent = false),
         FOR_LOOP(shouldExplicitParameterTypeBePresent = false),
+        CONTEXT_PARAMETER(shouldExplicitParameterTypeBePresent = true),
     }
 }
 
