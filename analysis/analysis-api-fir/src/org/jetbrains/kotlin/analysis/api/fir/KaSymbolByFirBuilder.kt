@@ -306,18 +306,21 @@ internal class KaSymbolByFirBuilder(
         }
 
         fun buildValueParameterSymbol(firSymbol: FirValueParameterSymbol): KaValueParameterSymbol {
-            val functionSymbol = firSymbol.containingFunctionSymbol
-            functionSymbol.fir.unwrapSubstitutionOverrideIfNeeded()?.let { unwrappedFunction ->
-                val originalIndex = functionSymbol.valueParameterSymbols.indexOf(firSymbol)
-                if (originalIndex == -1) {
-                    errorWithAttachment("Containing function doesn't have the corresponding parameter") {
-                        withFirSymbolEntry("valueParameter", firSymbol)
-                        withFirSymbolEntry("function", functionSymbol)
-                    }
-                }
+            val functionSymbol = firSymbol.containingDeclarationSymbol
 
-                val unwrappedParameter = unwrappedFunction.symbol.valueParameterSymbols[originalIndex]
-                return buildValueParameterSymbol(unwrappedParameter)
+            if (functionSymbol is FirFunctionSymbol) {
+                functionSymbol.fir.unwrapSubstitutionOverrideIfNeeded()?.let { unwrappedFunction ->
+                    val originalIndex = functionSymbol.valueParameterSymbols.indexOf(firSymbol)
+                    if (originalIndex == -1) {
+                        errorWithAttachment("Containing function doesn't have the corresponding parameter") {
+                            withFirSymbolEntry("valueParameter", firSymbol)
+                            withFirSymbolEntry("function", functionSymbol)
+                        }
+                    }
+
+                    val unwrappedParameter = unwrappedFunction.symbol.valueParameterSymbols[originalIndex]
+                    return buildValueParameterSymbol(unwrappedParameter)
+                }
             }
 
             return if (functionSymbol is FirPropertyAccessorSymbol && functionSymbol.fir is FirDefaultPropertyAccessor) {

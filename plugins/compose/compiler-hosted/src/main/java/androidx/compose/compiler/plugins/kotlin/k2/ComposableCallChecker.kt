@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.fir.references.toResolvedCallableSymbol
 import org.jetbrains.kotlin.fir.references.toResolvedValueParameterSymbol
 import org.jetbrains.kotlin.fir.resolve.isInvoke
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
 import org.jetbrains.kotlin.psi.KtFunction
@@ -102,7 +103,7 @@ private fun checkComposableCall(
                     expression.calleeReference.source,
                     ComposeErrors.CAPTURED_COMPOSABLE_INVOCATION,
                     parameter.symbol,
-                    parameter.containingFunctionSymbol,
+                    parameter.containingDeclarationSymbol as FirCallableSymbol,
                     context
                 )
             }
@@ -247,7 +248,7 @@ private fun checkInvoke(
         ?.toResolvedValueParameterSymbol()
         ?: return
     if (param.resolvedReturnTypeRef.hasDisallowComposableCallsAnnotation(context.session) ||
-        !param.containingFunctionSymbol.isInline
+        !param.containingDeclarationSymbol.let { it is FirCallableSymbol && it.isInline }
     ) {
         return
     }
@@ -260,7 +261,7 @@ private fun checkInvoke(
                     ComposeErrors.MISSING_DISALLOW_COMPOSABLE_CALLS_ANNOTATION,
                     param,
                     parameter.symbol,
-                    parameter.containingFunctionSymbol,
+                    parameter.containingDeclarationSymbol as FirCallableSymbol,
                     context
                 )
             }

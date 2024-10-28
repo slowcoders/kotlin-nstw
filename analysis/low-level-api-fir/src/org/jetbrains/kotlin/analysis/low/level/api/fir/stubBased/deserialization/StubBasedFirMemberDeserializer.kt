@@ -587,7 +587,7 @@ internal class StubBasedFirMemberDeserializer(
             buildValueParameter {
                 source = KtRealPsiSourceElement(ktParameter)
                 moduleData = c.moduleData
-                this.containingFunctionSymbol = functionSymbol
+                this.containingDeclarationSymbol = functionSymbol
                 origin = initialOrigin
                 returnTypeRef =
                     ktParameter.typeReference?.toTypeRef(c)

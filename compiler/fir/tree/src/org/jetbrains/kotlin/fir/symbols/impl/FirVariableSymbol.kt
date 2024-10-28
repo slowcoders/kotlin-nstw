@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.fir.diagnostics.ConeDiagnostic
 import org.jetbrains.kotlin.fir.expressions.FirAnonymousObjectExpression
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.references.FirControlFlowGraphReference
+import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.mpp.EnumEntrySymbolMarker
 import org.jetbrains.kotlin.mpp.PropertySymbolMarker
@@ -137,8 +138,8 @@ class FirValueParameterSymbol(name: Name) : FirVariableSymbol<FirValueParameter>
     val isVararg: Boolean
         get() = fir.isVararg
 
-    val containingFunctionSymbol: FirFunctionSymbol<*>
-        get() = fir.containingFunctionSymbol
+    val containingDeclarationSymbol: FirBasedSymbol<*>
+        get() = fir.containingDeclarationSymbol
 }
 
 class FirErrorPropertySymbol(

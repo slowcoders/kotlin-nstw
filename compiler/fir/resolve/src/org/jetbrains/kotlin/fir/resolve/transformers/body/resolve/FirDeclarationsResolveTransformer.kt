@@ -1045,7 +1045,7 @@ open class FirDeclarationsResolveTransformer(
     ): FirValueParameter = whileAnalysing(session, valueParameter) {
         dataFlowAnalyzer.enterValueParameter(valueParameter)
         val insideAnnotationConstructorDeclaration =
-            (valueParameter.containingFunctionSymbol as? FirConstructorSymbol)?.resolvedReturnType?.toClassSymbol(session)?.classKind == ClassKind.ANNOTATION_CLASS
+            (valueParameter.containingDeclarationSymbol as? FirConstructorSymbol)?.resolvedReturnType?.toClassSymbol(session)?.classKind == ClassKind.ANNOTATION_CLASS
         val result = context.withValueParameter(valueParameter, session) {
             transformDeclarationContent(
                 valueParameter,
@@ -1233,7 +1233,7 @@ open class FirDeclarationsResolveTransformer(
                 val itParam = buildValueParameter {
                     resolvePhase = FirResolvePhase.BODY_RESOLVE
                     source = lambda.source?.fakeElement(KtFakeSourceElementKind.ItLambdaParameter)
-                    containingFunctionSymbol = resolvedLambdaAtom.anonymousFunction.symbol
+                    containingDeclarationSymbol = resolvedLambdaAtom.anonymousFunction.symbol
                     moduleData = session.moduleData
                     origin = FirDeclarationOrigin.Source
                     returnTypeRef = singleParameterType.toFirResolvedTypeRef()
