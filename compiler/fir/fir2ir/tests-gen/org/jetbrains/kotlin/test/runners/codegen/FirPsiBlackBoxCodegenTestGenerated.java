@@ -8538,6 +8538,12 @@ public class FirPsiBlackBoxCodegenTestGenerated extends AbstractFirPsiBlackBoxCo
     }
 
     @Test
+    @TestMetadata("inheritranceFromJavaUtilProperties.kt")
+    public void testInheritranceFromJavaUtilProperties() {
+      runTest("compiler/testData/codegen/box/collections/inheritranceFromJavaUtilProperties.kt");
+    }
+
+    @Test
     @TestMetadata("internalRemove.kt")
     public void testInternalRemove() {
       runTest("compiler/testData/codegen/box/collections/internalRemove.kt");
@@ -8661,6 +8667,18 @@ public class FirPsiBlackBoxCodegenTestGenerated extends AbstractFirPsiBlackBoxCo
     @TestMetadata("noStubsInJavaSuperClass.kt")
     public void testNoStubsInJavaSuperClass() {
       runTest("compiler/testData/codegen/box/collections/noStubsInJavaSuperClass.kt");
+    }
+
+    @Test
+    @TestMetadata("notErasedMapGetMap_declared.kt")
+    public void testNotErasedMapGetMap_declared() {
+      runTest("compiler/testData/codegen/box/collections/notErasedMapGetMap_declared.kt");
+    }
+
+    @Test
+    @TestMetadata("notErasedMapGetMap_inherited.kt")
+    public void testNotErasedMapGetMap_inherited() {
+      runTest("compiler/testData/codegen/box/collections/notErasedMapGetMap_inherited.kt");
     }
 
     @Test

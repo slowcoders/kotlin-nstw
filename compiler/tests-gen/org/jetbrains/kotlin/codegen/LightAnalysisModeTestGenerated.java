@@ -7408,6 +7408,11 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
       runTest("compiler/testData/codegen/box/collections/inheritFromHashtable.kt");
     }
 
+    @TestMetadata("inheritranceFromJavaUtilProperties.kt")
+    public void testInheritranceFromJavaUtilProperties() {
+      runTest("compiler/testData/codegen/box/collections/inheritranceFromJavaUtilProperties.kt");
+    }
+
     @TestMetadata("internalRemove.kt")
     public void testInternalRemove() {
       runTest("compiler/testData/codegen/box/collections/internalRemove.kt");
@@ -7511,6 +7516,16 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
     @TestMetadata("noStubsInJavaSuperClass.kt")
     public void testNoStubsInJavaSuperClass() {
       runTest("compiler/testData/codegen/box/collections/noStubsInJavaSuperClass.kt");
+    }
+
+    @TestMetadata("notErasedMapGetMap_declared.kt")
+    public void testNotErasedMapGetMap_declared() {
+      runTest("compiler/testData/codegen/box/collections/notErasedMapGetMap_declared.kt");
+    }
+
+    @TestMetadata("notErasedMapGetMap_inherited.kt")
+    public void testNotErasedMapGetMap_inherited() {
+      runTest("compiler/testData/codegen/box/collections/notErasedMapGetMap_inherited.kt");
     }
 
     @TestMetadata("platformValueContains.kt")
