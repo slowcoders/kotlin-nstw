@@ -413,6 +413,11 @@ object ConeCallToDeprecatedOverrideOfHidden : ConeDiagnostic {
         get() = "Call to deprecated override of hidden"
 }
 
+object ConeDslScopeViolation : ConeDiagnostic {
+    override val reason: String
+        get() = "Access to a callable that violates DSL scope"
+}
+
 class ConeNoInferTypeMismatch(val lowerType: ConeKotlinType, val upperType: ConeKotlinType) : ConeDiagnostic {
     override val reason: String
         get() = "(@NoInfer) Type mismatch: expected $upperType, actual $lowerType"

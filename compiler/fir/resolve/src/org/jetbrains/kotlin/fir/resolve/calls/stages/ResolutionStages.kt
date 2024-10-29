@@ -380,7 +380,7 @@ object CheckDslScopeViolation : ResolutionStage() {
         val dslMarkers = dslMarkersProvider()
         if (dslMarkers.isEmpty()) return
         if (closerReceivers.any { receiver -> receiver.getDslMarkersOfImplicitReceiver(context).any { it in dslMarkers } }) {
-            sink.reportDiagnostic(DslScopeViolation(candidate.symbol))
+            sink.reportDiagnostic(DslScopeViolation)
         }
     }
 

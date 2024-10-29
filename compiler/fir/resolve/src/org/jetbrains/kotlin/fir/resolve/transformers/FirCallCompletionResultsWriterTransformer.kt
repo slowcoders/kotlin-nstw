@@ -1274,6 +1274,7 @@ internal fun FirQualifiedAccessExpression.addNonFatalDiagnostics(candidate: Cand
     for (diagnostic in candidate.diagnostics) {
         val nonFatalDiagnostic = when (diagnostic) {
             is CallToDeprecatedOverrideOfHidden -> ConeCallToDeprecatedOverrideOfHidden
+            is DslScopeViolation -> ConeDslScopeViolation
             else -> null
         }
         nonFatalDiagnostic?.let { newNonFatalDiagnostics += it }
