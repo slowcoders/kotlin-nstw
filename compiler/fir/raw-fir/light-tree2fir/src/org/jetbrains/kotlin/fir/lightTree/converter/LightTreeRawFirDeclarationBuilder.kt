@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget.*
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.analysis.isCallTheFirstStatement
+import org.jetbrains.kotlin.fir.analysis.functionCallHasLabel
 import org.jetbrains.kotlin.fir.builder.*
 import org.jetbrains.kotlin.fir.contracts.FirContractDescription
 import org.jetbrains.kotlin.fir.contracts.builder.buildRawContractDescription
@@ -2008,6 +2009,7 @@ class LightTreeRawFirDeclarationBuilder(
                     val blockSource = block.source
                     val diagnostic = when {
                         blockSource == null || !isCallTheFirstStatement(blockSource) -> ConeContractShouldBeFirstStatement
+                        functionCallHasLabel(blockSource) -> ConeContractMayNotHaveLabel
                         else -> null
                     }
                     processLegacyContractDescription(block, diagnostic)
@@ -2023,6 +2025,9 @@ class LightTreeRawFirDeclarationBuilder(
 
     private fun isCallTheFirstStatement(sourceElement: KtSourceElement): Boolean =
         isCallTheFirstStatement(sourceElement.lighterASTNode, { it.elementType }, { it.getChildren(sourceElement.treeStructure) })
+
+    private fun functionCallHasLabel(sourceElement: KtSourceElement): Boolean =
+        functionCallHasLabel(sourceElement.lighterASTNode, { it.elementType }, { it.getChildren(sourceElement.treeStructure) })
 
     /**
      * @see org.jetbrains.kotlin.parsing.KotlinParsing.parseBlock

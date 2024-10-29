@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.fir.declarations.FirContractDescriptionOwner
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.utils.*
+import org.jetbrains.kotlin.fir.diagnostics.ConeContractMayNotHaveLabel
 import org.jetbrains.kotlin.fir.diagnostics.ConeDiagnostic
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 
@@ -35,6 +36,9 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
         checkUnresolvedEffects(contractDescription, context, reporter)
         if (contractDescription.effects.isEmpty() && contractDescription.unresolvedEffects.isEmpty()) {
             reporter.reportOn(contractDescription.source, FirErrors.ERROR_IN_CONTRACT_DESCRIPTION, EMPTY_CONTRACT_MESSAGE, context)
+        }
+        if (contractDescription.diagnostic == ConeContractMayNotHaveLabel) {
+            reporter.reportOn(contractDescription.source, FirErrors.ERROR_IN_CONTRACT_DESCRIPTION, ConeContractMayNotHaveLabel.reason, context)
         }
     }
 

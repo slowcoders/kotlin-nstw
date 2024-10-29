@@ -31,3 +31,16 @@ inline fun <T> isCallTheFirstStatement(
     }
     return false
 }
+
+// Given a block, checks whether the first function call has a lambda argument with a label.
+// This is meant for checking the syntactical correctness of contracts, and may not be generally applicable.
+inline fun <T> functionCallHasLabel(
+    root: T,
+    getElementType: (T) -> IElementType,
+    getChildren: (T) -> List<T>,
+): Boolean {
+    val functionCall = getChildren(root).firstOrNull { getElementType(it) == KtNodeTypes.CALL_EXPRESSION } ?: return false
+    val lambda = getChildren(functionCall).firstOrNull { getElementType(it) == KtNodeTypes.LAMBDA_ARGUMENT } ?: return false
+    val expr = getChildren(lambda).singleOrNull() ?: return false
+    return getElementType(expr) == KtNodeTypes.LABELED_EXPRESSION
+}
