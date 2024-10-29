@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
+import org.jetbrains.kotlin.fir.analysis.checkers.isCastErased
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.contracts.FirResolvedContractDescription
 import org.jetbrains.kotlin.fir.contracts.description.*
@@ -19,9 +20,13 @@ import org.jetbrains.kotlin.fir.declarations.FirAnonymousFunction
 import org.jetbrains.kotlin.fir.declarations.FirContractDescriptionOwner
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
+import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.utils.*
 import org.jetbrains.kotlin.fir.diagnostics.ConeDiagnostic
+import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeContractDescriptionError
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
+import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 
 object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
     private val EMPTY_CONTRACT_MESSAGE = "Empty contract block is not allowed"
@@ -32,7 +37,7 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
         val reportedNotAllowed = checkContractNotAllowed(declaration, contractDescription, context, reporter)
         if (reportedNotAllowed) return
-        checkUnresolvedEffects(contractDescription, context, reporter)
+        checkUnresolvedEffects(contractDescription, declaration, context, reporter)
         if (contractDescription.effects.isEmpty() && contractDescription.unresolvedEffects.isEmpty()) {
             reporter.reportOn(contractDescription.source, FirErrors.ERROR_IN_CONTRACT_DESCRIPTION, EMPTY_CONTRACT_MESSAGE, context)
         }
@@ -40,16 +45,28 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
     private fun checkUnresolvedEffects(
         contractDescription: FirResolvedContractDescription,
+        declaration: FirFunction,
         context: CheckerContext,
         reporter: DiagnosticReporter
     ) {
+        val erasedCastChecker = ErasedCastChecker(declaration, context)
         // Any statements that [ConeEffectExtractor] cannot extract effects will be in `unresolvedEffects`.
         for (unresolvedEffect in contractDescription.unresolvedEffects) {
-            val diagnostic = unresolvedEffect.effect.accept(DiagnosticExtractor, null) ?: continue
+            // We only check for erased casts if we cannot find an existing diagnostic, since they will sometimes be caught by the
+            // cone effect extractor already.
+            val diagnostic =
+                unresolvedEffect.effect.accept(DiagnosticExtractor, null)
+                    ?: unresolvedEffect.effect.accept(erasedCastChecker, null)
+                    ?: continue
 
             // TODO, KT-59806: report on fine-grained locations, e.g., ... implies unresolved => report on unresolved, not the entire statement.
             //  but, sometimes, it's just reported on `contract`...
             reporter.reportOn(unresolvedEffect.source, FirErrors.ERROR_IN_CONTRACT_DESCRIPTION, diagnostic.reason, context)
+        }
+
+        for (resolvedEffect in contractDescription.effects) {
+            val diagnostic = resolvedEffect.effect.accept(erasedCastChecker, null) ?: continue
+            reporter.reportOn(resolvedEffect.source, FirErrors.ERROR_IN_CONTRACT_DESCRIPTION, diagnostic.reason, context)
         }
     }
 
@@ -145,5 +162,48 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
         override fun visitErroneousElement(element: KtErroneousContractElement<ConeKotlinType, ConeDiagnostic>, data: Nothing?): ConeDiagnostic {
             return element.diagnostic
         }
+    }
+
+    private class ErasedCastChecker(val declaration: FirFunction, val checker: CheckerContext) :
+        KtContractDescriptionVisitor<ConeDiagnostic?, Nothing?, ConeKotlinType, ConeDiagnostic>() {
+        override fun visitContractDescriptionElement(
+            contractDescriptionElement: KtContractDescriptionElement<ConeKotlinType, ConeDiagnostic>,
+            data: Nothing?
+        ): ConeDiagnostic? {
+            return null
+        }
+
+        override fun visitConditionalEffectDeclaration(
+            conditionalEffect: KtConditionalEffectDeclaration<ConeKotlinType, ConeDiagnostic>,
+            data: Nothing?
+        ): ConeDiagnostic? {
+            return conditionalEffect.condition.accept(this, data)
+        }
+
+        override fun visitIsInstancePredicate(
+            isInstancePredicate: KtIsInstancePredicate<ConeKotlinType, ConeDiagnostic>,
+            data: Nothing?
+        ): ConeDiagnostic? {
+            val parameterType = getParameterType(isInstancePredicate.arg.parameterIndex) ?: return null
+            return isCastErased(parameterType, isInstancePredicate.type, checker).ifTrue {
+                ConeContractDescriptionError.ErasedIsCheck
+            }
+        }
+
+        override fun visitLogicalBinaryOperationContractExpression(
+            binaryLogicExpression: KtBinaryLogicExpression<ConeKotlinType, ConeDiagnostic>,
+            data: Nothing?
+        ): ConeDiagnostic? {
+            return binaryLogicExpression.left.accept(this, data) ?: binaryLogicExpression.right.accept(this, data)
+        }
+
+        override fun visitLogicalNot(logicalNot: KtLogicalNot<ConeKotlinType, ConeDiagnostic>, data: Nothing?): ConeDiagnostic? {
+            return logicalNot.arg.accept(this, data)
+        }
+
+        // TODO: support dispatch receivers as well as extension receivers
+        private fun getParameterType(index: Int): ConeKotlinType? =
+            if (index == -1) declaration.symbol.resolvedReceiverTypeRef?.coneType
+            else declaration.valueParameters[index].returnTypeRef.coneType
     }
 }
