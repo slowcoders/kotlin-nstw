@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.ir.generator.config
 
 import org.jetbrains.kotlin.generators.tree.*
 import org.jetbrains.kotlin.generators.tree.config.AbstractElementConfigurator
+import org.jetbrains.kotlin.ir.generator.model.DeepCopyConstructorPolicy
 import org.jetbrains.kotlin.ir.generator.model.Element
 import org.jetbrains.kotlin.ir.generator.model.Field
 import org.jetbrains.kotlin.ir.generator.model.ListField
@@ -40,9 +41,11 @@ abstract class AbstractTreeBuilder : AbstractElementConfigurator<Element, Field,
         nullable: Boolean = false,
         mutable: Boolean = true,
         isChild: Boolean = true,
+        deepCopyExcludeFromConstructor: DeepCopyConstructorPolicy = DeepCopyConstructorPolicy.DEFAULT,
+        deepCopyExcludeFromApply: Boolean = false,
         initializer: SimpleField.() -> Unit = {}
     ): SimpleField {
-        return SimpleField(name, type.copy(nullable), mutable, isChild).apply {
+        return SimpleField(name, type.copy(nullable), mutable, isChild, deepCopyExcludeFromConstructor, deepCopyExcludeFromApply).apply {
             initializer()
         }
     }
@@ -53,24 +56,18 @@ abstract class AbstractTreeBuilder : AbstractElementConfigurator<Element, Field,
         nullable: Boolean = false,
         mutability: ListField.Mutability,
         isChild: Boolean = true,
+        deepCopyExcludeFromConstructor: DeepCopyConstructorPolicy = DeepCopyConstructorPolicy.DEFAULT,
+        deepCopyExcludeFromApply: Boolean = false,
         initializer: ListField.() -> Unit = {}
-    ): ListField {
-        val listType = when (mutability) {
-            ListField.Mutability.MutableList -> StandardTypes.mutableList
-            ListField.Mutability.Array -> StandardTypes.array
-            else -> StandardTypes.list
-        }
-        return ListField(
-            name = name,
-            baseType = baseType,
-            listType = listType,
-            isNullable = nullable,
-            mutable = mutability == ListField.Mutability.Var,
-            isChild = isChild,
-        ).apply(initializer).apply {
-            initializer()
-        }
-    }
+    ): ListField = ListField(
+        name = name,
+        baseType = baseType,
+        isNullable = nullable,
+        mutability = mutability,
+        isChild = isChild,
+        deepCopyExcludeFromConstructor = deepCopyExcludeFromConstructor,
+        deepCopyExcludeFromApply = deepCopyExcludeFromApply
+    ).apply(initializer)
 
     /**
      * Constructs a field that represents the element's own symbol, i.e., for which
@@ -89,8 +86,17 @@ abstract class AbstractTreeBuilder : AbstractElementConfigurator<Element, Field,
         type: TypeRefWithNullability,
         nullable: Boolean = false,
         mutable: Boolean = true,
+        deepCopyExcludeFromConstructor: DeepCopyConstructorPolicy = DeepCopyConstructorPolicy.DEFAULT,
+        deepCopyExcludeFromApply: Boolean = false,
         initializer: SimpleField.() -> Unit = {},
-    ) = field(name, type, nullable, mutable) {
+    ) = field(
+        name = name,
+        type = type,
+        nullable = nullable,
+        mutable = mutable,
+        deepCopyExcludeFromConstructor = deepCopyExcludeFromConstructor,
+        deepCopyExcludeFromApply = deepCopyExcludeFromApply
+    ) {
         symbolFieldRole = AbstractField.SymbolFieldRole.REFERENCED
         initializer()
     }
@@ -103,7 +109,7 @@ abstract class AbstractTreeBuilder : AbstractElementConfigurator<Element, Field,
         nullable: Boolean = false,
         mutable: Boolean = true,
         initializer: SimpleField.() -> Unit = {},
-    ) = referencedSymbol("symbol", type, nullable, mutable, initializer)
+    ) = referencedSymbol("symbol", type, nullable, mutable, initializer = initializer)
 
     /**
      * Constructs a field that represents a list of symbols that the element references but not owns.
@@ -113,8 +119,17 @@ abstract class AbstractTreeBuilder : AbstractElementConfigurator<Element, Field,
         baseType: TypeRefWithNullability,
         nullable: Boolean = false,
         mutability: ListField.Mutability = ListField.Mutability.Var,
+        deepCopyExcludeFromConstructor: DeepCopyConstructorPolicy = DeepCopyConstructorPolicy.DEFAULT,
+        deepCopyExcludeFromApply: Boolean = false,
         initializer: ListField.() -> Unit = {},
-    ) = listField(name, baseType, nullable, mutability) {
+    ) = listField(
+        name = name,
+        baseType = baseType,
+        nullable = nullable,
+        mutability = mutability,
+        deepCopyExcludeFromConstructor = deepCopyExcludeFromConstructor,
+        deepCopyExcludeFromApply = deepCopyExcludeFromApply
+    ) {
         symbolFieldRole = AbstractField.SymbolFieldRole.REFERENCED
         initializer()
     }
