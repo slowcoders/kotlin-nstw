@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.library.unresolvedDependencies
 import java.io.IOException
 import java.nio.file.*
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.random.Random
 
 internal fun KotlinLibrary.getAllTransitiveDependencies(allLibraries: Map<String, KotlinLibrary>): List<KotlinLibrary> {
     val allDependencies = mutableSetOf<KotlinLibrary>()
@@ -287,7 +288,7 @@ class CacheBuilder(
                             if (stopRequested.get()) break
                             Thread.sleep(sleepPeriod)
                             try {
-                                lockFile.appendBytes(ByteArray(4))
+                                lockFile.appendBytes(Random.nextBytes(4))
                             } catch (t: IOException) {
                                 break
                             }
