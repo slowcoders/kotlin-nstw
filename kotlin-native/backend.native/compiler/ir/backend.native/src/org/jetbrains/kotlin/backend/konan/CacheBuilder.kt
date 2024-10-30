@@ -19,8 +19,8 @@ import org.jetbrains.kotlin.library.isNativeStdlib
 import org.jetbrains.kotlin.library.metadata.isCInteropLibrary
 import org.jetbrains.kotlin.library.unresolvedDependencies
 import java.io.IOException
+import java.nio.channels.ClosedByInterruptException
 import java.nio.file.*
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.random.Random
 
 internal fun KotlinLibrary.getAllTransitiveDependencies(allLibraries: Map<String, KotlinLibrary>): List<KotlinLibrary> {
@@ -269,7 +269,6 @@ class CacheBuilder(
         // For now, per-file caches are only used for the incremental compilation which can't be run in parallel.
         val shouldUseLockFile = !makePerFileCache
         var thread: Thread? = null
-        val stopRequested = AtomicBoolean(false)
         if (shouldUseLockFile) {
             when (tryCreateLockFile(lockFile, libraryCache, library)) {
                 LockFileCreationResult.AlreadyExists -> {
@@ -285,11 +284,16 @@ class CacheBuilder(
                     // Touch the lock file every period to signal other processes that the build is in progress.
                     thread = Thread {
                         while (true) {
-                            if (stopRequested.get()) break
-                            Thread.sleep(sleepPeriod)
+                            if (Thread.currentThread().isInterrupted)
+                                break
                             try {
+                                Thread.sleep(sleepPeriod)
                                 lockFile.appendBytes(Random.nextBytes(4))
                             } catch (t: IOException) {
+                                break
+                            } catch (t: InterruptedException) {
+                                break
+                            } catch (t: ClosedByInterruptException) {
                                 break
                             }
                         }
@@ -303,7 +307,7 @@ class CacheBuilder(
             tryBuildingLibraryCache(library, dependencies, dependencyCaches, libraryCacheDirectory, makePerFileCache, filesToCache, libraryCache)
         } finally {
             if (thread != null) {
-                stopRequested.set(true)
+                thread.interrupt()
                 thread.join()
                 lockFile.delete()
             }
