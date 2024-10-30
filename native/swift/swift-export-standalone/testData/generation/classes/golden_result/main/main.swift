@@ -181,6 +181,11 @@ public final class ENUM : KotlinRuntime.KotlinBase {
             return main.ENUM(__externalRCRef: ENUM_C_get())
         }
     }
+    public static var entries: [main.ENUM] {
+        get {
+            return ENUM_entries_get() as! Swift.Array<main.ENUM>
+        }
+    }
     package override init(
         __externalRCRef: Swift.UInt
     ) {

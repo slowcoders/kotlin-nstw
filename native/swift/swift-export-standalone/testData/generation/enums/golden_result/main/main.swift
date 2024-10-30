@@ -12,6 +12,11 @@ public final class Enum : KotlinRuntime.KotlinBase {
             return main.Enum(__externalRCRef: Enum_b_get())
         }
     }
+    public static var entries: [main.Enum] {
+        get {
+            return Enum_entries_get() as! Swift.Array<main.Enum>
+        }
+    }
     public var i: Swift.Int32 {
         get {
             return Enum_i_get(self.__externalRCRef())

@@ -70,7 +70,7 @@ public class SirTypeProviderImpl(
                         kaType.isStringType -> SirNominalType(SirSwiftModule.string)
                         kaType.isAnyType -> SirNominalType(KotlinRuntimeModule.kotlinBase)
 
-                        kaType.isClassType(StandardClassIds.List) -> {
+                        kaType.isClassType(StandardClassIds.List) || kaType.isClassType(StandardClassIds.EnumEntries) -> {
                             val elementType = buildSirNominalType(kaType.typeArguments.first().type!!, ktAnalysisSession)
                             SirArrayType(elementType)
                         }

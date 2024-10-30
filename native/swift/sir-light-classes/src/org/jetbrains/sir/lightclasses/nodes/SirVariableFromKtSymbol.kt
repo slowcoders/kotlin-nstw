@@ -79,7 +79,7 @@ internal class SirVariableFromKtSymbol(
         }
 
     override val isInstance: Boolean
-        get() = ktSymbol !is KaEnumEntrySymbol && !ktSymbol.isTopLevel
+        get() = ktSymbol !is KaEnumEntrySymbol && !ktSymbol.isTopLevel && !(ktSymbol is KaPropertySymbol && ktSymbol.isStatic)
 
     override val modality: SirModality
         get() = ktSymbol.modality.sirModality

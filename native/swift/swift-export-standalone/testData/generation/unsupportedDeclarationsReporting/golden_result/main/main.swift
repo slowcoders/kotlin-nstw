@@ -42,6 +42,11 @@ public extension main.a.b.c {
                 return main.a.b.c.E(__externalRCRef: a_b_c_E_C_get())
             }
         }
+        public static var entries: [main.a.b.c.E] {
+            get {
+                return a_b_c_E_entries_get() as! Swift.Array<main.a.b.c.E>
+            }
+        }
         package override init(
             __externalRCRef: Swift.UInt
         ) {
@@ -64,4 +69,3 @@ public enum a {
 // Can't export Foo.Nested.plus: operators are not supported yet.
 // Can't export a.b.c.E.values: static functions are not supported yet.
 // Can't export a.b.c.E.valueOf: static functions are not supported yet.
-// Can't export a.b.c.E.entries: static properties are not supported yet.

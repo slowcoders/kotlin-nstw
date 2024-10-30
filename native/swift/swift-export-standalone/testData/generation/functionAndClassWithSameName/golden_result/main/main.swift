@@ -29,6 +29,11 @@ public final class EnumWithFactory : KotlinRuntime.KotlinBase {
             return main.EnumWithFactory(__externalRCRef: EnumWithFactory_ONE_get())
         }
     }
+    public static var entries: [main.EnumWithFactory] {
+        get {
+            return EnumWithFactory_entries_get() as! Swift.Array<main.EnumWithFactory>
+        }
+    }
     package override init(
         __externalRCRef: Swift.UInt
     ) {

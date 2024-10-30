@@ -5,6 +5,8 @@ int32_t ClassWithFactoryWithoutParameters_value_get(uintptr_t self);
 
 uintptr_t EnumWithFactory_ONE_get();
 
+NSArray * EnumWithFactory_entries_get();
+
 uintptr_t __root___ClassWithFactoryWithoutParameters();
 
 uintptr_t __root___ClassWithFactoryWithoutParameters_init_allocate();

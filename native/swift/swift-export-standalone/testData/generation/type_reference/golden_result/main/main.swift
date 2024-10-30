@@ -537,6 +537,11 @@ public extension ExportedKotlinPackages.ignored {
                 return ExportedKotlinPackages.ignored.ENUM(__externalRCRef: ignored_ENUM_A_get())
             }
         }
+        public static var entries: [ExportedKotlinPackages.ignored.ENUM] {
+            get {
+                return ignored_ENUM_entries_get() as! Swift.Array<ExportedKotlinPackages.ignored.ENUM>
+            }
+        }
         package override init(
             __externalRCRef: Swift.UInt
         ) {

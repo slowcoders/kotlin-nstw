@@ -48,3 +48,9 @@ public fun a_b_c_E_C_get(): kotlin.native.internal.NativePtr {
     return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
 }
 
+@ExportedBridge("a_b_c_E_entries_get")
+public fun a_b_c_E_entries_get(): kotlin.native.internal.NativePtr {
+    val _result = a.b.c.E.entries
+    return _result.objcPtr()
+}
+

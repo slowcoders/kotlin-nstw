@@ -144,6 +144,12 @@ public fun ENUM_INSIDE_ENUM_init_initialize__TypesOfArguments__Swift_UInt__(__kt
     kotlin.native.internal.initInstance(____kt, ENUM.INSIDE_ENUM())
 }
 
+@ExportedBridge("ENUM_entries_get")
+public fun ENUM_entries_get(): kotlin.native.internal.NativePtr {
+    val _result = ENUM.entries
+    return _result.objcPtr()
+}
+
 @ExportedBridge("__root___DATA_CLASS_WITH_REF_init_allocate")
 public fun __root___DATA_CLASS_WITH_REF_init_allocate(): kotlin.native.internal.NativePtr {
     val _result = kotlin.native.internal.createUninitializedInstance<DATA_CLASS_WITH_REF>()
