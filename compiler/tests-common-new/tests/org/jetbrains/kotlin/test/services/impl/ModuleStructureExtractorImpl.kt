@@ -98,6 +98,7 @@ class ModuleStructureExtractorImpl(
         private var filesOfCurrentModule = mutableListOf<TestFile>()
 
         private var currentFileName: String? = null
+        private var currentSnippetNumber: Int = 1
         private var firstFileInModule: Boolean = true
         private var linesOfCurrentFile = mutableListOf<String>()
         private var endLineNumberOfLastFile = -1
@@ -168,9 +169,15 @@ class ModuleStructureExtractorImpl(
          */
         private fun tryParseStructureDirective(rawDirective: RegisteredDirectivesParser.RawDirective?, lineNumber: Int): Boolean {
             if (rawDirective == null) return false
+            var isRepl = false
+            var isMultiModule = false
             val (directive, values) = moduleStructureDirectiveBuilder.convertToRegisteredDirective(rawDirective) ?: return false
             when (directive) {
                 ModuleStructureDirectives.MODULE -> {
+                    if (isRepl) {
+                        assertions.fail { "MODULE directive is not compatible with REPL mode" }
+                    }
+                    isMultiModule = true
                     /*
                      * There was previous module, so we should save it
                      */
@@ -192,6 +199,31 @@ class ModuleStructureExtractorImpl(
                     }
                     dependsOn.mapTo(dependenciesOfCurrentModule) { name ->
                         DependencyDescription(name, DependencyKind.Source, DependencyRelation.DependsOnDependency)
+                    }
+                }
+                ModuleStructureDirectives.SNIPPET -> {
+                    if (isMultiModule) {
+                        assertions.fail { "SNIPPET directive (REPL mode) is not compatible with MODULE directive" }
+                    }
+                    isRepl = true
+
+                    fun snippetName() = "snippet_${"%03d".format(currentSnippetNumber)}"
+
+                    val previousModuleName = currentModuleName ?: snippetName().also {
+                        currentModuleName = it
+                        currentFileName = "$it.kts"
+                    }
+                    if (linesOfCurrentFile.all { it.isBlank() }) {
+                        finishGlobalDirectives()
+                    } else {
+                        finishModule(lineNumber)
+
+                        dependenciesOfCurrentModule.add(
+                            DependencyDescription(previousModuleName, DependencyKind.Source, DependencyRelation.FriendDependency)
+                        )
+                        currentSnippetNumber++
+                        currentModuleName = snippetName()
+                        currentFileName = "$currentModuleName.kts"
                     }
                 }
                 ModuleStructureDirectives.DEPENDENCY,
