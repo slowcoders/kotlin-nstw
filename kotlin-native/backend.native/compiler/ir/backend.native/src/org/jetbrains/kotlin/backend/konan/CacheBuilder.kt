@@ -226,6 +226,8 @@ class CacheBuilder(
         }
     }
 
+    private val sleepPeriod = 1_000L // 1 second.
+
     private fun buildLibraryCache(library: KotlinLibrary, isExternal: Boolean, filesToCache: List<String>) {
         val dependencies = library.getAllTransitiveDependencies(uniqueNameToLibrary)
         val dependencyCaches = dependencies.map {
@@ -279,11 +281,11 @@ class CacheBuilder(
                     // No need to handle lock file anyhow.
                 }
                 LockFileCreationResult.Created -> {
-                    // Touch the lock file every second to signal other processes that the build is in progress.
+                    // Touch the lock file every period to signal other processes that the build is in progress.
                     thread = Thread {
                         while (true) {
                             if (stopRequested.get()) break
-                            Thread.sleep(1000)
+                            Thread.sleep(sleepPeriod)
                             try {
                                 lockFile.appendBytes(ByteArray(4))
                             } catch (t: IOException) {
@@ -338,13 +340,13 @@ class CacheBuilder(
                         ok = true
                         break
                     }
-                    Thread.sleep(1000)
+                    Thread.sleep(sleepPeriod)
                     val curFileSize = getFileSizeSafe(absolutePath) { fileSize }
                     val curTime = System.currentTimeMillis()
                     if (curFileSize == fileSize) {
-                        // Other process should change the file every second,
-                        // so if for 10 seconds there has been no change, something went wrong.
-                        if (curTime - time > 1000 * 10)
+                        // Other process should change the file every period,
+                        // so if for 10 periods there has been no change, something went wrong.
+                        if (curTime - time > sleepPeriod * 10)
                             break
                     } else {
                         fileSize = curFileSize
