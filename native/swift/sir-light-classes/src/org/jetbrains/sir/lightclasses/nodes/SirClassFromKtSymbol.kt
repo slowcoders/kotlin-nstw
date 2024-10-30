@@ -71,7 +71,7 @@ internal class SirClassFromKtSymbol(
             .mapNotNull { it.symbol as? KaClassSymbol }
             .firstOrNull { it.classKind == KaClassKind.CLASS }
             ?.let {
-                if (it.classId == DefaultTypeClassIds.ANY) {
+                if (it.classId == DefaultTypeClassIds.ANY || it.isEnumSuperclass) {
                     SirNominalType(KotlinRuntimeModule.kotlinBase).also {
                         ktSymbol.containingModule.sirModule().updateImport(SirImport(KotlinRuntimeModule.name))
                     }
@@ -123,6 +123,9 @@ internal class SirClassFromKtSymbol(
 
         else -> listOf(kotlinBaseInitDeclaration())
     }
+
+    private val KaClassSymbol.isEnumSuperclass: Boolean
+        get() = classId?.asString() == "kotlin/Enum"
 }
 
 internal class SirObjectSyntheticInit(ktSymbol: KaNamedClassSymbol) : SirInit() {
