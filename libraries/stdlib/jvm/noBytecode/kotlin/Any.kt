@@ -3,11 +3,14 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
+@file:kotlin.internal.BuiltinWithoutBytecode
+
 package kotlin
 
 /**
  * The root of the Kotlin class hierarchy. Every Kotlin class has [Any] as a superclass.
  */
+@Suppress("NON_ABSTRACT_FUNCTION_WITH_NO_BODY")
 public actual open class Any {
     /**
      * Indicates whether some other object is "equal to" this one. Implementations must fulfil the following

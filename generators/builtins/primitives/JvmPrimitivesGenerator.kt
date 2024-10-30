@@ -11,7 +11,16 @@ import java.io.PrintWriter
 class JvmPrimitivesGenerator(writer: PrintWriter) : BasePrimitivesGenerator(writer) {
     override fun ClassBuilder.modifyGeneratedClass(thisKind: PrimitiveType) {
         appendDoc("On the JVM, non-nullable values of this type are represented as values of the primitive type `${thisKind.name.lowercase()}`.")
-        expectActual = ExpectActualModifier.Unspecified
+        expectActual = ExpectActualModifier.Actual
+        suppressNonAbstractFunctionWithoutBody()
+    }
+
+    override val fileAnnotations = listOf("kotlin.internal.BuiltinWithoutBytecode")
+
+    override fun PropertyBuilder.modifyGeneratedCompanionObjectProperty(thisKind: PrimitiveType) {
+        if (this.name in setOf("POSITIVE_INFINITY", "NEGATIVE_INFINITY", "NaN")) {
+            suppressDiagnostics("DIVISION_BY_ZERO")
+        }
     }
 
     override fun MethodBuilder.modifyGeneratedRangeTo(thisKind: PrimitiveType, otherKind: PrimitiveType, opReturnType: PrimitiveType) {
@@ -20,5 +29,13 @@ class JvmPrimitivesGenerator(writer: PrintWriter) : BasePrimitivesGenerator(writ
 
     override fun MethodBuilder.modifyGeneratedRangeUntil(thisKind: PrimitiveType, otherKind: PrimitiveType, opReturnType: PrimitiveType) {
         noBody()
+    }
+
+    override fun MethodBuilder.modifyGeneratedConversions(thisKind: PrimitiveType, otherKind: PrimitiveType) {
+        if (thisKind == PrimitiveType.INT && otherKind == PrimitiveType.CHAR) {
+            annotations.clear()
+            annotations += intrinsicConstEvaluationAnnotation
+            suppressDiagnostics("OVERRIDE_DEPRECATION")
+        }
     }
 }
