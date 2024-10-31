@@ -120,13 +120,7 @@ open class FirKaptAnalysisHandlerExtension(
                 }
             }
         } finally {
-            if (ApplicationManager.getApplication() != null) {
-                runWriteAction {
-                    Disposer.dispose(disposable)
-                }
-            } else {
-                Disposer.dispose(disposable)
-            }
+            Disposer.dispose(disposable)
         }
 
         if (!options.mode.runAnnotationProcessing) return true
