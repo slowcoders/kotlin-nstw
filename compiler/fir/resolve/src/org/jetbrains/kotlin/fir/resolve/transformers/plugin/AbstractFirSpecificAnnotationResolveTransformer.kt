@@ -72,7 +72,7 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
         FirExpressionsResolveTransformer(transformer) {
         override fun transformAnnotation(annotation: FirAnnotation, data: ResolutionMode): FirStatement {
             dataFlowAnalyzer.enterAnnotation()
-            annotation.transformChildren(transformer, ResolutionMode.ContextDependent)
+            annotation.transformChildren(transformer, ResolutionMode.ContextDependent())
             dataFlowAnalyzer.exitAnnotation()
             return annotation
         }
@@ -335,7 +335,7 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
         val requiredAnnotationsWithArguments = session.annotationPlatformSupport.requiredAnnotationsWithArguments
 
         if (transformedAnnotationType.coneType.classLikeLookupTagIfAny?.classId in requiredAnnotationsWithArguments) {
-            argumentsTransformer.transformAnnotation(annotationCall, ResolutionMode.ContextDependent)
+            argumentsTransformer.transformAnnotation(annotationCall, ResolutionMode.ContextDependent(isFunctionArgument = true))
         }
     }
 

@@ -5394,6 +5394,12 @@ public class FirPsiDiagnosticTestGenerated extends AbstractFirPsiDiagnosticTest 
       }
 
       @Test
+      @TestMetadata("functionCall.kt")
+      public void testFunctionCall() {
+        runTest("compiler/fir/analysis-tests/testData/resolve/unqualifiedEnum/functionCall.kt");
+      }
+
+      @Test
       @TestMetadata("incorrectJava.kt")
       public void testIncorrectJava() {
         runTest("compiler/fir/analysis-tests/testData/resolve/unqualifiedEnum/incorrectJava.kt");
@@ -5609,12 +5615,6 @@ public class FirPsiDiagnosticTestGenerated extends AbstractFirPsiDiagnosticTest 
       @TestMetadata("enum.kt")
       public void testEnum() {
         runTest("compiler/fir/analysis-tests/testData/resolve/withExpectedType/enum.kt");
-      }
-
-      @Test
-      @TestMetadata("intersection.kt")
-      public void testIntersection() {
-        runTest("compiler/fir/analysis-tests/testData/resolve/withExpectedType/intersection.kt");
       }
 
       @Test

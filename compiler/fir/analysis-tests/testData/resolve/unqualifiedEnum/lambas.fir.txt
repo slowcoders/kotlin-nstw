@@ -24,9 +24,24 @@ FILE: lambas.kt
     }
 
         public get(): R|() -> test/Sample|
-    public final fun bar(n: R|kotlin/Int|): R|test/Sample| {
-        ^bar R|<local>/n|.R|kotlin/let<Inapplicable(INAPPLICABLE): kotlin/let>#|<R|kotlin/Int|, R|test/Sample|>(<L> = let@fun <anonymous>(it: R|kotlin/Int|): R|test/Sample| <inline=Inline, kind=EXACTLY_ONCE>  {
+    public final fun boo(): R|test/Sample| {
+        ^boo R|test/Sample.FIRST|
+    }
+    public final fun <A, B> R|A|.let(transform: R|(A) -> B|): R|B| {
+        ^let R|<local>/transform|.R|SubstitutionOverride<kotlin/Function1.invoke: R|B|>|(this@R|test/let|)
+    }
+    public final fun <A> R|A|.letSample(transform: R|(A) -> test/Sample|): R|test/Sample| {
+        ^letSample R|<local>/transform|.R|SubstitutionOverride<kotlin/Function1.invoke: R|test/Sample|>|(this@R|test/letSample|)
+    }
+    public final fun bar1(n: R|kotlin/Int|): R|test/Sample| {
+        ^bar1 R|<local>/n|.R|test/let<Inapplicable(INAPPLICABLE): test/let>#|<R|kotlin/Int|, R|test/Sample|>(<L> = let@fun <anonymous>(it: R|kotlin/Int|): R|test/Sample| <inline=NoInline>  {
             ^ <Unresolved name: FIRST>#
+        }
+        )
+    }
+    public final fun bar2(n: R|kotlin/Int|): R|test/Sample| {
+        ^bar2 R|<local>/n|.R|test/letSample|<R|kotlin/Int|>(<L> = letSample@fun <anonymous>(it: R|kotlin/Int|): R|test/Sample| <inline=NoInline>  {
+            ^ R|test/Sample.FIRST|
         }
         )
     }

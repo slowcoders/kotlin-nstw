@@ -29,7 +29,7 @@ FILE: oneLevelDeep.kt
     }
     public final fun test2(x: R|Day|): R|kotlin/Int| {
         ^test2 when () {
-            ==(R|<local>/x|, R|/Day.valueOf*s|(String(MONDAY))) ->  {
+            ==(R|<local>/x|, <Unresolved name: valueOf>#(String(MONDAY))) ->  {
                 Int(1)
             }
             else ->  {

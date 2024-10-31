@@ -10,4 +10,4 @@ fun boo(b: Boo): String = when (b) {
 }
 
 // value initialization
-val x: Boo = Baa("a")
+val x: Boo = <!UNRESOLVED_REFERENCE!>Baa<!>("a")

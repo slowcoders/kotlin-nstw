@@ -2,7 +2,7 @@
 
 class Duration(val milliseconds: Int) {
     companion object {
-        val Int.seconds: Duration get() = Duration(this)
+        val four: Duration get() = Duration(4)
     }
 }
 
@@ -11,14 +11,14 @@ data class Inv<T>(val value: T)
 fun <T> foo(output: Inv<T>): Int {
     val v = output.value
     return when {
-        v is Duration && v == 1.<!UNRESOLVED_REFERENCE!>seconds<!> -> 0
+        v is Duration && v == <!UNRESOLVED_REFERENCE!>four<!> -> 0
         else -> 1
     }
 }
 
 fun bar(v: Any): Int {
     return when {
-        v is Duration && v == 1.seconds -> 0
+        v is Duration && v == four -> 0
         else -> 1
     }
 }

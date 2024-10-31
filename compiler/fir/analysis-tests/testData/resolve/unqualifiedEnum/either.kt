@@ -11,3 +11,5 @@ fun test(x: Either) {
         x is Right -> 2
     }
 }
+
+fun test2(): Either = <!UNRESOLVED_REFERENCE!>Left<!>()

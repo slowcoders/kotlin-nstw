@@ -26,3 +26,6 @@ FILE: either.kt
         }
 
     }
+    public final fun test2(): R|Either| {
+        ^test2 <Unresolved name: Left>#()
+    }

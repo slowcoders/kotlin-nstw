@@ -291,7 +291,9 @@ class ConstraintSystemCompleter(components: BodyResolveComponents) {
         topLevelAtoms: List<ConeResolutionAtom>,
     ) {
         val typeVariable = variableWithConstraints.typeVariable
-        val resolvedAtom = findStatementOfFirstAtomWithVariable(typeVariable, topLevelAtoms) ?: topLevelAtoms.firstOrNull()?.expression
+
+        val resolvedAtom = findStatementOfFirstAtomWithVariable(typeVariable, topLevelAtoms)
+            ?: topLevelAtoms.firstOrNull { !it.hasDelayedAtoms() }?.expression
 
         if (resolvedAtom != null) {
             addError(
@@ -354,6 +356,9 @@ class ConstraintSystemCompleter(components: BodyResolveComponents) {
                         if (postponedAtom.mightNeedAdditionalResolution) {
                             postponedAtom.collectNotFixedVariables()
                         }
+                    }
+                    is ConeDelayedReferenceAtom -> {
+                        postponedAtom.collectNotFixedVariables()
                     }
                 }
             }
@@ -448,7 +453,9 @@ class ConstraintSystemCompleter(components: BodyResolveComponents) {
                 return result
             }
 
-            return topLevelAtoms.firstNotNullOfOrNull(ConeResolutionAtom::findFirstStatementContainingVariable)
+            return topLevelAtoms.firstNotNullOfOrNull { atom ->
+                atom.findFirstStatementContainingVariable().takeIf { !atom.hasDelayedAtoms() }
+            }
         }
 
         private fun createCannotInferErrorType(
@@ -471,3 +478,6 @@ class ConstraintSystemCompleter(components: BodyResolveComponents) {
 }
 
 val Candidate.csBuilder: NewConstraintSystemImpl get() = system.getBuilder()
+
+fun ConeResolutionAtom.hasDelayedAtoms(): Boolean =
+    this is ConeDelayedReferenceAtom || (this is ConeAtomWithCandidate && this.candidate.postponedAtoms.any { it.hasDelayedAtoms() })

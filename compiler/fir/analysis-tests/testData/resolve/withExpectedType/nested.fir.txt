@@ -23,5 +23,5 @@ FILE: nested.kt
         }
 
     }
-    public final val x: R|Boo| = R|/Boo.Baa.Baa|(String(a))
+    public final val x: R|Boo| = <Unresolved name: Baa>#(String(a))
         public get(): R|Boo|

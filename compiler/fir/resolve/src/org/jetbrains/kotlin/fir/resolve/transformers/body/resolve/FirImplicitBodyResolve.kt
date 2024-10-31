@@ -340,7 +340,7 @@ open class ReturnTypeCalculatorWithJump(
             outerBodyResolveContext
         )
 
-        designation.first().transform<FirElement, ResolutionMode>(transformer, ResolutionMode.ContextDependent)
+        designation.first().transform<FirElement, ResolutionMode>(transformer, ResolutionMode.ContextDependent())
 
         val transformedDeclaration = transformer.lastResult as? FirCallableDeclaration
             ?: error("Unexpected lastResult: ${transformer.lastResult?.render()}")

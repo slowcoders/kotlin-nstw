@@ -1141,7 +1141,7 @@ open class FirDeclarationsResolveTransformer(
             withFullBodyResolve {
                 transformFunction(
                     anonymousFunction,
-                    expectedReturnTypeRef?.let(::withExpectedType) ?: ResolutionMode.ContextDependent
+                    expectedReturnTypeRef?.let(::withExpectedType) ?: ResolutionMode.ContextDependent()
                 ) as FirAnonymousFunction
             }
         }.apply { replaceTypeRef(lambdaType) }
@@ -1312,7 +1312,7 @@ open class FirDeclarationsResolveTransformer(
 
             propertyType != null -> ResolutionMode.ContextIndependent
 
-            else -> ResolutionMode.ContextDependent
+            else -> ResolutionMode.ContextDependent()
         }
         backingField.transformInitializer(transformer, initializerData)
         if (shouldResolveEverything) {

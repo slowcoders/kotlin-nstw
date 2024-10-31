@@ -1,7 +1,7 @@
 FILE: test.kt
     public final fun foo(javaEnum: R|JavaEnum|): R|kotlin/Int| {
         ^foo when (R|<local>/javaEnum|) {
-            ==($subj$, R|/JavaEnum.first*s|()) ->  {
+            ==($subj$, R|/JavaEnum.first*s|) ->  {
                 Int(1)
             }
             ==($subj$, R|/JavaEnum.second*s|) ->  {

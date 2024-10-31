@@ -21,8 +21,13 @@ import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.calls.*
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.*
 import org.jetbrains.kotlin.fir.resolve.setTypeOfQualifier
+import org.jetbrains.kotlin.fir.scopes.FirFilteringNamesAwareScope
 import org.jetbrains.kotlin.fir.scopes.FirScope
 import org.jetbrains.kotlin.fir.scopes.impl.FirWhenSubjectImportingScope
+import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirEnumEntrySymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirFieldSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind
@@ -188,9 +193,15 @@ internal abstract class FirBaseTowerResolveTask(
         if (session.languageVersionSettings.supportsContextSensitiveResolution) {
             val contextClass = resolutionMode?.fullyExpandedClassFromContext(components, session)
             if (contextClass != null) {
-                contextClass.staticScope(session, components.scopeSession)?.also { onScope(it, null, TowerGroup.Last) }
+                val propertyFilter = { symbol: FirCallableSymbol<*> ->
+                    (symbol is FirPropertySymbol && symbol.receiverParameter == null) || (symbol is FirFieldSymbol) || (symbol is FirEnumEntrySymbol)
+                }
+                contextClass.staticScope(session, components.scopeSession)?.also {
+                    onScope(FirFilteringNamesAwareScope(it, propertyFilter), null, TowerGroup.Last)
+                }
                 contextClass.companionObjectSymbol?.fir?.also { companion ->
-                    val receiver = ImplicitDispatchReceiverValue(companion.symbol, session, components.scopeSession)
+                    val receiver =
+                        ImplicitDispatchReceiverValue(companion.symbol, session, components.scopeSession, filter = propertyFilter)
                     onImplicitReceiver(receiver, TowerGroup.Last)
                 }
             }

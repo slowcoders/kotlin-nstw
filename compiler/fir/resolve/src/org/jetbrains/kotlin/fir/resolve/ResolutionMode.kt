@@ -17,7 +17,10 @@ import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
 sealed class ResolutionMode(
     val forceFullCompletion: Boolean,
 ) {
-    data object ContextDependent : ResolutionMode(forceFullCompletion = false)
+    data class ContextDependent(
+        val isFunctionArgument: Boolean = false
+    ) : ResolutionMode(forceFullCompletion = false)
+
     data object Delegate : ResolutionMode(forceFullCompletion = false)
     data object ContextIndependent : ResolutionMode(forceFullCompletion = true)
 
@@ -189,7 +192,7 @@ fun withExpectedType(
 
 @JvmName("withExpectedTypeNullable")
 fun withExpectedType(coneType: ConeKotlinType?, mayBeCoercionToUnitApplied: Boolean = false): ResolutionMode {
-    return coneType?.let { withExpectedType(it, mayBeCoercionToUnitApplied) } ?: ResolutionMode.ContextDependent
+    return coneType?.let { withExpectedType(it, mayBeCoercionToUnitApplied) } ?: ResolutionMode.ContextDependent()
 }
 
 fun withExpectedType(coneType: ConeKotlinType, mayBeCoercionToUnitApplied: Boolean = false): ResolutionMode {
