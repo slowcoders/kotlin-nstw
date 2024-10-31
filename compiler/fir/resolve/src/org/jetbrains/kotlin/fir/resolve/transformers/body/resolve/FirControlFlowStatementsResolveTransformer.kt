@@ -81,7 +81,7 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
                             // Currently we don't use information from cast, but probably we could have
                             ?.takeUnless { it.fromCast }
                             ?.copy(forceFullCompletion = false)
-                            ?: ResolutionMode.ContextDependent()
+                            ?: ResolutionMode.ContextDependent
                     whenExpression = whenExpression.transformBranches(
                         transformer,
                         resolutionModeForBranches,
@@ -152,9 +152,9 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
 
         tryExpression.transformAnnotations(transformer, ResolutionMode.ContextIndependent)
         dataFlowAnalyzer.enterTryExpression(tryExpression)
-        tryExpression.transformTryBlock(transformer, ResolutionMode.ContextDependent())
+        tryExpression.transformTryBlock(transformer, ResolutionMode.ContextDependent)
         dataFlowAnalyzer.exitTryMainBlock()
-        tryExpression.transformCatches(this, ResolutionMode.ContextDependent())
+        tryExpression.transformCatches(this, ResolutionMode.ContextDependent)
 
         val incomplete = syntheticCallGenerator.generateCalleeForTryExpression(tryExpression, resolutionContext, data)
         var result = callCompleter.completeCall(incomplete, data)
@@ -172,7 +172,7 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
         catch.parameter.transformReturnTypeRef(transformer, ResolutionMode.ContextIndependent)
         return context.forBlock(session) {
             catch.transformParameter(transformer, ResolutionMode.ContextIndependent)
-            catch.transformBlock(transformer, ResolutionMode.ContextDependent())
+            catch.transformBlock(transformer, ResolutionMode.ContextDependent)
         }.also { dataFlowAnalyzer.exitCatchClause(it) }
     }
 
@@ -193,7 +193,7 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
         val expectedTypeRef = labeledElement.returnTypeRef
 
         val mode = when {
-            labeledElement.symbol in context.anonymousFunctionsAnalyzedInDependentContext -> ResolutionMode.ContextDependent()
+            labeledElement.symbol in context.anonymousFunctionsAnalyzedInDependentContext -> ResolutionMode.ContextDependent
 
             expectedTypeRef is FirResolvedTypeRef ->
                 ResolutionMode.WithExpectedType(expectedTypeRef, expectedTypeMismatchIsReportedInChecker = true)
@@ -229,7 +229,7 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
         // But this is mostly a hack that I hope might be lifted once KT-55692 is considered
         // NB: Currently situation `it is ResolutionMode.WithExpectedType && !it.forceFullCompletion` might only happen in case of when branches
         @Suppress("NAME_SHADOWING")
-        val data = data.takeUnless { it is ResolutionMode.WithExpectedType && !it.forceFullCompletion } ?: ResolutionMode.ContextDependent()
+        val data = data.takeUnless { it is ResolutionMode.WithExpectedType && !it.forceFullCompletion } ?: ResolutionMode.ContextDependent
 
         dataFlowAnalyzer.enterElvis(elvisExpression)
 
@@ -301,7 +301,7 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
 
         return when {
             session.languageVersionSettings.supportsFeature(LanguageFeature.ElvisInferenceImprovementsIn21) ->
-                ResolutionMode.ContextDependent()
+                ResolutionMode.ContextDependent
 
             // In general, it seems correct Dependent mode for elvis parts,
             // but we still should preserve obsolete behavior for LV == 2.0
@@ -315,7 +315,7 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
         data: ResolutionMode,
     ): ResolutionMode = when {
         session.languageVersionSettings.supportsFeature(LanguageFeature.ElvisInferenceImprovementsIn21) ->
-            ResolutionMode.ContextDependent()
+            ResolutionMode.ContextDependent
 
         // In general, it seems correct Dependent mode for elvis parts,
         // but we still should preserve obsolete behavior for LV == 2.0

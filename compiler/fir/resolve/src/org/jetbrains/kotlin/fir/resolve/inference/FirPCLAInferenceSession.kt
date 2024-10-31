@@ -249,7 +249,7 @@ class FirPCLAInferenceSession(
                 error("$this call should not be analyzed in ${callInfo.resolutionMode}")
 
             is ResolutionMode.AssignmentLValue,
-            is ResolutionMode.ContextDependent,
+            is ResolutionMode.ContextDependentWithInfo,
             is ResolutionMode.ContextIndependent,
             is ResolutionMode.ReceiverResolution,
             -> {

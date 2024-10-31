@@ -61,7 +61,6 @@ import org.jetbrains.kotlin.resolve.calls.tower.isSuccess
 import org.jetbrains.kotlin.types.Variance
 import org.jetbrains.kotlin.util.OperatorNameConventions
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
-import org.jetbrains.kotlin.utils.ifEmpty
 
 class FirCallResolver(
     private val components: FirAbstractBodyResolveTransformer.BodyResolveTransformerComponents,
@@ -353,7 +352,7 @@ class FirCallResolver(
         val reducedCandidates = result.candidates
         if (!acceptCandidates(reducedCandidates)) return qualifiedAccess
 
-        val mayDelay = resolutionMode is ResolutionMode.ContextDependent && resolutionMode.isFunctionArgument
+        val mayDelay = resolutionMode is ResolutionMode.ContextDependentWithInfo && resolutionMode.isFunctionArgument
         val nameReference = when {
             reducedCandidates.isEmpty() && qualifiedAccess.explicitReceiver == null && mayDelay ->
                 buildDelayedNameReference {
@@ -642,7 +641,7 @@ class FirCallResolver(
             annotation.replaceArgumentList(
                 annotation.argumentList.transform(
                     transformer,
-                    ResolutionMode.ContextDependent(isFunctionArgument = true)
+                    ResolutionMode.ContextDependentFunctionArgument
                 )
             )
 

@@ -508,7 +508,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
                     if (enableArrayOfCallTransformation && data is ResolutionMode.WithExpectedType) {
                         transformCallArgumentsInsideAnnotationContext(functionCall, data)
                     } else {
-                        it.replaceArgumentList(it.argumentList.transform(this, ResolutionMode.ContextDependent(isFunctionArgument = true)))
+                        it.replaceArgumentList(it.argumentList.transform(this, ResolutionMode.ContextDependentFunctionArgument))
                     }
                     dataFlowAnalyzer.exitCallArguments()
                 }
@@ -568,7 +568,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
             call.replaceArgumentList(
                 call.argumentList.transform(
                     this,
-                    expectedArrayElementType ?: ResolutionMode.ContextDependent(isFunctionArgument = true)
+                    expectedArrayElementType ?: ResolutionMode.ContextDependent
                 )
             )
         }
@@ -610,13 +610,13 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
                             forceFullCompletion = false,
                             arrayLiteralPosition = ArrayLiteralPosition.AnnotationArgument,
                         )
-                    } ?: ResolutionMode.ContextDependent(isFunctionArgument = true)
+                    } ?: ResolutionMode.ContextDependentFunctionArgument
 
                     arg.transformSingle(transformer, resolutionMode)
                 }
             })
         } else {
-            call.replaceArgumentList(call.argumentList.transform(transformer, ResolutionMode.ContextDependent(isFunctionArgument = true)))
+            call.replaceArgumentList(call.argumentList.transform(transformer, ResolutionMode.ContextDependentFunctionArgument))
         }
     }
 
@@ -641,7 +641,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
         )
 
         val approximationIsNeeded =
-            resolutionMode !is ResolutionMode.ReceiverResolution && resolutionMode !is ResolutionMode.ContextDependent
+            resolutionMode !is ResolutionMode.ReceiverResolution && resolutionMode !is ResolutionMode.ContextDependentWithInfo
 
         val integerOperatorCall = buildIntegerLiteralOperatorCall {
             source = originalCall.source
@@ -731,7 +731,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
         dataFlowAnalyzer.enterCallArguments(augmentedAssignment, listOf(augmentedAssignment.rightArgument))
         val leftArgument = augmentedAssignment.leftArgument
             .transformAsExplicitReceiver(ResolutionMode.ReceiverResolution, isUsedAsGetClassReceiver = false)
-        val rightArgument = augmentedAssignment.rightArgument.transformSingle(transformer, ResolutionMode.ContextDependent(isFunctionArgument = true))
+        val rightArgument = augmentedAssignment.rightArgument.transformSingle(transformer, ResolutionMode.ContextDependentFunctionArgument)
         dataFlowAnalyzer.exitCallArguments()
 
         val generator = GeneratorOfPlusAssignCalls(
@@ -971,7 +971,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
     private fun FirFunctionCall.resolveCandidateForAssignmentOperatorCall(): FirFunctionCall {
         return transformFunctionCallInternal(
             this,
-            ResolutionMode.ContextDependent(),
+            ResolutionMode.ContextDependent,
             CallResolutionMode.OPTION_FOR_AUGMENTED_ASSIGNMENT
         ) as FirFunctionCall
     }
@@ -1120,7 +1120,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
 
         checkNotNullCall
             .transformAnnotations(transformer, ResolutionMode.ContextIndependent)
-            .replaceArgumentList(checkNotNullCall.argumentList.transform(transformer, ResolutionMode.ContextDependent()))
+            .replaceArgumentList(checkNotNullCall.argumentList.transform(transformer, ResolutionMode.ContextDependent))
 
         val result = callCompleter.completeCall(
             components.syntheticCallGenerator.generateCalleeForCheckNotNullCall(checkNotNullCall, resolutionContext, data), data
@@ -1223,7 +1223,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
 
         transformedLHS?.let { callableReferenceAccess.replaceExplicitReceiver(transformedLHS) }
 
-        return if (data is ResolutionMode.ContextDependent) {
+        return if (data is ResolutionMode.ContextDependentWithInfo) {
             context.storeCallableReferenceContext(callableReferenceAccess)
             callableReferenceAccess
         } else {
@@ -1435,7 +1435,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
         dataFlowAnalyzer.enterCallArguments(delegatedConstructorCall, delegatedConstructorCall.arguments)
         val lastDispatchReceiver = implicitReceiverStack.lastDispatchReceiver()
         context.forDelegatedConstructorCall(containingConstructor, containingClass as? FirRegularClass, components) {
-            delegatedConstructorCall.transformChildren(transformer, ResolutionMode.ContextDependent(isFunctionArgument = true))
+            delegatedConstructorCall.transformChildren(transformer, ResolutionMode.ContextDependentFunctionArgument)
         }
         dataFlowAnalyzer.exitCallArguments()
 
@@ -1581,7 +1581,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
         // transformedLhsCall: a.get(index)
         val transformedLhsCall = indexedAccessAugmentedAssignment.lhsGetCall.transformSingle(transformer, ResolutionMode.ContextIndependent)
             .also { it.setIndexedAccessAugmentedAssignSource(fakeSourceElementKind) }
-        val transformedRhs = indexedAccessAugmentedAssignment.rhs.transformSingle(transformer, ResolutionMode.ContextDependent(isFunctionArgument = true))
+        val transformedRhs = indexedAccessAugmentedAssignment.rhs.transformSingle(transformer, ResolutionMode.ContextDependentFunctionArgument)
         dataFlowAnalyzer.exitCallArguments()
 
         val generator = GeneratorOfPlusAssignCalls(
@@ -1832,7 +1832,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
                     arrayLiteral.transformChildren(
                         transformer,
                         data.expectedType?.coneTypeOrNull?.arrayElementType()?.let { withExpectedType(it) }
-                            ?: ResolutionMode.ContextDependent(),
+                            ?: ResolutionMode.ContextDependent,
                     )
 
                     val call = components.syntheticCallGenerator.generateSyntheticArrayOfCall(
@@ -1846,7 +1846,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
                 }
                 else -> {
                     // Other unsupported usage.
-                    arrayLiteral.transformChildren(transformer, ResolutionMode.ContextDependent())
+                    arrayLiteral.transformChildren(transformer, ResolutionMode.ContextDependent)
                     // We set the arrayLiteral's type to the expect type or Array<Any>
                     // because arguments need to have a type during resolution of the synthetic call.
                     // We remove the type so that it will be set during completion to the CST of the arguments.

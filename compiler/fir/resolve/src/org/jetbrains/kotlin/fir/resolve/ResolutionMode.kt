@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
 sealed class ResolutionMode(
     val forceFullCompletion: Boolean,
 ) {
-    data class ContextDependent(
+    data class ContextDependentWithInfo(
         val isFunctionArgument: Boolean = false
     ) : ResolutionMode(forceFullCompletion = false)
 
@@ -125,7 +125,10 @@ sealed class ResolutionMode(
         override fun toString(): String = "AssignmentLValue: ${variableAssignment.render()}"
     }
 
-    private companion object {
+    companion object {
+        val ContextDependent : ContextDependentWithInfo = ContextDependentWithInfo(false)
+        val ContextDependentFunctionArgument : ContextDependentWithInfo = ContextDependentWithInfo(true)
+
         private fun FirTypeRef?.prettyString(): String {
             if (this == null) return "null"
             val coneType = this.coneTypeSafe<ConeKotlinType>() ?: return this.render()
@@ -192,7 +195,7 @@ fun withExpectedType(
 
 @JvmName("withExpectedTypeNullable")
 fun withExpectedType(coneType: ConeKotlinType?, mayBeCoercionToUnitApplied: Boolean = false): ResolutionMode {
-    return coneType?.let { withExpectedType(it, mayBeCoercionToUnitApplied) } ?: ResolutionMode.ContextDependent()
+    return coneType?.let { withExpectedType(it, mayBeCoercionToUnitApplied) } ?: ResolutionMode.ContextDependent
 }
 
 fun withExpectedType(coneType: ConeKotlinType, mayBeCoercionToUnitApplied: Boolean = false): ResolutionMode {
