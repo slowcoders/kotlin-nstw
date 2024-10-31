@@ -181,7 +181,7 @@ kotlin {
             kotlin.srcDir("junit/src/main/kotlin")
             resources.srcDir("junit/src/main/resources")
             dependencies {
-                api("junit:junit:4.13.2")
+                api(libs.junit4)
             }
         }
         val jvmJUnitTest by getting {
@@ -216,7 +216,7 @@ kotlin {
             dependsOn(commonTest)
             kotlin.srcDir("testng/src/test/kotlin")
             dependencies {
-                implementation("org.testng:testng:7.5.1")
+                implementation(libs.testng)
             }
         }
         val jsMain by getting {
@@ -403,12 +403,12 @@ configurations {
             when (framework) {
                 JvmTestFramework.JUnit -> {}
                 JvmTestFramework.JUnit5 -> {
-                    apiElements("org.junit.jupiter:junit-jupiter-api:5.10.1")
-                    runtimeDeps("org.junit.jupiter:junit-jupiter-engine:5.10.1")
-                    runtimeDeps("org.junit.platform:junit-platform-launcher:1.10.1")
+                    apiElements(libs.junit.jupiter.api)
+                    runtimeDeps(libs.junit.jupiter.engine)
+                    runtimeDeps(libs.junit.platform.launcher)
                 }
                 JvmTestFramework.TestNG -> {
-                    apiElements("org.testng:testng:7.5.1")
+                    apiElements(libs.testng)
                 }
             }
         }
