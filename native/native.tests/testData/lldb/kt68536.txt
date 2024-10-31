@@ -17,7 +17,7 @@
 
 > s
 [..] stop reason = step in
-[..] at main.kt:7:20
+[..] at main.kt:7:[..]
 
 > s
 [..] stop reason = step in
