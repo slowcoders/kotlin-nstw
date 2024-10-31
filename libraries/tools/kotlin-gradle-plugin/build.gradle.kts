@@ -499,7 +499,7 @@ if (!kotlinBuildProperties.isInJpsBuildIdeaSync) {
 
         implementation("com.android.tools.build:gradle:8.7.1")
         implementation("com.android.tools.build:gradle-api:8.7.1")
-        compileOnly("com.android.tools:common:30.2.1")
+        compileOnly("com.android.tools:common:31.7.1")
         implementation(gradleKotlinDsl())
         implementation(project(":kotlin-gradle-plugin-tcs-android"))
         implementation(project(":kotlin-tooling-metadata"))
