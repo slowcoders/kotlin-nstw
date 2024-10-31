@@ -52,6 +52,7 @@ testng = "7.5.1"
 woodstox-core = "7.1.0"
 http-client = "4.5.14"
 json = "20231013"
+dataframe = "0.14.1"
 
 [libraries]
 dexMemberList = { module = "com.jakewharton.dex:dex-member-list", version.ref = "dexMemberList" }
@@ -71,6 +72,7 @@ shadow-gradlePlugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", ver
 spdx-gradlePlugin = { module = "org.spdx:spdx-gradle-plugin", version.ref = "spdx" }
 proguard-gradlePlugin = { module = "com.guardsquare:proguard-gradle", version.ref = "proguard" }
 woodstox-core = { module = "com.fasterxml.woodstox:woodstox-core", version.ref = "woodstox-core" }
+dataframe = { module = "org.jetbrains.kotlinx:dataframe", version.ref = "dataframe" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
