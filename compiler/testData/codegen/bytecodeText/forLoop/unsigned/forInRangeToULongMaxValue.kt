@@ -30,6 +30,8 @@ fun f(a: ULong): Int {
 // 0 INVOKESTATIC kotlin/ULong.constructor-impl
 // 0 INVOKE\w+ kotlin/ULong.(un)?box-impl
 
+// 0 LDC2_W
+// 2 LDC -1
 // 1 ILOAD
 // 1 ISTORE
 // 0 IADD
