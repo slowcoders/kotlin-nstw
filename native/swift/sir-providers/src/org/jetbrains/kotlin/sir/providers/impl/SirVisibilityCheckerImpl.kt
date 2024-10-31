@@ -60,7 +60,7 @@ public class SirVisibilityCheckerImpl(
     }
 
     private fun KaNamedFunctionSymbol.isConsumableBySirBuilder(): Boolean {
-        if (isStatic) {
+        if (isStatic && name.asString() != "valueOf") {
             unsupportedDeclarationReporter.report(this@isConsumableBySirBuilder, "static functions are not supported yet.")
             return false
         }
