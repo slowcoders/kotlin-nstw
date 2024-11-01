@@ -145,7 +145,7 @@ internal class DeepCopyIrTreeWithSymbolsPrinter(
                             IrTree.constantPrimitive
                         )
                     ) {
-                        println("constructorIndicator = null")
+                        println("constructorIndicator = null,")
                     }
                     if (useWithShapeConstructor(element)) {
                         printWithShapeExtraArguments(element)
