@@ -113,7 +113,7 @@ internal class DeepCopyIrTreeWithSymbolsPrinter(
             if (element.implementations.isEmpty()) return
 
             println()
-            printVisitMethodDeclaration(element, hasDataParameter = false, override = true, returnType = element)
+            printVisitMethodDeclaration(element, hasDataParameter = false, override = true)
 
             println(" =")
             withIndent {
