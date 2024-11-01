@@ -31,7 +31,7 @@ internal actual external fun String.nativeIndexOf(str: String, fromIndex: Int): 
 internal actual external fun String.nativeLastIndexOf(ch: Char, fromIndex: Int): Int
 
 /**
- * Returns the index within this string of the last occurrence of the specified character, starting from the specified offset.
+ * Returns the index within this string of the last occurrence of the specified substring, starting from the specified offset.
  */
 internal actual fun String.nativeLastIndexOf(str: String, fromIndex: Int): Int {
     val count = length
