@@ -173,9 +173,6 @@ class K2JSTranslator @JvmOverloads constructor(
         if (hasError(diagnostics)) return TranslationResult.Fail(diagnostics)
         checkCanceled()
 
-        transformLabeledBlockToDoWhile(translationResult.newFragments)
-        checkCanceled()
-
         transformCoroutines(translationResult.newFragments)
         checkCanceled()
 
