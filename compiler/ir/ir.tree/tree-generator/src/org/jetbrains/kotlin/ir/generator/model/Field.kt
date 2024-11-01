@@ -13,18 +13,18 @@ import org.jetbrains.kotlin.generators.tree.ListField as AbstractListField
  * A policy to include a field in constructors used when generating `DeepCopyIrTreeWithSymbols`.
  */
 enum class DeepCopyConstructorPolicy {
-    /*
+    /**
      * The field is always included in constructors used by `DeepCopyIrTreeWithSymbols`,
      * even when defined within the body fields of the class implementation.
      */
     ALWAYS_INCLUDED,
 
-    /*
+    /**
      * The field is included in constructors used by `DeepCopyIrTreeWithSymbols` only when defined within the body fields of the class implementation.
      */
     DEFAULT,
 
-    /*
+    /**
      * The field is never included in constructors used by `DeepCopyIrTreeWithSymbols`.
      */
     NEVER_INCLUDED,
