@@ -1,7 +1,7 @@
-// IGNORE_BACKEND: ANY
-// ^^^ Muted because a private type is leaked from the declaring file, and the visibility validator detects this.
-//     This test should be converted to a test that checks reporting private types exposure. To be done in KT-69681.
+// LANGUAGE: +ForbidExposureOfPrivateTypesInNonPrivateInlineFunctionsInKlibs
+// DIAGNOSTICS: -NOTHING_TO_INLINE
 
+// MODULE: lib
 // FILE: A.kt
 interface Foo {
     fun foo(): String
@@ -15,9 +15,10 @@ private class FooImpl : Foo {
 private inline fun privateMethod() = FooImpl()
 
 internal inline fun internalMethod(): Foo {
-    return privateMethod()
+    return <!IR_PRIVATE_TYPE_USED_IN_NON_PRIVATE_INLINE_FUNCTION_ERROR!>privateMethod()<!>
 }
 
+// MODULE: main()(lib)
 // FILE: main.kt
 fun box(): String {
     return internalMethod().foo()

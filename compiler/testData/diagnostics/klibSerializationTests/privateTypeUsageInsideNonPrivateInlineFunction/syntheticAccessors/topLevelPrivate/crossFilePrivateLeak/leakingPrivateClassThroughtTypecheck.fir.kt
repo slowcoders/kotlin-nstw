@@ -1,18 +1,17 @@
-// IGNORE_BACKEND: ANY
-// ^^^ Muted because a private type is leaked from the declaring file, and the visibility validator detects this.
-//     This test should be converted to a test that checks reporting private types exposure. To be done in KT-69681.
+// LANGUAGE: +ForbidExposureOfPrivateTypesInNonPrivateInlineFunctionsInKlibs
+// DIAGNOSTICS: -NOTHING_TO_INLINE
 
 // FILE: A.kt
 private class Private
 
 internal inline fun isPrivate(obj: Any): String = when (obj) {
-    is Private -> "isPrivate"
+    <!IR_PRIVATE_TYPE_USED_IN_NON_PRIVATE_INLINE_FUNCTION_ERROR!>is Private<!> -> "isPrivate"
     else -> "OK1"
 }
 
 internal inline fun asPrivate(obj: Any): String {
     try {
-        val privateObj = obj as Private
+        <!IR_PRIVATE_TYPE_USED_IN_NON_PRIVATE_INLINE_FUNCTION_ERROR!>val privateObj = <!IR_PRIVATE_TYPE_USED_IN_NON_PRIVATE_INLINE_FUNCTION_ERROR!>obj as Private<!><!>
         return "asPrivate"
     } catch (e: ClassCastException) {
         return "OK2"

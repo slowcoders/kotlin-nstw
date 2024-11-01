@@ -78,6 +78,229 @@ public class FirPsiNativeKlibDiagnosticsTestGenerated extends AbstractFirPsiNati
       public void testPrivateTypesInsideInternalInlineFunctionWarning() {
         runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/privateTypesInsideInternalInlineFunctionWarning.kt");
       }
+
+      @Nested
+      @TestMetadata("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors")
+      @TestDataPath("$PROJECT_ROOT")
+      @Tag("frontend-fir")
+      @FirPipeline()
+      @Tag("klib")
+      public class SyntheticAccessors {
+        @Test
+        public void testAllFilesPresentInSyntheticAccessors() {
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors"), Pattern.compile("^(.+)\\.kt$"), null, true);
+        }
+
+        @Nested
+        @TestMetadata("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember")
+        @TestDataPath("$PROJECT_ROOT")
+        @Tag("frontend-fir")
+        @FirPipeline()
+        @Tag("klib")
+        public class PrivateMember {
+          @Test
+          public void testAllFilesPresentInPrivateMember() {
+            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember"), Pattern.compile("^(.+)\\.kt$"), null, true);
+          }
+
+          @Nested
+          @TestMetadata("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossFilePrivateLeak")
+          @TestDataPath("$PROJECT_ROOT")
+          @Tag("frontend-fir")
+          @FirPipeline()
+          @Tag("klib")
+          public class CrossFilePrivateLeak {
+            @Test
+            public void testAllFilesPresentInCrossFilePrivateLeak() {
+              KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossFilePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassConstructor.kt")
+            public void testLeakingPrivateClassConstructor() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossFilePrivateLeak/leakingPrivateClassConstructor.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassConstructor.fir.kt")
+            public void testLeakingPrivateClassConstructor_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossFilePrivateLeak/leakingPrivateClassConstructor.fir.kt");
+            }
+
+            @Test
+            @TestMetadata("usePrivateFunInterfaceFromInlineFun.kt")
+            public void testUsePrivateFunInterfaceFromInlineFun() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossFilePrivateLeak/usePrivateFunInterfaceFromInlineFun.kt");
+            }
+
+            @Test
+            @TestMetadata("usePrivateFunInterfaceFromInlineFun.fir.kt")
+            public void testUsePrivateFunInterfaceFromInlineFun_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossFilePrivateLeak/usePrivateFunInterfaceFromInlineFun.fir.kt");
+            }
+          }
+
+          @Nested
+          @TestMetadata("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossModulePrivateLeak")
+          @TestDataPath("$PROJECT_ROOT")
+          @Tag("frontend-fir")
+          @FirPipeline()
+          @Tag("klib")
+          public class CrossModulePrivateLeak {
+            @Test
+            public void testAllFilesPresentInCrossModulePrivateLeak() {
+              KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossModulePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassConstructor.kt")
+            public void testLeakingPrivateClassConstructor() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossModulePrivateLeak/leakingPrivateClassConstructor.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassConstructor.fir.kt")
+            public void testLeakingPrivateClassConstructor_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossModulePrivateLeak/leakingPrivateClassConstructor.fir.kt");
+            }
+
+            @Test
+            @TestMetadata("usePrivateFunInterfaceFromInlineFun.kt")
+            public void testUsePrivateFunInterfaceFromInlineFun() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossModulePrivateLeak/usePrivateFunInterfaceFromInlineFun.kt");
+            }
+
+            @Test
+            @TestMetadata("usePrivateFunInterfaceFromInlineFun.fir.kt")
+            public void testUsePrivateFunInterfaceFromInlineFun_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/privateMember/crossModulePrivateLeak/usePrivateFunInterfaceFromInlineFun.fir.kt");
+            }
+          }
+        }
+
+        @Nested
+        @TestMetadata("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate")
+        @TestDataPath("$PROJECT_ROOT")
+        @Tag("frontend-fir")
+        @FirPipeline()
+        @Tag("klib")
+        public class TopLevelPrivate {
+          @Test
+          public void testAllFilesPresentInTopLevelPrivate() {
+            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate"), Pattern.compile("^(.+)\\.kt$"), null, true);
+          }
+
+          @Nested
+          @TestMetadata("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak")
+          @TestDataPath("$PROJECT_ROOT")
+          @Tag("frontend-fir")
+          @FirPipeline()
+          @Tag("klib")
+          public class CrossFilePrivateLeak {
+            @Test
+            public void testAllFilesPresentInCrossFilePrivateLeak() {
+              KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtKlass.kt")
+            public void testLeakingPrivateClassThroughtKlass() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateClassThroughtKlass.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtKlass.fir.kt")
+            public void testLeakingPrivateClassThroughtKlass_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateClassThroughtKlass.fir.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtPrivateTopLevelFun.kt")
+            public void testLeakingPrivateClassThroughtPrivateTopLevelFun() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateClassThroughtPrivateTopLevelFun.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtPrivateTopLevelFun.fir.kt")
+            public void testLeakingPrivateClassThroughtPrivateTopLevelFun_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateClassThroughtPrivateTopLevelFun.fir.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtTypecheck.kt")
+            public void testLeakingPrivateClassThroughtTypecheck() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateClassThroughtTypecheck.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtTypecheck.fir.kt")
+            public void testLeakingPrivateClassThroughtTypecheck_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateClassThroughtTypecheck.fir.kt");
+            }
+          }
+
+          @Nested
+          @TestMetadata("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak")
+          @TestDataPath("$PROJECT_ROOT")
+          @Tag("frontend-fir")
+          @FirPipeline()
+          @Tag("klib")
+          public class CrossModulePrivateLeak {
+            @Test
+            public void testAllFilesPresentInCrossModulePrivateLeak() {
+              KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtKlass.kt")
+            public void testLeakingPrivateClassThroughtKlass() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateClassThroughtKlass.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtKlass.fir.kt")
+            public void testLeakingPrivateClassThroughtKlass_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateClassThroughtKlass.fir.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtPrivateTopLevelFun.kt")
+            public void testLeakingPrivateClassThroughtPrivateTopLevelFun() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateClassThroughtPrivateTopLevelFun.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtPrivateTopLevelFun.fir.kt")
+            public void testLeakingPrivateClassThroughtPrivateTopLevelFun_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateClassThroughtPrivateTopLevelFun.fir.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtTypecheck.kt")
+            public void testLeakingPrivateClassThroughtTypecheck() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateClassThroughtTypecheck.kt");
+            }
+
+            @Test
+            @TestMetadata("leakingPrivateClassThroughtTypecheck.fir.kt")
+            public void testLeakingPrivateClassThroughtTypecheck_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateClassThroughtTypecheck.fir.kt");
+            }
+
+            @Test
+            @TestMetadata("potentiallyClashingPrivateClassAccessors.kt")
+            public void testPotentiallyClashingPrivateClassAccessors() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/potentiallyClashingPrivateClassAccessors.kt");
+            }
+
+            @Test
+            @TestMetadata("potentiallyClashingPrivateClassAccessors.fir.kt")
+            public void testPotentiallyClashingPrivateClassAccessors_fir() {
+              runTest("compiler/testData/diagnostics/klibSerializationTests/privateTypeUsageInsideNonPrivateInlineFunction/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/potentiallyClashingPrivateClassAccessors.fir.kt");
+            }
+          }
+        }
+      }
     }
   }
 

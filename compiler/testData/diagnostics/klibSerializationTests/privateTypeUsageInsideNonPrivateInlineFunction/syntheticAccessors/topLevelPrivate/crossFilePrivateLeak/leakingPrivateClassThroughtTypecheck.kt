@@ -1,9 +1,7 @@
-// IGNORE_BACKEND: ANY
-// ^^^ Muted because a private type is leaked from the declaring file, and the visibility validator detects this.
-//     This test should be converted to a test that checks reporting private types exposure. To be done in KT-69681.
+// LANGUAGE: +ForbidExposureOfPrivateTypesInNonPrivateInlineFunctionsInKlibs
+// DIAGNOSTICS: -NOTHING_TO_INLINE
 
-// MODULE: lib
-// FILE: a.kt
+// FILE: A.kt
 private class Private
 
 internal inline fun isPrivate(obj: Any): String = when (obj) {
@@ -20,7 +18,6 @@ internal inline fun asPrivate(obj: Any): String {
     }
 }
 
-// MODULE: main()(lib)
 // FILE: main.kt
 fun box(): String {
     val result = isPrivate(Any()) + asPrivate(Any())
