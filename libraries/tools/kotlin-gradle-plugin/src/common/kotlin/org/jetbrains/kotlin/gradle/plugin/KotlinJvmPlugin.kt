@@ -9,6 +9,7 @@ import org.gradle.api.*
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
+import org.jetbrains.kotlin.gradle.plugin.abi.applyJvmAbiValidation
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import org.jetbrains.kotlin.gradle.utils.KotlinJvmCompilerOptionsDefault
@@ -76,6 +77,9 @@ internal open class KotlinJvmPlugin(
             kotlinExtension.compilerOptions,
             target.compilerOptions
         )
+
+        val compilations = target.compilations
+        project.applyJvmAbiValidation(kotlinExtension, compilations)
     }
 
     override fun configureClassInspectionForIC(project: Project) {
