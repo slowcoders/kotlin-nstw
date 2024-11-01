@@ -320,8 +320,11 @@ class CacheBuilder(
         Fail
     }
 
-    private inline fun getFileSizeSafe(path: Path, fallbackInCaseOfIOError: () -> Long) = try {
-        Files.size(path)
+    private inline fun getFileContentsHash(path: Path, fallbackInCaseOfIOError: () -> Int) = try {
+        if (Files.size(path) > 1024 * 1024) // The file is not supposed to grow this big - something clearly went wrong.
+            fallbackInCaseOfIOError()
+        else
+            Files.readAllBytes(path).fold(0) { acc, value -> acc * 31 + value }
     } catch (t: IOException) {
         fallbackInCaseOfIOError()
     }
@@ -338,7 +341,7 @@ class CacheBuilder(
         } catch (t: FileAlreadyExistsException) {
             var ok = false
             try {
-                var fileSize = getFileSizeSafe(absolutePath) { 0L }
+                var fileHash = getFileContentsHash(absolutePath) { 0 }
                 var time = System.currentTimeMillis()
                 while (true) {
                     if (!lockFile.exists) {
@@ -346,15 +349,15 @@ class CacheBuilder(
                         break
                     }
                     Thread.sleep(sleepPeriod)
-                    val curFileSize = getFileSizeSafe(absolutePath) { fileSize }
+                    val curFileHash = getFileContentsHash(absolutePath) { fileHash }
                     val curTime = System.currentTimeMillis()
-                    if (curFileSize == fileSize) {
+                    if (curFileHash == fileHash) {
                         // Other process should change the file every period,
                         // so if for 10 periods there has been no change, something went wrong.
                         if (curTime - time > sleepPeriod * 10)
                             break
                     } else {
-                        fileSize = curFileSize
+                        fileHash = curFileHash
                         time = curTime
                     }
                 }
