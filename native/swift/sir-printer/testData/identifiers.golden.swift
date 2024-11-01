@@ -21,11 +21,11 @@ public typealias unicode_u221e_symbol221e = Test.unicode_u221e_symbol221e
 // with space
 public typealias with_u20_space = Test.with_u20_space
 // () -> Function
-public typealias u282920_-_u3e20_Function = Test.u282920_-_u3e20_Function
+public typealias u2829202d3e20_Function = Test.u2829202d3e20_Function
 // +
 public typealias u2b = Test.u2b
 // class
-public typealias 'it' = Test.class
+public typealias `class` = Test.class
 // Class
 public typealias Class = Test.Class
 // with	extensive
@@ -58,11 +58,11 @@ public struct unicode_u221e_symbol221e {
 }
 public struct with_u20_space {
 }
-public struct u282920_-_u3e20_Function {
+public struct u2829202d3e20_Function {
 }
 public struct u2b {
 }
-public struct 'it' {
+public struct `class` {
 }
 public struct Class {
 }
@@ -139,7 +139,7 @@ public var with_u20_space: Test.with_u20_space {
     }
 }
 // () -> Function
-public var u282920_-_u3e20_Function: Test.u282920_-_u3e20_Function {
+public var u2829202d3e20_Function: Test.u2829202d3e20_Function {
     get {
         stub()
     }
@@ -151,7 +151,7 @@ public var u2b: Test.u2b {
     }
 }
 // class
-public var 'it': Test.class {
+public var `class`: Test.class {
     get {
         stub()
     }
@@ -227,7 +227,7 @@ public func with_u20_space() -> Test.with_u20_space {
     stub()
 }
 // () -> Function
-public func u282920_-_u3e20_Function() -> Test.u282920_-_u3e20_Function {
+public func u2829202d3e20_Function() -> Test.u2829202d3e20_Function {
     stub()
 }
 // +
@@ -235,7 +235,7 @@ public func u2b() -> Test.u2b {
     stub()
 }
 // class
-public func 'it'() -> Test.class {
+public func `class`() -> Test.class {
     stub()
 }
 // Class

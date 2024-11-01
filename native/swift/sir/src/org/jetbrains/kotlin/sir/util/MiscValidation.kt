@@ -18,10 +18,10 @@ _a-zA-Z
 \u3004-\u3007\u3021-\u302F\u3031-\u303F\u3040-\uD7FF
 \uF900-\uFD3D\uFD40-\uFDCF\uFDF0-\uFE1F\uFE30-\uFE44
 \uFE47-\uFFFD
-\uD800-\uD83F\uDC00-\uDC08\uD840-\uD87F\uDC00-\uDC08\uD880-\uD8BF\uDC00-\uDC08\uD8C0-\uD8FF\uDC00-\uDC08
-\uD900-\uD93F\uDC00-\uDC08\uD940-\uD97F\uDC00-\uDC08\uD980-\uD9BF\uDC00-\uDC08\uD9C0-\uD9FF\uDC00-\uDC08
-\uDA00-\uDA3F\uDC00-\uDC08\uDA40-\uDA7F\uDC00-\uDC08\uDA80-\uDABF\uDC00-\uDC08\uDAC0-\uDAFF\uDC00-\uDC08
-\uDB00-\uDB3F\uDC00-\uDC08\uDB40-\uDB7F\uDC00-\uDC08
+\x{10000}-\x{1FFFD}\x{20000}-\x{2FFFD}\x{30000}-\x{3FFFD}\x{40000}-\x{4FFFD}
+\x{50000}-\x{5FFFD}\x{60000}-\x{6FFFD}\x{70000}-\x{7FFFD}\x{80000}-\x{8FFFD}
+\x{90000}-\x{9FFFD}\x{A0000}-\x{AFFFD}\x{B0000}-\x{BFFFD}\x{C0000}-\x{CFFFD}
+\x{D0000}-\x{DFFFD}\x{E0000}-\x{EFFFD}
 """.replace("\n", "")
 
 private val SWIFT_IDENTIFIER_BODY = """
@@ -66,7 +66,7 @@ public val String.isValidSwiftIdentifier: Boolean
     get() = swiftIdentifierRegex.matches(this)
 
 public val String.swiftIdentifier: String
-    get() = swiftSanitizedName.let { if (swiftKeywords.contains(it)) "'it'" else it }.ifEmpty { "_" }
+    get() = swiftSanitizedName.let { if (swiftKeywords.contains(it)) "`$it`" else it }.ifEmpty { "_" }
 
 public val String.swiftStringLiteral: String
     get() {
