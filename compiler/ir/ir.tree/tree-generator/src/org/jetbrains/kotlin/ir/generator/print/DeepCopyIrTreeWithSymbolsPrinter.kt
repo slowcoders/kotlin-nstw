@@ -89,7 +89,7 @@ internal class DeepCopyIrTreeWithSymbolsPrinter(
             println("// TODO refactor")
             println("// After removing usages of ${deepCopyTypeRemapperType.simpleName} constructor from compose, the lateinit property `${deepCopyTypeRemapperType.simpleName}.deepCopy`")
             println("// can be refactored to a constructor parameter.")
-            print("(this.${typeRemapperParameter.name} as? ${deepCopyTypeRemapperType.simpleName})?.let")
+            print("(this.${typeRemapperParameter.name} as? ${deepCopyTypeRemapperType.render()})?.let")
             printBlock {
                 println("it.deepCopy = this")
             }
