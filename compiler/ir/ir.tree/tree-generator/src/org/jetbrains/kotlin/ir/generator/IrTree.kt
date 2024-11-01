@@ -160,10 +160,10 @@ object IrTree : AbstractTreeBuilder() {
         val metadataField =
             +field("metadata", type(Packages.declarations, "MetadataSource"), nullable = true, deepCopyExcludeFromApply = true) {
                 kDoc = """
-            The arbitrary metadata associated with this IR node.
-            
-            @see ${render()}
-            """.trimIndent()
+                The arbitrary metadata associated with this IR node.
+                
+                @see ${render()}
+                """.trimIndent()
             }
         kDoc = """
         An [${rootElement.render()}] capable of holding something which backends can use to write
