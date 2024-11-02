@@ -764,6 +764,35 @@ open class LocalDeclarationsLowering(
             newDeclaration.annotations = oldDeclaration.annotations
 
             transformedDeclarations[oldDeclaration] = newDeclaration
+
+            cleanUpLocalFunctionForUnboundSymbol(ownerParent, oldDeclaration.name.asString())
+        }
+
+        /**
+         * This function removes [IrFunction] created by `Fir2IrDeclarationStorage.fillUnboundSymbols()` to handle the code fragment
+         * in the middle of code compiler of `KaCompilerFacility`. This function assumes two things about such [IrFunction]
+         *  1. It is added to [IrClass] with [IrDeclarationOrigin.FILE_CLASS].
+         *  2. It has [IrDeclarationOrigin.FILLED_FOR_UNBOUND_SYMBOL] for its origin.
+         */
+        private fun cleanUpLocalFunctionForUnboundSymbol(parent: IrDeclarationParent, nameOfLocalFunction: String) {
+            val fileParent = when (parent) {
+                is IrClass -> {
+                    var recursiveParent = parent.parent
+                    while (recursiveParent is IrClass) recursiveParent = recursiveParent.parent
+                    recursiveParent as? IrFile
+                }
+                is IrFile -> parent
+                else -> null
+            } ?: return
+
+            val fileClass = fileParent.declarations.singleOrNull { it.origin == IrDeclarationOrigin.FILE_CLASS } as? IrClass ?: return
+
+            // Drop local function whose name is `nameOfLocalFunction`.
+            val localFunctionToDrop = fileClass.declarations.singleOrNull { declaration ->
+                declaration is IrFunction && declaration.origin == IrDeclarationOrigin.FILLED_FOR_UNBOUND_SYMBOL
+                        && declaration.visibility == DescriptorVisibilities.LOCAL && declaration.name.asString() == nameOfLocalFunction
+            } ?: return
+            fileClass.declarations.remove(localFunctionToDrop)
         }
 
         private fun createTransformedValueParameters(

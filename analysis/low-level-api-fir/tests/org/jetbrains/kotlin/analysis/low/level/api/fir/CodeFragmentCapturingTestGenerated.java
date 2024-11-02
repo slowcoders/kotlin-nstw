@@ -138,6 +138,12 @@ public class CodeFragmentCapturingTestGenerated extends AbstractCodeFragmentCapt
   }
 
   @Test
+  @TestMetadata("localFunction2.kt")
+  public void testLocalFunction2() {
+    runTest("analysis/analysis-api/testData/components/compilerFacility/compilation/codeFragments/capturing/localFunction2.kt");
+  }
+
+  @Test
   @TestMetadata("localFunctionContainingClassClosure.kt")
   public void testLocalFunctionContainingClassClosure() {
     runTest("analysis/analysis-api/testData/components/compilerFacility/compilation/codeFragments/capturing/localFunctionContainingClassClosure.kt");
