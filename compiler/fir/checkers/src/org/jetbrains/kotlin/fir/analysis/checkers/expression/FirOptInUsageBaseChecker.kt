@@ -67,6 +67,7 @@ object FirOptInUsageBaseChecker {
             if (annotationClassId != other.annotationClassId) return false
             if (severity != other.severity) return false
             if (message != other.message) return false
+            if (fromSupertype != other.fromSupertype) return false
 
             return true
         }
