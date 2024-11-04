@@ -178,7 +178,7 @@ private fun processConstructors(
         }
 
         scope?.processDeclaredConstructors {
-            val shouldProcess = when (it.fir.isInner) {
+            val shouldProcess = when (matchedSymbol.fir.isInner) {
                 true -> constructorFilter.acceptInner
                 false -> constructorFilter.acceptNested
             }
