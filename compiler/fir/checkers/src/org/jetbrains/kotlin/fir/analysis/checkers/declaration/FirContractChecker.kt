@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
+import org.jetbrains.kotlin.fir.contracts.FirContractDescription
 import org.jetbrains.kotlin.fir.contracts.FirErrorContractDescription
 import org.jetbrains.kotlin.fir.contracts.FirResolvedContractDescription
 import org.jetbrains.kotlin.fir.contracts.description.*
@@ -30,9 +31,13 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
     override fun check(declaration: FirFunction, context: CheckerContext, reporter: DiagnosticReporter) {
         if (declaration !is FirContractDescriptionOwner) return
-        when (val contractDescription = declaration.contractDescription) {
+        val contractDescription = declaration.contractDescription ?: return
+
+        // Even if the contract could not be resolved, we want to report that it is present in a place
+        // where we don't expect to have a contract.
+        val reportedNotAllowed = checkContractNotAllowed(declaration, contractDescription, context, reporter)
+        when (contractDescription) {
             is FirResolvedContractDescription -> {
-                val reportedNotAllowed = checkContractNotAllowed(declaration, contractDescription, context, reporter)
                 if (reportedNotAllowed) return
                 checkUnresolvedEffects(contractDescription, context, reporter)
                 if (contractDescription.effects.isEmpty() && contractDescription.unresolvedEffects.isEmpty()) {
@@ -62,7 +67,7 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
     private fun checkContractNotAllowed(
         declaration: FirFunction,
-        contractDescription: FirResolvedContractDescription,
+        contractDescription: FirContractDescription,
         context: CheckerContext,
         reporter: DiagnosticReporter
     ): Boolean {
