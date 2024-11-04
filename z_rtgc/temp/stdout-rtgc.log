@@ -1,0 +1,124 @@
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':kotlin-native:backend.native:tests:harmonyRegexTest'.
+> Test /Volumes/Workspace/kotlin-rtgc/test.output/stdlib/harmonyRegexTest/macos_x64/harmonyRegexTest.kexe exited with 139
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':kotlin-native:backend.native:tests:interop_bitfields'.
+> Test failed. Actual exit status doesn't match with exit status checker: 139
+  stdout:
+  
+  stderr:
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+==============================================================================
+
+3: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':kotlin-native:backend.native:tests:interop_kotlin_exception_hook'.
+> Test failed. Actual output doesn't match with output checker: runtime assert: Assert Fail: ((_exceptionStack.size() >= (size_t)count)) at /Volumes/Workspace/kotlin-rtgc/kotlin-native/runtime/src/rtgc/cpp/LocalScanner.cpp:249
+  0   libinterop_kotlin_exception_hook.dylib 0x10d8cbf82        _ZN12_GLOBAL__N_111PrintAssertEbPKcS1_P13__va_list_tag + 146 
+  1   libinterop_kotlin_exception_hook.dylib 0x10d8cbd43        _ZN6kotlin8internal24RuntimeAssertFailedPanicEbPKcS2_z + 115 
+  2   libinterop_kotlin_exception_hook.dylib 0x10d8b40af        _ZN4rtgc12LocalScanner11rewindFrameEP12FrameOverlay + 543 
+  3   libinterop_kotlin_exception_hook.dylib 0x10d8bf1b1        CheckCurrentFrame + 33 
+  4   libinterop_kotlin_exception_hook.dylib 0x10d8d5110        HandleCurrentExceptionWhenLeavingKotlinCode + 32 
+  5   libinterop_kotlin_exception_hook.dylib 0x10d8dfe25        _ZL22_konan_function_0_implv + 69 
+  6   interop_kotlin_exception_hook.kexe  0x10d656e6d        main + 45 
+  7   dyld                                0x11912652d        0x0 + 4715603245 
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+==============================================================================
+
+4: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':kotlin-native:backend.native:tests:produce_dynamic'.
+> Test failed. Actual exit status doesn't match with exit status checker: 134
+  stdout:
+  Hello, dynamic!
+  Base.foo
+  Base.fooParam: a 1 q
+  Child.fooParam: b 2 null
+  Child.fooParam: c 3 null
+  Impl1.I: d 4 Impl1
+  Impl2.I: e 5 Impl2
+  String is Kotlin/Native nullable is Hi null is OK
+  RO property is 42
+  RW property is 239
+  enum100 = 100
+  enum42 = 42
+  object = 42
+  singleton = I am single
+  mutable = foo
+  topLevel = 777 3
+  IsInstance1 = PASS
+  IsInstance2 = PASS
+  getVector128 = (1, 2, 3, 4)
+  
+  stderr:
+  runtime assert: Assert Fail: ((_exceptionStack.size() >= (size_t)count)) at /Volumes/Workspace/kotlin-rtgc/kotlin-native/runtime/src/rtgc/cpp/LocalScanner.cpp:249
+  0   libproduce_dynamic.dylib            0x100ccd872        _ZN12_GLOBAL__N_111PrintAssertEbPKcS1_P13__va_list_tag + 146 
+  1   libproduce_dynamic.dylib            0x100ccd633        _ZN6kotlin8internal24RuntimeAssertFailedPanicEbPKcS2_z + 115 
+  2   libproduce_dynamic.dylib            0x100cb597f        _ZN4rtgc12LocalScanner11rewindFrameEP12FrameOverlay + 543 
+  3   libproduce_dynamic.dylib            0x100cc0a81        CheckCurrentFrame + 33 
+  4   libproduce_dynamic.dylib            0x100cd6a00        HandleCurrentExceptionWhenLeavingKotlinCode + 32 
+  5   libproduce_dynamic.dylib            0x100ce2515        _ZL22_konan_function_9_implv + 69 
+  6   produce_dynamic.kexe                0x100a3de1e        main + 1774 
+  7   dyld                                0x10562252d        0x0 + 4385285421 
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+==============================================================================
+
+5: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':kotlin-native:backend.native:tests:produce_dynamic_unhandledException'.
+> Test failed. Actual output doesn't match with output checker: runtime assert: Assert Fail: ((_exceptionStack.size() >= (size_t)count)) at /Volumes/Workspace/kotlin-rtgc/kotlin-native/runtime/src/rtgc/cpp/LocalScanner.cpp:249
+  0   libproduce_dynamic_unhandledException.dylib 0x1094e3ea2        _ZN12_GLOBAL__N_111PrintAssertEbPKcS1_P13__va_list_tag + 146 
+  1   libproduce_dynamic_unhandledException.dylib 0x1094e3c63        _ZN6kotlin8internal24RuntimeAssertFailedPanicEbPKcS2_z + 115 
+  2   libproduce_dynamic_unhandledException.dylib 0x1094cbfaf        _ZN4rtgc12LocalScanner11rewindFrameEP12FrameOverlay + 543 
+  3   libproduce_dynamic_unhandledException.dylib 0x1094d70b1        CheckCurrentFrame + 33 
+  4   libproduce_dynamic_unhandledException.dylib 0x1094ed030        HandleCurrentExceptionWhenLeavingKotlinCode + 32 
+  5   libproduce_dynamic_unhandledException.dylib 0x1094f7d65        _ZL22_konan_function_0_implv + 69 
+  6   produce_dynamic_unhandledException.kexe 0x10926e13d        main + 45 
+  7   dyld                                0x1132a052d        0x0 + 4616488237 
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+==============================================================================
+
+6: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':kotlin-native:backend.native:tests:worker3'.
+> Test failed. Expected output: OK
+  , actual output: 1 anchor [0x0] -> 0x25257ca6a20(runtime.workers.worker3:WorkerArgument) th: 684810 rc_flags=10000
+  2 node [0x0] -> 0x25257c95200(runtime.workers.worker3:DataParam) th: 684810 rc_flags=200008000
+  3 anchor [0x0] -> 0x25257c95200(runtime.workers.worker3:DataParam) th: 684810 rc_flags=200008000
+  OK
+

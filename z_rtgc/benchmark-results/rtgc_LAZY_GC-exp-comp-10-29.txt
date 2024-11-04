@@ -1,0 +1,305 @@
+zeemac:kotlin-rtgc zeedh$ /Volumes/WorkSpace/kotlin-rtgc/kotlin-native/tools/benchmarksAnalyzer/build/bin/macosX64/benchmarksAnalyzerReleaseExecutable/benchmarksAnalyzer.kexe z_rtgc/benchmark-results/experimental-09-27.json z_rtgc/benchmark-results/rtgc-LAZY_GC-10-29-no_switch_thread.json 
+Failed to get access to server and get unstable benchmarks list!
+Status summary
+=================
+Failed benchmarks: 2
+Total becnhmarks number: 249
+
+Performance summary
+=================
+
+EXECUTION_TIME
+=================
+Regressions: Maximum = 99.93%, Geometric mean = 2.24%
+Improvements: Maximum = -93.49%, Geometric mean = -9.91%
+
+CODE_SIZE
+=================
+Improvements: Maximum = -20.95%, Geometric mean = -8.01%
+
+COMPILE_TIME
+=================
+Regressions: Maximum = 99.89%, Geometric mean = 1.78%
+Improvements: Maximum = -46.11%, Geometric mean = -7.56%
+
+Performance details
+=================
+
+EXECUTION_TIME
+=================
+Benchmark                                         First score              Second score             Percent                  Ratio                    
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Geometric mean                                    381.3323 ± 1.8570        400.8683 ± 2.3960        -3.84 ± 1.14 %           0.95 ± 0.01              
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Ring::Calls.openMethodMonomorphic                 275.4290 ± 1.1799        0.1868 ± 0.0069          99.93 ± 0.00 %           1474.35 ± 58.25          
+Ring::Calls.finalMethod                           274.9711 ± 0.4629        0.1886 ± 0.0074          99.93 ± 0.01 %           1457.76 ± 57.68          
+Ring::Calls.interfaceMethodMonomorphic            274.5372 ± 0.2955        0.1886 ± 0.0074          99.93 ± 0.01 %           1455.39 ± 56.27          
+Ring::Calls.parameterBoxUnboxFolding              274.6188 ± 0.3433        0.1882 ± 0.0079          99.93 ± 0.01 %           1459.05 ± 60.62          
+Ring::Inheritance.baseCalls                       275.1850 ± 0.8550        0.1898 ± 0.0075          99.93 ± 0.01 %           1449.57 ± 59.66          
+Ring::Calls.returnBoxUnboxFolding                 274.7857 ± 0.4022        0.1914 ± 0.0077          99.93 ± 0.01 %           1435.96 ± 57.54          
+Ring::Lambda.capturingLambda                      2.8062 ± 0.0135          0.1418 ± 0.0101          94.56 ± 0.72 %           19.78 ± 1.41             
+Ring::Lambda.mutatingLambda                       2.9645 ± 0.0085          0.1914 ± 0.0087          93.23 ± 0.59 %           15.49 ± 0.71             
+Ring::Lambda.noncapturingLambda                   2.9291 ± 0.0066          0.1916 ± 0.0063          93.23 ± 0.43 %           15.29 ± 0.52             
+Ring::Lambda.methodReference                      2.9371 ± 0.0165          0.1901 ± 0.0085          93.20 ± 0.58 %           15.45 ± 0.74             
+Ring::Inline.calculate                            3.5366 ± 0.0248          0.2965 ± 0.0024          91.49 ± 0.14 %           11.93 ± 0.18             
+Ring::Inline.calculateGenericInline               2.9563 ± 0.0125          0.2988 ± 0.0020          89.78 ± 0.13 %           9.89 ± 0.11              
+Ring::Inline.calculateInline                      2.9627 ± 0.0270          0.2997 ± 0.0030          89.69 ± 0.20 %           9.89 ± 0.19              
+Ring::Inline.calculateGeneric                     2.9603 ± 0.0058          0.4170 ± 0.0122          85.47 ± 0.82 %           7.10 ± 0.21              
+Ring::Calls.openMethodBimorphic                   1102.4756 ± 3.7207       477.1483 ± 0.4648        56.53 ± 0.29 %           2.31 ± 0.01              
+Ring::Calls.interfaceMethodBimorphic              1099.9780 ± 1.8211       476.9954 ± 0.5423        56.51 ± 0.14 %           2.31 ± 0.01              
+ObjCInterop::classInheritance                     35561.3795 ± 442.1860    15896.9491 ± 46.5594     54.60 ± 1.12 %           2.24 ± 0.03              
+Ring::Fibonacci.calc                              5.4982 ± 0.0201          2.8433 ± 0.0045          48.02 ± 0.38 %           1.93 ± 0.01              
+Ring::Fibonacci.calcClassic                       5.4934 ± 0.0309          2.8412 ± 0.0020          47.95 ± 0.58 %           1.93 ± 0.01              
+Ring::Fibonacci.calcSquare                        48410.8014 ± 94.8851     27245.4557 ± 96.3458     43.41 ± 0.40 %           1.78 ± 0.01              
+Ring::BunnymarkBenchmark.testBunnymark            1438410.7595 ± 30810.2751862719.9967 ± 3347.4286  38.47 ± 2.58 %           1.67 ± 0.04              
+Ring::ForLoops.uShortArrayIndicesLoop             7.0235 ± 0.0513          4.3648 ± 0.0023          37.37 ± 0.91 %           1.61 ± 0.01              
+Ring::ForLoops.uIntArrayIndicesLoop               7.0621 ± 0.0372          4.4206 ± 0.0155          36.85 ± 0.66 %           1.60 ± 0.01              
+Ring::Calls.interfaceMethodHexamorphic            4189.9428 ± 10.4237      2793.4184 ± 2.8946       33.09 ± 0.33 %           1.50 ± 0.01              
+Ring::ForLoops.uLongArrayIndicesLoop              6.6043 ± 0.0862          4.3665 ± 0.0046          32.94 ± 1.73 %           1.51 ± 0.02              
+Ring::ForLoops.stringIndicesLoop                  20.6872 ± 0.1671         13.9020 ± 0.0333         32.09 ± 1.09 %           1.49 ± 0.02              
+Ring::IntBaseline.allocateArray                   1.9328 ± 0.0145          1.3140 ± 0.0047          31.26 ± 1.02 %           1.47 ± 0.02              
+Ring::ForLoops.stringLoop                         16.6135 ± 0.0554         11.8903 ± 0.0221         28.06 ± 0.48 %           1.40 ± 0.01              
+Cinterop::boxedInt                                44.8297 ± 0.1686         32.3199 ± 0.0208         27.59 ± 0.54 %           1.39 ± 0.01              
+Ring::ForLoops.charArrayIndicesLoop               5.5639 ± 0.0421          4.0144 ± 0.0028          27.25 ± 1.09 %           1.39 ± 0.01              
+Ring::ForLoops.intArrayIndicesLoop                5.6849 ± 0.1266          4.0766 ± 0.0112          26.46 ± 3.20 %           1.39 ± 0.03              
+Ring::DefaultArgument.testEightOfEight            0.0044 ± 0.0001          0.0032 ± 0.0000          24.73 ± 2.53 %           1.36 ± 0.03              
+Ring::DefaultArgument.testOneOfTwo                0.0043 ± 0.0002          0.0032 ± 0.0001          22.21 ± 5.84 %           1.36 ± 0.08              
+Ring::ForLoops.intArrayLoop                       4.6189 ± 0.0522          3.5904 ± 0.0309          20.70 ± 1.77 %           1.29 ± 0.03              
+Ring::Casts.interfaceCast                         232247.6965 ± 534.1034   185034.6742 ± 2465.0353  19.08 ± 2.13 %           1.26 ± 0.02              
+Ring::String.stringConcat                         66469.7295 ± 546.1662    52075.9578 ± 1463.7161   18.79 ± 4.44 %           1.28 ± 0.05              
+Ring::Calls.interfaceMethodTrimorphic             2029.8428 ± 5.8986       1643.5901 ± 3.2042       18.63 ± 0.47 %           1.24 ± 0.01              
+Ring::String.stringConcatNullable                 65679.0161 ± 188.3923    52136.7140 ± 1450.0855   18.18 ± 4.43 %           1.26 ± 0.04              
+Ring::Casts.classCast                             171847.8093 ± 209.8477   140653.6351 ± 35.3747    18.03 ± 0.20 %           1.22 ± 0.00              
+Ring::Euler.problem9                              712.5280 ± 5.3405        581.5821 ± 0.2930        17.72 ± 1.22 %           1.23 ± 0.01              
+Ring::IntArray.countFilteredPrimeManual           230.5719 ± 0.1622        191.6867 ± 0.0931        16.77 ± 0.12 %           1.20 ± 0.00              
+Ring::DefaultArgument.testFourOfFour              0.0041 ± 0.0001          0.0033 ± 0.0000          16.11 ± 5.82 %           1.25 ± 0.06              
+Ring::Fibonacci.calcWithProgression               4.8650 ± 0.0141          4.0861 ± 0.0048          15.67 ± 0.49 %           1.19 ± 0.00              
+Ring::IntArray.countFilteredPrime                 229.7523 ± 0.3115        195.3530 ± 1.1613        14.35 ± 1.01 %           1.18 ± 0.01              
+Ring::Calls.openMethodTrimorphic                  2017.9338 ± 3.4411       1725.7155 ± 0.4698       14.31 ± 0.29 %           1.17 ± 0.00              
+Ring::DefaultArgument.testOneOfEight              0.0043 ± 0.0001          0.0036 ± 0.0001          10.93 ± 6.44 %           1.20 ± 0.07              
+Cinterop::macros                                  242.1327 ± 0.3273        215.3019 ± 0.3887        10.80 ± 0.32 %           1.12 ± 0.00              
+Ring::ForLoops.uLongArrayLoop                     4.1599 ± 0.0561          3.6710 ± 0.0025          10.49 ± 2.38 %           1.13 ± 0.02              
+Ring::DefaultArgument.testTwoOfTwo                0.0042 ± 0.0001          0.0036 ± 0.0001          10.27 ± 5.03 %           1.17 ± 0.05              
+Ring::Splay                                       435455.0710 ± 7970.6235  377134.0350 ± 8155.7096  9.87 ± 3.82 %            1.15 ± 0.05              
+Ring::ForLoops.charArrayLoop                      4.4945 ± 0.0171          4.0408 ± 0.0159          9.40 ± 0.71 %            1.11 ± 0.01              
+Ring::ForLoops.uShortArrayLoop                    4.4461 ± 0.0090          4.0312 ± 0.0066          9.00 ± 0.37 %            1.10 ± 0.00              
+Ring::ForLoops.uIntArrayLoop                      4.5850 ± 0.0328          4.1886 ± 0.0255          7.43 ± 1.31 %            1.09 ± 0.01              
+Ring::Switch.testStringsSwitch                    1028.0741 ± 5.0081       966.1492 ± 2.2543        5.34 ± 0.92 %            1.06 ± 0.01              
+ObjCInterop::fft                                  76510.3484 ± 558.2539    72262.3222 ± 417.9120    4.31 ± 1.39 %            1.06 ± 0.01              
+Numerical::BellardPi                              6459178.6377 ± 41746.42746231832.1634 ± 6724.1076 2.79 ± 1.25 %            1.04 ± 0.01              
+Ring::ForLoops.arrayLoop                          8.9016 ± 0.0490          137.6014 ± 0.0933        -93.49 ± 0.07 %          0.06 ± 0.00              
+Ring::ForLoops.arrayIndicesLoop                   9.6822 ± 0.1098          136.6263 ± 0.1476        -92.83 ± 0.16 %          0.07 ± 0.00              
+Startup::Singleton.initialize                     336.2878 ± 15.1406       2569.8416 ± 14.4473      -86.25 ± 1.18 %          0.13 ± 0.01              
+Startup::Singleton.initializeNested               463.9809 ± 13.2072       3199.3141 ± 31.0706      -84.94 ± 0.83 %          0.15 ± 0.01              
+Ring::ParameterNotNull.invokeEightArgsWithNullCheck0.0041 ± 0.0001          0.0259 ± 0.0001          -83.87 ± 0.51 %          0.16 ± 0.00              
+Ring::ParameterNotNull.invokeEightArgsWithoutNullCheck0.0055 ± 0.0003          0.0278 ± 0.0002          -78.89 ± 2.21 %          0.20 ± 0.01              
+Ring::Lambda.mutatingLambdaNoInline               399.4815 ± 3.6080        1807.9979 ± 54.2132      -77.02 ± 1.34 %          0.22 ± 0.01              
+Ring::Euler.problem2                              1.8202 ± 0.0116          7.8003 ± 0.0879          -76.25 ± 0.53 %          0.23 ± 0.00              
+Ring::IntBaseline.consume                         374.5370 ± 6.0606        1431.3925 ± 56.3520      -72.32 ± 2.10 %          0.26 ± 0.01              
+Ring::IntArray.filterSome                         166.5156 ± 0.3911        600.6267 ± 9.2300        -71.78 ± 0.85 %          0.28 ± 0.00              
+Ring::IntArray.filterSomeAndCount                 163.8347 ± 0.6608        593.1427 ± 12.6312       -71.66 ± 1.18 %          0.28 ± 0.01              
+Ring::IntArray.filterSomeManual                   167.3244 ± 0.4608        592.2826 ± 13.3071       -71.02 ± 1.27 %          0.28 ± 0.01              
+Ring::IntBaseline.allocateListAndFill             681.6101 ± 1.2615        2386.6149 ± 76.8171      -70.44 ± 1.84 %          0.29 ± 0.01              
+Ring::Euler.problem1bySequence                    449.8753 ± 3.3114        1646.2058 ± 115.3795     -70.40 ± 3.88 %          0.27 ± 0.02              
+Ring::Richards                                    185.7117 ± 3.9004        623.4441 ± 1.2627        -69.52 ± 1.25 %          0.30 ± 0.01              
+Ring::IntList.copyManual                          801.9963 ± 4.6715        2652.0008 ± 79.6967      -68.64 ± 1.83 %          0.30 ± 0.01              
+Ring::IntArray.copy                               691.5903 ± 1.8567        2172.5525 ± 47.5066      -67.37 ± 1.40 %          0.32 ± 0.01              
+Ring::IntArray.copyManual                         691.8001 ± 1.7239        2158.6859 ± 73.7720      -66.74 ± 2.20 %          0.32 ± 0.01              
+Ring::ClassList.countWithLambda                   84.3738 ± 0.4398         254.1619 ± 0.9686        -66.50 ± 0.35 %          0.33 ± 0.00              
+Ring::IntStream.copy                              905.4673 ± 1.8457        2711.2377 ± 51.5205      -65.89 ± 1.27 %          0.33 ± 0.01              
+Ring::MatrixMap.add                               6907.8551 ± 35.2990      20301.8680 ± 360.8794    -65.18 ± 1.22 %          0.34 ± 0.01              
+Ring::Loop.rangeLoop                              481.2952 ± 2.0452        1455.9539 ± 86.7441      -64.70 ± 3.97 %          0.33 ± 0.02              
+Ring::LinkedListWithAtomicsBenchmark              162790.2867 ± 2963.3755  455918.9784 ± 235.8527   -63.63 ± 1.30 %          0.36 ± 0.01              
+Ring::IntStream.copyManual                        1506.3471 ± 4.7956       4123.7843 ± 69.4959      -62.73 ± 1.24 %          0.37 ± 0.01              
+Ring::Euler.problem14full                         7866.7488 ± 33.3127      20862.1845 ± 385.8597    -61.42 ± 1.40 %          0.38 ± 0.01              
+Ring::IntBaseline.allocateArrayAndFill            8.4710 ± 0.0299          21.1057 ± 0.0733         -59.58 ± 0.28 %          0.40 ± 0.00              
+Ring::ClassBaseline.allocateArray                 4.3249 ± 0.0101          10.7269 ± 0.0155         -59.53 ± 0.19 %          0.40 ± 0.00              
+Ring::IntBaseline.allocateList                    4.3933 ± 0.0212          10.8965 ± 0.0359         -59.35 ± 0.39 %          0.40 ± 0.00              
+Ring::IntList.copy                                110.6080 ± 0.1544        271.0207 ± 0.6136        -59.04 ± 0.19 %          0.41 ± 0.00              
+Ring::ClassBaseline.allocateList                  4.4215 ± 0.0327          10.8549 ± 0.0187         -58.90 ± 0.60 %          0.41 ± 0.00              
+Ring::Euler.problem4                              579192.8415 ± 2622.6433  1409402.3952 ± 18291.1165-58.18 ± 1.07 %          0.41 ± 0.01              
+Ring::ChainableBenchmark.testChainable            12940.3625 ± 12.1191     28757.8494 ± 54.7389     -54.87 ± 0.17 %          0.45 ± 0.00              
+Ring::Euler.problem14                             3014.3509 ± 6.6633       6678.7825 ± 18.5272      -54.64 ± 0.25 %          0.45 ± 0.00              
+Ring::PrimeList.calcDirect                        689.9558 ± 2.7059        1527.5355 ± 6.4665       -54.46 ± 0.38 %          0.45 ± 0.00              
+Ring::Euler.problem8                              201.3453 ± 0.9664        434.8950 ± 0.1856        -53.46 ± 0.44 %          0.46 ± 0.00              
+Ring::PrimeList.calcEratosthenes                  27853.5814 ± 96.1302     59446.9049 ± 53.2850     -52.94 ± 0.32 %          0.47 ± 0.00              
+Ring::Lambda.noncapturingLambdaNoInline           70.7341 ± 0.3921         148.7661 ± 0.0921        -52.16 ± 0.53 %          0.48 ± 0.00              
+Ring::String.summarizeSplittedCsv                 8971.6215 ± 41.3020      19004.7877 ± 191.6262    -52.09 ± 0.96 %          0.47 ± 0.01              
+Ring::Lambda.methodReferenceNoInline              71.2799 ± 0.3720         146.2091 ± 0.0386        -50.98 ± 0.51 %          0.49 ± 0.00              
+Ring::ClassList.filterAndCountWithLambda          317.8004 ± 2.2658        641.2330 ± 1.0977        -50.00 ± 0.71 %          0.50 ± 0.00              
+Ring::ClassList.copy                              112.9949 ± 0.3493        221.5157 ± 0.6049        -48.69 ± 0.32 %          0.51 ± 0.00              
+Ring::ClassArray.copy                             103.2323 ± 0.3966        202.2528 ± 0.8807        -48.54 ± 0.45 %          0.51 ± 0.00              
+Ring::ParameterNotNull.invokeTwoArgsWithNullCheck 0.0039 ± 0.0001          0.0078 ± 0.0001          -48.22 ± 2.73 %          0.50 ± 0.02              
+Ring::IntStream.filterAndMapManual                2150.9809 ± 9.0446       4173.4572 ± 16.9090      -48.03 ± 0.44 %          0.52 ± 0.00              
+Ring::IntStream.filterManual                      2155.6452 ± 13.9966      4173.3629 ± 16.8432      -47.80 ± 0.67 %          0.52 ± 0.01              
+Ring::IntStream.reduce                            2136.2305 ± 21.1605      4137.7545 ± 17.3158      -47.64 ± 1.03 %          0.52 ± 0.01              
+Ring::IntStream.countFilteredManual               2147.7387 ± 11.2278      4221.4575 ± 100.5496     -47.61 ± 2.44 %          0.51 ± 0.01              
+Ring::IntStream.countFiltered                     2133.2617 ± 4.2747       4127.2870 ± 63.5754      -47.40 ± 1.60 %          0.52 ± 0.01              
+Ring::ParameterNotNull.invokeTwoArgsWithoutNullCheck0.0040 ± 0.0001          0.0077 ± 0.0001          -46.74 ± 1.94 %          0.52 ± 0.02              
+Ring::IntStream.filterAndCount                    2292.6000 ± 17.6270      4404.3939 ± 70.3477      -46.70 ± 1.68 %          0.52 ± 0.01              
+Ring::IntStream.countFilteredLocal                2157.5712 ± 10.7401      4127.7340 ± 74.7275      -46.50 ± 1.90 %          0.52 ± 0.01              
+Ring::IntStream.filterAndMap                      2296.7718 ± 12.7862      4416.5045 ± 141.0748     -45.98 ± 3.34 %          0.52 ± 0.02              
+Ring::IntStream.filter                            2333.6644 ± 19.8840      4474.6680 ± 124.9854     -45.89 ± 2.94 %          0.52 ± 0.02              
+Ring::ArrayCopyBenchmark.copyInSameArray          97596.0010 ± 426.7400    179006.6699 ± 117.7000   -45.20 ± 0.48 %          0.55 ± 0.00              
+Ring::ClassBaseline.consume                       3687.8414 ± 7.9265       6807.5393 ± 82.8708      -45.04 ± 1.32 %          0.54 ± 0.01              
+Ring::Switch.testSealedWhenSwitch                 172.8763 ± 1.5621        315.6886 ± 0.6084        -44.64 ± 0.99 %          0.55 ± 0.01              
+Ring::Lambda.capturingLambdaNoInline              86.4662 ± 0.4118         156.7192 ± 0.0613        -44.54 ± 0.53 %          0.55 ± 0.00              
+swiftInterop::availableTransportOnMap             2888.5974 ± 7.8479       4923.9506 ± 16.2212      -40.98 ± 0.39 %          0.59 ± 0.00              
+Ring::Elvis.testCompositeElvis                    141.2241 ± 0.2970        236.3315 ± 0.0856        -40.10 ± 0.25 %          0.60 ± 0.00              
+Ring::ClassBaseline.allocateArrayAndFill          4742.0104 ± 26.4813      8072.7228 ± 136.8802     -39.91 ± 2.00 %          0.59 ± 0.01              
+Ring::AllocationBenchmark.allocateObjects         16.4824 ± 0.0420         27.3222 ± 0.1461         -39.19 ± 0.65 %          0.60 ± 0.00              
+Ring::Switch.testConstSwitch                      169.5484 ± 1.4179        279.5351 ± 2.6525        -38.25 ± 1.16 %          0.61 ± 0.01              
+Ring::ClassStream.copy                            499.3244 ± 0.7801        805.2295 ± 2.1617        -37.73 ± 0.33 %          0.62 ± 0.00              
+Ring::IntList.filter                              1851.3104 ± 4.1032       2962.7717 ± 33.9741      -36.65 ± 1.44 %          0.62 ± 0.01              
+Ring::IntList.filterManual                        1854.6380 ± 4.4625       2960.1120 ± 36.4692      -36.41 ± 1.55 %          0.63 ± 0.01              
+Ring::ClassStream.copyManual                      504.8070 ± 0.9150        797.1583 ± 2.1983        -36.38 ± 0.35 %          0.63 ± 0.00              
+Ring::IntList.filterAndMap                        1880.4601 ± 5.7949       2976.9419 ± 35.7021      -35.87 ± 1.52 %          0.63 ± 0.01              
+swiftInterop::getAllPlacesWithStraightRoutesTo    8460.8718 ± 23.6871      13239.2236 ± 17.5077     -35.83 ± 0.36 %          0.64 ± 0.00              
+Ring::Switch.testObjConstSwitch                   168.9125 ± 1.5410        266.8687 ± 1.4526        -35.78 ± 1.16 %          0.63 ± 0.01              
+Ring::IntArray.filterAndCount                     1651.7279 ± 9.3940       2608.4663 ± 24.4920      -35.71 ± 1.20 %          0.63 ± 0.01              
+Ring::IntList.filterAndCount                      1859.5429 ± 17.4288      2967.9508 ± 52.2124      -35.63 ± 2.23 %          0.63 ± 0.02              
+Ring::IntArray.filterPrime                        316.2190 ± 0.4449        494.5712 ± 2.6604        -35.63 ± 0.69 %          0.64 ± 0.00              
+Ring::IntArray.filterManual                       1651.8825 ± 10.1738      2614.3089 ± 34.1092      -35.58 ± 1.66 %          0.63 ± 0.01              
+swiftInterop::goToAllAvailablePlaces              8504.8307 ± 25.1602      13266.7721 ± 37.9798     -35.52 ± 0.38 %          0.64 ± 0.00              
+Ring::AbstractMethod.sortStringsWithComparator    47.6014 ± 0.1584         73.8267 ± 0.0872         -35.23 ± 0.43 %          0.64 ± 0.00              
+Ring::IntArray.filter                             1654.2001 ± 12.1464      2604.8861 ± 41.6884      -34.99 ± 2.05 %          0.64 ± 0.01              
+Ring::Switch.testVarSwitch                        173.8018 ± 0.7919        268.6062 ± 2.5814        -34.37 ± 1.25 %          0.65 ± 0.01              
+swiftInterop::removeVertexAndEdgesSwiftMultigraph 6804.4751 ± 35.9945      10451.2773 ± 48.2761     -34.25 ± 0.69 %          0.65 ± 0.01              
+Ring::ClassBaseline.allocateListAndFill           5073.6592 ± 18.9097      7843.8990 ± 100.7139     -34.23 ± 1.67 %          0.65 ± 0.01              
+Ring::Switch.testDenseIntSwitch                   180.7464 ± 0.6551        278.1918 ± 2.4110        -34.22 ± 1.13 %          0.65 ± 0.01              
+Ring::GraphSolver.solve                           193309.8197 ± 469.1270   293568.7199 ± 1327.8142  -33.69 ± 0.60 %          0.66 ± 0.00              
+Ring::ClassList.filterAndCount                    1841.2708 ± 5.4502       2785.1214 ± 24.3562      -33.11 ± 1.16 %          0.66 ± 0.01              
+Ring::WithIndicies.withIndiciesManual             1842.6448 ± 5.6104       2790.3080 ± 28.0937      -33.09 ± 1.33 %          0.66 ± 0.01              
+Ring::ClassList.countFilteredManual               1828.8184 ± 4.7149       2761.9424 ± 25.0825      -33.01 ± 1.21 %          0.66 ± 0.01              
+Ring::ClassStream.filterAndCount                  1984.6196 ± 4.1616       3005.7404 ± 41.9632      -32.90 ± 1.85 %          0.66 ± 0.01              
+Ring::ClassStream.countFiltered                   1843.6715 ± 5.9742       2799.9635 ± 46.4093      -32.83 ± 2.19 %          0.66 ± 0.01              
+Ring::ClassList.countFiltered                     1841.4961 ± 6.1810       2760.9499 ± 10.4946      -32.82 ± 0.51 %          0.67 ± 0.00              
+Ring::ClassStream.countFilteredManual             1847.7639 ± 7.2207       2775.2813 ± 34.0098      -32.33 ± 1.64 %          0.67 ± 0.01              
+swiftInterop::createMultigraphOfInt               26696.2932 ± 127.3361    40012.7461 ± 412.9069    -32.26 ± 1.38 %          0.67 ± 0.01              
+Ring::WithIndicies.withIndicies                   1878.0040 ± 6.5346       2793.5559 ± 11.8229      -32.25 ± 0.57 %          0.67 ± 0.01              
+Ring::DeltaBlue                                   1087.2880 ± 5.0436       1615.5407 ± 3.5109       -32.24 ± 0.63 %          0.67 ± 0.00              
+Ring::ClassStream.reduce                          1875.0130 ± 14.9159      2804.4241 ± 25.1461      -32.00 ± 1.21 %          0.67 ± 0.01              
+swiftInterop::searchRoutesInSwiftMultigraph       8407561.4946 ± 77556.755012496265.4316 ± 22254.8243-31.98 ± 1.24 %          0.67 ± 0.01              
+Ring::ClassList.reduce                            1843.3807 ± 22.3517      2765.6107 ± 26.4657      -31.89 ± 1.63 %          0.67 ± 0.01              
+Ring::ClassArray.filterAndCount                   1771.4237 ± 3.5058       2637.2844 ± 35.2916      -31.79 ± 1.80 %          0.67 ± 0.01              
+Ring::CoordinatesSolver.solve                     1590753.9988 ± 6243.1787 2345422.6566 ± 4950.7690 -31.77 ± 0.53 %          0.68 ± 0.00              
+Ring::ClassArray.countFiltered                    1784.2470 ± 7.5542       2644.1054 ± 40.1693      -31.19 ± 2.06 %          0.67 ± 0.01              
+Ring::ClassArray.countFilteredLocal               1759.6235 ± 4.1623       2601.8807 ± 42.4215      -31.09 ± 2.21 %          0.68 ± 0.01              
+Ring::ClassArray.countFilteredManual              1768.0107 ± 5.0681       2613.4139 ± 41.9024      -31.05 ± 2.18 %          0.68 ± 0.01              
+Ring::ClassBaseline.allocateListAndWrite          272.4988 ± 0.4020        384.8585 ± 0.7272        -28.96 ± 0.27 %          0.71 ± 0.00              
+Ring::ClassList.copyManual                        361.5949 ± 1.7132        508.1612 ± 1.6468        -28.27 ± 0.68 %          0.71 ± 0.01              
+Ring::LocalObjects.localArray                     0.0914 ± 0.0004          0.1284 ± 0.0012          -27.81 ± 1.36 %          0.71 ± 0.01              
+Ring::ClassArray.copyManual                       302.7300 ± 0.5419        424.4778 ± 5.2474        -27.66 ± 1.77 %          0.71 ± 0.01              
+Cinterop::enum                                    5674.8937 ± 9.8842       7718.5960 ± 11.3539      -26.24 ± 0.26 %          0.74 ± 0.00              
+Ring::AbstractMethod.sortStrings                  32.1724 ± 1.0537         44.9111 ± 0.1457         -25.78 ± 4.71 %          0.72 ± 0.03              
+Ring::ClassList.filterWithLambda                  314.8510 ± 1.1316        424.7754 ± 1.4483        -25.36 ± 0.53 %          0.74 ± 0.01              
+ObjCInterop::generateNumbersSequence              5339.1913 ± 45.3536      6930.5754 ± 30.7254      -21.96 ± 1.31 %          0.77 ± 0.01              
+Ring::IntArray.countFilteredLocal                 1622.2756 ± 4.2820       2116.5061 ± 36.9833      -21.78 ± 2.69 %          0.77 ± 0.02              
+Ring::ClassList.mapWithLambda                     10658.6025 ± 104.9867    13835.7447 ± 136.0221    -21.43 ± 1.53 %          0.77 ± 0.02              
+Ring::ClassList.filterAndMapWithLambdaAsSequence  5617.8324 ± 39.4182      7242.8470 ± 54.1387      -21.30 ± 1.17 %          0.78 ± 0.01              
+Ring::IntArray.reduce                             1636.2192 ± 4.5292       2061.2580 ± 19.7176      -19.63 ± 1.52 %          0.79 ± 0.01              
+Ring::IntArray.countFiltered                      1644.2882 ± 7.8111       2084.6949 ± 38.9688      -19.24 ± 2.96 %          0.79 ± 0.02              
+Cinterop::struct                                  23989.5574 ± 87.7526     29900.5872 ± 109.3288    -19.18 ± 0.59 %          0.80 ± 0.01              
+Ring::IntArray.countFilteredManual                1641.2430 ± 10.1104      2072.2616 ± 32.1192      -19.06 ± 2.47 %          0.79 ± 0.02              
+Ring::ClassStream.filterAndMap                    2022.8673 ± 10.5402      2539.8999 ± 29.0980      -19.01 ± 1.83 %          0.80 ± 0.01              
+Ring::String.stringBuilderConcat                  333.4000 ± 0.3888        413.7985 ± 1.8455        -18.97 ± 0.72 %          0.81 ± 0.00              
+Ring::IntArray.filterAndMapManual                 1658.7730 ± 7.8562       2068.3648 ± 15.9316      -18.80 ± 1.24 %          0.80 ± 0.01              
+Ring::ParameterNotNull.invokeOneArgWithoutNullCheck0.0042 ± 0.0001          0.0053 ± 0.0001          -18.63 ± 2.51 %          0.79 ± 0.02              
+Ring::ClassList.filterAndMapWithLambda            5748.2094 ± 46.9356      7111.7718 ± 54.8931      -17.88 ± 1.33 %          0.81 ± 0.01              
+Ring::ComplexArrays.outerProduct                  223177.1505 ± 612.5983   273457.8949 ± 1354.9488  -17.76 ± 0.81 %          0.82 ± 0.01              
+Ring::ClassList.filterAndMapManual                1889.7104 ± 9.4784       2339.8497 ± 31.5092      -17.72 ± 2.19 %          0.81 ± 0.01              
+Ring::String.stringBuilderConcatNullable          335.2245 ± 1.6625        410.1667 ± 4.5277        -16.95 ± 1.81 %          0.82 ± 0.01              
+Ring::OctoTest                                    2988.1547 ± 7.7687       3603.6757 ± 1.9270       -16.82 ± 0.43 %          0.83 ± 0.00              
+Cinterop::union                                   18101.2135 ± 96.1741     22752.6541 ± 977.9321    -16.43 ± 6.89 %          0.80 ± 0.04              
+Ring::Loop.arrayListLoop                          161.7071 ± 0.8363        194.3011 ± 0.5040        -16.13 ± 0.86 %          0.83 ± 0.01              
+Ring::ClassArray.filterAndMapManual               1814.3110 ± 5.4102       2187.4750 ± 24.3399      -15.88 ± 1.85 %          0.83 ± 0.01              
+Ring::ClassStream.filterAndMapManual              1910.3989 ± 3.5311       2299.5168 ± 24.7292      -15.86 ± 1.79 %          0.83 ± 0.01              
+Ring::IntList.filterAndMapManual                  1862.8830 ± 5.1451       2238.4506 ± 21.4613      -15.74 ± 1.60 %          0.83 ± 0.01              
+ObjCInterop::categoryMethods                      9518.8826 ± 67.5405      11370.0491 ± 58.2485     -15.25 ± 1.19 %          0.84 ± 0.01              
+Ring::IntList.countFiltered                       1876.3071 ± 4.9185       2224.6175 ± 31.8636      -14.21 ± 2.42 %          0.84 ± 0.01              
+Ring::ClassBaseline.consumeField                  67.6298 ± 0.8147         79.8966 ± 0.3724         -13.93 ± 2.05 %          0.85 ± 0.01              
+Ring::IntList.countFilteredLocal                  1872.9241 ± 4.7988       2204.1362 ± 22.7712      -13.92 ± 1.76 %          0.85 ± 0.01              
+ObjCInterop::subComplex                           8457.8473 ± 52.9646      9942.1103 ± 58.9623      -13.89 ± 1.07 %          0.85 ± 0.01              
+Ring::ClassList.filterAndMap                      1879.2490 ± 2.9974       2215.4937 ± 32.2047      -13.79 ± 2.47 %          0.85 ± 0.01              
+Ring::Loop.arrayListForeachLoop                   168.8638 ± 1.4060        198.0982 ± 0.6729        -13.75 ± 1.42 %          0.85 ± 0.01              
+Ring::IntList.countFilteredManual                 1878.0212 ± 9.4954       2220.1365 ± 32.5199      -13.72 ± 2.49 %          0.85 ± 0.02              
+Ring::ClassArray.filterAndMap                     1824.5557 ± 4.3428       2100.7463 ± 24.4428      -11.92 ± 2.03 %          0.87 ± 0.01              
+Ring::ClassStream.filter                          1976.4102 ± 8.0023       2272.9324 ± 25.7264      -11.69 ± 1.98 %          0.87 ± 0.01              
+Ring::Loop.arrayIndexLoop                         127.3626 ± 0.6662        145.3306 ± 0.5740        -11.56 ± 0.92 %          0.88 ± 0.01              
+ObjCInterop::stringFromObjC                       27842.3751 ± 283.1198    31985.2868 ± 209.9402    -11.49 ± 1.78 %          0.87 ± 0.01              
+Ring::ClassStream.filterManual                    1851.6456 ± 5.9377       2118.0885 ± 19.9431      -11.47 ± 1.65 %          0.87 ± 0.01              
+Ring::ClassList.filterManual                      1847.2978 ± 5.6208       2111.1191 ± 24.8386      -11.19 ± 2.07 %          0.88 ± 0.01              
+Ring::Loop.arrayWhileLoop                         130.4665 ± 1.7040        149.2279 ± 0.7888        -10.96 ± 2.30 %          0.87 ± 0.02              
+swiftInterop::fillCityMap                         171571.0384 ± 407.5852   192874.7898 ± 583.1932   -10.56 ± 0.54 %          0.89 ± 0.00              
+Ring::ClassArray.filterManual                     1769.3373 ± 3.8389       1996.9174 ± 19.3224      -10.34 ± 1.72 %          0.89 ± 0.01              
+Ring::ClassList.filter                            1876.2249 ± 8.5418       2127.3006 ± 30.4465      -10.11 ± 2.54 %          0.88 ± 0.02              
+ObjCInterop::sumComplex                           8971.0410 ± 190.2192     10231.6051 ± 80.2667     -9.75 ± 3.75 %           0.88 ± 0.03              
+Ring::ClassArray.filter                           1800.8257 ± 6.6753       2011.5317 ± 19.6920      -9.25 ± 1.76 %           0.90 ± 0.01              
+Ring::ParameterNotNull.invokeOneArgWithNullCheck  0.0045 ± 0.0001          0.0051 ± 0.0001          -9.16 ± 3.76 %           0.87 ± 0.03              
+swiftInterop::simpleFunction                      204085.8097 ± 443.7185   226064.8717 ± 951.3647   -9.14 ± 0.76 %           0.90 ± 0.01              
+Ring::Elvis.testElvis                             123.8677 ± 1.3261        139.9812 ± 3.3511        -8.37 ± 4.28 %           0.88 ± 0.03              
+Ring::Switch.testEnumsSwitch                      151.2934 ± 1.2739        164.7260 ± 0.4232        -7.14 ± 1.55 %           0.92 ± 0.01              
+swiftInterop::allPlacesMapedByInterests           1676.0475 ± 9.9304       1799.3061 ± 4.7157       -6.05 ± 1.11 %           0.93 ± 0.01              
+Ring::Loop.arrayLoop                              76.5708 ± 0.5013         82.5880 ± 0.6382         -5.95 ± 1.44 %           0.93 ± 0.01              
+Ring::Switch.testSparseIntSwitch                  124.6539 ± 1.3717        134.2690 ± 0.2877        -5.94 ± 2.05 %           0.93 ± 0.01              
+swiftInterop::stringInterop                       250869.8818 ± 1574.9677  266052.5272 ± 1614.5498  -4.54 ± 1.19 %           0.94 ± 0.01              
+Cinterop::int                                     36.4111 ± 0.0534         37.4440 ± 0.0356         -2.52 ± 0.29 %           0.97 ± 0.00              
+Numerical::BellardPiCinterop                      5982339.2850 ± 3417.1837 5971763.8131 ± 683.3822  -                        -                        
+Ring::DefaultArgument.testOneOfFour               0.0039 ± 0.0002          0.0035 ± 0.0001          -                        -                        
+ObjCInterop::invertFft                            82466.5317 ± 2497.8964   77564.7855 ± 480.0406    -                        -                        
+Ring::Loop.arrayForeachLoop                       81.1396 ± 0.9197         80.4689 ± 1.0925         -                        -                        
+Ring::Singleton.access                            121.6952 ± 0.5905        122.7453 ± 0.3556        -                        -                        
+Ring::CompanionObject.invokeRegularFunction       0.0071 ± 0.0001          0.0072 ± 0.0001          -                        -                        
+ObjCInterop::stringToObjC                         2508.8473 ± 21.4918      2421.2644 ± 7.6462       -                        -                        
+Ring::IntList.reduce                              2280.7078 ± 2.8352       2197.5017 ± 25.8594      -                        -                        
+Ring::IntArray.filterAndMap                       1657.4988 ± 11.0067      2682.5811 ± 700.1525     -                        -                        
+Cinterop::intMatrix                               2875459.8563 ± 171134.21433013800.8515 ± 214739.8316-                        -                        
+Ring::Switch.testDenseEnumsSwitch                 139.8489 ± 0.9886        143.3681 ± 0.1597        -                        -                        
+Cinterop::stringToC                               6060.0069 ± 18.9393      6033.0981 ± 36.8653      -                        -                        
+Ring::IntArray.countFilteredSomeManual            13.6336 ± 0.0395         13.6005 ± 0.0608         -                        -                        
+Ring::IntArray.countFilteredSomeLocal             13.7573 ± 0.1144         13.7839 ± 0.0496         -                        -                        
+Ring::Euler.problem1                              23.5700 ± 0.2924         23.9884 ± 0.0217         -                        -                        
+Cinterop::stringToKotlin                          6970081.1636 ± 11712.41186997316.6487 ± 97973.3030-                        -                        
+Ring::ForLoops.floatArrayIndicesLoop              8.3205 ± 0.0341          8.3145 ± 0.0066          -                        -                        
+Ring::IntArray.countFilteredSome                  13.7473 ± 0.0551         13.9116 ± 0.0802         -                        -                        
+Ring::ForLoops.floatArrayLoop                     8.4617 ± 0.0761          8.3212 ± 0.0448          -                        -                        
+swiftInterop::searchTravelRoutes                  7200859.0541 ± 150657.36458518724.8509 ± 410558.2994-                        -                        
+
+CODE_SIZE
+=================
+Benchmark                                         First score              Second score             Percent                  Ratio                    
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Geometric mean                                    476792.2211 ± 0.0000     544565.9767 ± 0.0000     -12.45 ± 0.00 %          0.88 ± 0.00              
+------------------------------------------------------------------------------------------------------------------------------------------------------
+swiftInterop                                      2532264.0000 ± 0.0000    3203432.0000 ± 0.0000    -20.95 ± 0.00 %          0.79 ± 0.00              
+Numerical                                         1673864.0000 ± 0.0000    2073608.0000 ± 0.0000    -19.28 ± 0.00 %          0.81 ± 0.00              
+ObjCInterop                                       1750680.0000 ± 0.0000    2167536.0000 ± 0.0000    -19.23 ± 0.00 %          0.81 ± 0.00              
+Cinterop                                          1782712.0000 ± 0.0000    2184520.0000 ± 0.0000    -18.39 ± 0.00 %          0.82 ± 0.00              
+Startup                                           3048184.0000 ± 0.0000    3416648.0000 ± 0.0000    -10.78 ± 0.00 %          0.89 ± 0.00              
+Ring                                              10611760.0000 ± 0.0000   11330456.0000 ± 0.0000   -6.34 ± 0.00 %           0.94 ± 0.00              
+FrameworkBenchmarksAnalyzer                       6241480.0000 ± 0.0000    6351728.0000 ± 0.0000    -1.74 ± 0.00 %           0.98 ± 0.00              
+HelloWorld                                        0.0000 ± 0.0000          0.0000 ± 0.0000          -                        -                        
+
+COMPILE_TIME
+=================
+Benchmark                                         First score              Second score             Percent                  Ratio                    
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Geometric mean                                    20799069.8385 ± 3.2969   10551995.6985 ± 3.9809   49.27 ± 0.00 %           1.97 ± 0.00              
+------------------------------------------------------------------------------------------------------------------------------------------------------
+FrameworkBenchmarksAnalyzer                       19010791.9950 ± 0.0000   21039.6060 ± 0.0000      99.89 ± 0.00 %           903.57 ± 0.00            
+Cinterop                                          39151551.3320 ± 0.0000   72647130.5180 ± 0.0000   -46.11 ± 0.00 %          0.54 ± 0.00              
+swiftInterop                                      31754179.0400 ± 0.0000   39877150.7310 ± 0.0000   -20.37 ± 0.00 %          0.80 ± 0.00              
+Numerical                                         22349243.2430 ± 0.0000   27655461.0230 ± 0.0000   -19.19 ± 0.00 %          0.81 ± 0.00              
+Ring                                              33373934.1180 ± 0.0000   40621322.1020 ± 0.0000   -17.84 ± 0.00 %          0.82 ± 0.00              
+ObjCInterop                                       23877289.7240 ± 0.0000   28020654.7130 ± 0.0000   -14.79 ± 0.00 %          0.85 ± 0.00              
+Startup                                           38495703.7850 ± 0.0000   39379302.4300 ± 0.0000   -2.24 ± 0.00 %           0.98 ± 0.00              
+HelloWorld                                        2161392.8553 ± 13959.45732034301.8892 ± 63070.6055-                        -                        
+
+BUNDLE_SIZE
+=================
+Benchmark                                         First score              Second score             Percent                  Ratio                    
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Geometric mean                                    0.0000 ± 0.0000          0.0000 ± 0.0000          0.00 ± 0.00 %            1.00 ± 0.00              
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+zeemac:kotlin-rtgc zeedh$ 

@@ -1,0 +1,2974 @@
+[
+        {
+                "env": 
+{
+    
+        "machine": 
+{
+    
+        "cpu": "x86_64",
+        "os": "Mac OS X"
+    
+}
+,
+        "jdk": 
+{
+    
+        "version": "17.0.6",
+        "vendor": "Eclipse Adoptium"
+    
+}
+
+    
+}
+,
+    "kotlin": 
+{
+    
+    "backend": 
+{
+    
+            
+        "type": "native",
+        "version": "1.6.0-dev",
+        "flags": ["-opt"]
+        
+}
+,
+    "kotlinVersion": "1.7.255-SNAPSHOT"
+
+}
+,
+    "benchmarks": [
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 291.80837267343486,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 291.80837267343486,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 293.23065313028764,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 293.23065313028764,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 287.12190609137053,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 287.12190609137053,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 286.5934441624365,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 286.5934441624365,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 289.9365875634518,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 289.9365875634518,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 285.8469818104907,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 285.8469818104907,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 285.65634221658206,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 285.65634221658206,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 289.0532212351946,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 289.0532212351946,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 285.7885033840947,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 285.7885033840947,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 292.1544018612521,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 292.1544018612521,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 291.6102017766497,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 291.6102017766497,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 286.3878709813875,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 286.3878709813875,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 286.85761421319796,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 286.85761421319796,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 289.72320346869714,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 289.72320346869714,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 285.87904822335025,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 285.87904822335025,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 285.97866624365486,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 285.97866624365486,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 288.00181260575295,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 288.00181260575295,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 285.5899361252115,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 285.5899361252115,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 287.4847182741117,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 287.4847182741117,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::macros",
+    "status": "PASSED",
+    "score": 288.7017402707276,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 288.7017402707276,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 25387.2085625,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 25387.2085625,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 25412.86983333333,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 25412.86983333333,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 26202.3514375,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 26202.3514375,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24932.32116666667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24932.32116666667,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24917.670854166667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24917.670854166667,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24421.88597916667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24421.88597916667,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24244.337229166667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24244.337229166667,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24289.6603125,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24289.6603125,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24854.381083333334,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24854.381083333334,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24820.135375,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24820.135375,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 23976.80847916667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 23976.80847916667,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24582.35572916667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24582.35572916667,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 25046.049208333334,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 25046.049208333334,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 25004.84970833333,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 25004.84970833333,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24606.73579166667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24606.73579166667,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24615.470729166667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24615.470729166667,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24353.855666666666,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24353.855666666666,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24585.879979166668,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24585.879979166668,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24585.51710416667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24585.51710416667,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::union",
+    "status": "PASSED",
+    "score": 24916.479270833333,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 24916.479270833333,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical",
+    "status": "PASSED",
+    "score": 3.0385470187E7,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 3.0385470187E7,
+    "repeat": 1,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "Numerical",
+    "status": "PASSED",
+    "score": 2468968.0,
+    "metric": "CODE_SIZE",
+    "runtimeInUs": 2468968.0,
+    "repeat": 1,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 86.37734925093633,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 86.37734925093633,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 86.35533681112895,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 86.35533681112895,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.31139165329053,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.31139165329053,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.08508627608347,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.08508627608347,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.97389553237025,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.97389553237025,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 84.97090262172286,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 84.97090262172286,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 84.59121508828251,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 84.59121508828251,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.72427768860352,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.72427768860352,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.22312667201713,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.22312667201713,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 84.74315409309791,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 84.74315409309791,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.7234023542001,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.7234023542001,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 84.9510865436062,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 84.9510865436062,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.31364232209738,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.31364232209738,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.50185219368646,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.50185219368646,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 84.78693352059925,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 84.78693352059925,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.02612961476726,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.02612961476726,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.49963590155164,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.49963590155164,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.02549184055646,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.02549184055646,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.19247164258962,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.19247164258962,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::int",
+    "status": "PASSED",
+    "score": 85.59242482611022,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 85.59242482611022,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 90.93785804628634,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 90.93785804628634,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 90.64717949407965,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 90.64717949407965,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.79204668998923,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.79204668998923,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.73416994079655,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.73416994079655,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 90.98373937029064,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 90.98373937029064,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.44666778794402,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.44666778794402,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 90.20008584499462,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 90.20008584499462,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.38145600107643,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.38145600107643,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.4614825080732,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.4614825080732,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.72484903121637,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.72484903121637,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.53741778794402,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.53741778794402,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.57192801399354,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.57192801399354,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.86915419806243,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.86915419806243,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.61531498923573,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.61531498923573,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.95540567814854,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.95540567814854,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.7094609795479,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.7094609795479,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.47250134553283,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.47250134553283,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.45243460710441,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.45243460710441,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.85627247039828,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.85627247039828,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::boxedInt",
+    "status": "PASSED",
+    "score": 89.35112701829925,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 89.35112701829925,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10281.040083333333,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10281.040083333333,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10308.880802083335,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10308.880802083335,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10181.464791666665,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10181.464791666665,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10217.09103125,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10217.09103125,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10168.704739583334,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10168.704739583334,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10346.396322916666,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10346.396322916666,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10155.960104166666,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10155.960104166666,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10234.345916666665,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10234.345916666665,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10174.123791666667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10174.123791666667,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10178.9005625,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10178.9005625,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10223.355197916666,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10223.355197916666,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10172.380927083334,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10172.380927083334,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10274.352291666666,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10274.352291666666,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10185.226114583334,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10185.226114583334,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10246.243760416666,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10246.243760416666,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10181.564395833335,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10181.564395833335,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10255.258927083334,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10255.258927083334,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10212.1330625,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10212.1330625,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10220.0431875,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10220.0431875,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::enum",
+    "status": "PASSED",
+    "score": 10187.27015625,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 10187.27015625,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5523.8019545454545,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5523.8019545454545,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5633.421539772728,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5633.421539772728,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 6085.941227272728,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6085.941227272728,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5583.468068181818,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5583.468068181818,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5615.51975,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5615.51975,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5528.426090909091,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5528.426090909091,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5544.508670454546,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5544.508670454546,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5513.513443181819,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5513.513443181819,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5506.786056818181,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5506.786056818181,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5510.992977272727,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5510.992977272727,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5485.406676136363,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5485.406676136363,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5524.947636363637,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5524.947636363637,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5522.587045454546,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5522.587045454546,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5552.023920454546,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5552.023920454546,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5522.006954545454,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5522.006954545454,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5537.329159090909,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5537.329159090909,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5499.467443181818,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5499.467443181818,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5557.655142045454,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5557.655142045454,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5606.6146875,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5606.6146875,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToC",
+    "status": "PASSED",
+    "score": 5608.008357954546,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5608.008357954546,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5780648.819,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5780648.819,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5781710.571,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5781710.571,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5780435.184,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5780435.184,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5785174.643,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5785174.643,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5784447.912,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5784447.912,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5781608.511,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5781608.511,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5782281.321,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5782281.321,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5784378.199,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5784378.199,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5786607.992,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5786607.992,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5782301.459,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5782301.459,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5784385.435,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5784385.435,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5851163.527,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5851163.527,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5779680.073,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5779680.073,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5781042.597,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5781042.597,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5782910.593,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5782910.593,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5785835.383,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5785835.383,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5782863.683,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5782863.683,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5850926.323,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5850926.323,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5783335.154,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5783335.154,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPi",
+    "status": "PASSED",
+    "score": 5854978.391,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5854978.391,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 4439393.361,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 4439393.361,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2812396.539,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2812396.539,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2451337.834,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2451337.834,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2999616.157,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2999616.157,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 4443802.501,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 4443802.501,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 3553638.744,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 3553638.744,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2675711.947,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2675711.947,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2408552.701,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2408552.701,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2405721.705,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2405721.705,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 3892719.505,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 3892719.505,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2675338.302,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2675338.302,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 3339033.671,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 3339033.671,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2820534.867,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2820534.867,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 3490335.615,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 3490335.615,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2773739.097,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2773739.097,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2452598.196,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2452598.196,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2672065.868,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2672065.868,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2450660.076,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2450660.076,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 3734214.275,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 3734214.275,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::intMatrix",
+    "status": "PASSED",
+    "score": 2556553.564,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 2556553.564,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5473719.65,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5473719.65,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5517041.24,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5517041.24,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5480843.421,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5480843.421,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5476020.623,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5476020.623,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5479378.809,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5479378.809,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5476769.026,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5476769.026,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5477251.957,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5477251.957,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5513696.38,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5513696.38,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5474143.658,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5474143.658,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5474765.038,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5474765.038,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5483247.701,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5483247.701,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5475394.466,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5475394.466,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5474035.388,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5474035.388,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5477297.537,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5477297.537,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5472464.194,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5472464.194,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5478609.03,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5478609.03,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5480649.816,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5480649.816,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5475209.395,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5475209.395,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5479360.091,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5479360.091,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Numerical::BellardPiCinterop",
+    "status": "PASSED",
+    "score": 5478390.93,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 5478390.93,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop",
+    "status": "PASSED",
+    "score": 3.8197584217E7,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 3.8197584217E7,
+    "repeat": 1,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "Cinterop",
+    "status": "PASSED",
+    "score": 2597440.0,
+    "metric": "CODE_SIZE",
+    "runtimeInUs": 2597440.0,
+    "repeat": 1,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6703549.433,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6703549.433,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6748434.434,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6748434.434,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6743557.409,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6743557.409,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6758553.584,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6758553.584,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6733510.525,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6733510.525,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6748432.757,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6748432.757,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6732832.885,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6732832.885,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6741045.084,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6741045.084,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6747406.37,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6747406.37,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6738660.782,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6738660.782,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6758479.745,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6758479.745,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6742234.808,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6742234.808,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6768300.388,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6768300.388,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6748460.04,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6748460.04,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6748013.941,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6748013.941,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6767123.133,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6767123.133,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6738646.472,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6738646.472,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6760955.586,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6760955.586,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6740203.839,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6740203.839,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::stringToKotlin",
+    "status": "PASSED",
+    "score": 6769914.03,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 6769914.03,
+    "repeat": 20,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 30739.188472222224,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 30739.188472222224,
+    "repeat": 1,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 30758.307416666667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 30758.307416666667,
+    "repeat": 2,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31000.545527777776,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31000.545527777776,
+    "repeat": 3,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31273.408083333332,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31273.408083333332,
+    "repeat": 4,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31257.65841666667,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31257.65841666667,
+    "repeat": 5,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31223.1395,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31223.1395,
+    "repeat": 6,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31408.83775,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31408.83775,
+    "repeat": 7,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31639.653888888886,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31639.653888888886,
+    "repeat": 8,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31991.95625,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31991.95625,
+    "repeat": 9,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31699.664861111112,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31699.664861111112,
+    "repeat": 10,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 33980.03002777778,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 33980.03002777778,
+    "repeat": 11,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31745.45975,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31745.45975,
+    "repeat": 12,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31976.648805555556,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31976.648805555556,
+    "repeat": 13,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31798.99033333333,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31798.99033333333,
+    "repeat": 14,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31716.66213888889,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31716.66213888889,
+    "repeat": 15,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31974.006611111112,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31974.006611111112,
+    "repeat": 16,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 32095.395333333334,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 32095.395333333334,
+    "repeat": 17,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 31899.962972222223,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 31899.962972222223,
+    "repeat": 18,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 32034.801194444444,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 32034.801194444444,
+    "repeat": 19,
+    "warmup": 10
+
+}
+, 
+{
+    
+    "name": "Cinterop::struct",
+    "status": "PASSED",
+    "score": 32312.174333333332,
+    "metric": "EXECUTION_TIME",
+    "runtimeInUs": 32312.174333333332,
+    "repeat": 20,
+    "warmup": 10
+
+}
+]
+        }
+        , 
+        {
+                "env": 
+{
+    
+        "machine": 
+{
+    
+        "cpu": "x86_64",
+        "os": "Mac OS X"
+    
+}
+,
+        "jdk": 
+{
+    
+        "version": "17.0.6",
+        "vendor": "Eclipse Adoptium"
+    
+}
+
+    
+}
+,
+    "kotlin": 
+{
+    
+    "backend": 
+{
+    
+            
+        "type": "native",
+        "version": "1.6.0-dev",
+        "flags": ["-g"]
+        
+}
+,
+    "kotlinVersion": "1.7.255-SNAPSHOT"
+
+}
+,
+    "benchmarks": [
+{
+    
+    "name": "FrameworkBenchmarksAnalyzer",
+    "status": "PASSED",
+    "score": 10545.794999999998,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 10545.794999999998,
+    "repeat": 1,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "FrameworkBenchmarksAnalyzer",
+    "status": "PASSED",
+    "score": 6040344.0,
+    "metric": "CODE_SIZE",
+    "runtimeInUs": 6040344.0,
+    "repeat": 1,
+    "warmup": 0
+
+}
+]
+        }
+        , 
+        {
+                "env": 
+{
+    
+        "machine": 
+{
+    
+        "cpu": "x86_64",
+        "os": "Mac OS X"
+    
+}
+,
+        "jdk": 
+{
+    
+        "version": "17.0.6",
+        "vendor": "Eclipse Adoptium"
+    
+}
+
+    
+}
+,
+    "kotlin": 
+{
+    
+    "backend": 
+{
+    
+            
+        "type": "native",
+        "version": "1.6.0-dev",
+        "flags": ["-Xcache-directory=/Volumes/Workspace/kotlin-rtgc/kotlin-native/dist/klib/cache/macos_x64-gSTATIC", "-g"]
+        
+}
+,
+    "kotlinVersion": "1.7.255-SNAPSHOT"
+
+}
+,
+    "benchmarks": [
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1897753.91,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1897753.91,
+    "repeat": 1,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1704063.645,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1704063.645,
+    "repeat": 2,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1708808.042,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1708808.042,
+    "repeat": 3,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1710232.339,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1710232.339,
+    "repeat": 4,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1713916.475,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1713916.475,
+    "repeat": 5,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1722611.212,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1722611.212,
+    "repeat": 6,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1729800.61,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1729800.61,
+    "repeat": 7,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1708215.255,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1708215.255,
+    "repeat": 8,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1702550.173,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1702550.173,
+    "repeat": 9,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 1713145.549,
+    "metric": "COMPILE_TIME",
+    "runtimeInUs": 1713145.549,
+    "repeat": 10,
+    "warmup": 0
+
+}
+, 
+{
+    
+    "name": "HelloWorld",
+    "status": "FAILED",
+    "score": 0.0,
+    "metric": "CODE_SIZE",
+    "runtimeInUs": 0.0,
+    "repeat": 1,
+    "warmup": 0
+
+}
+]
+        }
+        ]

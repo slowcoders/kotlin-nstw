@@ -1,0 +1,128 @@
+atomic : no_atomic --> 차이가 없다!!!
+
+# full NO_FRAME_GC
+        {            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 138.67443905305575,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 138.67443905305575,
+            "repeat": 20,
+            "warmup": 10        
+        }
+# full PER_FRAME_GC
+        {            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 147.51243757687575,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 147.51243757687575,
+            "repeat": 20,
+            "warmup": 10        
+        }
+
+# no destroyGarbages(PER_FRAME_GC)
+        {            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 148.10096996996998,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 148.10096996996998,
+            "repeat": 20,
+            "warmup": 10        
+        }
+
+# no destroyGarbages, no updateStackRef but currentFrame Check (PER_FRAME_GC)
+        {
+            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 44.44182122043195,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 44.44182122043195,
+            "repeat": 9,
+            "warmup": 10
+        
+        }
+# no destroyGarbages, no updateStackRef
+        {            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 14.497229049165385,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 14.497229049165385,
+            "repeat": 20,
+            "warmup": 10        
+        }
+
+## gcSuspended = true
+        {
+            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 10.150896888508278,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 10.150896888508278,
+            "repeat": 1,
+            "warmup": 10
+        
+        }
+
+## extern volatile _sharedGCStatus
+        {
+            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 29.101545995731776,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 29.101545995731776,
+            "repeat": 1,
+            "warmup": 10
+        
+        }
+
+## _sharedGCStatus (not volatile)
+        {
+            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 10.150624302973979,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 10.150624302973979,
+            "repeat": 20,
+            "warmup": 10        
+        }
+
+## _sharedGCStatus (not volatile, updateStackRef published only)
+        {
+            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 10.654608105134473,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 10.654608105134473,
+            "repeat": 20,
+            "warmup": 10
+        
+        }
+## _sharedGCStatus (not volatile) updateReturnRef retained Frame only
+        {            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 148.73522292800968,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 148.73522292800968,
+            "repeat": 20,
+            "warmup": 10        
+        }
+
+## _sharedGCStatus (not volatile), updateReturnRef retained Frame only, skip UpdateStackRef.
+        {            
+            "name": "Ring::ForLoops.arrayIndicesLoop",
+            "status": "PASSED",
+            "score": 14.652597889782433,
+            "metric": "EXECUTION_TIME",
+            "runtimeInUs": 14.652597889782433,
+            "repeat": 20,
+            "warmup": 10        
+        }        
