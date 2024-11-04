@@ -98,12 +98,13 @@ private fun checkComposableCall(
 ) {
     context.visitCurrentScope(
         visitInlineLambdaParameter = { parameter ->
-            if (parameter.returnTypeRef.hasDisallowComposableCallsAnnotation(context.session)) {
+            val containingDeclarationSymbol = parameter.containingDeclarationSymbol
+            if (parameter.returnTypeRef.hasDisallowComposableCallsAnnotation(context.session) && containingDeclarationSymbol is FirCallableSymbol) {
                 reporter.reportOn(
                     expression.calleeReference.source,
                     ComposeErrors.CAPTURED_COMPOSABLE_INVOCATION,
                     parameter.symbol,
-                    parameter.containingDeclarationSymbol as FirCallableSymbol,
+                    containingDeclarationSymbol,
                     context
                 )
             }

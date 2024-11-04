@@ -744,7 +744,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 origin = origin,
                 name = valueParameter.name,
                 type = type,
-                isAssignable = valueParameter.containingDeclarationSymbol.fir.shouldParametersBeAssignable(c),
+                isAssignable = valueParameter.containingDeclarationSymbol.fir.let { it is FirCallableDeclaration && it.shouldParametersBeAssignable(c) },
                 symbol = IrValueParameterSymbolImpl(),
                 varargElementType = valueParameter.varargElementType?.toIrType(c, typeOrigin),
                 isCrossinline = valueParameter.isCrossinline,
@@ -1024,8 +1024,8 @@ internal fun IrDeclarationParent?.isExternalParent(): Boolean {
             || (this is IrDeclaration && this.isFileClass)
 }
 
-internal fun FirDeclaration?.shouldParametersBeAssignable(c: Fir2IrComponents): Boolean {
-    return c.extensions.parametersAreAssignable && (this as? FirCallableDeclaration)?.isTailRec == true
+internal fun FirCallableDeclaration?.shouldParametersBeAssignable(c: Fir2IrComponents): Boolean {
+    return c.extensions.parametersAreAssignable && this?.isTailRec == true
 }
 
 internal fun isEffectivelyExternal(memberDeclaration: FirMemberDeclaration?, irParent: IrDeclarationParent?): Boolean =
