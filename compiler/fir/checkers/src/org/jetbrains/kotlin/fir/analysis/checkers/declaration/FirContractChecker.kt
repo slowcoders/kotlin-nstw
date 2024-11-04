@@ -201,9 +201,11 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
             return logicalNot.arg.accept(this, data)
         }
 
-        // TODO: support dispatch receivers as well as extension receivers
-        private fun getParameterType(index: Int): ConeKotlinType? =
-            if (index == -1) declaration.symbol.resolvedReceiverTypeRef?.coneType
+        private fun getParameterType(index: Int): ConeKotlinType =
+            if (index == -1)
+                declaration.symbol.resolvedReceiverTypeRef?.coneType
+                    ?: declaration.symbol.dispatchReceiverType
+                    ?: error("Contract references non-existent receiver")
             else declaration.valueParameters[index].returnTypeRef.coneType
     }
 }
