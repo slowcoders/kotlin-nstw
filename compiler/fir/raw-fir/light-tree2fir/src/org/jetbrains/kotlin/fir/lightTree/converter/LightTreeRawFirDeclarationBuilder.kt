@@ -2624,7 +2624,10 @@ class LightTreeRawFirDeclarationBuilder(
         }
     }
 
-    private fun MutableList<FirContextReceiver>.addContextReceivers(container: LighterASTNode, containingDeclarationSymbol: FirBasedSymbol<*>) {
+    private fun MutableList<FirContextReceiver>.addContextReceivers(
+        container: LighterASTNode,
+        containingDeclarationSymbol: FirBasedSymbol<*>,
+    ) {
         val contextList = container.getChildNodeByType(CONTEXT_RECEIVER_LIST) ?: return
 
         contextList.getChildNodesByType(VALUE_PARAMETER).mapTo(this) { contextParameterElement ->
