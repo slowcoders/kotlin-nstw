@@ -421,16 +421,20 @@ public func formattedMessage() -> Swift.Never {
     return __root___formattedMessage()
 }
 @available(*, deprecated, message: """
+
     line1
     message
     line2
+
 """)
 public func multilineFormattedMessage() -> Swift.Never {
     return __root___multilineFormattedMessage()
 }
 @available(*, deprecated, message: """
+
     line1
     line2
+
 """)
 public func multilineMessage() -> Swift.Never {
     return __root___multilineMessage()
