@@ -52,7 +52,7 @@ class FirTypeIntersectionScopeContext(
         class SingleMember<D : FirCallableSymbol<*>>(
             override val chosenSymbol: D,
             overriddenMembers: List<MemberWithBaseScope<D>>,
-            val scopeOfChosenSymbol: FirTypeScope?,
+            val scopeOfChosenSymbol: FirTypeScope,
         ) : ResultOfIntersection<D>(overriddenMembers) {
             constructor(
                 chosenSymbol: D,

@@ -188,7 +188,7 @@ abstract class AbstractFirUseSiteMemberScope(
     protected inline fun <T : FirCallableSymbol<*>> ResultOfIntersection<T>.collectDirectOverriddenForDeclared(
         declared: T,
         result: MutableList<in ResultOfIntersection<T>>,
-        isOverridden: (T, T, FirTypeScope?) -> Boolean,
+        isOverridden: (declaredSymbol: T, baseDeclaration: T, baseScope: FirTypeScope) -> Boolean,
     ) {
         when (this) {
             is ResultOfIntersection.SingleMember -> {
