@@ -8639,12 +8639,6 @@ public class LLFirReversedBlackBoxCodegenBasedTestGenerated extends AbstractLLFi
     }
 
     @Test
-    @TestMetadata("inheritranceFromJavaUtilProperties.kt")
-    public void testInheritranceFromJavaUtilProperties() {
-      runTest("compiler/testData/codegen/box/collections/inheritranceFromJavaUtilProperties.kt");
-    }
-
-    @Test
     @TestMetadata("internalRemove.kt")
     public void testInternalRemove() {
       runTest("compiler/testData/codegen/box/collections/internalRemove.kt");
@@ -8768,6 +8762,12 @@ public class LLFirReversedBlackBoxCodegenBasedTestGenerated extends AbstractLLFi
     @TestMetadata("noStubsInJavaSuperClass.kt")
     public void testNoStubsInJavaSuperClass() {
       runTest("compiler/testData/codegen/box/collections/noStubsInJavaSuperClass.kt");
+    }
+
+    @Test
+    @TestMetadata("notErasedMapGetMap_boxedTypes.kt")
+    public void testNotErasedMapGetMap_boxedTypes() {
+      runTest("compiler/testData/codegen/box/collections/notErasedMapGetMap_boxedTypes.kt");
     }
 
     @Test

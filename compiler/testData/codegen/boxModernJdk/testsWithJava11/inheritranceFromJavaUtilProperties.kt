@@ -1,5 +1,5 @@
 // TARGET_BACKEND: JVM_IR
-// JDK_KIND: FULL_JDK_11
+// ISSUE: KT-72345
 import java.util.Properties
 
 internal class MyProperties : Properties()
