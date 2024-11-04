@@ -215,7 +215,6 @@ public class StandaloneAnalysisAPISessionBuilder(
         return StandaloneAnalysisAPISession(kotlinCoreProjectEnvironment) {
             projectStructureProvider.allModules.mapNotNull { ktModule ->
                 if (ktModule !is KaSourceModule) return@mapNotNull null
-                check(ktModule is KaSourceModuleImpl)
                 ktModule to ktModule.sourceRoots.filterIsInstance<PsiFile>()
             }.toMap()
         }

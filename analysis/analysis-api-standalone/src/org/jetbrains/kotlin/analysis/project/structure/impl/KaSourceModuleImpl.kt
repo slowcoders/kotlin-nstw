@@ -24,7 +24,7 @@ internal class KaSourceModuleImpl(
     override val project: Project,
     override val name: String,
     override val languageVersionSettings: LanguageVersionSettings,
-    internal val sourceRoots: List<PsiFileSystemItem>,
+    override val sourceRoots: List<PsiFileSystemItem>,
 ) : KaSourceModule, KtModuleWithPlatform {
     @KaExperimentalApi
     override val stableModuleName: String? get() = name

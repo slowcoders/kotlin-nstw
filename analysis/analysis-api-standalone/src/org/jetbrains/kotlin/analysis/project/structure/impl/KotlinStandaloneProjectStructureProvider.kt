@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.analysis.api.projectStructure.KaBuiltinsModule
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaLibraryModule
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaModule
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaNotUnderContentRootModule
+import org.jetbrains.kotlin.analysis.api.projectStructure.KaSourceModule
 import org.jetbrains.kotlin.analysis.api.projectStructure.allDirectDependencies
 import org.jetbrains.kotlin.analysis.api.standalone.base.projectStructure.KotlinStaticProjectStructureProvider
 import org.jetbrains.kotlin.analysis.api.standalone.base.projectStructure.StandaloneProjectFactory.findJvmRootsForJavaFiles
@@ -78,7 +79,7 @@ internal class KotlinStandaloneProjectStructureProvider(
 
     override val allSourceFiles: List<PsiFileSystemItem> by lazy {
         buildList {
-            val files = allModules.mapNotNull { (it as? KaSourceModuleImpl)?.sourceRoots }.flatten()
+            val files = allModules.mapNotNull { (it as? KaSourceModule)?.sourceRoots }.flatten()
             addAll(files)
             addAll(findJvmRootsForJavaFiles(files.filterIsInstance<PsiJavaFile>()))
         }

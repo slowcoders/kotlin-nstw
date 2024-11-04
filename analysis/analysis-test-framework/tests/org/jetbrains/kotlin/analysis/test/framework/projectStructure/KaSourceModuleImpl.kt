@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.analysis.test.framework.projectStructure
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaModule
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaSourceModule
@@ -24,4 +25,7 @@ class KaSourceModuleImpl(
     override val directFriendDependencies: MutableList<KaModule> = mutableListOf()
 
     override fun toString(): String = name
+
+    override val sourceRoots: List<PsiFileSystemItem>
+        get() = listOf()
 }

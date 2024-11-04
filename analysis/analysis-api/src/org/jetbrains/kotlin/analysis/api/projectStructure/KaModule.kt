@@ -10,6 +10,7 @@ package org.jetbrains.kotlin.analysis.api.projectStructure
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaPlatformInterface
@@ -116,6 +117,8 @@ public interface KaSourceModule : KaModule {
      * A set of Kotlin settings, like API version, supported features and flags.
      */
     public val languageVersionSettings: LanguageVersionSettings
+
+    public val sourceRoots: List<PsiFileSystemItem>
 }
 
 /**
