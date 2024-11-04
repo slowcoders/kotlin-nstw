@@ -18,6 +18,8 @@ import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.library.isNativeStdlib
 import org.jetbrains.kotlin.library.metadata.isCInteropLibrary
 import org.jetbrains.kotlin.library.unresolvedDependencies
+import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.channels.ClosedByInterruptException
 import java.nio.file.*
@@ -228,6 +230,7 @@ class CacheBuilder(
     }
 
     private val sleepPeriod = 1_000L // 1 second.
+    private val footprintSize = 16
 
     private fun buildLibraryCache(library: KotlinLibrary, isExternal: Boolean, filesToCache: List<String>) {
         val dependencies = library.getAllTransitiveDependencies(uniqueNameToLibrary)
@@ -288,7 +291,7 @@ class CacheBuilder(
                                 break
                             try {
                                 Thread.sleep(sleepPeriod)
-                                lockFile.appendBytes(Random.nextBytes(4))
+                                lockFile.writeBytes(Random.nextBytes(footprintSize))
                             } catch (t: IOException) {
                                 break
                             } catch (t: InterruptedException) {
@@ -321,11 +324,12 @@ class CacheBuilder(
     }
 
     private inline fun getFileContentsHash(path: Path, fallbackInCaseOfIOError: () -> Int) = try {
-        if (Files.size(path) > 1024 * 1024) // The file is not supposed to grow this big - something clearly went wrong.
-            fallbackInCaseOfIOError()
-        else
-            Files.readAllBytes(path).fold(0) { acc, value -> acc * 31 + value }
+        val buf = ByteArray(footprintSize)
+        FileInputStream(path.toFile()).use { it.read(buf) }
+        buf.fold(0) { acc, value -> acc * 31 + value }
     } catch (t: IOException) {
+        fallbackInCaseOfIOError()
+    } catch (t: FileNotFoundException) {
         fallbackInCaseOfIOError()
     }
 
