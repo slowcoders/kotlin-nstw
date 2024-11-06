@@ -86,10 +86,10 @@ sh z_rtgc/run_benchmarks.sh
 ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :helloworld:runKonanC8
 
 ### debug benchmark compile option.
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :ring:konanRun --filter=ForLoops.arrayIndicesLoop -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :ring:konanRun --filter=GraphSolver.solve -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :ring:konanRun --filter=IntArray.copy -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :ObjCInterop:konanRun --filter=sumComplex -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=ForLoops.arrayIndicesLoop -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=GraphSolver.solve -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=IntArray.copy -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ObjCInterop:konanRun --filter=sumComplex -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
 
 ./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :konanRun -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
 
