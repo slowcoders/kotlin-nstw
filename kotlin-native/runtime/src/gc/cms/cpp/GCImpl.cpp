@@ -91,6 +91,14 @@ PERFORMANCE_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHe
     barriers::beforeHeapRefUpdate(ref, value, loadAtomic);
 }
 
+PERFORMANCE_INLINE void gc::nstw_heapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value) noexcept {
+    RuntimeAssert(false, "Should not reach here");
+}
+
+PERFORMANCE_INLINE void gc::nstw_afterHeapRefUpdate(ObjHeader* erased, ObjHeader* value) noexcept {
+    RuntimeAssert(false, "Should not reach here");
+}
+
 PERFORMANCE_INLINE void gc::afterSpecialRefReleaseToZero(mm::DirectRefAccessor ref) noexcept {
     barriers::afterSpecialRefReleaseToZero(ref);
 }
@@ -123,3 +131,5 @@ ALWAYS_INLINE gc::GC::ObjectData* type_layout::descriptor<gc::GC::ObjectData>::t
 }
 
 const bool gc::kRequiresThreadDataDuringThreadDestruction = true;
+
+const bool gc::isNSTW = false;

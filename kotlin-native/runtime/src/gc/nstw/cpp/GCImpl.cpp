@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ParallelMarkConcurrentSweep.hpp"
+#include "ConcurrentMarkAndSweep.hpp"
 #include "GC.hpp"
 #include "GCStatistics.hpp"
 #include "MarkAndSweepUtils.hpp"
@@ -59,12 +59,12 @@ bool gc::GC::FinalizersThreadIsRunning() noexcept {
 
 // static
 PERFORMANCE_INLINE void gc::GC::processObjectInMark(void* state, ObjHeader* object) noexcept {
-    gc::internal::processObjectInMark<gc::mark::ParallelMark::MarkTraits>(state, object);
+    gc::internal::processObjectInMark<gc::mark::ConcurrentMark::MarkTraits>(state, object);
 }
 
 // static
 PERFORMANCE_INLINE void gc::GC::processArrayInMark(void* state, ArrayHeader* array) noexcept {
-    gc::internal::processArrayInMark<gc::mark::ParallelMark::MarkTraits>(state, array);
+    gc::internal::processArrayInMark<gc::mark::ConcurrentMark::MarkTraits>(state, array);
 }
 
 int64_t gc::GC::Schedule() noexcept {
@@ -87,16 +87,24 @@ bool gc::GC::mainThreadFinalizerProcessorAvailable() noexcept {
     return impl_->gc().mainThreadFinalizerProcessor().available();
 }
 
-ALWAYS_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept {}
+PERFORMANCE_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept {
+    RuntimeAssert(false, "Should not reach here");
+}
 
-ALWAYS_INLINE void gc::nstw_heapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value) noexcept {}
+PERFORMANCE_INLINE void gc::nstw_heapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value) noexcept {
+    barriers::nstw_heapRefUpdate(ref, value);
+}
 
-ALWAYS_INLINE void gc::nstw_afterHeapRefUpdate(ObjHeader* erased, ObjHeader* value) noexcept {}
+PERFORMANCE_INLINE void gc::nstw_afterHeapRefUpdate(ObjHeader* erased, ObjHeader* value) noexcept {
+    barriers::nstw_afterHeapRefUpdate(erased, value);
+}
 
-ALWAYS_INLINE void gc::afterSpecialRefReleaseToZero(mm::DirectRefAccessor ref) noexcept {}
+PERFORMANCE_INLINE void gc::afterSpecialRefReleaseToZero(mm::DirectRefAccessor ref) noexcept {
+    barriers::afterSpecialRefReleaseToZero(ref);
+}
 
 PERFORMANCE_INLINE OBJ_GETTER(gc::weakRefReadBarrier, std_support::atomic_ref<ObjHeader*> weakReferee) noexcept {
-    RETURN_RESULT_OF(gc::WeakRefRead, weakReferee);
+    RETURN_OBJ(gc::barriers::weakRefReadBarrier(weakReferee));
 }
 
 PERFORMANCE_INLINE bool gc::isMarked(ObjHeader* object) noexcept {
@@ -122,6 +130,6 @@ ALWAYS_INLINE gc::GC::ObjectData* type_layout::descriptor<gc::GC::ObjectData>::t
     return new (ptr) gc::GC::ObjectData();
 }
 
-const bool gc::kRequiresThreadDataDuringThreadDestruction = false;
+const bool gc::kRequiresThreadDataDuringThreadDestruction = true;
 
 const bool gc::isNSTW = false;

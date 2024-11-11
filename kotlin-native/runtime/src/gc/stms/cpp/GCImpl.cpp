@@ -82,6 +82,10 @@ bool gc::GC::mainThreadFinalizerProcessorAvailable() noexcept {
 
 ALWAYS_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept {}
 
+ALWAYS_INLINE void gc::nstw_heapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value) noexcept {}
+
+ALWAYS_INLINE void gc::nstw_afterHeapRefUpdate(ObjHeader* erased, ObjHeader* value) noexcept {}
+
 ALWAYS_INLINE void gc::afterSpecialRefReleaseToZero(mm::DirectRefAccessor ref) noexcept {}
 
 ALWAYS_INLINE OBJ_GETTER(gc::weakRefReadBarrier, std_support::atomic_ref<ObjHeader*> weakReferee) noexcept {
@@ -112,3 +116,5 @@ ALWAYS_INLINE gc::GC::ObjectData* type_layout::descriptor<gc::GC::ObjectData>::t
 }
 
 const bool gc::kRequiresThreadDataDuringThreadDestruction = false;
+
+const bool gc::isNSTW = false;

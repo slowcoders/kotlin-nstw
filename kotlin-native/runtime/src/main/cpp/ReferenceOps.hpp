@@ -139,14 +139,22 @@ public:
 
     PERFORMANCE_INLINE void store(ObjHeader* desired) noexcept {
         AssertThreadState(ThreadState::kRunnable);
-        beforeStore(desired);
-        direct_.store(desired);
-        afterStore(desired);
+        if (gc::isNSTW) {
+            gc::nstw_heapRefUpdate(direct_, desired);
+        } else {
+            beforeStore(desired);
+            direct_.store(desired);
+            afterStore(desired);
+        }
     }
 
     PERFORMANCE_INLINE void storeAtomic(ObjHeader* desired, std::memory_order order) noexcept {
         AssertThreadState(ThreadState::kRunnable);
         beforeStore(desired);
+        auto result = direct_.exchange(desired, order);
+        if (gc::isNSTW) {
+            gc::nstw_afterHeapRefUpdate(result, desired);
+        }
         direct_.storeAtomic(desired, order);
         afterStore(desired);
     }
@@ -156,6 +164,9 @@ public:
         beforeLoad();
         beforeStore(desired);
         auto result = direct_.exchange(desired, order);
+        if (gc::isNSTW) {
+            gc::nstw_afterHeapRefUpdate(expected, desired);
+        }
         afterStore(desired);
         afterLoad();
         return result;
@@ -166,6 +177,9 @@ public:
         beforeLoad();
         beforeStore(desired);
         bool result = direct_.compareAndExchange(expected, desired, order);
+        if (result && gc::isNSTW) {
+            gc::nstw_afterHeapRefUpdate(expected, desired);
+        }
         afterStore(desired);
         afterLoad();
         return result;

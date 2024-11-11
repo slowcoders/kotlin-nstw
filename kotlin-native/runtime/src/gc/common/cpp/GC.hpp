@@ -94,6 +94,8 @@ private:
 };
 
 void beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept;
+void nstw_heapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value) noexcept;
+void nstw_afterHeapRefUpdate(ObjHeader* erased, ObjHeader* value) noexcept;
 void afterSpecialRefReleaseToZero(mm::DirectRefAccessor ref) noexcept;
 OBJ_GETTER(weakRefReadBarrier, std_support::atomic_ref<ObjHeader*> weakReferee) noexcept;
 
@@ -104,6 +106,8 @@ bool isMarked(ObjHeader* object) noexcept;
 bool tryResetMark(GC::ObjectData& objectData) noexcept;
 
 extern const bool kRequiresThreadDataDuringThreadDestruction;
+
+extern const bool isNSTW;
 
 } // namespace gc
 
