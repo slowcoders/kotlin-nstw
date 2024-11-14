@@ -164,6 +164,7 @@ enum class GCType(val compilerFlag: String?) {
     STWMS("-Xbinary=gc=stwms"),
     PMCS("-Xbinary=gc=pmcs"),
     CMS("-Xbinary=gc=cms");
+    NSTW("-Xbinary=gc=nstw");
 
     override fun toString() = compilerFlag?.let { "($it)" }.orEmpty()
 }

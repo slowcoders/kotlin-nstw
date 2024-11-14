@@ -88,6 +88,7 @@ bool gc::GC::mainThreadFinalizerProcessorAvailable() noexcept {
 }
 
 PERFORMANCE_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept {
+    RuntimeCheck(false, "cms");
     barriers::beforeHeapRefUpdate(ref, value, loadAtomic);
 }
 
