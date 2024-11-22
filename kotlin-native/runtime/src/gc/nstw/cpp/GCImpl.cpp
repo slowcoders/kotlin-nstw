@@ -88,7 +88,7 @@ bool gc::GC::mainThreadFinalizerProcessorAvailable() noexcept {
 }
 
 PERFORMANCE_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept {
-    RuntimeAssert(false, "nstw");
+    RuntimeCheck(false, "nstw");
 }
 
 PERFORMANCE_INLINE void gc::nstw_heapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value) noexcept {
@@ -133,4 +133,4 @@ ALWAYS_INLINE gc::GC::ObjectData* type_layout::descriptor<gc::GC::ObjectData>::t
 
 const bool gc::kRequiresThreadDataDuringThreadDestruction = true;
 
-const bool gc::isNSTW = false;
+const bool gc::isNSTW = true;
