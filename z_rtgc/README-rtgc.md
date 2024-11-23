@@ -50,7 +50,7 @@ org.gradle.java.installations.auto-detect=false
 ./gradlew -Ptest_target=wasm32 :kotlin-native:backend.native:tests:run
 
 ### specific test with debuging mode (주의. 일부 testcase는 debugging 모드 빌드 시 test 실패함.)
-./gradlew -Ptest_flags="-memory-model rtgc -g -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
+./gradlew -Ptest_flags="-memory-model rtgc -g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
 
 ### blackbox test ???
 ./gradlew :native:native.tests:codegenBoxTest 
@@ -86,12 +86,12 @@ sh z_rtgc/run_benchmarks.sh
 ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :helloworld:runKonanC8
 
 ### debug benchmark compile option.
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=ForLoops.arrayIndicesLoop -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=GraphSolver.solve -PcrossTarget="linuxX64" -PcompilerArgs="-g -Xbinary=gc=nstw" && popd
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=IntArray.copy -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ObjCInterop:konanRun --filter=sumComplex -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=ForLoops.arrayIndicesLoop -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=GraphSolver.solve -PcrossTarget="linuxX64" -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=IntArray.copy -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ObjCInterop:konanRun --filter=sumComplex -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
 
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :konanRun -PcompilerArgs="-g -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :konanRun -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
 
 ### benchmark analyzer 실행.
 /Volumes/WorkSpace/kotlin-rtgc/kotlin-native/tools/benchmarksAnalyzer/build/bin/linuxX64/benchmarksAnalyzerReleaseExecutable/benchmarksAnalyzer.kexe z_rtgc/benchmark-results/experimental-09-27.json z_rtgc/benchmark-results/rtgc-LAZY_GC-10-20.json 
@@ -131,7 +131,7 @@ kotlin.native.isNativeRuntimeDebugInfoEnabled=true
 
 - debugging 용 test 빌드.
 ```sh
-./gradlew -Ptest_flags="-memory-model rtgc -g -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
+./gradlew -Ptest_flags="-memory-model rtgc -g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
 ```
 
 - vscode codeLLDB plugin 설치 및 .vscode/launch.json 설정.
