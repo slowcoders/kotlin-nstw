@@ -393,6 +393,7 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
                 GC.NOOP -> add("noop_gc_custom.bc")
                 GC.PARALLEL_MARK_CONCURRENT_SWEEP -> add("pmcs_gc_custom.bc")
                 GC.CONCURRENT_MARK_AND_SWEEP -> add("concurrent_ms_gc_custom.bc")
+                GC.NO_STOP_THE_WORLD -> add("nstw_gc_custom.bc")
             }
         } else {
             when (gc) {
@@ -400,6 +401,7 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
                 GC.NOOP -> add("noop_gc.bc")
                 GC.PARALLEL_MARK_CONCURRENT_SWEEP -> add("pmcs_gc.bc")
                 GC.CONCURRENT_MARK_AND_SWEEP -> add("concurrent_ms_gc.bc")
+                GC.NO_STOP_THE_WORLD -> add("nstw_gc.bc")
             }
         }
         if (target.supportsCoreSymbolication()) {
