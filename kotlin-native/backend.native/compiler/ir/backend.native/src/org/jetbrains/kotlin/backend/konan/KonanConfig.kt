@@ -368,6 +368,8 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
 
     internal val runtimeNativeLibraries: List<String> = mutableListOf<String>().apply {
         if (debug) add("debug.bc")
+        println("gcScheduler: " + gcSchedulerType + " gc: " + gc + " " + allocationMode) /* RTGC: */
+
         add("runtime.bc")
         add("mm.bc")
         add("common_alloc.bc")

@@ -37,20 +37,18 @@ org.gradle.java.installations.auto-detect=false
 ## run test 
 ```sh
 # runtime unit test - Google. 20분
-./gradlew -Pkotlin.native.binary.memoryModel=rtgc :kotlin-native:runtime:hostRuntimeTests 
+./gradlew -PcompilerArgs="-g -Xbinary=gc=nstw" :kotlin-native:runtime:hostRuntimeTests 
 # --> download test sources into ./kotlin-native/runtime/googletest
 # --> Big Sur 에서는 download 오류로 인해 테스트 불가.
 
-### kotlin-native language feature test for specific memory model
-./gradlew --continue -Ptest_flags="-memory-model rtgc -g -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:run
-### kotlin-native language feature test. no interrupt, all memory model
-./gradlew --continue :kotlin-native:backend.native:tests:run
+### kotlin-native language feature test
+./gradlew --continue  -Pkotlin.internal.native.test.target=linux_x64 -Ptest_flags="-g kotlin.internal.native.test.target=linux_x64 -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" :native:native.tests:test
 
 ### kotlin-native language feature test for specific target
 ./gradlew -Ptest_target=wasm32 :kotlin-native:backend.native:tests:run
 
 ### specific test with debuging mode (주의. 일부 testcase는 debugging 모드 빌드 시 test 실패함.)
-./gradlew -Ptest_flags="-memory-model rtgc -g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
+./gradlew -Ptest_flags="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
 
 ### blackbox test ???
 ./gradlew :native:native.tests:codegenBoxTest 
@@ -66,7 +64,7 @@ ex) kotlin-native/backend.native/tests/build/reports/tests/debugger_test/classes
 ## run benchmarks
 ```sh
 ## 참고) benchmarks 는 cache 된 platformLibs 사용.
-# --> cache directory /Volumes/WorkSpace/kotlin-rtgc/kotlin-native/dist/klib/cache/linux_x64-gSTATIC
+# --> cache directory /Volumes/WorkSpace/kotlin-nstw/kotlin-native/dist/klib/cache/linux_x64-gSTATIC
 
 ### prepare platformLibs
 # 주의) runtime 변경 사항이 있을 때 마다 rebuild 필요. (# use target of your laptop here instead ex) linux_arm64PlatformLibs)
@@ -82,8 +80,8 @@ cd kotlin-native/tools/benchmarksAnalyzer
 sh z_rtgc/run_benchmarks.sh
 
 ### single banchmark 실행
-../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :cinterop:konanRun
-../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :helloworld:runKonanC8
+../../gradlew -PcompilerArgs="-g -Xbinary=gc=nstw" :cinterop:konanRun
+../../gradlew -PcompilerArgs="-g -Xbinary=gc=nstw" :helloworld:runKonanC8
 
 ### debug benchmark compile option.
 ./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=ForLoops.arrayIndicesLoop -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
@@ -91,10 +89,10 @@ sh z_rtgc/run_benchmarks.sh
 ./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ring:konanRun --filter=IntArray.copy -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
 ./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :ObjCInterop:konanRun --filter=sumComplex -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
 
-./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew -Pkotlin.native.binary.memoryModel=rtgc :konanRun -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
+./gradlew linux_x64PlatformLibs && pushd kotlin-native/performance && ../../gradlew :konanRun -PcompilerArgs="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" && popd
 
 ### benchmark analyzer 실행.
-/Volumes/WorkSpace/kotlin-rtgc/kotlin-native/tools/benchmarksAnalyzer/build/bin/linuxX64/benchmarksAnalyzerReleaseExecutable/benchmarksAnalyzer.kexe z_rtgc/benchmark-results/experimental-09-27.json z_rtgc/benchmark-results/rtgc-LAZY_GC-10-20.json 
+/Volumes/WorkSpace/kotlin-nstw/kotlin-native/tools/benchmarksAnalyzer/build/bin/linuxX64/benchmarksAnalyzerReleaseExecutable/benchmarksAnalyzer.kexe z_rtgc/benchmark-results/experimental-09-27.json z_rtgc/benchmark-results/nstw-LAZY_GC-10-20.json 
 
 ### NO_FRAME vs LAZY_GC
 Ring::String.stringConcat                         34544.0700 ± 58.9272     183001.9888 ± 17173.9773 -79.13
@@ -131,7 +129,7 @@ kotlin.native.isNativeRuntimeDebugInfoEnabled=true
 
 - debugging 용 test 빌드.
 ```sh
-./gradlew -Ptest_flags="-memory-model rtgc -g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
+./gradlew -Ptest_flags="-g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
 ```
 
 - vscode codeLLDB plugin 설치 및 .vscode/launch.json 설정.

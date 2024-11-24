@@ -88,11 +88,12 @@ bool gc::GC::mainThreadFinalizerProcessorAvailable() noexcept {
 }
 
 PERFORMANCE_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept {
-    RuntimeCheck(false, "nstw");
+    // RuntimeCheck(false, "nstw");
+    // do nothing.
 }
 
 PERFORMANCE_INLINE void gc::nstw_heapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value) noexcept {
-    RuntimeCheck(false, "nstw_heapRefUpdate");
+    // RuntimeCheck(false, "nstw_heapRefUpdate");
     barriers::nstw_heapRefUpdate(ref, value);
 }
 
