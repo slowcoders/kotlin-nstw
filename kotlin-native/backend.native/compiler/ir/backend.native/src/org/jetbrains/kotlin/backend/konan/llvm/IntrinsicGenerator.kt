@@ -4,6 +4,7 @@ import llvm.*
 import org.jetbrains.kotlin.backend.konan.*
 import org.jetbrains.kotlin.backend.konan.ir.isConstantConstructorIntrinsic
 import org.jetbrains.kotlin.backend.konan.ir.isTypedIntrinsic
+import org.jetbrains.kotlin.config.nativeBinaryOptions.GC
 import org.jetbrains.kotlin.ir.util.getAnnotationStringValue
 import org.jetbrains.kotlin.backend.konan.llvm.objc.genObjCSelector
 import org.jetbrains.kotlin.backend.konan.lower.volatileField
@@ -406,7 +407,16 @@ internal class IntrinsicGenerator(private val environment: IntrinsicGeneratorEnv
         require(args.size == 3) { "The call to ${callSite.symbol.owner.name.asString()} expects 3 value arguments." }
         val address = arrayGetElementAddress(callSite, args[0], args[1])
         val isObjectType = callSite.symbol.owner.parameters.last().type.binaryTypeIsReference()
-        storeAny(args[2], address, isObjectRef = isObjectType, onStack = false, isVolatile = true)
+        require(!stackLocalsManager.rtgc_isStackLocal(args[0])) { "emitAtomicSetArrayElement on statck-instance!" }
+        if (context.config.gc == GC.NO_STOP_THE_WORLD && 
+            isObjectType) 
+        {
+            rtgc_storeMemberVar(
+                args[2], address, args[0]   
+            )
+        } else {
+            storeAny(args[2], address, isObjectRef = isObjectType, onStack = false, isVolatile = true)
+        }
         return theUnitInstanceRef.llvm
     }
 

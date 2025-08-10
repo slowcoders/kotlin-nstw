@@ -392,6 +392,20 @@ bitcode {
             }
         }
 
+        module("nstw_gc") {
+            srcRoot.set(layout.projectDirectory.dir("src/gc/cms"))
+            headersDirs.from(files("src/alloc/common/cpp", "src/gcScheduler/common/cpp", "src/gc/common/cpp", "src/mm/cpp", "src/externalCallsChecker/common/cpp", "src/objcExport/cpp", "src/main/cpp"))
+            sourceSets {
+                main {}
+                test {}
+            }
+        }
+
+        testsGroup("nstw_gc_test") {
+            testedModules.addAll("concurrent_ms_gc")
+            testSupportModules.addAll("main", "mm", "noop_externalCallsChecker", "common_alloc", "common_alloc", "legacy_alloc", "std_alloc", "common_gc", "common_gcScheduler", "manual_gcScheduler", "objc", "noop_crashHandler")
+        }
+
         testsGroup("cms_gc_test") {
             testedModules.addAll("concurrent_ms_gc")
             testSupportModules.addAll("main", "mm", "noop_externalCallsChecker", "common_alloc", "common_alloc", "legacy_alloc", "std_alloc", "common_gc", "common_gcScheduler", "manual_gcScheduler", "objc", "noop_crashHandler")

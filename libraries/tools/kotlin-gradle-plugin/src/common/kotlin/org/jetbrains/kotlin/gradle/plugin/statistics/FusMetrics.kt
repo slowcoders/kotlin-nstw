@@ -131,6 +131,7 @@ internal object NativeArgumentMetrics : FusMetrics {
                 when (it) {
                     "noop" -> BooleanMetrics.ENABLED_NOOP_GC
                     "stwms" -> BooleanMetrics.ENABLED_STWMS_GC
+                    "nstw" -> BooleanMetrics.ENABLED_NSTW_GC
                     "pmcs" -> BooleanMetrics.ENABLED_PMCS_GC
                     "cms" -> BooleanMetrics.ENABLED_CMS_GC
                     else -> null

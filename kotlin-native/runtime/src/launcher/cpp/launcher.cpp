@@ -40,9 +40,10 @@ OBJ_GETTER(setupArgs, int argc, const char** argv) {
   ObjHeader* result = AllocArrayInstance(theArrayTypeInfo, std::max(0, argc - 1), OBJ_RESULT);
   ArrayHeader* array = result->array();
   for (int index = 1; index < argc; index++) {
-    ObjHolder result;
-    CreateStringFromCString(argv[index], result.slot());
-    UpdateHeapRef(ArrayAddressOfElementAt(array, index - 1), result.obj());
+    ObjHolder holder;
+    CreateStringFromCString(argv[index], holder.slot());
+    // UpdateHeapRef(ArrayAddressOfElementAt(array, index - 1), result.obj());
+    rtgc_UpdateObjectRef(ArrayAddressOfElementAt(array, index - 1), holder.obj(), result);
   }
   return result;
 }

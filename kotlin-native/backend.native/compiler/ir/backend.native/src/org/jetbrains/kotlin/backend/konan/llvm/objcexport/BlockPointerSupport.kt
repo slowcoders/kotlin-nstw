@@ -10,6 +10,7 @@ import llvm.LLVMStoreSizeOfType
 import llvm.LLVMValueRef
 import org.jetbrains.kotlin.backend.konan.llvm.*
 import org.jetbrains.kotlin.backend.konan.objcexport.BlockPointerBridge
+import org.jetbrains.kotlin.config.nativeBinaryOptions.GC
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.util.simpleFunctions
 import org.jetbrains.kotlin.util.OperatorNameConventions
@@ -116,7 +117,11 @@ internal fun ObjCExportCodeGeneratorBase.generateBlockToKotlinFunctionConverter(
                     retainedBlockPtr,
                     Lifetime.ARGUMENT
             )
-            storeHeapRef(holder, structGep(bodyType, bodyPtr, 1))
+            if (codegen.context.config.gc == GC.NO_STOP_THE_WORLD) {
+                rtgc_storeMemberVar(holder, structGep(bodyType, bodyPtr, 1), result);
+            } else {
+                storeHeapRef(holder, structGep(bodyType, bodyPtr, 1))
+            }
             result
         } else {
             allocInstanceWithAssociatedObject(typeInfo, retainedBlockPtr, Lifetime.RETURN_VALUE)

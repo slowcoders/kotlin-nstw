@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.builtins.UnsignedType
 import org.jetbrains.kotlin.config.nativeBinaryOptions.AndroidProgramType
 import org.jetbrains.kotlin.config.nativeBinaryOptions.BinaryOptions
 import org.jetbrains.kotlin.config.nativeBinaryOptions.SourceInfoType
+import org.jetbrains.kotlin.config.nativeBinaryOptions.GC
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.*
 import org.jetbrains.kotlin.ir.declarations.*
@@ -1749,6 +1750,7 @@ internal class CodeGeneratorVisitor(
         val alignment: Int
         if (thisPtr != null) {
             require(!value.symbol.owner.isStatic) { "Unexpected receiver for a static field: ${value.render()}" }
+            require(!functionGenerationContext.stackLocalsManager.rtgc_isStackLocal(thisPtr)) { "evaluateSetField on statck-instance!" }
             require(thisPtr.type == codegen.kObjHeaderPtr) {
                 LLVMPrintTypeToString(thisPtr.type)?.toKString().toString()
             }
@@ -1759,11 +1761,24 @@ internal class CodeGeneratorVisitor(
             address = staticFieldPtr(value.symbol.owner, functionGenerationContext)
             alignment = generationState.llvmDeclarations.forStaticField(value.symbol.owner).alignment
         }
-        functionGenerationContext.storeAny(
+        if (functionGenerationContext.context.config.gc == GC.NO_STOP_THE_WORLD &&
+            value.symbol.owner.type.binaryTypeIsReference()) {
+            if (thisPtr != null) {
+                functionGenerationContext.rtgc_storeMemberVar(
+                    valueToAssign, address, thisPtr
+                )
+            } else {
+                functionGenerationContext.rtgc_storeStaticVar(
+                    valueToAssign, address
+                )
+            }
+        } else {
+            functionGenerationContext.storeAny(
                 valueToAssign, address, value.symbol.owner.type.binaryTypeIsReference(), false,
                 isVolatile = value.symbol.owner.hasAnnotation(KonanFqNames.volatile),
                 alignment = alignment,
-        )
+            )
+        }
 
         assert (value.type.isUnit())
         return codegen.theUnitInstanceRef.llvm

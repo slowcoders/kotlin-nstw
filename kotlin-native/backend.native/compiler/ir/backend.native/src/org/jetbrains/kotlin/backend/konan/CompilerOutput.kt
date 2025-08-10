@@ -151,6 +151,7 @@ private fun collectLlvmModules(generationState: NativeGenerationState, generated
         }
         when (config.gc) {
             GC.STOP_THE_WORLD_MARK_AND_SWEEP -> add(RuntimeModule.GC_STOP_THE_WORLD_MARK_AND_SWEEP)
+            GC.NO_STOP_THE_WORLD -> add(RuntimeModule.GC_NO_STOP_THE_WORLD)
             GC.NOOP -> add(RuntimeModule.GC_NOOP)
             GC.PARALLEL_MARK_CONCURRENT_SWEEP -> add(RuntimeModule.GC_PARALLEL_MARK_CONCURRENT_SWEEP)
             GC.CONCURRENT_MARK_AND_SWEEP -> add(RuntimeModule.GC_CONCURRENT_MARK_AND_SWEEP)

@@ -380,6 +380,8 @@ internal interface StackLocalsManager {
 
     fun allocArray(irClass: IrClass, count: LLVMValueRef): LLVMValueRef
 
+    fun rtgc_isStackLocal(obj: LLVMValueRef?): Boolean
+
     fun clean(refsOnly: Boolean)
 
     fun enterScope()
@@ -437,6 +439,13 @@ internal class StackLocalsManagerImpl(
             storeStackRef(stackLocal.objHeaderPtr, stackLocal.gcRootSetSlot)
         }
         stackLocal.objHeaderPtr
+    }
+
+    override fun rtgc_isStackLocal(obj: LLVMValueRef?): Boolean {
+        for (sl in stackLocals) {
+            if (sl.objHeaderPtr == obj) return true;
+        }
+        return false;
     }
 
     // Returns generated special type for local array.
@@ -756,6 +765,14 @@ internal abstract class FunctionGenerationContext(
             isObjectRef -> updateRef(value, ptr, onStack, isVolatile, alignment)
             else -> store(value, ptr, if (isVolatile) LLVMAtomicOrdering.LLVMAtomicOrderingSequentiallyConsistent else null, alignment)
         }
+    }
+
+    fun rtgc_storeMemberVar(value: LLVMValueRef, ptr: LLVMValueRef, owner: LLVMValueRef) {
+        call(llvm.rtgc_updateObjectRefFunction, listOf(ptr, value, owner))
+    }
+
+    fun rtgc_storeStaticVar(value: LLVMValueRef, ptr: LLVMValueRef) {
+        call(llvm.rtgc_updateStaticRefFunction, listOf(ptr, value))
     }
 
     private fun updateReturnRef(value: LLVMValueRef, address: LLVMValueRef) {

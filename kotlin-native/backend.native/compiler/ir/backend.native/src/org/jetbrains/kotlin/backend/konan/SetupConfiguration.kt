@@ -240,6 +240,7 @@ fun CompilerConfiguration.setupFromArguments(arguments: K2NativeCompilerArgument
         null -> null
         "noop" -> GC.NOOP
         "stms" -> GC.STOP_THE_WORLD_MARK_AND_SWEEP
+        "nstw" -> GC.NO_STOP_THE_WORLD
         "cms" -> GC.PARALLEL_MARK_CONCURRENT_SWEEP
         else -> {
             val validValues = enumValues<GC>().joinToString("|") {

@@ -18,6 +18,7 @@ enum class RuntimeModule(val filename: String) {
     GC_COMMON("common_gc.bc"),
     GC_NOOP("noop_gc.bc"),
     GC_STOP_THE_WORLD_MARK_AND_SWEEP("same_thread_ms_gc.bc"),
+    GC_NO_STOP_THE_WORLD("same_thread_ms_gc.bc"),
     GC_PARALLEL_MARK_CONCURRENT_SWEEP("pmcs_gc.bc"),
     GC_CONCURRENT_MARK_AND_SWEEP("concurrent_ms_gc.bc"),
     GC_SCHEDULER_COMMON("common_gcScheduler.bc"),

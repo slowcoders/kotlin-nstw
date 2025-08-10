@@ -62,6 +62,7 @@ enum class BooleanMetrics(val type: BooleanOverridePolicy, val anonymization: Bo
     //Garbage collector
     ENABLED_NOOP_GC(OR, SAFE),
     ENABLED_STWMS_GC(OR, SAFE),
+    ENABLED_NSTW_GC(OR, SAFE),
     ENABLED_PMCS_GC(OR, SAFE),
     ENABLED_CMS_GC(OR, SAFE),
 
