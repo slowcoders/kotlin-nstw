@@ -117,7 +117,23 @@ void gc::GC::onEpochFinalized(int64_t epoch) noexcept {
 }
 
 extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
+    mm::RefAccessor<false>{location}.store(const_cast<ObjHeader*>(object));
+    /*
+        AssertThreadState(ThreadState::kRunnable);
+        beforeStore(desired);
+        direct_.store(desired, order);
+        afterStore(desired);
+    */
+}
+
+extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateVolatileObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
     mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
+    /*
+        AssertThreadState(ThreadState::kRunnable);
+        beforeStore(desired);
+        direct_.storeAtomic(desired, order);
+        afterStore(desired);
+    */
 }
 
 extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateStaticRef(ObjHeader** location, const ObjHeader* object) {

@@ -412,7 +412,7 @@ internal class IntrinsicGenerator(private val environment: IntrinsicGeneratorEnv
             isObjectType) 
         {
             rtgc_storeMemberVar(
-                args[2], address, args[0]   
+                args[2], address, args[0], true
             )
         } else {
             storeAny(args[2], address, isObjectRef = isObjectType, onStack = false, isVolatile = true)

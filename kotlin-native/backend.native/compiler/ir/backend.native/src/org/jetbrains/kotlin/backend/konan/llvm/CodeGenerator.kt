@@ -767,8 +767,12 @@ internal abstract class FunctionGenerationContext(
         }
     }
 
-    fun rtgc_storeMemberVar(value: LLVMValueRef, ptr: LLVMValueRef, owner: LLVMValueRef) {
-        call(llvm.rtgc_updateObjectRefFunction, listOf(ptr, value, owner))
+    fun rtgc_storeMemberVar(value: LLVMValueRef, ptr: LLVMValueRef, owner: LLVMValueRef, isVolatile: Boolean = false) {
+        if (isVolatile) {
+            call(llvm.rtgc_updateVolatileObjectRefFunction, listOf(ptr, value, owner))
+        } else {
+            call(llvm.rtgc_updateObjectRefFunction, listOf(ptr, value, owner))
+        }
     }
 
     fun rtgc_storeStaticVar(value: LLVMValueRef, ptr: LLVMValueRef) {

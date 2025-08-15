@@ -1765,7 +1765,7 @@ internal class CodeGeneratorVisitor(
             value.symbol.owner.type.binaryTypeIsReference()) {
             if (thisPtr != null) {
                 functionGenerationContext.rtgc_storeMemberVar(
-                    valueToAssign, address, thisPtr
+                    valueToAssign, address, thisPtr, value.symbol.owner.hasAnnotation(KonanFqNames.volatile)
                 )
             } else {
                 functionGenerationContext.rtgc_storeStaticVar(

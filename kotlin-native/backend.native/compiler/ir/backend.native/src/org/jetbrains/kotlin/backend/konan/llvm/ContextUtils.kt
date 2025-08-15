@@ -429,6 +429,7 @@ internal class CodegenLlvmHelpers(private val generationState: NativeGenerationS
     val initAndRegisterGlobalFunction = importRtFunction("InitAndRegisterGlobal", false)
     val updateHeapRefFunction = importRtFunction("UpdateHeapRef", false)
     val rtgc_updateObjectRefFunction = importRtFunction("rtgc_UpdateObjectRef", false)
+    val rtgc_updateVolatileObjectRefFunction = importRtFunction("rtgc_UpdateVolatileObjectRef", false)
     val rtgc_updateStaticRefFunction = importRtFunction("rtgc_UpdateStaticRef", false)
     val updateStackRefFunction = importRtFunction("UpdateStackRef", false)
     val updateReturnRefFunction = importRtFunction("UpdateReturnRef", false)

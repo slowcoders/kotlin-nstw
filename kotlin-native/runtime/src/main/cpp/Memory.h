@@ -223,6 +223,7 @@ void UpdateHeapRef(ObjHeader** location, const ObjHeader* object) RUNTIME_NOTHRO
 void UpdateVolatileHeapRef(ObjHeader** location, const ObjHeader* object) RUNTIME_NOTHROW;
 // RTGC
 void rtgc_UpdateObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) RUNTIME_NOTHROW;
+void rtgc_UpdateVolatileObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) RUNTIME_NOTHROW;
 void rtgc_UpdateStaticRef(ObjHeader** location, const ObjHeader* object) RUNTIME_NOTHROW;
 
 OBJ_GETTER(CompareAndSwapVolatileHeapRef, ObjHeader** location, ObjHeader* expectedValue, ObjHeader* newValue) RUNTIME_NOTHROW;
@@ -478,6 +479,10 @@ RUNTIME_NOTHROW extern "C" void Kotlin_processEmptyObjectInMark(void* state, Obj
 
 #define RTGC_MEMORY_STUBS() \
 extern "C" RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) { \
+    mm::RefAccessor<false>{location}.store(const_cast<ObjHeader*>(object)); \
+} \
+\
+extern "C" RUNTIME_NOTHROW void rtgc_UpdateVolatileObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) { \
     mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst); \
 } \
 \
