@@ -41,15 +41,33 @@ org.gradle.java.installations.auto-detect=false
 
 ./gradlew :nativeCompilerTest --continue \
     -Pkotlin.internal.native.test.target=macos_arm64 \
-    -Pkotlin.internal.native.test.gcType=STWMS or CMS, PCMS
+    -Pkotlin.internal.native.test.gcType=NSTW STWMS or CMS, PCMS
+    -Pkotlin.internal.native.test.compileOnly=false
+    -Pkotlin.internal.native.test.optimizationMode=DEBUF OPT
+    gcScheduler=UNSPECIFIED (default), ADAPTIVE, AGGRESSIVE, MANUAL
+    alloc=UNSPECIFIED (default), STD, CUSTOM
+    xctest=false (default), true.
+    -Pkotlin.native.tests.tags='frontend-classic'
+
+## CodeGen box test.
+./gradlew :native:native.tests:codegen-box:test --tests \
+ "org.jetbrains.kotlin.konan.test.blackbox.NativeCodegenBoxTestGenerated\$Box\$*"
+
+./gradlew :native:native.tests:codegen-box:test --tests \
+ "org.jetbrains.kotlin.konan.test.blackbox.NativeCodegenBoxTestGenerated\$Box\$Annotations"
+
+## Runime Tests. GC 포함. C++ 
+## output: ./kotlin-native/runtime/build/bin/test/macos_arm64/*.kexe
+./gradlew :kotlin-native:runtime:hostRuntimeTests \
+    -Pgtest_filter=STMS/STWMarkGCTest/0.MultipleMutatorsWeaks
+    -Pgtest_filter=ThreadStateDeathTest.ReentrantStateSwitch_CalledFromNativeGuard
+    -Pgtest_filter=MarkAndSweepUtilsSweepTest.SweepEmpty
+    -Pgtest_filter=PMCS/TracingGCTest/300ParallelWithGCThreads.RootSet
 
 
 
 
-# runtime unit test - Google. 20분
-./gradlew -PcompilerArgs="-g -Xbinary=gc=nstw" :kotlin-native:runtime:hostRuntimeTests 
-# --> download test sources into ./kotlin-native/runtime/googletest
-# --> Big Sur 에서는 download 오류로 인해 테스트 불가.
+## --------------------  old ------------------------
 
 ### kotlin-native language feature test
 ./gradlew --continue  -Pkotlin.internal.native.test.target=macos_arm64 -Ptest_flags="-g -Xbinary=gc=nstw -Xbinary=stripDebugInfoFromNativeLibs=false" :native:native.tests:test

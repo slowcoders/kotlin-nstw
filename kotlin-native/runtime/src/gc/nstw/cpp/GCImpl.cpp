@@ -7,30 +7,25 @@
 
 #include <memory>
 
-#include "Allocator.hpp"
-#include "CallsChecker.hpp"
 #include "CompilerConstants.hpp"
 #include "GC.hpp"
-#include "GCScheduler.hpp"
 #include "GCStatistics.hpp"
 #include "MarkAndSweepUtils.hpp"
 #include "ObjectOps.hpp"
-#include "ParallelMark.hpp"
-#include "ThreadData.hpp"
 
 using namespace kotlin;
 
-gc::GC::ThreadData::ThreadData(GC& gc, mm::ThreadData& threadData) noexcept : impl_(std::make_unique<Impl>(gc.impl(), threadData)) {}
+gc::GC::ThreadData::ThreadData(GC& gc, mm::ThreadData& threadData) noexcept :
+    impl_(std::make_unique<Impl>(gc.impl().mark_, threadData)) {}
 
 gc::GC::ThreadData::~ThreadData() = default;
 
 void gc::GC::ThreadData::OnSuspendForGC() noexcept {
-    CallsCheckerIgnoreGuard guard;
-    impl_->markDispatcher_.onSuspendForGC();
+    impl_->mark_.onSuspendForGC();
 }
 
 void gc::GC::ThreadData::safePoint() noexcept {
-    impl_->barriers_.onSafePoint();
+    impl_->mark_.onSafePoint();
 }
 
 void gc::GC::ThreadData::onThreadRegistration() noexcept {
@@ -38,12 +33,12 @@ void gc::GC::ThreadData::onThreadRegistration() noexcept {
 }
 
 PERFORMANCE_INLINE void gc::GC::ThreadData::onAllocation(ObjHeader* object) noexcept {
-    impl().barriers_.onAllocation(object);
+    impl_->barriers_.onAllocation(object);
 }
 
 gc::GC::GC(alloc::Allocator& allocator, gcScheduler::GCScheduler& gcScheduler) noexcept :
     impl_(std::make_unique<Impl>(allocator, gcScheduler, compiler::gcMutatorsCooperate(), compiler::auxGCThreads())) {
-    RuntimeLogDebug({kTagGC}, "%s GC initialized", internal::PmcsGCTraits::kName);
+    RuntimeLogInfo({kTagGC}, "%s GC initialized", internal::CmsGCTraits::kName);
 }
 
 gc::GC::~GC() {
@@ -56,12 +51,12 @@ void gc::GC::ClearForTests() noexcept {
 
 // static
 PERFORMANCE_INLINE void gc::GC::processObjectInMark(void* state, ObjHeader* object) noexcept {
-    gc::internal::processObjectInMark<gc::mark::ParallelMark::MarkTraits>(state, object);
+    gc::internal::processObjectInMark<gc::mark::ConcurrentMark::MarkTraits>(state, object);
 }
 
 // static
 PERFORMANCE_INLINE void gc::GC::processArrayInMark(void* state, ArrayHeader* array) noexcept {
-    gc::internal::processArrayInMark<gc::mark::ParallelMark::MarkTraits>(state, array);
+    gc::internal::processArrayInMark<gc::mark::ConcurrentMark::MarkTraits>(state, array);
 }
 
 int64_t gc::GC::Schedule() noexcept {
@@ -76,10 +71,12 @@ void gc::GC::WaitFinalizers(int64_t epoch) noexcept {
     impl_->state_.waitEpochFinalized(epoch);
 }
 
-ALWAYS_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept {}
+PERFORMANCE_INLINE void gc::beforeHeapRefUpdate(mm::DirectRefAccessor ref, ObjHeader* value, bool loadAtomic) noexcept {
+    barriers::beforeHeapRefUpdate(ref, value, loadAtomic);
+}
 
 PERFORMANCE_INLINE OBJ_GETTER(gc::weakRefReadBarrier, std_support::atomic_ref<ObjHeader*> weakReferee) noexcept {
-    RETURN_RESULT_OF(gc::WeakRefRead, weakReferee);
+    RETURN_OBJ(gc::barriers::weakRefReadBarrier(weakReferee));
 }
 
 PERFORMANCE_INLINE bool gc::isMarked(ObjHeader* object) noexcept {
@@ -91,12 +88,12 @@ PERFORMANCE_INLINE bool gc::tryResetMark(GC::ObjectData& objectData) noexcept {
 }
 
 ALWAYS_INLINE bool gc::barriers::ExternalRCRefReleaseGuard::isNoop() {
-    return true;
+    return false;
 }
-ALWAYS_INLINE gc::barriers::ExternalRCRefReleaseGuard::ExternalRCRefReleaseGuard(mm::DirectRefAccessor) noexcept {}
-ALWAYS_INLINE gc::barriers::ExternalRCRefReleaseGuard::ExternalRCRefReleaseGuard(ExternalRCRefReleaseGuard&&) noexcept = default;
-ALWAYS_INLINE gc::barriers::ExternalRCRefReleaseGuard::~ExternalRCRefReleaseGuard() noexcept = default;
-ALWAYS_INLINE gc::barriers::ExternalRCRefReleaseGuard& gc::barriers::ExternalRCRefReleaseGuard::ExternalRCRefReleaseGuard::operator=(
+PERFORMANCE_INLINE gc::barriers::ExternalRCRefReleaseGuard::ExternalRCRefReleaseGuard(mm::DirectRefAccessor ref) noexcept : impl_(ref) {}
+PERFORMANCE_INLINE gc::barriers::ExternalRCRefReleaseGuard::ExternalRCRefReleaseGuard(ExternalRCRefReleaseGuard&& other) noexcept = default;
+PERFORMANCE_INLINE gc::barriers::ExternalRCRefReleaseGuard::~ExternalRCRefReleaseGuard() noexcept = default;
+PERFORMANCE_INLINE gc::barriers::ExternalRCRefReleaseGuard& gc::barriers::ExternalRCRefReleaseGuard::ExternalRCRefReleaseGuard::operator=(
         ExternalRCRefReleaseGuard&&) noexcept = default;
 
 // static
@@ -119,4 +116,10 @@ void gc::GC::onEpochFinalized(int64_t epoch) noexcept {
     impl_->state_.finalized(epoch);
 }
 
-RTGC_MEMORY_STUBS()
+extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
+    mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
+}
+
+extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateStaticRef(ObjHeader** location, const ObjHeader* object) {
+    mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
+}

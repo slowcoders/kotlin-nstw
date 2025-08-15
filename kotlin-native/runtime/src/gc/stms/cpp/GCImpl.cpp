@@ -105,3 +105,5 @@ void gc::GC::onEpochFinalized(int64_t epoch) noexcept {
     GCHandle::getByEpoch(epoch).finalizersDone();
     impl_->state_.finalized(epoch);
 }
+
+RTGC_MEMORY_STUBS()

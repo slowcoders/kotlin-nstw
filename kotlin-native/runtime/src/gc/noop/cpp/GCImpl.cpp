@@ -90,3 +90,5 @@ ALWAYS_INLINE gc::GC::ObjectData* type_layout::descriptor<gc::GC::ObjectData>::t
 }
 
 void gc::GC::onEpochFinalized(int64_t epoch) noexcept {}
+
+RTGC_MEMORY_STUBS()

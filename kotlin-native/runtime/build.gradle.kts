@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.konan.target.Architecture as TargetArchitecture
 
 val kotlinVersion: String by rootProject.extra
 
-plugins {
+plugins {   
     id("base")
     id("compile-to-bitcode")
     id("runtime-testing")
@@ -392,20 +392,6 @@ bitcode {
             }
         }
 
-        module("nstw_gc") {
-            srcRoot.set(layout.projectDirectory.dir("src/gc/cms"))
-            headersDirs.from(files("src/alloc/common/cpp", "src/gcScheduler/common/cpp", "src/gc/common/cpp", "src/mm/cpp", "src/externalCallsChecker/common/cpp", "src/objcExport/cpp", "src/main/cpp"))
-            sourceSets {
-                main {}
-                test {}
-            }
-        }
-
-        testsGroup("nstw_gc_test") {
-            testedModules.addAll("concurrent_ms_gc")
-            testSupportModules.addAll("main", "mm", "noop_externalCallsChecker", "common_alloc", "common_alloc", "legacy_alloc", "std_alloc", "common_gc", "common_gcScheduler", "manual_gcScheduler", "objc", "noop_crashHandler")
-        }
-
         testsGroup("cms_gc_test") {
             testedModules.addAll("concurrent_ms_gc")
             testSupportModules.addAll("main", "mm", "noop_externalCallsChecker", "common_alloc", "common_alloc", "legacy_alloc", "std_alloc", "common_gc", "common_gcScheduler", "manual_gcScheduler", "objc", "noop_crashHandler")
@@ -415,7 +401,26 @@ bitcode {
             testedModules.addAll("concurrent_ms_gc")
             testSupportModules.addAll("main", "mm", "noop_externalCallsChecker", "common_alloc", "custom_alloc", "common_gc", "common_gcScheduler", "manual_gcScheduler", "objc", "noop_crashHandler")
         }
+/*
+        module("nstw_gc") {
+            srcRoot.set(layout.projectDirectory.dir("src/gc/nstw"))
+            headersDirs.from(files("src/alloc/common/cpp", "src/gcScheduler/common/cpp", "src/gc/common/cpp", "src/mm/cpp", "src/externalCallsChecker/common/cpp", "src/objcExport/cpp", "src/main/cpp"))
+            sourceSets {
+                main {}
+                test {}
+            }
+        }
 
+        testsGroup("nstw_gc_test") {
+            testedModules.addAll("nstw_gc")
+            testSupportModules.addAll("main", "mm", "noop_externalCallsChecker", "common_alloc", "common_alloc", "legacy_alloc", "std_alloc", "common_gc", "common_gcScheduler", "manual_gcScheduler", "objc", "noop_crashHandler")
+        }
+
+        testsGroup("nstw_gc_custom_test") {
+            testedModules.addAll("nstw_gc")
+            testSupportModules.addAll("main", "mm", "noop_externalCallsChecker", "common_alloc", "custom_alloc", "common_gc", "common_gcScheduler", "manual_gcScheduler", "objc", "noop_crashHandler")
+        }
+*/
         module("common_gcScheduler") {
             srcRoot.set(layout.projectDirectory.dir("src/gcScheduler/common"))
             headersDirs.from(files("src/alloc/common/cpp", "src/gc/common/cpp", "src/mm/cpp", "src/externalCallsChecker/common/cpp", "src/objcExport/cpp", "src/main/cpp"))

@@ -475,4 +475,14 @@ RUNTIME_NOTHROW extern "C" void Kotlin_processObjectInMark(void* state, ObjHeade
 RUNTIME_NOTHROW extern "C" void Kotlin_processArrayInMark(void* state, ObjHeader* object);
 RUNTIME_NOTHROW extern "C" void Kotlin_processEmptyObjectInMark(void* state, ObjHeader* object);
 
+
+#define RTGC_MEMORY_STUBS() \
+extern "C" RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) { \
+    mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst); \
+} \
+\
+extern "C" RUNTIME_NOTHROW void rtgc_UpdateStaticRef(ObjHeader** location, const ObjHeader* object) { \
+    mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst); \
+}
+
 #endif // RUNTIME_MEMORY_H

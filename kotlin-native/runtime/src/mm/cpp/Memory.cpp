@@ -154,21 +154,6 @@ extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void UpdateHeapRef(ObjHeader** loc
     mm::RefAccessor<false>{location} = const_cast<ObjHeader*>(object);
 }
 
-extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
-    
-    // RuntimeAssert(false, "rtgc_UpdateObjectRef should not be called directly, use UpdateHeapRef instead");
-    
-    mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
-//  rtgc::GCNode::replaceObjectRef((rtgc::GCRef*)(location), reinterpret_cast<rtgc::GCRef>(object), reinterpret_cast<rtgc::GCRef>(owner));
-}
-
-extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateStaticRef(ObjHeader** location, const ObjHeader* object) {
-    // assert(false);
-    
-    mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
-//  rtgc::GCNode::replaceObjectRef((rtgc::GCRef*)(location), reinterpret_cast<rtgc::GCRef>(object), reinterpret_cast<rtgc::GCRef>(owner));
-}
-
 extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void UpdateVolatileHeapRef(ObjHeader** location, const ObjHeader* object) {
     mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
 }
