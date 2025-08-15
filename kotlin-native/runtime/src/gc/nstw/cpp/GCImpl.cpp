@@ -38,7 +38,7 @@ PERFORMANCE_INLINE void gc::GC::ThreadData::onAllocation(ObjHeader* object) noex
 
 gc::GC::GC(alloc::Allocator& allocator, gcScheduler::GCScheduler& gcScheduler) noexcept :
     impl_(std::make_unique<Impl>(allocator, gcScheduler, compiler::gcMutatorsCooperate(), compiler::auxGCThreads())) {
-    RuntimeLogInfo({kTagGC}, "%s GC initialized", internal::CmsGCTraits::kName);
+    RuntimeLogInfo({kTagGC}, "%s GC initialized", internal::NstwGCTraits::kName);
 }
 
 gc::GC::~GC() {

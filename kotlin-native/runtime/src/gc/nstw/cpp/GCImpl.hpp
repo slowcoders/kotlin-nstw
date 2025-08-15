@@ -7,7 +7,7 @@
 
 #include "Barriers.hpp"
 #include "ConcurrentMark.hpp"
-#include "CmsGCTraits.hpp"
+#include "NstwGCTraits.hpp"
 #include "GC.hpp"
 #include "GCState.hpp"
 #include "MainGCThread.hpp"
@@ -26,7 +26,7 @@ public:
 
     GCStateHolder state_;
     mark::ConcurrentMark mark_{};
-    internal::MainGCThread<internal::CmsGCTraits> gcThread_;
+    internal::MainGCThread<internal::NstwGCTraits> gcThread_;
 };
 
 class GC::ThreadData::Impl : private Pinned {
