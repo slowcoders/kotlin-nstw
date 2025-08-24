@@ -565,8 +565,9 @@ object FirTree : AbstractFirTreeBuilder() {
         generateBooleanFields(
             "expect", "actual", "override", "operator", "infix", "inline", "value", "tailRec",
             "external", "const", "lateInit", "inner", "companion", "data", "suspend", "static",
-            "fromSealedClass", "fromEnumClass", "fun", "hasStableParameterNames", "hasMustUseReturnValue"
+            "fromSealedClass", "fromEnumClass", "fun", "hasStableParameterNames"
         )
+        +field("returnValueStatus", returnValueStatusType, nullable = false)
         +field("defaultVisibility", visibilityType, nullable = false)
         +field("defaultModality", modalityType, nullable = false)
     }
@@ -1089,6 +1090,12 @@ object FirTree : AbstractFirTreeBuilder() {
         parent(namedReference)
 
         +referencedSymbol("resolvedSymbol", firBasedSymbolType.withArgs(TypeRef.Star))
+    }
+
+    val propertyWithExplicitBackingFieldResolvedNamedReference: Element by element(Reference) {
+        parent(resolvedNamedReference)
+
+        +field("hasVisibleBackingField", boolean)
     }
 
     val resolvedCallableReference: Element by element(Reference) {

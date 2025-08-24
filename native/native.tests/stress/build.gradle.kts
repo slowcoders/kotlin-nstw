@@ -2,7 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     kotlin("jvm")
-    id("compiler-tests-convention")
+    id("project-tests-convention")
     id("test-inputs-check")
 }
 
@@ -22,20 +22,20 @@ sourceSets {
     }
 }
 
-compilerTests {
+projectTests {
     testData(project.isolated, "testData")
-}
 
-nativeTest(
-    "test",
-    null,
-    requirePlatformLibs = true,
-    allowParallelExecution = false, // Stress tests are resource-intensive tests and they must be run in isolation.
-) {
-    extensions.configure<TestInputsCheckExtension> {
-        isNative.set(true)
-        useXcode.set(OperatingSystem.current().isMacOsX)
+    nativeTestTask(
+        "test",
+        null,
+        requirePlatformLibs = true,
+        allowParallelExecution = false, // Stress tests are resource-intensive tests and they must be run in isolation.
+    ) {
+        extensions.configure<TestInputsCheckExtension> {
+            isNative.set(true)
+            useXcode.set(OperatingSystem.current().isMacOsX)
+        }
+        // nativeTest sets workingDir to rootDir so here we need to override it
+        workingDir = projectDir
     }
-    // nativeTest sets workingDir to rootDir so here we need to override it
-    workingDir = projectDir
 }

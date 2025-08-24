@@ -141,7 +141,7 @@ fun Project.configureKotlinCompilationOptions() {
             //  The value for property 'freeCompilerArgs' is final and cannot be changed any further.
             if (project.path != ":native:kotlin-test-native-xctest" &&
                 !project.path.startsWith(":native:objcexport-header-generator") &&
-                !project.path.startsWith(":native:analysis-api-klib-reader") &&
+                !project.path.startsWith(":libraries:tools:analysis-api-based-klib-reader") &&
                 !project.path.startsWith(":native:external-projects-test-utils")
             ) {
                 doFirst {
@@ -292,7 +292,7 @@ fun Project.configureTests() {
     }
 
     tasks.withType<Test>().configureEach {
-        if (!plugins.hasPlugin("compiler-tests-convention") && !plugins.hasPlugin("test-inputs-check")) {
+        if (!plugins.hasPlugin("project-tests-convention") && !plugins.hasPlugin("test-inputs-check")) {
             outputs.doNotCacheIf("https://youtrack.jetbrains.com/issue/KTI-112") { true }
         }
         if (project.kotlinBuildProperties.limitTestTasksConcurrency) {

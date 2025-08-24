@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     id("jps-compatible")
-    id("compiler-tests-convention")
+    id("project-tests-convention")
     id("test-inputs-check")
     id("java-test-fixtures")
 }
@@ -26,17 +26,17 @@ sourceSets {
     "testFixtures" { projectDefault() }
 }
 
-compilerTests {
+projectTests {
     // only 2 files are really needed:
     // - compiler/testData/codegen/boxKlib/properties.kt
     // - compiler/testData/codegen/boxKlib/simple.kt
     testData(project(":compiler").isolated, "testData/codegen/boxKlib")
-}
 
-projectTest(parallel = true) {
-    useJUnitPlatform()
+    withJvmStdlibAndReflect()
+
+    testTask(jUnitMode = JUnitMode.JUnit5)
+
+    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateCompilerTestsAgainstKlibKt")
 }
 
 optInToK1Deprecation()
-
-val generateTests by generator("org.jetbrains.kotlin.generators.tests.GenerateCompilerTestsAgainstKlibKt")

@@ -20,7 +20,7 @@ import java.io.File
 class WasmBoxRunner(
     testServices: TestServices
 ) : AbstractWasmArtifactsCollector(testServices) {
-    private val vmsToCheck: List<WasmVM> = listOf(WasmVM.V8, WasmVM.SpiderMonkey)
+    private val vmsToCheck: List<WasmVM> = listOfNotNull(WasmVM.V8, WasmVM.SpiderMonkey, WasmVM.JavaScriptCoreOrNull)
 
     override fun processAfterAllModules(someAssertionWasFailed: Boolean) {
         if (!someAssertionWasFailed) {
@@ -43,6 +43,12 @@ class WasmBoxRunner(
         fun File.ignoreInSizeChecks() = also { filesToIgnoreInSizeChecks.add(it) }
 
         val testJs = """
+                    if (globalThis.console == null) {
+                        globalThis.console = {};
+                    }
+                    if (console.log == null) {
+                        console.log = print;
+                    }
                     let actualResult;
                     try {
                         // Use "dynamic import" to catch exception happened during JS & Wasm modules initialization
@@ -236,7 +242,7 @@ private fun assertExpectedSizesMatchActual(
 
         val diff = totalSize - expectedSize
 
-        val message = "Total size of $extension files in ${testDir.name} dir is $totalSize," +
+        val message = "Total size of $extension files in ${testDir.name} dir is ${totalSize.toFormattedString()}," +
                 " but expected $expectedSize ∓ $thresholdInBytes [$expectedMinSize .. $expectedMaxSize]." +
                 " Diff: $diff (${diff * 100 / expectedSize}%)"
 
@@ -250,4 +256,8 @@ private fun assertExpectedSizesMatchActual(
     if (errors.isNotEmpty()) return listOf(AssertionError(errors.joinToString("\n")))
 
     return emptyList()
+}
+
+private fun Long.toFormattedString(): String {
+    return this.toString().reversed().chunked(3).joinToString("_").reversed()
 }

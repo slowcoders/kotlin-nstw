@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.KtRealSourceElementKind
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.builtins.functions.FunctionTypeKind
 import org.jetbrains.kotlin.descriptors.ClassKind
-import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
@@ -25,7 +24,6 @@ import org.jetbrains.kotlin.fir.references.builder.buildResolvedErrorReference
 import org.jetbrains.kotlin.fir.resolve.calls.TypeParameterAsExpression
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.Candidate
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.FirNamedReferenceWithCandidate
-import org.jetbrains.kotlin.fir.resolve.calls.candidate.FirPropertyWithExplicitBackingFieldResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.calls.isVisible
 import org.jetbrains.kotlin.fir.resolve.dfa.cfg.FirAnonymousFunctionReturnExpressionInfo
 import org.jetbrains.kotlin.fir.resolve.diagnostics.*
@@ -464,36 +462,6 @@ internal fun typeForQualifierByDeclaration(
     return null
 }
 
-private fun FirPropertySymbol.isEffectivelyFinal(session: FirSession): Boolean {
-    if (isFinal) return true
-    val containingClass = dispatchReceiverType?.toRegularClassSymbol(session)
-        ?: return false
-    return containingClass.modality == Modality.FINAL && containingClass.classKind != ClassKind.ENUM_CLASS
-}
-
-private fun FirPropertyWithExplicitBackingFieldResolvedNamedReference.getNarrowedDownSymbol(session: FirSession): FirBasedSymbol<*> {
-    val propertyReceiver = resolvedSymbol as? FirPropertySymbol ?: return resolvedSymbol
-
-    // This can happen in case of 2 properties referencing
-    // each other recursively. See: Jet81.fir.kt
-    if (
-        propertyReceiver.fir.returnTypeRef is FirImplicitTypeRef ||
-        propertyReceiver.fir.backingField?.returnTypeRef is FirImplicitTypeRef
-    ) {
-        return resolvedSymbol
-    }
-
-    if (
-        propertyReceiver.isEffectivelyFinal(session) &&
-        hasVisibleBackingField &&
-        propertyReceiver.canNarrowDownGetterType
-    ) {
-        return propertyReceiver.fir.backingField?.symbol ?: resolvedSymbol
-    }
-
-    return resolvedSymbol
-}
-
 fun <T : FirResolvable> BodyResolveComponents.typeFromCallee(access: T): ConeKotlinType {
     return typeFromCallee(access.calleeReference)
 }
@@ -505,10 +473,6 @@ fun BodyResolveComponents.typeFromCallee(calleeReference: FirReference): ConeKot
         }
         is FirNamedReferenceWithCandidate -> {
             typeFromSymbol(calleeReference.candidateSymbol)
-        }
-        is FirPropertyWithExplicitBackingFieldResolvedNamedReference -> {
-            val symbol = calleeReference.getNarrowedDownSymbol(session)
-            typeFromSymbol(symbol)
         }
         is FirResolvedNamedReference -> {
             typeFromSymbol(calleeReference.resolvedSymbol)

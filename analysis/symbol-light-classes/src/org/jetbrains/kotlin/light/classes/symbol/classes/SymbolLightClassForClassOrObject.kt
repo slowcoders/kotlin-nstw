@@ -88,7 +88,7 @@ internal class SymbolLightClassForClassOrObject : SymbolLightClassForNamedClassL
         this.isValueClass = isValueClass
     }
 
-    private val _modifierList: PsiModifierList by lazyPub {
+    override fun getModifierList(): PsiModifierList = cachedValue {
         SymbolLightClassModifierList(
             containingDeclaration = this,
             modifiersBox = GranularModifiersBox(computer = ::computeModifiers),
@@ -99,7 +99,6 @@ internal class SymbolLightClassForClassOrObject : SymbolLightClassForNamedClassL
         )
     }
 
-    override fun getModifierList(): PsiModifierList = _modifierList
     override fun getExtendsList(): PsiReferenceList = _extendsList
     override fun getImplementsList(): PsiReferenceList = _implementsList
 
@@ -283,7 +282,7 @@ internal class SymbolLightClassForClassOrObject : SymbolLightClassForNamedClassL
     override fun isAnnotationType(): Boolean = false
     override fun classKind(): KaClassKind = withClassSymbol { it.classKind }
     override fun isRecord(): Boolean {
-        return _modifierList.hasAnnotation(JvmStandardClassIds.Annotations.JvmRecord.asFqNameString())
+        return modifierList.hasAnnotation(JvmStandardClassIds.Annotations.JvmRecord.asFqNameString())
     }
 
     override fun copy(): SymbolLightClassForClassOrObject = SymbolLightClassForClassOrObject(

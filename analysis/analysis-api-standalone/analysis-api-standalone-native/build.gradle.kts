@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.kotlinNativeDist
 
 plugins {
     kotlin("jvm")
+    id("project-tests-convention")
 }
 
 dependencies {
@@ -25,14 +26,10 @@ sourceSets {
 }
 
 
-projectTest(jUnitMode = JUnitMode.JUnit5) {
-    dependsOn(":dist")
-    workingDir = rootDir
-    useJUnitPlatform()
-}
-
-val test by nativeTest("test", null) {
-    systemProperty("kotlin.native.home", kotlinNativeDist.absolutePath)
+projectTests {
+    nativeTestTask("test", tag = null) {
+        systemProperty("kotlin.native.home", kotlinNativeDist.absolutePath)
+    }
 }
 
 testsJar()

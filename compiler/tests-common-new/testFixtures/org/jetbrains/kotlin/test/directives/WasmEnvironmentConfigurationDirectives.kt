@@ -25,8 +25,8 @@ object WasmEnvironmentConfigurationDirectives : SimpleDirectivesContainer() {
         description = "Don't use WebAssembly.JSTag for throwing and catching exceptions",
     )
 
-    val WASM_ALLOW_FQNAME_IN_KCLASS by directive(
-        description = "Allow using 'KClass::qualifiedName' for wasm target",
+    val WASM_DISABLE_FQNAME_IN_KCLASS by directive(
+        description = "Disable 'KClass::qualifiedName' for wasm target",
     )
 
     // Next directives are used only inside test system and must not be present in test file

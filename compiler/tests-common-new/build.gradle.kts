@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     id("jps-compatible")
-    id("compiler-tests-convention")
+    id("project-tests-convention")
     id("test-inputs-check")
     id("share-foreign-java-nullability-annotations")
     id("java-test-fixtures")
@@ -103,12 +103,14 @@ sourceSets {
     "testFixtures" { projectDefault() }
 }
 
-compilerTests {
+projectTests {
     testData(project(":compiler").isolated, "testData/diagnostics")
     testData(project(":compiler").isolated, "testData/codegen")
     testData(project(":compiler").isolated, "testData/debug")
     testData(project(":compiler").isolated, "testData/ir")
     testData(project(":compiler").isolated, "testData/klib")
+
+    withJvmStdlibAndReflect()
     withStdlibCommon()
     withScriptRuntime()
     withTestJar()
@@ -124,18 +126,16 @@ compilerTests {
     withThirdPartyJava8Annotations()
     withThirdPartyJava9Annotations()
     withThirdPartyJsr305()
-}
 
-projectTest(
-    jUnitMode = JUnitMode.JUnit5,
-    defineJDKEnvVariables = listOf(
-        JdkMajorVersion.JDK_1_8,
-        JdkMajorVersion.JDK_11_0, // e.g. org.jetbrains.kotlin.test.runners.ForeignAnnotationsCompiledJavaTestGenerated.Java11Tests
-        JdkMajorVersion.JDK_17_0,
-        JdkMajorVersion.JDK_21_0, // e.g. org.jetbrains.kotlin.test.runners.codegen.FirLightTreeBlackBoxModernJdkCodegenTestGenerated.TestsWithJava21
+    testTask(
+        jUnitMode = JUnitMode.JUnit5,
+        defineJDKEnvVariables = listOf(
+            JdkMajorVersion.JDK_1_8,
+            JdkMajorVersion.JDK_11_0, // e.g. org.jetbrains.kotlin.test.runners.ForeignAnnotationsCompiledJavaTestGenerated.Java11Tests
+            JdkMajorVersion.JDK_17_0,
+            JdkMajorVersion.JDK_21_0, // e.g. org.jetbrains.kotlin.test.runners.codegen.FirLightTreeBlackBoxModernJdkCodegenTestGenerated.TestsWithJava21
+        )
     )
-) {
-    useJUnitPlatform()
 }
 
 testsJarToBeUsedAlongWithFixtures()

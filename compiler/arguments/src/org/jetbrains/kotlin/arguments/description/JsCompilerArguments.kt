@@ -11,9 +11,11 @@ import org.jetbrains.kotlin.arguments.dsl.defaultNull
 import org.jetbrains.kotlin.arguments.dsl.types.BooleanType
 import org.jetbrains.kotlin.arguments.dsl.types.StringType
 import org.jetbrains.kotlin.cli.common.arguments.DefaultValue
+import org.jetbrains.kotlin.cli.common.arguments.Enables
 import org.jetbrains.kotlin.cli.common.arguments.GradleDeprecatedOption
 import org.jetbrains.kotlin.cli.common.arguments.GradleInputTypes
 import org.jetbrains.kotlin.cli.common.arguments.GradleOption
+import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersion
 
 val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsArguments) {
@@ -55,14 +57,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         description = "Base name of generated files.".asReleaseDependent()
         valueType = StringType.defaultNull
 
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.STRING_NULL_DEFAULT,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
-
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_8_20,
             stabilizedVersion = KotlinReleaseVersion.v1_8_20,
@@ -86,14 +80,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         description = "Generate a source map.".asReleaseDependent()
         valueType = BooleanType.defaultFalse
 
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.BOOLEAN_FALSE_DEFAULT,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
-
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_0_0,
             stabilizedVersion = KotlinReleaseVersion.v1_0_0,
@@ -104,14 +90,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         name = "source-map-prefix"
         description = "Add the specified prefix to the paths in the source map.".asReleaseDependent()
         valueType = StringType.defaultNull
-
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.STRING_NULL_DEFAULT,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_1_4,
@@ -142,14 +120,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         valueType = StringType.defaultNull
         valueDescription = "{always|never|inlining}".asReleaseDependent()
 
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.JS_SOURCE_MAP_CONTENT_MODES,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
-
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_1_4,
             stabilizedVersion = KotlinReleaseVersion.v1_1_4,
@@ -162,14 +132,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         valueType = StringType.defaultNull
         valueDescription = "{no|simple-names|fully-qualified-names}".asReleaseDependent()
 
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.JS_SOURCE_MAP_NAMES_POLICY,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
-
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_8_20,
             stabilizedVersion = KotlinReleaseVersion.v1_8_20,
@@ -181,14 +143,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         description = "Generate JS files for the specified ECMA version.".asReleaseDependent()
         valueType = StringType.defaultNull
         valueDescription = "{ es5, es2015 }".asReleaseDependent()
-
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.JS_ECMA_VERSIONS,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_0_0,
@@ -212,14 +166,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         valueType = StringType.defaultNull
         valueDescription = "{plain|amd|commonjs|umd|es}".asReleaseDependent()
 
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.JS_MODULE_KINDS,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
-
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_0_4,
             stabilizedVersion = KotlinReleaseVersion.v1_0_4,
@@ -231,14 +177,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         description = "Specify whether the 'main' function should be called upon execution.".asReleaseDependent()
         valueType = StringType.defaultNull
         valueDescription = "{call|noCall}".asReleaseDependent()
-
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.JS_MAIN,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_0_0,
@@ -476,14 +414,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
         description = "Let generated JavaScript code use ES2015 classes. Enabled by default in case of ES2015 target usage".asReleaseDependent()
         valueType = BooleanType.defaultNull
 
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.BOOLEAN_NULL_DEFAULT,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
-
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_8_20,
         )
@@ -539,19 +469,6 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
 It is deprecated and will be removed in a future release.""".asReleaseDependent()
         valueType = BooleanType.defaultFalse
 
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.BOOLEAN_FALSE_DEFAULT,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            ),
-            GradleDeprecatedOption(
-                message = "Only for legacy backend.",
-                level = DeprecationLevel.ERROR,
-                removeAfter = LanguageVersion.KOTLIN_2_2,
-            ),
-        )
-
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_1_3,
             deprecatedVersion = KotlinReleaseVersion.v2_1_0,
@@ -563,14 +480,6 @@ It is deprecated and will be removed in a future release.""".asReleaseDependent(
         name = "Xfriend-modules-disabled"
         description = "Disable internal declaration export.".asReleaseDependent()
         valueType = BooleanType.defaultFalse
-
-        additionalMetadata(
-            GradleOption(
-                value = DefaultValue.BOOLEAN_FALSE_DEFAULT,
-                gradleInputType = GradleInputTypes.INPUT,
-                shouldGenerateDeprecatedKotlinOptions = true,
-            )
-        )
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_1_3,
@@ -593,6 +502,7 @@ It is deprecated and will be removed in a future release.""".asReleaseDependent(
         compilerName = "extensionFunctionsInExternals"
         description = "Enable extension function members in external interfaces.".asReleaseDependent()
         valueType = BooleanType.defaultFalse
+        additionalAnnotations(Enables(LanguageFeature.JsEnableExtensionFunctionInExternals))
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_5_32,

@@ -620,11 +620,11 @@ class WasmSerializer(outputStream: OutputStream) {
             serializeReferencableAndDefinable(functionTypes, ::serializeIdSignature, ::serializeWasmFunctionType)
             serializeReferencableAndDefinable(gcTypes, ::serializeIdSignature, ::serializeWasmTypeDeclaration)
             serializeReferencableAndDefinable(vTableGcTypes, ::serializeIdSignature, ::serializeWasmTypeDeclaration)
-            serializeReferencableElements(stringLiteralAddress, ::serializeString, ::serializeInt)
-            serializeReferencableElements(stringLiteralPoolId, ::serializeString, ::serializeInt)
+            serializeReferencableElements(stringLiteralId, ::serializeString, ::serializeInt)
             serializeReferencableElements(constantArrayDataSegmentId, { serializePair(it, { serializeList(it, ::serializeLong) }, ::serializeWasmType)}, ::serializeInt)
             serializeMap(jsFuns, ::serializeIdSignature, ::serializeJsCodeSnippet)
             serializeMap(jsModuleImports, ::serializeIdSignature, ::serializeString)
+            serializeMap(jsBuiltinsPolyfills, ::serializeString, ::serializeString)
             serializeList(exports, ::serializeWasmExport)
             serializeNullable(wasmStringsElements, ::serializeWasmStringsElements)
             serializeList(mainFunctionWrappers, ::serializeIdSignature)
@@ -670,11 +670,13 @@ class WasmSerializer(outputStream: OutputStream) {
 
     private fun serializeBuiltinIdSignatures(builtinIdSignatures: BuiltinIdSignatures) {
         serializeNullable(builtinIdSignatures.throwable, ::serializeIdSignature)
+        serializeNullable(builtinIdSignatures.kotlinAny, ::serializeIdSignature)
         serializeNullable(builtinIdSignatures.tryGetAssociatedObject, ::serializeIdSignature)
         serializeNullable(builtinIdSignatures.jsToKotlinAnyAdapter, ::serializeIdSignature)
         serializeNullable(builtinIdSignatures.unitGetInstance, ::serializeIdSignature)
         serializeNullable(builtinIdSignatures.runRootSuites, ::serializeIdSignature)
         serializeNullable(builtinIdSignatures.createString, ::serializeIdSignature)
+        serializeNullable(builtinIdSignatures.registerModuleDescriptor, ::serializeIdSignature)
     }
 
     private fun serializeClassAssociatedObjects(classAssociatedObjects: ClassAssociatedObjects) {

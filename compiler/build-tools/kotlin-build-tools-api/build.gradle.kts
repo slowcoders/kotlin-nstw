@@ -5,6 +5,7 @@ plugins {
     kotlin("jvm")
     id("jps-compatible")
     id("org.jetbrains.kotlinx.binary-compatibility-validator")
+    id("project-tests-convention")
 }
 
 configureKotlinCompileTasksGradleCompatibility()
@@ -41,20 +42,20 @@ tasks.named<KotlinCompile>("compileTestKotlin") {
     }
 }
 
-projectTest(jUnitMode = JUnitMode.JUnit5) {
-    useJUnitPlatform()
+projectTests {
+    testTask(jUnitMode = JUnitMode.JUnit5)
 }
-
 
 generatedSourcesTask(
     taskName = "generateBtaArguments",
     generatorProject = ":compiler:build-tools:kotlin-build-tools-options-generator",
-    generatorRoot = "compiler/build-tools/kotlin-build-tools-impl/src",
+    generatorRoot = "compiler/build-tools/kotlin-build-tools-options-generator/src",
     generatorMainClass = "org.jetbrains.kotlin.buildtools.options.generator.MainKt",
     argsProvider = { generationRoot ->
         listOf(
             generationRoot.toString(),
-            "api"
+            "api",
+            "jvmCompilerArguments",
         )
     }
 )

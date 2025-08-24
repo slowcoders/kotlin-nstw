@@ -28,6 +28,15 @@ public interface JvmCompilerArguments : CommonCompilerArguments {
   public operator fun <V> `set`(key: JvmCompilerArgument<V>, `value`: V)
 
   /**
+   * Check if an option specified by [key] has a value set.
+   *
+   * Note: trying to read an option (by using [get]) that has not been set will result in an exception.
+   *
+   * @return true if the option has a value set, false otherwise
+   */
+  public operator fun contains(key: JvmCompilerArgument<*>): Boolean
+
+  /**
    * Base class for [JvmCompilerArguments] options.
    *
    * @see get
@@ -39,23 +48,10 @@ public interface JvmCompilerArguments : CommonCompilerArguments {
 
   public companion object {
     /**
-     * Destination for generated class files.
-     */
-    @JvmField
-    public val D: JvmCompilerArgument<String?> = JvmCompilerArgument("D")
-
-    /**
      * List of directories and JAR/ZIP archives to search for user class files.
      */
     @JvmField
     public val CLASSPATH: JvmCompilerArgument<String?> = JvmCompilerArgument("CLASSPATH")
-
-    /**
-     * Include the Kotlin runtime in the resulting JAR.
-     */
-    @JvmField
-    public val INCLUDE_RUNTIME: JvmCompilerArgument<Boolean> =
-        JvmCompilerArgument("INCLUDE_RUNTIME")
 
     /**
      * Include a custom JDK from the specified location in the classpath instead of the default 'JAVA_HOME'.
@@ -711,15 +707,6 @@ public interface JvmCompilerArguments : CommonCompilerArguments {
     @ExperimentalCompilerArgument
     public val X_USE_INLINE_SCOPES_NUMBERS: JvmCompilerArgument<Boolean> =
         JvmCompilerArgument("X_USE_INLINE_SCOPES_NUMBERS")
-
-    /**
-     * Enable the experimental support for K2 KAPT.
-     *
-     * WARNING: this option is EXPERIMENTAL and it may be changed in the future without notice or may be removed entirely.
-     */
-    @JvmField
-    @ExperimentalCompilerArgument
-    public val X_USE_K2_KAPT: JvmCompilerArgument<Boolean?> = JvmCompilerArgument("X_USE_K2_KAPT")
 
     /**
      * Enable behaviour needed to compile builtins as part of JVM stdlib

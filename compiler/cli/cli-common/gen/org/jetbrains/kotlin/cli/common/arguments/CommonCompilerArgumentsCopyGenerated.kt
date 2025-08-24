@@ -39,6 +39,7 @@ fun copyCommonCompilerArguments(from: CommonCompilerArguments, to: CommonCompile
     to.dumpPerf = from.dumpPerf
     to.expectActualClasses = from.expectActualClasses
     to.explicitApi = from.explicitApi
+    to.explicitBackingFields = from.explicitBackingFields
     to.explicitReturnTypes = from.explicitReturnTypes
     to.fragmentDependencies = from.fragmentDependencies?.copyOf()
     to.fragmentRefines = from.fragmentRefines?.copyOf()
@@ -72,6 +73,7 @@ fun copyCommonCompilerArguments(from: CommonCompilerArguments, to: CommonCompile
     to.pluginClasspaths = from.pluginClasspaths?.copyOf()
     to.pluginConfigurations = from.pluginConfigurations?.copyOf()
     to.pluginOptions = from.pluginOptions?.copyOf()
+    to.pluginOrderConstraints = from.pluginOrderConstraints?.copyOf()
     to.profilePhases = from.profilePhases
     to.progressiveMode = from.progressiveMode
     to.renderInternalDiagnosticNames = from.renderInternalDiagnosticNames

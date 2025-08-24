@@ -29,6 +29,15 @@ public interface CommonCompilerArguments : CommonToolArguments {
   public operator fun <V> `set`(key: CommonCompilerArgument<V>, `value`: V)
 
   /**
+   * Check if an option specified by [key] has a value set.
+   *
+   * Note: trying to read an option (by using [get]) that has not been set will result in an exception.
+   *
+   * @return true if the option has a value set, false otherwise
+   */
+  public operator fun contains(key: CommonCompilerArgument<*>): Boolean
+
+  /**
    * Base class for [CommonCompilerArguments] options.
    *
    * @see get
@@ -113,6 +122,19 @@ public interface CommonCompilerArguments : CommonToolArguments {
     @ExperimentalCompilerArgument
     public val X_REPORT_OUTPUT_FILES: CommonCompilerArgument<Boolean> =
         CommonCompilerArgument("X_REPORT_OUTPUT_FILES")
+
+    /**
+     * Specify an execution order constraint for compiler plugins.
+     * Order constraint can be specified using the 'pluginId' of compiler plugins.
+     * The first specified plugin will be executed before the second plugin.
+     * Multiple constraints can be specified by repeating this option. Cycles in constraints will cause an error.
+     *
+     * WARNING: this option is EXPERIMENTAL and it may be changed in the future without notice or may be removed entirely.
+     */
+    @JvmField
+    @ExperimentalCompilerArgument
+    public val X_COMPILER_PLUGIN_ORDER: CommonCompilerArgument<Array<String>?> =
+        CommonCompilerArgument("X_COMPILER_PLUGIN_ORDER")
 
     /**
      * Enable the new experimental generic type inference algorithm.
@@ -500,6 +522,16 @@ public interface CommonCompilerArguments : CommonToolArguments {
     @ExperimentalCompilerArgument
     public val X_DATA_FLOW_BASED_EXHAUSTIVENESS: CommonCompilerArgument<Boolean> =
         CommonCompilerArgument("X_DATA_FLOW_BASED_EXHAUSTIVENESS")
+
+    /**
+     * Enable experimental language support for explicit backing fields.
+     *
+     * WARNING: this option is EXPERIMENTAL and it may be changed in the future without notice or may be removed entirely.
+     */
+    @JvmField
+    @ExperimentalCompilerArgument
+    public val X_EXPLICIT_BACKING_FIELDS: CommonCompilerArgument<Boolean> =
+        CommonCompilerArgument("X_EXPLICIT_BACKING_FIELDS")
 
     /**
      * Enable experimental multi-dollar interpolation.

@@ -1,9 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-
 plugins {
     kotlin("jvm")
     id("jps-compatible")
     id("gradle-plugin-compiler-dependency-configuration")
+    id("project-tests-convention")
 }
 
 description = "Standalone Runner for Swift Export"
@@ -23,7 +22,7 @@ dependencies {
     implementation(project(":analysis:analysis-api"))
     implementation(project(":analysis:analysis-api-standalone"))
 
-    implementation(project(":native:analysis-api-klib-reader"))
+    implementation(project(":libraries:tools:analysis-api-based-klib-reader"))
 }
 
 sourceSets {

@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.analysis.test.framework.hasFallbackDependencies
 import org.jetbrains.kotlin.analysis.test.framework.projectStructure.TestModuleStructureFactory.addLibraryDependencies
 import org.jetbrains.kotlin.analysis.test.framework.projectStructure.TestModuleStructureFactory.getScopeForLibraryByRoots
 import org.jetbrains.kotlin.analysis.test.framework.services.environmentManager
+import org.jetbrains.kotlin.analysis.test.framework.utils.stripOutSnapshotVersion
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.jvm.config.JvmClasspathRoot
 import org.jetbrains.kotlin.js.config.JSConfigurationKeys
@@ -115,8 +116,8 @@ object TestModuleStructureFactory {
         libraryCache: LibraryCache,
     ) {
         when (ktModule) {
-            is KaNotUnderContentRootModule, is KaBuiltinsModule -> {
-                // Not-under-content-root and builtin modules have no external dependencies on purpose
+            is KaBuiltinsModule -> {
+                // builtin modules have no external dependencies on purpose
             }
             is KaDanglingFileModule -> {
                 // Dangling file modules get dependencies from their context
@@ -126,6 +127,9 @@ object TestModuleStructureFactory {
                     addModuleDependencies(testModule, modulesByName, ktModule)
                     addLibraryDependencies(testModule, testServices, ktModule, libraryCache)
                 }
+            }
+            is KaNotUnderContentRootModule -> {
+                // Only not-under-content-root modules which are `KtModuleWithModifiableDependencies` have external dependencies on purpose
             }
             else -> error("Unexpected module type: " + ktModule.javaClass.name)
         }
@@ -217,13 +221,13 @@ object TestModuleStructureFactory {
     ): KaLibraryModuleImpl {
         check(libraryFile.exists()) { "Library $libraryFile does not exist" }
 
-        val libraryName = libraryFile.nameWithoutExtension
+        val libraryName = libraryFile.nameWithoutExtension.stripOutSnapshotVersion()
         val libraryScope = getScopeForLibraryByRoots(project, listOf(libraryFile), testServices)
         return KaLibraryModuleImpl(libraryName, platform, libraryScope, project, listOf(libraryFile), librarySources = null, isSdk = false)
     }
 
     fun getScopeForLibraryByRoots(project: Project, roots: Collection<Path>, testServices: TestServices): GlobalSearchScope {
-        return StandaloneProjectFactory.createSearchScopeByLibraryRoots(
+        return StandaloneProjectFactory.createLibraryModuleSearchScope(
             roots,
             emptyList(),
             testServices.environmentManager.getApplicationEnvironment(),

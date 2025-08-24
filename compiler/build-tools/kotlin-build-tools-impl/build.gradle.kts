@@ -16,6 +16,8 @@ dependencies {
     compileOnly(project(":kotlin-compiler-runner-unshaded"))
     compileOnly(intellijCore())
     compileOnly(project(":kotlin-scripting-compiler"))
+    compileOnly(commonDependency("org.jetbrains.kotlin:kotlin-reflect")) { isTransitive = false }
+
     runtimeOnly(project(":kotlin-compiler-embeddable"))
     runtimeOnly(project(":kotlin-compiler-runner"))
     runtimeOnly(project(":kotlin-scripting-compiler-embeddable"))
@@ -31,6 +33,7 @@ sourcesJar()
 javadocJar()
 
 kotlin {
+    explicitApi()
     compilerOptions {
         optIn.add("org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi")
     }
@@ -39,12 +42,13 @@ kotlin {
 generatedSourcesTask(
     taskName = "generateBtaArguments",
     generatorProject = ":compiler:build-tools:kotlin-build-tools-options-generator",
-    generatorRoot = "compiler/build-tools/kotlin-build-tools-impl/src",
+    generatorRoot = "compiler/build-tools/kotlin-build-tools-options-generator/src",
     generatorMainClass = "org.jetbrains.kotlin.buildtools.options.generator.MainKt",
     argsProvider = { generationRoot ->
         listOf(
             generationRoot.toString(),
-            "impl"
+            "impl",
+            "jvmCompilerArguments",
         )
     },
 )

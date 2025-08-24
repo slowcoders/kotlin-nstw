@@ -80,14 +80,13 @@ abstract class CLICompiler<A : CommonCompilerArguments> {
         return exec(errStream, Services.EMPTY, MessageRenderer.PLAIN_FULL_PATHS, args)
     }
 
-    protected open fun shouldRunK2(messageCollector: MessageCollector, arguments: A): Boolean {
-        val languageVersion = arguments.languageVersion?.let { LanguageVersion.fromVersionString(arguments.languageVersion) }
-            ?: LanguageVersion.LATEST_STABLE
+    private fun shouldRunK2(arguments: A): Boolean {
+        val languageVersion = arguments.languageVersion?.let(LanguageVersion::fromVersionString) ?: LanguageVersion.LATEST_STABLE
         return languageVersion.usesK2
     }
 
     private fun execImpl(messageCollector: MessageCollector, services: Services, arguments: A): ExitCode {
-        val shouldRunK2 = shouldRunK2(messageCollector, arguments)
+        val shouldRunK2 = shouldRunK2(arguments)
         if (shouldRunK2) {
             val code = doExecutePhased(arguments, services, messageCollector)
             if (code != null) return code
@@ -209,7 +208,8 @@ abstract class CLICompiler<A : CommonCompilerArguments> {
     ): ExitCode {
         val pluginClasspaths = arguments.pluginClasspaths.orEmpty().toMutableList()
         val pluginOptions = arguments.pluginOptions.orEmpty().toMutableList()
-        val pluginConfigurations = arguments.pluginConfigurations.orEmpty().toMutableList()
+        val pluginConfigurations = arguments.pluginConfigurations?.asList().orEmpty()
+        val pluginOrderConstraints = arguments.pluginOrderConstraints?.asList().orEmpty()
         val messageCollector = configuration.getNotNull(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY)
 
         val useK2 = configuration.get(CommonConfigurationKeys.USE_FIR) == true
@@ -250,7 +250,14 @@ abstract class CLICompiler<A : CommonCompilerArguments> {
         pluginClasspaths.addAll(scriptingPluginClasspath)
         pluginOptions.addAll(scriptingPluginOptions)
 
-        return PluginCliParser.loadPluginsSafe(pluginClasspaths, pluginOptions, pluginConfigurations, configuration, parentDisposable)
+        return PluginCliParser.loadPluginsSafe(
+            pluginClasspaths,
+            pluginOptions,
+            pluginConfigurations,
+            pluginOrderConstraints,
+            configuration,
+            parentDisposable
+        )
     }
 
     private fun tryLoadScriptingPluginFromCurrentClassLoader(

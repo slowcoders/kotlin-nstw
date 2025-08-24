@@ -23,8 +23,10 @@ import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.NAME
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.RENDER_POSITION_VARIANCE
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.STRING
 import org.jetbrains.kotlin.diagnostics.rendering.CommonRenderers.commaSeparated
+import org.jetbrains.kotlin.diagnostics.rendering.DiagnosticParameterRenderer
 import org.jetbrains.kotlin.diagnostics.rendering.LanguageFeatureMessageRenderer
 import org.jetbrains.kotlin.diagnostics.rendering.Renderer
+import org.jetbrains.kotlin.diagnostics.rendering.RenderingContext
 import org.jetbrains.kotlin.diagnostics.rendering.appendVersion
 import org.jetbrains.kotlin.diagnostics.rendering.toDeprecationWarningMessage
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.CALLABLES_FQ_NAMES
@@ -322,12 +324,14 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPECT_ACTUAL_INC
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPECT_ACTUAL_OPT_IN_ANNOTATION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPECT_AND_ACTUAL_IN_THE_SAME_MODULE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPECT_CLASS_AS_FUNCTION
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPECT_PROPERTY_WITH_EXPLICIT_BACKING_FIELD
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPECT_REFINEMENT_ANNOTATION_MISSING
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPECT_REFINEMENT_ANNOTATION_WRONG_TARGET
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPLICIT_BACKING_FIELD_IN_ABSTRACT_PROPERTY
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPLICIT_BACKING_FIELD_IN_EXTENSION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPLICIT_BACKING_FIELD_IN_INTERFACE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPLICIT_DELEGATION_CALL_REQUIRED
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPLICIT_FIELD_MUST_BE_INITIALIZED
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPLICIT_TYPE_ARGUMENTS_IN_PROPERTY_ACCESS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPOSED_FUNCTION_RETURN_TYPE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.EXPOSED_PACKAGE_PRIVATE_TYPE_FROM_INTERNAL_WARNING
@@ -408,6 +412,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCOMPATIBLE_ENUM
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCOMPATIBLE_MODIFIERS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCOMPATIBLE_TYPES
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCOMPATIBLE_TYPES_WARNING
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCONSISTENT_BACKING_FIELD_TYPE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCONSISTENT_TYPE_PARAMETER_BOUNDS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCONSISTENT_TYPE_PARAMETER_VALUES
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCORRECT_CHARACTER_LITERAL
@@ -634,8 +639,6 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_FIELD_DE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_INITIALIZER_IN_INTERFACE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_INITIALIZER_NO_BACKING_FIELD
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_INITIALIZER_WITH_EXPLICIT_FIELD_DECLARATION
-import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_MUST_HAVE_GETTER
-import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_MUST_HAVE_SETTER
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_TYPE_MISMATCH_BY_DELEGATION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_TYPE_MISMATCH_ON_INHERITANCE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_TYPE_MISMATCH_ON_OVERRIDE
@@ -758,7 +761,9 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.TYPE_PARAMETER_IS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.INCORRECT_TYPE_PARAMETER_OF_PROPERTY
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.MISSING_DEPENDENCY_CLASS_IN_TYPEALIAS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NAME_BASED_DESTRUCTURING_UNDERSCORE_WITHOUT_RENAMING
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_FINAL_PROPERTY_WITH_EXPLICIT_BACKING_FIELD
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.OVERRIDING_IGNORABLE_WITH_MUST_USE
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.PROPERTY_WITH_EXPLICIT_FIELD_AND_ACCESSORS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.TYPE_PARAMETER_ON_LHS_OF_DOT
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.TYPE_VARIANCE_CONFLICT_ERROR
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.TYPE_VARIANCE_CONFLICT_IN_EXPANDED_TYPE
@@ -808,6 +813,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.USAGE_IS_NOT_INLI
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.USELESS_CALL_ON_NOT_NULL
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.USELESS_CAST
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.USELESS_ELVIS
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.USELESS_ELVIS_LEFT_IS_NULL
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.USELESS_ELVIS_RIGHT_IS_NULL
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.USELESS_IS_CHECK
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.USELESS_VARARG_ON_PARAMETER
@@ -839,6 +845,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.VAR_ANNOTATION_PA
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.VAR_IMPLEMENTED_BY_INHERITED_VAL
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.VAR_OVERRIDDEN_BY_VAL
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.VAR_OVERRIDDEN_BY_VAL_BY_DELEGATION
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.VAR_PROPERTY_WITH_EXPLICIT_BACKING_FIELD
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.VAR_TYPE_MISMATCH_ON_INHERITANCE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.VAR_TYPE_MISMATCH_ON_OVERRIDE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.VERSION_REQUIREMENT_DEPRECATION
@@ -863,6 +870,8 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.WRONG_NUMBER_OF_T
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.WRONG_SETTER_PARAMETER_TYPE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.WRONG_SETTER_RETURN_TYPE
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
+import org.jetbrains.kotlin.fir.types.renderReadable
 import org.jetbrains.kotlin.serialization.deserialization.IncompatibleVersionErrorData
 
 /**
@@ -2470,7 +2479,7 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             OVERRIDING_IGNORABLE_WITH_MUST_USE,
-            "Method ''{0}'' is located in a scope marked as ''@MustUseReturnValue'', but effectively declared as ''@IgnorableReturnValue'' in the parent type ''{1}''. " +
+            "Method ''{0}'' is located in a scope marked as ''@MustUseReturnValue'', but marked as ''@IgnorableReturnValue'' in parent type ''{1}'' or its supertypes. " +
                     "Overriding ignorable methods with must-use methods is a semantically incorrect change. Consider marking ''{0}'' as ''@IgnorableReturnValue''.",
             DECLARATION_NAME,
             DECLARATION_FQ_NAME,
@@ -2630,6 +2639,10 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
             "Property must be initialized"
                 .toDeprecationWarningMessage(LanguageFeature.ProhibitMissedMustBeInitializedWhenThereIsNoPrimaryConstructor)
         )
+        map.put(
+            EXPLICIT_FIELD_MUST_BE_INITIALIZED,
+            "Field must be initialized."
+        )
         map.put(MUST_BE_INITIALIZED_OR_BE_FINAL, "Property must be initialized or be final.")
         map.put(
             MUST_BE_INITIALIZED_OR_BE_FINAL_WARNING,
@@ -2716,12 +2729,24 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
             "Delegated properties cannot have explicit backing field declarations."
         )
         map.put(
-            PROPERTY_MUST_HAVE_GETTER,
-            "This property needs a custom getter, because its type is not a supertype of the backing field's type."
+            NON_FINAL_PROPERTY_WITH_EXPLICIT_BACKING_FIELD,
+            "Properties with explicit backing fields must be final.",
         )
         map.put(
-            PROPERTY_MUST_HAVE_SETTER,
-            "This property needs a custom setter, because its type is not a subtype of the backing field's type."
+            VAR_PROPERTY_WITH_EXPLICIT_BACKING_FIELD,
+            "Only 'val' properties with explicit backing fields are supported.",
+        )
+        map.put(
+            EXPECT_PROPERTY_WITH_EXPLICIT_BACKING_FIELD,
+            "'expect' properties are not allowed to declare explicit backing fields.",
+        )
+        map.put(
+            INCONSISTENT_BACKING_FIELD_TYPE,
+            "The type of the backing field must be a subtype of the property's type."
+        )
+        map.put(
+            PROPERTY_WITH_EXPLICIT_FIELD_AND_ACCESSORS,
+            "Properties with explicit backing fields cannot have accessors."
         )
         map.put(
             EXPLICIT_BACKING_FIELD_IN_INTERFACE,
@@ -3037,6 +3062,7 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         map.put(NOT_NULL_ASSERTION_ON_CALLABLE_REFERENCE, "Non-null assertion (!!) called on a callable reference expression.")
         map.put(USELESS_ELVIS, "Elvis operator (?:) always returns the left operand of non-nullable type ''{0}''.", RENDER_TYPE)
         map.put(USELESS_ELVIS_RIGHT_IS_NULL, "Right operand of elvis operator (?:) is useless if it is null.")
+        map.put(USELESS_ELVIS_LEFT_IS_NULL, "Elvis operator (?:) is useless if the left operand is null.")
 
         // Casts and is-checks
         map.put(CANNOT_CHECK_FOR_ERASED, "Cannot check for instance of erased type ''{0}''.", RENDER_TYPE)
@@ -3218,8 +3244,36 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             RECEIVER_SHADOWED_BY_CONTEXT_PARAMETER,
-            "''{0}'' uses an implicit receiver shadowed by a context parameter. Make the receiver explicit using ''this'' or ''contextOf''.",
-            SYMBOL
+            "Call to {0} uses an implicit receiver shadowed by a context parameter. {1}",
+            SYMBOL_WITH_CONTAINING_DECLARATION,
+            object : DiagnosticParameterRenderer<Boolean> {
+                val contextParametersKey: RenderingContext.Key<List<String>> =
+                    object : RenderingContext.Key<List<String>>("contextParameters") {
+                        override fun compute(objectsToRender: Collection<Any?>): List<String> {
+                            @Suppress("UNCHECKED_CAST")
+                            val symbols = objectsToRender.last() as? List<FirValueParameterSymbol> ?: return emptyList()
+
+                            return symbols
+                                .map { if (it.name.isSpecial) "contextOf<${it.resolvedReturnType.renderReadable()}>()" else it.name.identifier }
+                                .distinct()
+                        }
+                    }
+
+                override fun render(
+                    obj: Boolean,
+                    renderingContext: RenderingContext,
+                ): String {
+                    val renderedContextParameters = renderingContext[contextParametersKey]
+                    return if (obj) {
+                        val contextParameterOptions = renderedContextParameters.joinToString(separator = " / ") { "'with($it) { ... }'" }
+                        "Disambiguate the receiver by wrapping the call in 'with(this) { ... }' or $contextParameterOptions."
+                    } else {
+                        val contextParameterOptions = renderedContextParameters.joinToString(separator = " / ") { "'$it'" }
+                        "Make the receiver explicit using 'this' or $contextParameterOptions."
+                    }
+                }
+            },
+            NOT_RENDERED,
         )
 
         // Type alias

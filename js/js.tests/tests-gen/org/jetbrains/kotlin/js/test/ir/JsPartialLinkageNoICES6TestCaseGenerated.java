@@ -118,6 +118,30 @@ public class JsPartialLinkageNoICES6TestCaseGenerated extends AbstractJsPartialL
   }
 
   @Test
+  @TestMetadata("interop-changedFunction")
+  public void testInterop_changedFunction() {
+    runTest("compiler/testData/klib/partial-linkage/interop-changedFunction/");
+  }
+
+  @Test
+  @TestMetadata("modifyInlineFunction")
+  public void testModifyInlineFunction() {
+    runTest("compiler/testData/klib/partial-linkage/modifyInlineFunction/");
+  }
+
+  @Test
+  @TestMetadata("modifyInlinePropertyGetter")
+  public void testModifyInlinePropertyGetter() {
+    runTest("compiler/testData/klib/partial-linkage/modifyInlinePropertyGetter/");
+  }
+
+  @Test
+  @TestMetadata("modifyInlinePropertySetter")
+  public void testModifyInlinePropertySetter() {
+    runTest("compiler/testData/klib/partial-linkage/modifyInlinePropertySetter/");
+  }
+
+  @Test
   @TestMetadata("noNonImplementedCallableFalsePositives")
   public void testNoNonImplementedCallableFalsePositives() {
     runTest("compiler/testData/klib/partial-linkage/noNonImplementedCallableFalsePositives/");
@@ -181,6 +205,18 @@ public class JsPartialLinkageNoICES6TestCaseGenerated extends AbstractJsPartialL
   @TestMetadata("removeEnumEntry")
   public void testRemoveEnumEntry() {
     runTest("compiler/testData/klib/partial-linkage/removeEnumEntry/");
+  }
+
+  @Test
+  @TestMetadata("removeInlineFunction")
+  public void testRemoveInlineFunction() {
+    runTest("compiler/testData/klib/partial-linkage/removeInlineFunction/");
+  }
+
+  @Test
+  @TestMetadata("removeInlineProperty")
+  public void testRemoveInlineProperty() {
+    runTest("compiler/testData/klib/partial-linkage/removeInlineProperty/");
   }
 
   @Test

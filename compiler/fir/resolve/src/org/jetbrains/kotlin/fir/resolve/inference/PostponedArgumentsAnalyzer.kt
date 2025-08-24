@@ -21,7 +21,7 @@ import org.jetbrains.kotlin.fir.resolve.calls.candidate.*
 import org.jetbrains.kotlin.fir.resolve.calls.stages.ArgumentCheckingProcessor
 import org.jetbrains.kotlin.fir.resolve.dfa.cfg.lastStatement
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnresolvedReferenceError
-import org.jetbrains.kotlin.fir.resolve.inference.model.ConeLambdaArgumentConstraintPosition
+import org.jetbrains.kotlin.fir.resolve.inference.model.ConeLambdaArgumentConstraintPositionWithCoercionToUnit
 import org.jetbrains.kotlin.fir.resolve.isImplicitUnitForEmptyLambda
 import org.jetbrains.kotlin.fir.resolve.lambdaWithExplicitEmptyReturns
 import org.jetbrains.kotlin.fir.resolve.runContextSensitiveResolutionForPropertyAccess
@@ -331,7 +331,7 @@ class PostponedArgumentsAnalyzer(
                     // See KT-63602 for details.
                     builder.addSubtypeConstraintIfCompatible(
                         expression.resolvedType, returnTypeRef.coneType,
-                        ConeLambdaArgumentConstraintPosition(lambda.anonymousFunction)
+                        ConeLambdaArgumentConstraintPositionWithCoercionToUnit(lambda.anonymousFunction, expression)
                     )
                 }
                 continue
@@ -373,7 +373,10 @@ class PostponedArgumentsAnalyzer(
         // If we've got some errors already, no new constraints or diagnostics are required
         if (with(c) { lambdaReturnType.isError() } || builder.hasContradiction) return
 
-        val position = ConeLambdaArgumentConstraintPosition(lambda.anonymousFunction)
+        val position = ConeLambdaArgumentConstraintPositionWithCoercionToUnit(
+            lambda.anonymousFunction,
+            anonymousFunctionReturnExpression = null,
+        )
         val unitType = components.session.builtinTypes.unitType.coneType
         if (!builder.addSubtypeConstraintIfCompatible(
                 unitType,
@@ -423,7 +426,8 @@ fun ConeLambdaWithTypeVariableAsExpectedTypeAtom.transformToResolvedLambda(
         .substituteOrSelf(expectedType ?: this.expectedType)
     val resolvedAtom = ArgumentCheckingProcessor.createResolvedLambdaAtomDuringCompletion(
         candidateOfOuterCall, csBuilder, ConeResolutionAtomWithPostponedChild(expression), fixedExpectedType,
-        context, returnTypeVariable = returnTypeVariable
+        context, returnTypeVariable = returnTypeVariable,
+        anonymousFunctionIfReturnExpression = anonymousFunctionIfReturnExpression,
     )
 
     subAtom = resolvedAtom

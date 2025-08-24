@@ -523,8 +523,15 @@ private fun mapInapplicableCandidateError(
             is UnstableSmartCast -> rootCause.mapUnstableSmartCast(session)
 
             is DslScopeViolation -> FirErrors.DSL_SCOPE_VIOLATION.createOn(source, rootCause.calleeSymbol, session)
-            is ReceiverShadowedByContextParameter ->
-                FirErrors.RECEIVER_SHADOWED_BY_CONTEXT_PARAMETER.createOn(source, rootCause.calleeSymbol, session)
+            is ReceiverShadowedByContextParameter -> {
+                FirErrors.RECEIVER_SHADOWED_BY_CONTEXT_PARAMETER.createOn(
+                    source,
+                    rootCause.calleeSymbol,
+                    rootCause.isDispatchOfMemberExtension,
+                    rootCause.compatibleContextParameters,
+                    session
+                )
+            }
             is InferenceError -> {
                 rootCause.constraintError.toDiagnostic(
                     source,
@@ -740,7 +747,7 @@ private fun ConstraintSystemError.toDiagnostic(
             val (argument, reportOn) =
                 when (position) {
                     is ConeArgumentConstraintPosition -> position.argument to null
-                    is ConeLambdaArgumentConstraintPosition -> position.lambda to null
+                    is ConeLambdaArgumentConstraintPosition -> position.lambda to position.anonymousFunctionReturnExpression?.source
                     is ConeReceiverConstraintPosition -> position.argument to (position.argument.source.takeIf { it?.kind == KtRealSourceElementKind }
                         ?: position.source)
                     // ConeExpectedTypeConstraintPosition is processed below,

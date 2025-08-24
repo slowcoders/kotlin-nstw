@@ -4064,6 +4064,12 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
             token,
         )
     }
+    add(FirErrors.EXPLICIT_FIELD_MUST_BE_INITIALIZED) { firDiagnostic ->
+        ExplicitFieldMustBeInitializedImpl(
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
     add(FirErrors.EXTENSION_PROPERTY_MUST_HAVE_ACCESSORS_OR_BE_ABSTRACT) { firDiagnostic ->
         ExtensionPropertyMustHaveAccessorsOrBeAbstractImpl(
             firDiagnostic as KtPsiDiagnostic,
@@ -4256,14 +4262,32 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
             token,
         )
     }
-    add(FirErrors.PROPERTY_MUST_HAVE_GETTER) { firDiagnostic ->
-        PropertyMustHaveGetterImpl(
+    add(FirErrors.VAR_PROPERTY_WITH_EXPLICIT_BACKING_FIELD) { firDiagnostic ->
+        VarPropertyWithExplicitBackingFieldImpl(
             firDiagnostic as KtPsiDiagnostic,
             token,
         )
     }
-    add(FirErrors.PROPERTY_MUST_HAVE_SETTER) { firDiagnostic ->
-        PropertyMustHaveSetterImpl(
+    add(FirErrors.NON_FINAL_PROPERTY_WITH_EXPLICIT_BACKING_FIELD) { firDiagnostic ->
+        NonFinalPropertyWithExplicitBackingFieldImpl(
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
+    add(FirErrors.EXPECT_PROPERTY_WITH_EXPLICIT_BACKING_FIELD) { firDiagnostic ->
+        ExpectPropertyWithExplicitBackingFieldImpl(
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
+    add(FirErrors.INCONSISTENT_BACKING_FIELD_TYPE) { firDiagnostic ->
+        InconsistentBackingFieldTypeImpl(
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
+    add(FirErrors.PROPERTY_WITH_EXPLICIT_FIELD_AND_ACCESSORS) { firDiagnostic ->
+        PropertyWithExplicitFieldAndAccessorsImpl(
             firDiagnostic as KtPsiDiagnostic,
             token,
         )
@@ -5151,6 +5175,12 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
             token,
         )
     }
+    add(FirErrors.USELESS_ELVIS_LEFT_IS_NULL) { firDiagnostic ->
+        UselessElvisLeftIsNullImpl(
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
     add(FirErrors.CANNOT_CHECK_FOR_ERASED) { firDiagnostic ->
         CannotCheckForErasedImpl(
             firSymbolBuilder.typeBuilder.buildKtType(firDiagnostic.a),
@@ -5519,6 +5549,10 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
     add(FirErrors.RECEIVER_SHADOWED_BY_CONTEXT_PARAMETER) { firDiagnostic ->
         ReceiverShadowedByContextParameterImpl(
             firSymbolBuilder.buildSymbol(firDiagnostic.a),
+            firDiagnostic.b,
+            firDiagnostic.c.map { firValueParameterSymbol ->
+                firSymbolBuilder.buildSymbol(firValueParameterSymbol)
+            },
             firDiagnostic as KtPsiDiagnostic,
             token,
         )

@@ -27,6 +27,16 @@ public class ForTestCompileRuntime {
         return propertyOrDist(KOTLIN_FULL_STDLIB_PATH, "dist/kotlinc/lib/kotlin-stdlib.jar");
     }
 
+    /**
+     * This function left as a workaround for AbstractJavaModulesIntegrationTest
+     * For any other case use `runtimeJarForTests` instead
+     */
+    @NotNull
+    @Deprecated
+    public static File runtimeJarFromDistForTests() {
+        return new File("dist/kotlinc/lib/kotlin-stdlib.jar");
+    }
+
     @NotNull
     public static File runtimeJarForTestsWithJdk8() {
         return propertyOrDist(KOTLIN_FULL_STDLIB_PATH, "dist/kotlinc/lib/kotlin-stdlib-jdk8.jar");
@@ -47,6 +57,16 @@ public class ForTestCompileRuntime {
         return propertyOrDist(KOTLIN_REFLECT_JAR_PATH, "dist/kotlinc/lib/kotlin-reflect.jar");
     }
 
+    /**
+     * This function left as a workaround for AbstractJavaModulesIntegrationTest
+     * For any other case use `runtimeJarForTests` instead
+     */
+    @NotNull
+    @Deprecated
+    public static File reflectJarFromDistForTests() {
+        return new File("dist/kotlinc/lib/kotlin-reflect.jar");
+    }
+
     @NotNull
     public static File scriptRuntimeJarForTests() {
         return propertyOrDist(KOTLIN_SCRIPT_RUNTIME_PATH, "dist/kotlinc/lib/kotlin-script-runtime.jar");
@@ -65,7 +85,7 @@ public class ForTestCompileRuntime {
     private static File propertyOrDist(String property, String distPath) {
         String path = getProperty(property, distPath);
         File file = new File(path);
-        assert (file.exists()) : path + " doesn't exist";
+        assert (file.exists()) : path + " doesn't exist; property: " + property + "; distPath: " + distPath;
         return file;
     }
 

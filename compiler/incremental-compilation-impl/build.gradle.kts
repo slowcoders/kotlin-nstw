@@ -3,6 +3,7 @@ plugins {
     id("jps-compatible")
     id("d8-configuration")
     id("java-test-fixtures")
+    id("project-tests-convention")
 }
 
 dependencies {
@@ -27,7 +28,7 @@ dependencies {
     testFixturesApi(libs.junit4)
     testFixturesApi(kotlinTest("junit"))
     testFixturesApi(kotlinStdlib())
-    testFixturesApi(projectTests(":kotlin-build-common"))
+    testFixturesApi(testFixtures(project(":kotlin-build-common")))
     testFixturesApi(testFixtures(project(":compiler:tests-common")))
     testFixturesApi(intellijCore())
     testFixturesApi(commonDependency("org.jetbrains.intellij.deps:log4j"))
@@ -49,22 +50,23 @@ sourceSets {
     }
     "testFixtures" { projectDefault() }
 }
-
-projectTest(parallel = true) {
-    dependsOn(":dist")
-    workingDir = rootDir
-    useJsIrBoxTests(version = version, buildDir = layout.buildDirectory)
-}
-
-projectTest("testJvmICWithJdk11", parallel = true) {
-    dependsOn(":dist")
-    workingDir = rootDir
-    useJsIrBoxTests(version = version, buildDir = layout.buildDirectory)
-    filter {
-        includeTestsMatching("org.jetbrains.kotlin.incremental.IncrementalK1JvmCompilerRunnerTestGenerated*")
-        includeTestsMatching("org.jetbrains.kotlin.incremental.IncrementalK2JvmCompilerRunnerTestGenerated*")
+projectTests {
+    testTask(parallel = true, jUnitMode = JUnitMode.JUnit4) {
+        dependsOn(":dist")
+        workingDir = rootDir
+        useJsIrBoxTests(version = version, buildDir = layout.buildDirectory)
     }
-    javaLauncher.set(project.getToolchainLauncherFor(JdkMajorVersion.JDK_11_0))
+
+    testTask("testJvmICWithJdk11", parallel = true, jUnitMode = JUnitMode.JUnit4, skipInLocalBuild = false) {
+        dependsOn(":dist")
+        workingDir = rootDir
+        useJsIrBoxTests(version = version, buildDir = layout.buildDirectory)
+        filter {
+            includeTestsMatching("org.jetbrains.kotlin.incremental.IncrementalK1JvmCompilerRunnerTestGenerated*")
+            includeTestsMatching("org.jetbrains.kotlin.incremental.IncrementalK2JvmCompilerRunnerTestGenerated*")
+        }
+        javaLauncher.set(project.getToolchainLauncherFor(JdkMajorVersion.JDK_11_0))
+    }
 }
 
 testsJar()

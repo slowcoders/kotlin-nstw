@@ -2018,21 +2018,9 @@ public class LLPartialDiagnosticsFirTestGenerated extends AbstractLLPartialDiagn
       }
 
       @Test
-      @TestMetadata("receiverShadowed.kt")
-      public void testReceiverShadowed() {
-        runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/receiverShadowed.kt");
-      }
-
-      @Test
       @TestMetadata("receiverShadowed2.kt")
       public void testReceiverShadowed2() {
         runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/receiverShadowed2.kt");
-      }
-
-      @Test
-      @TestMetadata("receiverShadowedSubtype.kt")
-      public void testReceiverShadowedSubtype() {
-        runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/receiverShadowedSubtype.kt");
       }
 
       @Test
@@ -2379,9 +2367,21 @@ public class LLPartialDiagnosticsFirTestGenerated extends AbstractLLPartialDiagn
         }
 
         @Test
+        @TestMetadata("dispatchReceiverShadowed.kt")
+        public void testDispatchReceiverShadowed() {
+          runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/diagnostics/dispatchReceiverShadowed.kt");
+        }
+
+        @Test
         @TestMetadata("extensionShadowedWithContextParameters.kt")
         public void testExtensionShadowedWithContextParameters() {
           runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/diagnostics/extensionShadowedWithContextParameters.kt");
+        }
+
+        @Test
+        @TestMetadata("inapplicableModifier.kt")
+        public void testInapplicableModifier() {
+          runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/diagnostics/inapplicableModifier.kt");
         }
 
         @Test
@@ -2394,6 +2394,24 @@ public class LLPartialDiagnosticsFirTestGenerated extends AbstractLLPartialDiagn
         @TestMetadata("noContextArgument.kt")
         public void testNoContextArgument() {
           runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/diagnostics/noContextArgument.kt");
+        }
+
+        @Test
+        @TestMetadata("receiverShadowed.kt")
+        public void testReceiverShadowed() {
+          runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/diagnostics/receiverShadowed.kt");
+        }
+
+        @Test
+        @TestMetadata("receiverShadowedMemberExtension.kt")
+        public void testReceiverShadowedMemberExtension() {
+          runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/diagnostics/receiverShadowedMemberExtension.kt");
+        }
+
+        @Test
+        @TestMetadata("receiverShadowedSubtype.kt")
+        public void testReceiverShadowedSubtype() {
+          runTest("compiler/fir/analysis-tests/testData/resolve/contextParameters/diagnostics/receiverShadowedSubtype.kt");
         }
 
         @Test
@@ -9743,6 +9761,12 @@ public class LLPartialDiagnosticsFirTestGenerated extends AbstractLLPartialDiagn
         }
 
         @Test
+        @TestMetadata("backingFieldInitializedInInit.kt")
+        public void testBackingFieldInitializedInInit() {
+          runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/backingFieldInitializedInInit.kt");
+        }
+
+        @Test
         @TestMetadata("backingFieldModifiers.kt")
         public void testBackingFieldModifiers() {
           runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/backingFieldModifiers.kt");
@@ -9767,15 +9791,45 @@ public class LLPartialDiagnosticsFirTestGenerated extends AbstractLLPartialDiagn
         }
 
         @Test
+        @TestMetadata("explicitBackingFieldOptIns.kt")
+        public void testExplicitBackingFieldOptIns() {
+          runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/explicitBackingFieldOptIns.kt");
+        }
+
+        @Test
         @TestMetadata("explicitBackingFieldType.kt")
         public void testExplicitBackingFieldType() {
           runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/explicitBackingFieldType.kt");
         }
 
         @Test
+        @TestMetadata("explicitBackingFieldWithJvmField.kt")
+        public void testExplicitBackingFieldWithJvmField() {
+          runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/explicitBackingFieldWithJvmField.kt");
+        }
+
+        @Test
+        @TestMetadata("explicitBackingFieldsInInlineWithAnonymousObject.kt")
+        public void testExplicitBackingFieldsInInlineWithAnonymousObject() {
+          runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/explicitBackingFieldsInInlineWithAnonymousObject.kt");
+        }
+
+        @Test
+        @TestMetadata("explicitBackingFieldsInInlines.kt")
+        public void testExplicitBackingFieldsInInlines() {
+          runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/explicitBackingFieldsInInlines.kt");
+        }
+
+        @Test
         @TestMetadata("explicitBackingFieldsWithDelegates.kt")
         public void testExplicitBackingFieldsWithDelegates() {
           runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/explicitBackingFieldsWithDelegates.kt");
+        }
+
+        @Test
+        @TestMetadata("explicitBackingFieldsWithKMP.kt")
+        public void testExplicitBackingFieldsWithKMP() {
+          runTest("compiler/fir/analysis-tests/testData/resolveWithStdlib/properties/backingField/explicitBackingFieldsWithKMP.kt");
         }
 
         @Test

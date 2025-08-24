@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     id("jps-compatible")
-    id("compiler-tests-convention")
+    id("project-tests-convention")
     id("test-inputs-check")
 }
 
@@ -33,12 +33,6 @@ sourceSets {
 
 testsJar()
 
-projectTest(parallel = true) {
-    useJUnitPlatform()
-}
-
-val generateSpecTests by generator("org.jetbrains.kotlin.spec.utils.tasks.GenerateSpecTestsKt")
-
 val generateFeatureInteractionSpecTestData by generator("org.jetbrains.kotlin.spec.utils.tasks.GenerateFeatureInteractionSpecTestDataKt")
 
 val printSpecTestsStatistic by generator("org.jetbrains.kotlin.spec.utils.tasks.PrintSpecTestsStatisticKt")
@@ -50,18 +44,22 @@ val specConsistencyTests by task<Test> {
     useJUnitPlatform()
 }
 
-compilerTests {
+projectTests {
     testData(isolated, "testData")
     testData(project(":compiler").isolated, "testData")
+
+    withJvmStdlibAndReflect()
     withScriptRuntime()
     withTestJar()
     withMockJdkAnnotationsJar()
     withMockJdkRuntime()
     withStdlibCommon()
-}
 
-tasks.named<Test>("test") {
-    filter {
-        excludeTestsMatching("org.jetbrains.kotlin.spec.consistency.SpecTestsConsistencyTest")
+    testTask(jUnitMode = JUnitMode.JUnit5) {
+        filter {
+            excludeTestsMatching("org.jetbrains.kotlin.spec.consistency.SpecTestsConsistencyTest")
+        }
     }
+
+    testGenerator("org.jetbrains.kotlin.spec.utils.tasks.GenerateSpecTestsKt", taskName = "generateSpecTests")
 }

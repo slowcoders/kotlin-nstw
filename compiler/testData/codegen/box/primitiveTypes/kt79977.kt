@@ -3,6 +3,8 @@
 // IGNORE_BACKEND_K1: NATIVE
 // ^ Native test runner passes `-language-version 1.9`, and we use the UUID API here, which is @SinceKotlin("2.0").
 
+// NOTE: Please keep the content of this file in sync with kt79977_withIncrementalCompilation.kt!
+
 @file:OptIn(ExperimentalUuidApi::class)
 
 import kotlin.test.assertEquals

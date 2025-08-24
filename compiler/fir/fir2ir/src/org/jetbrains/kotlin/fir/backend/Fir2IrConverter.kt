@@ -15,19 +15,16 @@ import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.*
-import org.jetbrains.kotlin.fir.analysis.checkers.toRegularClassSymbol
 import org.jetbrains.kotlin.fir.backend.generators.addDeclarationToParent
 import org.jetbrains.kotlin.fir.backend.generators.setParent
 import org.jetbrains.kotlin.fir.backend.utils.createFilesWithBuiltinsSyntheticDeclarationsIfNeeded
 import org.jetbrains.kotlin.fir.backend.utils.createFilesWithGeneratedDeclarations
 import org.jetbrains.kotlin.fir.backend.utils.unsubstitutedScope
 import org.jetbrains.kotlin.fir.declarations.*
-import org.jetbrains.kotlin.fir.declarations.FirAnonymousInitializer
-import org.jetbrains.kotlin.fir.declarations.FirProperty
-import org.jetbrains.kotlin.fir.declarations.FirRegularClass
-import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
-import org.jetbrains.kotlin.fir.declarations.destructuringDeclarationContainerVariable
-import org.jetbrains.kotlin.fir.declarations.utils.*
+import org.jetbrains.kotlin.fir.declarations.utils.classId
+import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
+import org.jetbrains.kotlin.fir.declarations.utils.isLocal
+import org.jetbrains.kotlin.fir.declarations.utils.isSynthetic
 import org.jetbrains.kotlin.fir.descriptors.FirModuleDescriptor
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.expressions.FirQualifiedAccessExpression
@@ -40,6 +37,7 @@ import org.jetbrains.kotlin.fir.references.toResolvedValueParameterSymbol
 import org.jetbrains.kotlin.fir.scopes.processAllFunctions
 import org.jetbrains.kotlin.fir.symbols.lazyDeclarationResolver
 import org.jetbrains.kotlin.fir.types.resolvedType
+import org.jetbrains.kotlin.fir.types.toRegularClassSymbol
 import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.KtDiagnosticReporterWithImplicitIrBasedContext
 import org.jetbrains.kotlin.ir.PsiIrFileEntry
@@ -662,24 +660,6 @@ class Fir2IrConverter(
             )
 
             return (evaluated as? IrProperty)?.tryToGetConst()?.asString()
-        }
-
-        // TODO: drop this function in favor of using [IrModuleDescriptor::shouldSeeInternalsOf] in FakeOverrideBuilder KT-61384
-        fun friendModulesMap(session: FirSession): Map<String, List<String>> {
-            fun FirModuleData.friendsMapName() = name.asStringStripSpecialMarkers()
-            fun FirModuleData.collectDependsOnRecursive(set: MutableSet<FirModuleData>) {
-                if (!set.add(this)) return
-                for (dep in dependsOnDependencies) {
-                    dep.collectDependsOnRecursive(set)
-                }
-            }
-
-            val moduleData = session.moduleData
-            val dependsOnTransitive = buildSet {
-                moduleData.collectDependsOnRecursive(this)
-            }
-            val friendNames = (moduleData.friendDependencies + dependsOnTransitive).map { it.friendsMapName() }
-            return dependsOnTransitive.associate { it.friendsMapName() to friendNames }
         }
 
         fun generateIrModuleFragment(components: Fir2IrComponentsStorage, firFiles: List<FirFile>): IrModuleFragmentImpl {

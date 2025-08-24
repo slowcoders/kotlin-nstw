@@ -123,12 +123,11 @@ private class ClassClsStubBuilder(
             classProto.flags,
             relevantFlags,
             additionalModifiers,
-            mustUseReturnValueFlag = null,
+            returnValueStatus = null,
         )
     }
 
     private fun doCreateClassOrObjectStub(): StubElement<out PsiElement> {
-        val isCompanionObject = classKind == ProtoBuf.Class.Kind.COMPANION_OBJECT
         val fqName = classId.asSingleFqName()
         val shortName = fqName.shortName().ref()
         val superTypeRefs = supertypeIds.filterNot {
@@ -143,7 +142,6 @@ private class ClassClsStubBuilder(
                     classId = classId,
                     superTypeRefs,
                     isTopLevel = !this.classId.isNestedClass,
-                    isDefault = isCompanionObject,
                     isLocal = false,
                     isObjectLiteral = false,
                 )
@@ -224,7 +222,7 @@ private class ClassClsStubBuilder(
                 qualifiedName = c.containerFqName.child(name).ref(),
                 classId = null, // enum entry do not have class id
                 name = name.ref(),
-                superNames = arrayOf(),
+                superNameRefs = arrayOf(),
                 isInterface = false,
                 isEnumEntry = true,
                 isClsStubCompiledToJvmDefaultImplementation = JvmProtoBufUtil.isNewPlaceForBodyGeneration(classProto),

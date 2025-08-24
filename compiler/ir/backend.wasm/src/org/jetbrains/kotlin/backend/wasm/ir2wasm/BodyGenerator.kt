@@ -1191,6 +1191,22 @@ class BodyGenerator(
                 body.buildInstr(WasmOp.ARRAY_NEW_DATA, location, arrayGcType, WasmImmediate.DataIdx(0))
             }
 
+            wasmSymbols.callAssociatedObjectGetter -> {
+                val tryGetAssociatedObjectType =
+                    wasmFileCodegenContext.referenceFunctionType(backendContext.wasmSymbols.tryGetAssociatedObject)
+
+                body.buildInstr(
+                    op = WasmOp.REF_CAST,
+                    location = location,
+                    WasmImmediate.HeapType(WasmHeapType.Type(tryGetAssociatedObjectType))
+                )
+                body.buildInstr(
+                    op = WasmOp.CALL_REF,
+                    location = location,
+                    WasmImmediate.TypeIdx(tryGetAssociatedObjectType),
+                )
+            }
+
             else -> {
                 return false
             }
@@ -1583,8 +1599,8 @@ class BodyGenerator(
         val vTableSpecialITableFieldId = WasmSymbol(0)
         val rttiImplementedIFacesFieldId = WasmSymbol(0)
         val rttiSuperClassFieldId = WasmSymbol(1)
-        val rttiQualifierGetterFieldId = WasmSymbol(10)
-        val rttiSimpleNameGetterFieldId = WasmSymbol(11)
+        val rttiQualifierGetterFieldId = WasmSymbol(6)
+        val rttiSimpleNameGetterFieldId = WasmSymbol(7)
         private val exceptionTagId = WasmSymbol(0)
         private val relativeTryLevelForRethrowInFinallyBlock = WasmImmediate.LabelIdx(0)
     }

@@ -7,12 +7,14 @@ package org.jetbrains.kotlin.fir.resolve.transformers.body.resolve
 
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.ClassKind
+import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.SessionAndScopeSessionHolder
 import org.jetbrains.kotlin.fir.correspondingProperty
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
+import org.jetbrains.kotlin.fir.declarations.utils.isInline
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
 import org.jetbrains.kotlin.fir.declarations.utils.isScriptTopLevelDeclaration
 import org.jetbrains.kotlin.fir.expressions.FirCallableReferenceAccess
@@ -32,6 +34,7 @@ import org.jetbrains.kotlin.fir.scopes.computeImportingScopes
 import org.jetbrains.kotlin.fir.scopes.createImportingScopes
 import org.jetbrains.kotlin.fir.scopes.impl.FirLocalScope
 import org.jetbrains.kotlin.fir.scopes.impl.FirMemberTypeParameterScope
+import org.jetbrains.kotlin.fir.shouldSuppressInlineContextAt
 import org.jetbrains.kotlin.fir.symbols.impl.FirAnonymousFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
@@ -146,6 +149,28 @@ class BodyResolveContext(
         } finally {
             anonymousFunctionsAnalyzedInDependentContext.remove(lambda)
         }
+    }
+
+    var inlineFunction: FirFunction? = null
+
+    inline fun <T> withInlineFunction(function: FirFunction?, block: () -> T): T {
+        val oldValue = inlineFunction
+        return try {
+            inlineFunction = function
+            block()
+        } finally {
+            inlineFunction = oldValue
+        }
+    }
+
+    inline fun <T> withInlineFunctionIfApplicable(function: FirFunction, block: () -> T): T = when {
+        function.isInline -> withInlineFunction(function, block)
+        else -> block()
+    }
+
+    inline fun <T> withSuppressedInlineFunctionIfNeeded(element: FirElement?, block: () -> T): T = when {
+        shouldSuppressInlineContextAt(element, containers.lastOrNull()?.symbol) -> withInlineFunction(null, block)
+        else -> block()
     }
 
     @PrivateForInline
@@ -755,7 +780,9 @@ class BodyResolveContext(
         }
 
         return withTypeParametersOf(simpleFunction) {
-            withContainer(simpleFunction, f)
+            withInlineFunctionIfApplicable(simpleFunction) {
+                withContainer(simpleFunction, f)
+            }
         }
     }
 
@@ -915,7 +942,9 @@ class BodyResolveContext(
         f: () -> T
     ): T {
         storeValueParameterIfNeeded(valueParameter, session)
-        return withContainer(valueParameter, f)
+        return withContainer(valueParameter) {
+            withSuppressedInlineFunctionIfNeeded(valueParameter.defaultValue, f)
+        }
     }
 
     fun storeValueParameterIfNeeded(valueParameter: FirValueParameter, session: FirSession) {

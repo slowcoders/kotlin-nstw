@@ -167,7 +167,11 @@ class NotFunctionAsOperator(val symbol: FirBasedSymbol<*>) : ResolutionDiagnosti
 
 class DslScopeViolation(val calleeSymbol: FirBasedSymbol<*>) : ResolutionDiagnostic(RESOLVED_WITH_ERROR)
 
-class ReceiverShadowedByContextParameter(val calleeSymbol: FirBasedSymbol<*>) : ResolutionDiagnostic(RESOLVED_WITH_ERROR)
+class ReceiverShadowedByContextParameter(
+    val calleeSymbol: FirBasedSymbol<*>,
+    val isDispatchOfMemberExtension: Boolean,
+    val compatibleContextParameters: List<FirValueParameterSymbol>
+) : ResolutionDiagnostic(RESOLVED_WITH_ERROR)
 
 class MultipleContextReceiversApplicableForExtensionReceivers : ResolutionDiagnostic(INAPPLICABLE)
 

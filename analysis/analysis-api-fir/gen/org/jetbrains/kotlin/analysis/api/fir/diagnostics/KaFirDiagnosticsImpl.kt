@@ -3418,6 +3418,11 @@ internal class MustBeInitializedOrFinalOrAbstractWarningImpl(
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.MustBeInitializedOrFinalOrAbstractWarning
 
+internal class ExplicitFieldMustBeInitializedImpl(
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<KtBackingField>(firDiagnostic, token), KaFirDiagnostic.ExplicitFieldMustBeInitialized
+
 internal class ExtensionPropertyMustHaveAccessorsOrBeAbstractImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
@@ -3579,15 +3584,30 @@ internal class BackingFieldForDelegatedPropertyImpl(
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<KtBackingField>(firDiagnostic, token), KaFirDiagnostic.BackingFieldForDelegatedProperty
 
-internal class PropertyMustHaveGetterImpl(
+internal class VarPropertyWithExplicitBackingFieldImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
-) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.PropertyMustHaveGetter
+) : KaAbstractFirDiagnostic<PsiElement>(firDiagnostic, token), KaFirDiagnostic.VarPropertyWithExplicitBackingField
 
-internal class PropertyMustHaveSetterImpl(
+internal class NonFinalPropertyWithExplicitBackingFieldImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
-) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.PropertyMustHaveSetter
+) : KaAbstractFirDiagnostic<KtBackingField>(firDiagnostic, token), KaFirDiagnostic.NonFinalPropertyWithExplicitBackingField
+
+internal class ExpectPropertyWithExplicitBackingFieldImpl(
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<KtElement>(firDiagnostic, token), KaFirDiagnostic.ExpectPropertyWithExplicitBackingField
+
+internal class InconsistentBackingFieldTypeImpl(
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<KtProperty>(firDiagnostic, token), KaFirDiagnostic.InconsistentBackingFieldType
+
+internal class PropertyWithExplicitFieldAndAccessorsImpl(
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<PsiElement>(firDiagnostic, token), KaFirDiagnostic.PropertyWithExplicitFieldAndAccessors
 
 internal class ExplicitBackingFieldInInterfaceImpl(
     firDiagnostic: KtPsiDiagnostic,
@@ -4329,6 +4349,11 @@ internal class UselessElvisRightIsNullImpl(
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<KtBinaryExpression>(firDiagnostic, token), KaFirDiagnostic.UselessElvisRightIsNull
 
+internal class UselessElvisLeftIsNullImpl(
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<KtBinaryExpression>(firDiagnostic, token), KaFirDiagnostic.UselessElvisLeftIsNull
+
 internal class CannotCheckForErasedImpl(
     override val type: KaType,
     firDiagnostic: KtPsiDiagnostic,
@@ -4641,6 +4666,8 @@ internal class DslScopeViolationImpl(
 
 internal class ReceiverShadowedByContextParameterImpl(
     override val calleeSymbol: KaSymbol,
+    override val isDispatchOfMemberExtension: Boolean,
+    override val contextParameterSymbols: List<KaSymbol>,
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<PsiElement>(firDiagnostic, token), KaFirDiagnostic.ReceiverShadowedByContextParameter

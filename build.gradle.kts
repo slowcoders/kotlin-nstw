@@ -64,6 +64,9 @@ plugins {
     `jvm-toolchains`
     alias(libs.plugins.gradle.node) apply false
     id("nodejs-cache-redirector-configuration")
+    id("gradle-plugins-documentation") apply false
+    id("com.autonomousapps.dependency-analysis") version "2.19.0"
+    id("project-tests-convention") apply false
 }
 
 val isTeamcityBuild = project.kotlinBuildProperties.isTeamcityBuild
@@ -131,6 +134,7 @@ val irCompilerModules = arrayOf(
     ":compiler:ir.actualization",
     ":compiler:ir.interpreter",
     ":compiler:ir.inline",
+    ":compiler:ir.validation",
     ":wasm:wasm.ir"
 ).also { extra["irCompilerModules"] = it }
 
@@ -145,6 +149,7 @@ val irCompilerModulesForIDE = arrayOf(
     ":compiler:ir.actualization",
     ":compiler:ir.interpreter",
     ":compiler:ir.inline",
+    ":compiler:ir.validation",
 ).also { extra["irCompilerModulesForIDE"] = it }
 
 val commonCompilerModules = arrayOf(
@@ -376,7 +381,7 @@ val projectsUsedInIntelliJKotlinPlugin =
             ) +
             arrayOf(
                 ":compiler:ir.serialization.native",
-                ":native:analysis-api-klib-reader",
+                ":libraries:tools:analysis-api-based-klib-reader",
                 ":native:base",
                 ":native:objcexport-header-generator",
                 ":native:objcexport-header-generator-analysis-api",
@@ -492,6 +497,7 @@ extra["compilerArtifactsForIde"] = listOfNotNull(
     ":kotlin-scripting-compiler",
     ":kotlin-scripting-compiler-impl",
     ":plugins:parcelize:parcelize-runtime",
+    ":plugins:jvm-abi-gen",
     ":kotlin-stdlib-common",
     ":kotlin-stdlib",
     ":kotlin-test",
@@ -546,7 +552,6 @@ val gradlePluginProjects = listOf(
     ":kotlin-gradle-plugin-annotations",
     ":kotlin-gradle-plugin-idea",
     ":kotlin-gradle-plugin-idea-proto",
-    ":kotlin-gradle-plugin-model",
     ":kotlin-gradle-plugin-tcs-android",
     ":compose-compiler-gradle-plugin",
     ":kotlin-allopen",
@@ -572,7 +577,9 @@ allprojects {
     if (!project.path.startsWith(":kotlin-ide.")) {
         pluginManager.apply("common-configuration")
     }
-
+    if (!project.path.startsWith(":compiler:build-tools")) {
+        pluginManager.apply("com.autonomousapps.dependency-analysis")
+    }
     if (kotlinBuildProperties.isInIdeaSync) {
         afterEvaluate {
             configurations.all {
@@ -740,8 +747,14 @@ tasks.register("createIdeaHomeForTests") {
 
 tasks {
     register("compileAll") {
+        val excludedNativePrefixes = listOf(
+            ":native",
+            ":libraries:tools:analysis-api-based-klib-reader:testProject",
+        )
         allprojects
-            .filter { !it.path.startsWith(":native") || kotlinBuildProperties.isKotlinNativeEnabled }
+            .filter {
+                excludedNativePrefixes.none(it.path::startsWith) || kotlinBuildProperties.isKotlinNativeEnabled
+            }
             .forEach {
                 dependsOn(it.tasks.withType<KotlinCompilationTask<*>>())
                 dependsOn(it.tasks.withType<JavaCompile>())
@@ -843,7 +856,7 @@ tasks {
     // ...
     register("nativeCompilerTest") {
         dependsOn(":kotlin-atomicfu-compiler-plugin:nativeTest")
-        dependsOn(":native:analysis-api-klib-reader:check")
+        dependsOn(":libraries:tools:analysis-api-based-klib-reader:check")
         dependsOn(":native:native.tests:test")
         dependsOn(":native:native.tests:cli-tests:check")
         dependsOn(":native:native.tests:codegen-box:check")

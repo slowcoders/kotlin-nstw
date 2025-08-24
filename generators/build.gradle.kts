@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     id("jps-compatible")
+    id("project-tests-convention")
 }
 
 sourceSets {
@@ -46,7 +47,7 @@ dependencies {
     wasmApi(kotlinStdlib())
     interpreterApi(project(":compiler:ir.tree"))
     protobufApi(kotlinStdlib())
-    protobufCompareApi(projectTests(":kotlin-build-common"))
+    protobufCompareApi(testFixtures(project(":kotlin-build-common")))
     nativeInteropRuntimeApi(kotlinStdlib())
 
     testApi(builtinsSourceSet.output)
@@ -92,9 +93,10 @@ dependencies {
     testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
-
-projectTest(parallel = true) {
-    workingDir = rootDir
+projectTests {
+    testTask(parallel = true, jUnitMode = JUnitMode.JUnit4) {
+        workingDir = rootDir
+    }
 }
 
 val generateCompilerArgumentsCopy by generator("org.jetbrains.kotlin.generators.arguments.GenerateCompilerArgumentsCopyKt")

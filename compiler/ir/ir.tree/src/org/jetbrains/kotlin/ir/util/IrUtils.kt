@@ -34,10 +34,10 @@ import org.jetbrains.kotlin.ir.visitors.IrVisitor
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.util.OperatorNameConventions
+import org.jetbrains.kotlin.util.anonymousContextParameterName
 import org.jetbrains.kotlin.utils.*
 import org.jetbrains.kotlin.utils.addToStdlib.assignFrom
 import java.io.StringWriter
-import kotlin.collections.get
 
 /**
  * Binds all arguments represented in the IR to the parameters of the accessed function.
@@ -525,7 +525,7 @@ val IrDeclaration.fileOrNull: IrFile?
     get() = getPackageFragment() as? IrFile
 
 val IrDeclaration.file: IrFile
-    get() = fileOrNull ?: TODO("Unknown file")
+    get() = fileOrNull!!
 
 val IrDeclaration.parentClassOrNull: IrClass?
     get() = parent.let {
@@ -1177,10 +1177,15 @@ val IrFunction.allParameters: List<IrValueParameter>
         }
     }
 
-private object LoweringsFakeOverrideBuilderStrategy : FakeOverrideBuilderStrategy.BindToPrivateSymbols(
-    friendModules = emptyMap(), // TODO: this is probably not correct. Should be fixed by KT-61384. But it's not important for current usages
-) {
+private object LoweringsFakeOverrideBuilderStrategy : FakeOverrideBuilderStrategy.BindToPrivateSymbols() {
     override fun postProcessGeneratedFakeOverride(fakeOverride: IrOverridableDeclaration<*>, clazz: IrClass) {
+    }
+
+    // TODO(KT-62534) use ModuleDescriptor.shouldSeeInternalsOf when it's fixed
+    override fun shouldSeeInternals(thisModule: ModuleDescriptor, memberModule: ModuleDescriptor): Boolean {
+        val fromModuleName = thisModule.name.asStringStripSpecialMarkers()
+        val toModuleName = memberModule.name.asStringStripSpecialMarkers()
+        return fromModuleName == toModuleName
     }
 }
 
@@ -1630,16 +1635,12 @@ val IrSimpleFunction.isTrivialGetter: Boolean
     }
 
 
-private fun String.replaceInvalidChars(invalidChars: Set<Char>) =
-    invalidChars.fold(this) { acc, ch -> if (ch in acc) acc.replace(ch, '_') else acc }
-
 fun IrFunction.anonymousContextParameterName(parameter: IrValueParameter, invalidChars: Set<Char>): String? {
     if (parameter.kind != IrParameterKind.Context || parameter.origin != UNDERSCORE_PARAMETER) return null
-    val contextParameterNames = parameters
-        .filter { it.kind == IrParameterKind.Context && it.origin == UNDERSCORE_PARAMETER }
-        .associateWith { it.type.erasedUpperBound.name.asString().replaceInvalidChars(invalidChars) }
-    val nameGroups = contextParameterNames.entries.groupBy({ it.value }, { it.key })
-    val baseName = contextParameterNames[parameter]
-    val currentNameGroup = nameGroups[baseName]!!
-    return if (currentNameGroup.size == 1) "\$context-$baseName" else "\$context-$baseName#${currentNameGroup.indexOf(parameter) + 1}"
+    val allUnnamedContextParameters = parameters.filter { it.kind == IrParameterKind.Context && it.origin == UNDERSCORE_PARAMETER }
+    return parameter.anonymousContextParameterName(
+        allUnnamedContextParameters,
+        invalidChars
+    ) { t -> t.type.erasedUpperBound.name.asString() }
 }
+

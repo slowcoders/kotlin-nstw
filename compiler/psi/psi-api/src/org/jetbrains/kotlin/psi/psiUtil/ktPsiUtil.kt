@@ -192,7 +192,7 @@ fun StubBasedPsiElementBase<out KotlinClassOrObjectStub<out KtClassOrObject>>.ge
 
     val stub = greenStub
     if (stub != null) {
-        return stub.getSuperNames()
+        return stub.superNames
     }
 
     val specifiers = this.superTypeListEntries
@@ -343,6 +343,21 @@ fun KtDeclaration.isExpectDeclaration(): Boolean = when {
     this is KtParameter -> ownerDeclaration?.isExpectDeclaration() == true
     else -> containingClassOrObject?.isExpectDeclaration() == true
 }
+
+/**
+ * Checks if this declaration is an `actual`. This is the case if the declaration either has an explicit `actual` modifier, or if
+ * it is a constructor of an annotation, value, or inline class
+ */
+fun KtDeclaration.isActualDeclaration(): Boolean = hasActualModifier() || isImplicitlyActualDeclaration()
+
+internal fun KtDeclaration.isImplicitlyActualDeclaration(): Boolean = when (this) {
+    is KtConstructor<*> -> (containingClassOrObject as? KtClass)?.let { klass ->
+        klass.hasActualModifier() && klass.allowsImplicitlyActualConstructor()
+    } == true
+    else -> false
+}
+
+internal fun KtClass.allowsImplicitlyActualConstructor() = isAnnotation() || isValue() || isInline()
 
 fun KtElement.isContextualDeclaration(): Boolean {
     val contextReceivers = when (this) {

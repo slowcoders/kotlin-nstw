@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.directOverriddenSymbolsSafe
-import org.jetbrains.kotlin.fir.analysis.checkers.getContainingClassSymbol
+import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.isOverride
@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.resolve.ReturnValueStatus
 
 object FirReturnValueOverrideChecker : FirCallableDeclarationChecker(MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -42,13 +43,16 @@ object FirReturnValueOverrideChecker : FirCallableDeclarationChecker(MppCheckerK
 
         // Only check mustUse overrides:
         if (!declaration.isOverride) return
-        if (!declaration.status.hasMustUseReturnValue) return
+        if (declaration.status.returnValueStatus != ReturnValueStatus.MustUse) return
         val symbol = declaration.symbol
 
         // Check if any of the overridden symbols have @IgnorableReturnValue
         val overriddenSymbols = symbol.directOverriddenSymbolsSafe()
         val ignorableBaseSymbol = overriddenSymbols.find {
-            context.session.mustUseReturnValueStatusComponent.hasIgnorableLikeAnnotation(it.resolvedAnnotationClassIds)
+            it.resolvedStatus.returnValueStatus == ReturnValueStatus.ExplicitlyIgnorable
+                        // FIXME (KT-79923): Checking annotation is required only for tests to pass with bootstrap (old metadata) stdlib
+                        // Should be deleted after re-bootstrapping stdlib again
+                    || context.session.mustUseReturnValueStatusComponent.hasIgnorableLikeAnnotation(it.resolvedAnnotationClassIds)
         } ?: return
 
         // Report error if an overridden symbol has @IgnorableReturnValue but the current declaration doesn't
@@ -177,7 +181,7 @@ private fun FirCallableSymbol<*>.isSubjectToCheck(): Boolean {
     // If latter, metadata flag should be added for them too.
     if (this is FirEnumEntrySymbol) return true
 
-    return resolvedStatus.hasMustUseReturnValue
+    return resolvedStatus.returnValueStatus == ReturnValueStatus.MustUse
 }
 
 private inline fun CallableId.ifTypealiasedJvmCollection(nonIgnorableCollectionMethod: (Boolean) -> Unit) {

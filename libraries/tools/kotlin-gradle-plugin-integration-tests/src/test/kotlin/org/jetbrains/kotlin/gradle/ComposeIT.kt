@@ -108,10 +108,6 @@ class ComposeIT : KGPBaseTest() {
 
             buildAndFail("assembleDebug") {
                 when (agpVersion) {
-                    TestVersions.AgpCompatibilityMatrix.AGP_73.version,
-                    TestVersions.AgpCompatibilityMatrix.AGP_74.version,
-                    TestVersions.AgpCompatibilityMatrix.AGP_80.version,
-                    TestVersions.AgpCompatibilityMatrix.AGP_81.version,
                     TestVersions.AgpCompatibilityMatrix.AGP_82.version,
                     TestVersions.AgpCompatibilityMatrix.AGP_83.version,
                     TestVersions.AgpCompatibilityMatrix.AGP_84.version,
@@ -191,7 +187,6 @@ class ComposeIT : KGPBaseTest() {
     @DisplayName("Should work with JB Compose plugin")
     @AndroidGradlePluginTests
     @GradleAndroidTest
-    @AndroidTestVersions(minVersion = TestVersions.AGP.AGP_80)
     @TestMetadata("JBComposeApp")
     fun testJBCompose(
         gradleVersion: GradleVersion,
@@ -235,7 +230,6 @@ class ComposeIT : KGPBaseTest() {
     @DisplayName("Should not suggest apply Kotlin compose plugin in JB Compose plugin")
     @AndroidGradlePluginTests
     @GradleAndroidTest
-    @AndroidTestVersions(minVersion = TestVersions.AGP.AGP_80)
     @TestMetadata("JBComposeApp")
     fun testAndroidJBComposeNoSuggestion(
         gradleVersion: GradleVersion,
@@ -443,6 +437,14 @@ class ComposeIT : KGPBaseTest() {
                 |       return value
                 |    }
                 |}
+                |
+                |interface TestInterface {
+                |    @Composable fun Content()
+                |}
+                |
+                |class OtherModuleImpl : TestInterface {
+                |    @Composable override fun Content() {}
+                |}
                 """.trimMargin()
             )
             build("publishToMavenLocal") {
@@ -485,11 +487,13 @@ class ComposeIT : KGPBaseTest() {
                 |    @Test
                 |    fun test() = compositionTest {
                 |       val testImpl = TestImpl()
+                |       val otherModuleImpl = OtherModuleImpl()
                 |       compose {
                 |           testImpl.UnitFun(1)
                 |           testImpl.UnitFun()
                 |           Text("${'$'}{testImpl.openFun(1)}")
                 |           Text("${'$'}{testImpl.openFun()}")
+                |           otherModuleImpl.Content() // Just executing this successfully is enough
                 |       }
                 |       
                 |       validate {

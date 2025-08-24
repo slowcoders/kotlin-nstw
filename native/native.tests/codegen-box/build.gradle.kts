@@ -3,7 +3,7 @@ import org.gradle.internal.os.OperatingSystem
 plugins {
     kotlin("jvm")
     id("jps-compatible")
-    id("compiler-tests-convention")
+    id("project-tests-convention")
     id("test-inputs-check")
 }
 
@@ -23,19 +23,18 @@ sourceSets {
     }
 }
 
-compilerTests {
+projectTests {
     testData(project(":compiler").isolated, "testData/codegen")
-    testData(project(":compiler").isolated, "testData/diagnostics")
-}
 
-val testTags = findProperty("kotlin.native.tests.tags")?.toString()
-// Note: arbitrary JUnit tag expressions can be used in this property.
-// See https://junit.org/junit5/docs/current/user-guide/#running-tests-tag-expressions
-val test by nativeTest("test", testTags) {
-    extensions.configure<TestInputsCheckExtension> {
-        isNative.set(true)
-        useXcode.set(OperatingSystem.current().isMacOsX)
+    val testTags = findProperty("kotlin.native.tests.tags")?.toString()
+    // Note: arbitrary JUnit tag expressions can be used in this property.
+    // See https://junit.org/junit5/docs/current/user-guide/#running-tests-tag-expressions
+    nativeTestTask("test", testTags) {
+        extensions.configure<TestInputsCheckExtension> {
+            isNative.set(true)
+            useXcode.set(OperatingSystem.current().isMacOsX)
+        }
+        // nativeTest sets workingDir to rootDir so here we need to override it
+        workingDir = projectDir
     }
-    // nativeTest sets workingDir to rootDir so here we need to override it
-    workingDir = projectDir
 }

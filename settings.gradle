@@ -132,6 +132,7 @@ include ":benchmarks",
         ":compiler:ir.serialization.native",
         ":compiler:ir.interpreter",
         ":compiler:ir.inline",
+        ":compiler:ir.validation",
         ":compiler:backend.js",
         ":compiler:backend.wasm",
         ":compiler:backend.jvm",
@@ -176,11 +177,9 @@ include ":benchmarks",
         ":native:executors",
         ":native:base",
         ":native:binary-options",
-        ":native:analysis-api-klib-reader",
         ":native:analysis-api-based-test-utils",
         ":native:analysis-api-based-export-common",
         ":native:external-projects-test-utils",
-        ":native:analysis-api-klib-reader:testProject",
         ":native:objcexport-header-generator",
         ":native:objcexport-header-generator-k1",
         ":native:objcexport-header-generator-analysis-api",
@@ -252,7 +251,10 @@ include ":kotlin-assignment-compiler-plugin",
         ":kotlin-assignment-compiler-plugin.cli",
         ":kotlin-assignment-compiler-plugin.embeddable"
 
-include ":plugins:plugins-interactions-testing"
+include ":plugins:test-plugins:before",
+        ":plugins:test-plugins:middle",
+        ":plugins:test-plugins:after",
+        ":plugins:plugins-interactions-testing"
 
 include ":kotlin-script-runtime",
         ":plugins:plugin-sandbox",
@@ -297,7 +299,6 @@ include ":kotlin-script-runtime",
         ":kotlin-gradle-plugin",
         ":gradle:kotlin-gradle-ecosystem-plugin",
         ":kotlin-gradle-plugin-tcs-android",
-        ":kotlin-gradle-plugin-model",
         ":kotlin-gradle-plugin-test-utils-embeddable",
         ":kotlin-gradle-plugin-integration-tests",
         ":kotlin-gradle-plugins-bom",
@@ -372,6 +373,9 @@ include ":libraries:tools:abi-comparator"
 include ":libraries:tools:abi-validation:abi-tools",
         ":libraries:tools:abi-validation:abi-tools-api",
         ":libraries:tools:abi-validation:kgp-integration-tests"
+
+include ":libraries:tools:analysis-api-based-klib-reader",
+        ":libraries:tools:analysis-api-based-klib-reader:testProject"
 
 include ":kotlin-atomicfu-compiler-plugin",
         ":kotlin-atomicfu-compiler-plugin-embeddable",
@@ -511,6 +515,7 @@ if (!buildProperties.inJpsBuildIdeaSync) {
 
 include ":compiler:build-tools:kotlin-build-tools-api",
         ":compiler:build-tools:kotlin-build-tools-impl",
+        ":compiler:build-tools:kotlin-build-tools-compat",
         ":compiler:build-tools:kotlin-build-tools-api-tests",
         ":compiler:build-tools:kotlin-build-tools-jdk-utils",
         ":compiler:build-tools:kotlin-build-tools-options-generator",
@@ -809,6 +814,7 @@ project(':compiler:ir.backend.common').projectDir = "$rootDir/compiler/ir/backen
 project(':compiler:ir.backend.native').projectDir = "$rootDir/compiler/ir/backend.native" as File
 project(':compiler:ir.actualization').projectDir = "$rootDir/compiler/ir/ir.actualization" as File
 project(':compiler:ir.inline').projectDir = "$rootDir/compiler/ir/ir.inline" as File
+project(':compiler:ir.validation').projectDir = "$rootDir/compiler/ir/ir.validation" as File
 project(':compiler:backend.js').projectDir = "$rootDir/compiler/ir/backend.js" as File
 project(':compiler:backend.wasm').projectDir = "$rootDir/compiler/ir/backend.wasm" as File
 project(':compiler:backend.jvm').projectDir = "$rootDir/compiler/ir/backend.jvm" as File
@@ -897,7 +903,6 @@ project(':kotlin-gradle-build-metrics').projectDir = "$rootDir/libraries/tools/k
 project(':kotlin-gradle-plugin').projectDir = "$rootDir/libraries/tools/kotlin-gradle-plugin" as File
 project(":gradle:kotlin-gradle-ecosystem-plugin").projectDir = "$rootDir/libraries/tools/gradle/kotlin-gradle-ecosystem-plugin" as File
 project(':kotlin-gradle-plugin-tcs-android').projectDir = "$rootDir/libraries/tools/kotlin-gradle-plugin-tcs-android" as File
-project(':kotlin-gradle-plugin-model').projectDir = "$rootDir/libraries/tools/kotlin-gradle-plugin-model" as File
 project(':kotlin-gradle-plugin-test-utils-embeddable').projectDir = "$rootDir/libraries/tools/kotlin-gradle-plugin-test-utils-embeddable" as File
 project(':kotlin-gradle-plugin-integration-tests').projectDir = "$rootDir/libraries/tools/kotlin-gradle-plugin-integration-tests" as File
 project(':kotlin-gradle-plugins-bom').projectDir = "$rootDir/libraries/tools/kotlin-gradle-plugins-bom" as File

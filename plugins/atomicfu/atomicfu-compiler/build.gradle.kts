@@ -10,9 +10,10 @@ plugins {
     kotlin("jvm")
     id("jps-compatible")
     id("d8-configuration")
+    id("project-tests-convention")
 }
 
-// WARNING: Native target is host-dependent. Re-running the same build on another host OS may bring to a different result.
+// WARNING: Native target is host-dependent. Re-running the same build on another host OS may give a different result.
 val nativeTargetName = HostManager.host.name
 
 val antLauncherJar by configurations.creating
@@ -35,7 +36,7 @@ val atomicfuJvmClasspath by configurations.creating
 val atomicfuNativeKlib by configurations.creating {
     attributes {
         attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
-        // WARNING: Native target is host-dependent. Re-running the same build on another host OS may bring to a different result.
+        // WARNING: Native target is host-dependent. Re-running the same build on another host OS may give a different result.
         attribute(KotlinNativeTarget.konanTargetAttribute, nativeTargetName)
         attribute(Usage.USAGE_ATTRIBUTE, objects.named(KotlinUsages.KOTLIN_API))
         attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
@@ -183,69 +184,76 @@ sourceSets {
 
 testsJar()
 
-projectTest(jUnitMode = JUnitMode.JUnit5) {
-    useJUnitPlatform {
-        // Exclude all tests with the "atomicfu-native" tag. They should be launched by another test task.
-        excludeTags("atomicfu-native")
+projectTests {
+    testTask(jUnitMode = JUnitMode.JUnit5) {
+        useJUnitPlatform {
+            // Exclude all tests with the "atomicfu-native" tag. They should be launched by another test task.
+            excludeTags("atomicfu-native")
+        }
+        useJsIrBoxTests(version = version, buildDir = layout.buildDirectory)
+
+        workingDir = rootDir
+
+        dependsOn(":dist")
+        dependsOn(atomicfuJsIrRuntimeForTests)
+
+        val localAtomicfuJsIrRuntimeForTests: FileCollection = atomicfuJsIrRuntimeForTests
+        val localAtomicfuJsClasspath: FileCollection = atomicfuJsClasspath
+        val localAtomicfuJvmClasspath: FileCollection = atomicfuJvmClasspath
+        val localAtomicfuCompilerPluginClasspath: FileCollection = atomicfuCompilerPluginForTests
+
+        doFirst {
+            systemProperty("atomicfuJsIrRuntimeForTests.classpath", localAtomicfuJsIrRuntimeForTests.asPath)
+            systemProperty("atomicfuJs.classpath", localAtomicfuJsClasspath.asPath)
+            systemProperty("atomicfuJvm.classpath", localAtomicfuJvmClasspath.asPath)
+            systemProperty("atomicfu.compiler.plugin", localAtomicfuCompilerPluginClasspath.asPath)
+        }
     }
-    useJsIrBoxTests(version = version, buildDir = layout.buildDirectory)
 
-    workingDir = rootDir
-
-    dependsOn(":dist")
-    dependsOn(atomicfuJsIrRuntimeForTests)
-
-    val localAtomicfuJsIrRuntimeForTests: FileCollection = atomicfuJsIrRuntimeForTests
-    val localAtomicfuJsClasspath: FileCollection = atomicfuJsClasspath
-    val localAtomicfuJvmClasspath: FileCollection = atomicfuJvmClasspath
-    val localAtomicfuCompilerPluginClasspath: FileCollection = atomicfuCompilerPluginForTests
-
-    doFirst {
-        systemProperty("atomicfuJsIrRuntimeForTests.classpath", localAtomicfuJsIrRuntimeForTests.asPath)
-        systemProperty("atomicfuJs.classpath", localAtomicfuJsClasspath.asPath)
-        systemProperty("atomicfuJvm.classpath", localAtomicfuJvmClasspath.asPath)
-        systemProperty("atomicfu.compiler.plugin", localAtomicfuCompilerPluginClasspath.asPath)
+    val inputTags = findProperty("kotlin.native.tests.tags")?.toString()
+    val tags = buildString {
+        append("atomicfu-native") // Include all tests with the "atomicfu-native" tag
+        if (inputTags != null) {
+            append("&($inputTags)")
+        }
     }
+
+    nativeTestTask(
+        taskName = "nativeTest",
+        tag = tags,
+        requirePlatformLibs = true,
+        customCompilerDependencies = listOf(atomicfuJvmClasspath),
+        customTestDependencies = listOf(atomicfuNativeKlib),
+        compilerPluginDependencies = listOf(atomicfuCompilerPluginForTests)
+    ) {
+        val localAtomicfuNativeKlib: FileCollection = atomicfuNativeKlib
+        doFirst {
+            systemProperty("atomicfuNative.classpath", localAtomicfuNativeKlib.asPath)
+        }
+
+        // To workaround KTI-2421, we make these tests run on JDK 11 instead of the project-default JDK 8.
+        // Kotlin test infra uses reflection to access JDK internals.
+        // With JDK 11, some JVM args are required to silence the warnings caused by that:
+        jvmArgs("--add-opens=java.base/java.io=ALL-UNNAMED")
+    }
+
+    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateAtomicfuTestsKt") {
+        javaLauncher.set(project.getToolchainLauncherFor(JdkMajorVersion.JDK_11_0))
+        dependsOn(":compiler:generateTestData")
+    }
+
+    withJvmStdlibAndReflect()
 }
 
 publish()
 standardPublicJars()
 
-val inputTags = findProperty("kotlin.native.tests.tags")?.toString()
-val tags = buildString {
-    append("atomicfu-native") // Include all tests with the "atomicfu-native" tag
-    if (inputTags != null) {
-        append("&($inputTags)")
-    }
-}
-val nativeTest = nativeTest(
-    taskName = "nativeTest",
-    tag = tags,
-    requirePlatformLibs = true,
-    customCompilerDependencies = listOf(atomicfuJvmClasspath),
-    customTestDependencies = listOf(atomicfuNativeKlib),
-    compilerPluginDependencies = listOf(atomicfuCompilerPluginForTests)
-) {
-    val localAtomicfuNativeKlib: FileCollection = atomicfuNativeKlib
-    doFirst {
-        systemProperty("atomicfuNative.classpath", localAtomicfuNativeKlib.asPath)
-    }
-
-    // To workaround KTI-2421, we make these tests run on JDK 11 instead of the project-default JDK 8.
-    // Kotlin test infra uses reflection to access JDK internals.
-    // With JDK 11, some JVM args are required to silence the warnings caused by that:
-    jvmArgs("--add-opens=java.base/java.io=ALL-UNNAMED")
-}
-
 tasks.named("check") {
     // Depend on the test task that launches Native tests so that it will also run together with tests
     // for all other targets if K/N is enabled
     if (kotlinBuildProperties.isKotlinNativeEnabled) {
-        dependsOn(nativeTest)
+        dependsOn(tasks.named("nativeTest"))
     }
 }
 
-val generateTests by generator("org.jetbrains.kotlin.generators.tests.GenerateAtomicfuTestsKt") {
-    javaLauncher.set(project.getToolchainLauncherFor(JdkMajorVersion.JDK_11_0))
-    dependsOn(":compiler:generateTestData")
-}
+

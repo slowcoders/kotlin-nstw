@@ -1457,6 +1457,7 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
         val MUST_BE_INITIALIZED_OR_BE_ABSTRACT_WARNING by warning<KtProperty>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
         val MUST_BE_INITIALIZED_OR_FINAL_OR_ABSTRACT by error<KtProperty>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
         val MUST_BE_INITIALIZED_OR_FINAL_OR_ABSTRACT_WARNING by warning<KtProperty>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
+        val EXPLICIT_FIELD_MUST_BE_INITIALIZED by error<KtBackingField>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
 
         val EXTENSION_PROPERTY_MUST_HAVE_ACCESSORS_OR_BE_ABSTRACT by error<KtProperty>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
         val UNNECESSARY_LATEINIT by warning<KtProperty>(PositioningStrategy.LATEINIT_MODIFIER)
@@ -1503,8 +1504,11 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
         val LATEINIT_FIELD_IN_VAL_PROPERTY by error<KtBackingField>(PositioningStrategy.LATEINIT_MODIFIER)
         val LATEINIT_NULLABLE_BACKING_FIELD by error<KtBackingField>(PositioningStrategy.LATEINIT_MODIFIER)
         val BACKING_FIELD_FOR_DELEGATED_PROPERTY by error<KtBackingField>(PositioningStrategy.FIELD_KEYWORD)
-        val PROPERTY_MUST_HAVE_GETTER by error<KtProperty>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
-        val PROPERTY_MUST_HAVE_SETTER by error<KtProperty>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
+        val VAR_PROPERTY_WITH_EXPLICIT_BACKING_FIELD by error<PsiElement>(PositioningStrategy.VAL_OR_VAR_NODE)
+        val NON_FINAL_PROPERTY_WITH_EXPLICIT_BACKING_FIELD by error<KtBackingField>()
+        val EXPECT_PROPERTY_WITH_EXPLICIT_BACKING_FIELD by error<KtElement>(PositioningStrategy.EXPECT_ACTUAL_MODIFIER)
+        val INCONSISTENT_BACKING_FIELD_TYPE by error<KtProperty>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
+        val PROPERTY_WITH_EXPLICIT_FIELD_AND_ACCESSORS by error<PsiElement>(PositioningStrategy.CALLABLE_DECLARATION_SIGNATURE_NO_MODIFIERS)
         val EXPLICIT_BACKING_FIELD_IN_INTERFACE by error<KtBackingField>(PositioningStrategy.FIELD_KEYWORD)
         val EXPLICIT_BACKING_FIELD_IN_ABSTRACT_PROPERTY by error<KtBackingField>(PositioningStrategy.FIELD_KEYWORD)
         val EXPLICIT_BACKING_FIELD_IN_EXTENSION by error<KtBackingField>(PositioningStrategy.FIELD_KEYWORD)
@@ -1778,6 +1782,7 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
             parameter<ConeKotlinType>("receiverType")
         }
         val USELESS_ELVIS_RIGHT_IS_NULL by warning<KtBinaryExpression>(PositioningStrategy.USELESS_ELVIS)
+        val USELESS_ELVIS_LEFT_IS_NULL by warning<KtBinaryExpression>(PositioningStrategy.USELESS_ELVIS_LEFT)
     }
 
     val CASTS_AND_IS_CHECKS by object : DiagnosticGroup("Casts and is-checks") {
@@ -1922,6 +1927,8 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
         }
         val RECEIVER_SHADOWED_BY_CONTEXT_PARAMETER by error<PsiElement>(PositioningStrategy.REFERENCED_NAME_BY_QUALIFIED) {
             parameter<FirBasedSymbol<*>>("calleeSymbol")
+            parameter<Boolean>("isDispatchOfMemberExtension")
+            parameter<List<FirValueParameterSymbol>>("contextParameterSymbols")
         }
     }
 

@@ -128,7 +128,7 @@ open class LocalDeclarationsLowering(
     val newParameterToOld: MutableMap<IrValueParameter, IrValueParameter> = mutableMapOf(),
     val oldParameterToNew: MutableMap<IrValueParameter, IrValueParameter> = mutableMapOf(),
 ) : BodyLoweringPass {
-    internal val declarationScopesWithCounter: MutableMap<IrClass, MutableMap<Name, ScopeWithCounter>> = mutableMapOf()
+    internal val declarationScopesWithCounter: MutableMap<IrClass, MutableMap<SanitizedName, ScopeWithCounter>> = mutableMapOf()
 
     open val invalidChars: Set<Char>
         get() = emptySet()
@@ -147,42 +147,25 @@ open class LocalDeclarationsLowering(
 
     override fun lower(irBody: IrBody, container: IrDeclaration) {
         LocalDeclarationsTransformer(
-            irBody,
-            container,
-            transformedDeclarations,
-            newParameterToCaptured,
-            newParameterToOld,
-            oldParameterToNew
+            irElement = irBody,
+            container = container,
+            transformedDeclarations = transformedDeclarations,
+            newParameterToCaptured = newParameterToCaptured,
+            newParameterToOld = newParameterToOld,
+            oldParameterToNew = oldParameterToNew
         ).lowerLocalDeclarations()
     }
 
-    fun lower(irElement: IrElement, container: IrDeclaration, classesToLower: Set<IrClass>) {
+    fun lower(irBlock: IrBlock, container: IrDeclaration, closestParent: IrDeclarationParent) {
         LocalDeclarationsTransformer(
-            irElement,
-            container,
-            transformedDeclarations,
-            newParameterToCaptured,
-            newParameterToOld,
-            oldParameterToNew,
-            null,
-            classesToLower
-        ).lowerLocalDeclarations()
-    }
-
-    fun lower(
-        irBlock: IrBlock, container: IrDeclaration, closestParent: IrDeclarationParent,
-        classesToLower: Set<IrClass>? = null, functionsToSkip: Set<IrSimpleFunction>? = null,
-    ) {
-        LocalDeclarationsTransformer(
-            irBlock,
-            container,
-            transformedDeclarations,
-            newParameterToCaptured,
-            newParameterToOld,
-            oldParameterToNew,
-            closestParent,
-            classesToLower,
-            functionsToSkip
+            irElement = irBlock,
+            container = container,
+            transformedDeclarations = transformedDeclarations,
+            newParameterToCaptured = newParameterToCaptured,
+            newParameterToOld = newParameterToOld,
+            oldParameterToNew = oldParameterToNew,
+            closestParent = closestParent,
+            dontCaptureOutsideOfContainer = true
         ).lowerLocalDeclarations()
     }
 
@@ -190,6 +173,20 @@ open class LocalDeclarationsLowering(
 
     protected open fun IrClass.getConstructorsThatCouldCaptureParamsWithoutFieldCreating(): Iterable<IrConstructor> =
         listOfNotNull(primaryConstructor)
+
+    internal inner class SanitizedName(val name: Name) {
+        val sanitizedName: String = localNameSanitizer(name.asString())
+
+        override fun hashCode(): Int = if (name.isSpecial) name.hashCode() else sanitizedName.hashCode()
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is SanitizedName) return false
+            return when {
+                name.isSpecial -> name == other.name
+                else -> sanitizedName == other.sanitizedName
+            }
+        }
+    }
 
     internal class ScopeWithCounter(val irElement: IrElement) {
         // Continuous numbering across all declarations in the container.
@@ -204,13 +201,13 @@ open class LocalDeclarationsLowering(
     private fun IrField.getOrCreateScopeWithCounter(): ScopeWithCounter? {
         val klass = parentClassOrNull ?: return null
         return declarationScopesWithCounter.getOrPut(klass, ::mutableMapOf)
-            .getOrPut(this.name) { ScopeWithCounter(this) }
+            .getOrPut(SanitizedName(this.name)) { ScopeWithCounter(this) }
     }
 
     private fun IrFunction.getOrCreateScopeWithCounter(): ScopeWithCounter? {
         val klass = parentClassOrNull ?: return null
         return declarationScopesWithCounter.getOrPut(klass, ::mutableMapOf)
-            .getOrPut(this.name) { ScopeWithCounter(this) }
+            .getOrPut(SanitizedName(this.name)) { ScopeWithCounter(this) }
     }
 
     abstract class LocalContext {
@@ -374,7 +371,7 @@ open class LocalDeclarationsLowering(
         val newParameterToOld: MutableMap<IrValueParameter, IrValueParameter>,
         val oldParameterToNew: MutableMap<IrValueParameter, IrValueParameter>,
         val closestParent: IrDeclarationParent? = null,
-        val classesToLower: Set<IrClass>? = null, val functionsToSkip: Set<IrSimpleFunction>? = null,
+        val dontCaptureOutsideOfContainer: Boolean = false,
     ) {
         val localFunctions: MutableMap<IrFunction, LocalFunctionContext> = LinkedHashMap()
         val localClasses: MutableMap<IrClass, LocalClassContext> = LinkedHashMap()
@@ -1172,16 +1169,33 @@ open class LocalDeclarationsLowering(
                 }
             }
 
-        private fun collectClosureForLocalDeclarations() {
-            //TODO: maybe use for granular declarations
-            val annotator = ClosureAnnotator(irElement, container, closureBuilders)
-
+        private inline fun setClosures(block: (IrDeclaration) -> Closure) {
             localFunctions.forEach { (declaration, context) ->
-                context.closure = annotator.getFunctionClosure(declaration)
+                context.closure = block(declaration)
             }
 
             localClasses.forEach { (declaration, context) ->
-                context.closure = annotator.getClassClosure(declaration)
+                context.closure = block(declaration)
+            }
+        }
+
+        private fun collectClosureForLocalDeclarations() {
+            if (dontCaptureOutsideOfContainer) {
+                val annotator = ClosureAnnotator(irElement, closureBuilders, closestParent = closestParent as? IrDeclaration)
+
+                val rootCapturedValues = annotator.rootClosure.capturedValues.toSet()
+                val rootCapturedTypeParameters = annotator.rootClosure.capturedTypeParameters.toSet()
+
+                setClosures {
+                    val closure = annotator.getClosure(it)
+                    Closure(
+                        closure.capturedValues - rootCapturedValues,
+                        closure.capturedTypeParameters - rootCapturedTypeParameters,
+                    )
+                }
+            } else {
+                val annotator = ClosureAnnotator(irElement, container, closureBuilders)
+                setClosures { annotator.getClosure(it) }
             }
         }
 
@@ -1262,8 +1276,6 @@ open class LocalDeclarationsLowering(
                 }
 
                 override fun visitSimpleFunction(declaration: IrSimpleFunction, data: Data) {
-                    if (functionsToSkip?.contains(declaration) == true) return
-
                     if (declaration.visibility == DescriptorVisibilities.LOCAL) {
                         val enclosingScope = data.currentScope
                             ?: enclosingField?.getOrCreateScopeWithCounter()
@@ -1320,7 +1332,6 @@ open class LocalDeclarationsLowering(
                 }
 
                 override fun visitClass(declaration: IrClass, data: Data) {
-                    if (classesToLower?.contains(declaration) == false) return
                     super.visitClass(declaration, data.withCurrentClass(declaration))
 
                     if (!declaration.isLocalNotInner()) return

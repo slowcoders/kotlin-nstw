@@ -971,9 +971,22 @@ object LightTreePositioningStrategies {
         }
     }
 
+    private val START_TO_OPERATOR = object : LightTreePositioningStrategy() {
+        override fun mark(
+            node: LighterASTNode,
+            startOffset: Int,
+            endOffset: Int,
+            tree: FlyweightCapableTreeStructure<LighterASTNode>
+        ): List<TextRange> {
+            return markRange(tree.firstChild(node) ?: node, tree.operationReference(node) ?: node, startOffset, endOffset, tree, node)
+        }
+    }
+
     val AS_TYPE = OPERATION_TO_END
 
     val USELESS_ELVIS = OPERATION_TO_END
+
+    val USELESS_ELVIS_LEFT = START_TO_OPERATOR
 
     val RETURN_WITH_LABEL = object : LightTreePositioningStrategy() {
         override fun mark(
@@ -1017,6 +1030,22 @@ object LightTreePositioningStrategies {
             tree: FlyweightCapableTreeStructure<LighterASTNode>
         ): List<TextRange> {
             return markElement(tree.typeParametersList(node) ?: node, startOffset, endOffset, tree, node)
+        }
+    }
+
+    val FUNCTION_TYPE_RECEIVER: LightTreePositioningStrategy = object : LightTreePositioningStrategy() {
+        override fun mark(
+            node: LighterASTNode,
+            startOffset: Int,
+            endOffset: Int,
+            tree: FlyweightCapableTreeStructure<LighterASTNode>
+        ): List<TextRange> {
+            val target = node.takeIf { it.tokenType == KtNodeTypes.VALUE_PARAMETER }
+                ?.getChildren(tree)?.find { it.tokenType == KtNodeTypes.TYPE_REFERENCE }
+                ?.getChildren(tree)?.firstOrNull()?.takeIf { it.tokenType == KtNodeTypes.FUNCTION_TYPE }
+                ?.getChildren(tree)?.find { it.tokenType == KtNodeTypes.FUNCTION_TYPE_RECEIVER }
+                ?: node
+            return markElement(target, startOffset, endOffset, tree, node)
         }
     }
 

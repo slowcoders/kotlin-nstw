@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.resolve.ReturnValueStatus
 
 abstract class FirMustUseReturnValueStatusComponent : FirSessionComponent {
     abstract fun computeMustUseReturnValueForCallable(
@@ -30,14 +31,14 @@ abstract class FirMustUseReturnValueStatusComponent : FirSessionComponent {
         containingClass: FirClassLikeSymbol<*>?,
         containingProperty: FirPropertySymbol?,
         overriddenStatuses: List<FirResolvedDeclarationStatus>,
-    ): Boolean
+    ): ReturnValueStatus
 
     abstract fun computeMustUseReturnValueForJavaCallable(
         session: FirSession,
         declaration: FirCallableSymbol<*>,
         containingClass: FirClassLikeSymbol<*>?,
         javaPackageAnnotations: List<ClassId>? = null,
-    ): Boolean
+    ): ReturnValueStatus
 
     // FIXME (KTI-2545): One can't simply write errorprone package name, because whole com.google. package is relocated in kotlin-compiler-embeddable.
     // For the time being, string literal should be split.
@@ -66,8 +67,8 @@ abstract class FirMustUseReturnValueStatusComponent : FirSessionComponent {
             containingClass: FirClassLikeSymbol<*>?,
             containingProperty: FirPropertySymbol?,
             overriddenStatuses: List<FirResolvedDeclarationStatus>,
-        ): Boolean {
-            return false
+        ): ReturnValueStatus {
+            return overriddenStatuses.firstOrNull()?.returnValueStatus ?: ReturnValueStatus.Unspecified
         }
 
         override fun computeMustUseReturnValueForJavaCallable(
@@ -75,8 +76,8 @@ abstract class FirMustUseReturnValueStatusComponent : FirSessionComponent {
             declaration: FirCallableSymbol<*>,
             containingClass: FirClassLikeSymbol<*>?,
             javaPackageAnnotations: List<ClassId>?,
-        ): Boolean {
-            return false
+        ): ReturnValueStatus {
+            return ReturnValueStatus.Unspecified
         }
     }
 
@@ -86,6 +87,7 @@ abstract class FirMustUseReturnValueStatusComponent : FirSessionComponent {
             ClassId(errorPronePackageFqName, Name.identifier("CheckReturnValue")),
             ClassId(FqName("org.jetbrains.annotations"), Name.identifier("CheckReturnValue")),
             ClassId(FqName("org.springframework.lang"), Name.identifier("CheckReturnValue")),
+            ClassId(FqName("org.jooq"), Name.identifier("CheckReturnValue")),
         )
 
         private fun List<ClassId>?.hasMustUseReturnValueLikeAnnotation() = this.orEmpty().any { it in mustUseReturnValueLikeAnnotations }
@@ -95,20 +97,12 @@ abstract class FirMustUseReturnValueStatusComponent : FirSessionComponent {
             declaration: FirCallableSymbol<*>,
             containingClass: FirClassLikeSymbol<*>?,
             javaPackageAnnotations: List<ClassId>?,
-        ): Boolean {
-            if (hasIgnorableLikeAnnotation(declaration.resolvedAnnotationClassIds)) return false
+        ): ReturnValueStatus {
+            if (hasIgnorableLikeAnnotation(declaration.resolvedAnnotationClassIds)) return ReturnValueStatus.ExplicitlyIgnorable
 
-            return findMustUseAmongContainers(
-                session, declaration, containingClass,
-                containingProperty = null,
-                additionalAnnotations = javaPackageAnnotations
-            )
-        }
-
-        enum class OverriddenStatus {
-            IGNORABLE,
-            MUST_USE,
-            NO_BASE_DECLARATION
+            if (findMustUseAmongContainers(session, declaration, containingClass, containingProperty = null, additionalAnnotations = javaPackageAnnotations))
+                return ReturnValueStatus.MustUse
+            return ReturnValueStatus.Unspecified
         }
 
         override fun computeMustUseReturnValueForCallable(
@@ -118,34 +112,36 @@ abstract class FirMustUseReturnValueStatusComponent : FirSessionComponent {
             containingClass: FirClassLikeSymbol<*>?,
             containingProperty: FirPropertySymbol?,
             overriddenStatuses: List<FirResolvedDeclarationStatus>,
-        ): Boolean {
+        ): ReturnValueStatus {
             if (isLocal) {
                 // FIXME (KT-78112): pass through outer declaration through BodyResolveTransformer when we compute status for local functions
-                return declaration is FirFunctionSymbol
+                return if (declaration is FirFunctionSymbol) ReturnValueStatus.MustUse else ReturnValueStatus.Unspecified
             }
             // Implementation note: just with intersection overrides, in case we have more than one immediate parent, we take first from the list
             // See inheritanceChainIgnorability.kt test.
-            val overriddenFlag = when (overriddenStatuses.firstOrNull()?.hasMustUseReturnValue) {
-                null -> OverriddenStatus.NO_BASE_DECLARATION
-                true -> OverriddenStatus.MUST_USE
-                false -> OverriddenStatus.IGNORABLE
-            }
+            val overriddenFlag = overriddenStatuses.firstOrNull()?.returnValueStatus
 
-            if (hasIgnorableLikeAnnotation(declaration.resolvedAnnotationClassIds)) return false
+            if (hasIgnorableLikeAnnotation(declaration.resolvedAnnotationClassIds)) return ReturnValueStatus.ExplicitlyIgnorable
+            if (overriddenFlag == ReturnValueStatus.MustUse) return ReturnValueStatus.MustUse
 
-            // In the case of inheriting @Ignorable, global FULL setting has lesser priority
-            if (session.languageVersionSettings.getFlag(AnalysisFlags.returnValueCheckerMode) == ReturnValueCheckerMode.FULL && overriddenFlag != OverriddenStatus.IGNORABLE) return true
+            // In the case of inheriting from Ignorable or Unspecified, global FULL setting has lesser priority than annotations/parent
+            // but we want to check it here first to avoid looking through the containers
+            val overridesIgnorableOrUnspecified = overriddenFlag == ReturnValueStatus.ExplicitlyIgnorable || overriddenFlag == ReturnValueStatus.Unspecified
+            if (session.languageVersionSettings.getFlag(AnalysisFlags.returnValueCheckerMode) == ReturnValueCheckerMode.FULL && !overridesIgnorableOrUnspecified)
+                return ReturnValueStatus.MustUse
 
-            if (overriddenFlag == OverriddenStatus.MUST_USE) return true
-            val hasAnnotation = findMustUseAmongContainers(
-                session = session,
-                declaration = declaration,
-                containingClass = containingClass,
-                containingProperty = containingProperty,
-                additionalAnnotations = null,
-            )
+            if (findMustUseAmongContainers(
+                    session = session,
+                    declaration = declaration,
+                    containingClass = containingClass,
+                    containingProperty = containingProperty,
+                    additionalAnnotations = null,
+                )
+            ) return ReturnValueStatus.MustUse
 
-            return hasAnnotation
+            // In case no annotations are provided, we inherit status from the parent.
+            return overriddenFlag ?: ReturnValueStatus.Unspecified
+
         }
 
         private fun findMustUseAmongContainers(

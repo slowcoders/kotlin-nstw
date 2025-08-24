@@ -20,8 +20,9 @@ internal const val IMPL_PACKAGE = "org.jetbrains.kotlin.buildtools.internal.argu
 internal const val API_PACKAGE = "org.jetbrains.kotlin.buildtools.api.arguments"
 
 internal val ANNOTATION_EXPERIMENTAL = ClassName(API_PACKAGE, "ExperimentalCompilerArgument")
+internal val ANNOTATION_USE_FROM_IMPL_RESTRICTED = ClassName("org.jetbrains.kotlin.buildtools.internal", "UseFromImplModuleRestricted")
 
-internal val KDOC_SINCE_2_3_0 = "@since 2.3.0"
+internal const val KDOC_SINCE_2_3_0 = "@since 2.3.0"
 internal val KDOC_BASE_OPTIONS_CLASS = """
     Base class for [%T] options.
 
@@ -38,6 +39,14 @@ internal val KDOC_OPTIONS_GET = """
 
 internal val KDOC_OPTIONS_SET = """
     Set the [value] for option specified by [key], overriding any previous value for that option.
+""".trimIndent()
+
+internal val KDOC_OPTIONS_CONTAINS = """
+    Check if an option specified by [key] has a value set.
+    
+    Note: trying to read an option (by using [get]) that has not been set will result in an exception.
+
+    @return true if the option has a value set, false otherwise
 """.trimIndent()
 
 internal val experimentalLevelNames = listOf(

@@ -106,31 +106,6 @@ fun Project.noDefaultJar() {
     configurations.named("archives", removeJarTaskArtifact(jarTask))
 }
 
-@JvmOverloads
-fun Jar.addEmbeddedRuntime(embeddedConfigurationName: String = "embedded") {
-    project.configurations.findByName(embeddedConfigurationName)?.let { embedded ->
-        dependsOn(embedded)
-        val archiveOperations = project.serviceOf<ArchiveOperations>()
-        from {
-            embedded.map { dependency: File ->
-                check(!dependency.path.contains("kotlin-stdlib")) {
-                    """
-                    |There's an attempt to have an embedded kotlin-stdlib in $project which is likely a misconfiguration
-                    |All embedded dependencies:
-                    |    ${embedded.files.joinToString(separator = "\n|    ")}
-                    """.trimMargin()
-                }
-
-                if (dependency.extension.equals("jar", ignoreCase = true)) {
-                    archiveOperations.zipTree(dependency)
-                } else {
-                    dependency
-                }
-            }
-        }
-    }
-}
-
 fun Project.runtimeJar(body: Jar.() -> Unit = {}): TaskProvider<out Jar> {
     val jarTask = tasks.named<Jar>("jar")
     jarTask.configure {
@@ -186,11 +161,6 @@ fun Project.runtimeJar(task: TaskProvider<ShadowJar>, body: ShadowJar.() -> Unit
 
     return task
 }
-
-private fun Project.mainJavaPluginSourceSet() = findJavaPluginExtension()?.sourceSets?.findByName("main")
-private fun Project.mainKotlinSourceSet() =
-    (extensions.findByName("kotlin") as? KotlinSourceSetContainer)?.sourceSets?.findByName("main")
-private fun Project.sources() = mainJavaPluginSourceSet()?.allSource ?: mainKotlinSourceSet()?.kotlin
 
 @JvmOverloads
 fun Project.sourcesJar(body: Jar.() -> Unit = {}): TaskProvider<Jar> {
@@ -359,12 +329,26 @@ fun Project.publishJarsForIde(projects: List<String>, libraryDependencies: List<
     }
 }
 
-fun Project.publishTestJarsForIde(projectNames: List<String>, projectWithFixturesNames: List<String> = emptyList()) {
+/**
+ * If you need to pack both tests and test fixtures for some module (i.e. xyz) you need to:
+ * - use `testsJarToBeUsedAlongWithFixtures()` instead of `testsJar()` utility in the `build.gradle.kts` of `xyz` project
+ * - pass `xyz` both to [projectWithFixturesNames] and [projectWithRenamedTestJarNames]
+ */
+fun Project.publishTestJarsForIde(
+    projectNames: List<String>,
+    projectWithFixturesNames: List<String> = emptyList(),
+    projectWithRenamedTestJarNames: List<String> = emptyList(),
+) {
     idePluginDependency {
         // Compiler test infrastructure should not affect test running in IDE.
         // If required, the components should be registered on the IDE plugin side.
         val excludedPaths = listOf("junit-platform.properties", "META-INF/services/**/*")
-        publishTestJar(projectNames, projectWithFixturesNames, excludedPaths)
+        publishTestJar(
+            projectNames,
+            projectWithFixturesNames,
+            projectWithRenamedTestJarNames,
+            excludedPaths,
+        )
     }
     configurations.all {
         // Don't allow `ideaIC` from compiler to leak into Kotlin plugin modules. Compiler and
@@ -372,11 +356,18 @@ fun Project.publishTestJarsForIde(projectNames: List<String>, projectWithFixture
         exclude(module = ideModuleName())
     }
     dependencies {
+        fun declareDependency(notation: Any) {
+            jpsLikeJarDependency(notation, JpsDepScope.COMPILE, exported = true)
+        }
+
         for (projectName in projectNames) {
-            jpsLikeJarDependency(projectTests(projectName), JpsDepScope.COMPILE, exported = true)
+            declareDependency(projectTests(projectName))
         }
         for (projectName in projectWithFixturesNames) {
-            jpsLikeJarDependency(testFixtures(project(projectName)), JpsDepScope.COMPILE, exported = true)
+            declareDependency(testFixtures(project(projectName)))
+        }
+        for (projectName in projectWithRenamedTestJarNames) {
+            declareDependency(project(projectName, "testsJarConfig"))
         }
     }
 }
@@ -426,7 +417,12 @@ fun Project.publishProjectJars(projects: List<String>, libraryDependencies: List
     javadocJar()
 }
 
-fun Project.publishTestJar(projects: List<String>, projectWithFixturesNames: List<String>, excludedPaths: List<String>) {
+private fun Project.publishTestJar(
+    projects: List<String>,
+    projectWithFixturesNames: List<String>,
+    projectWithRenamedTestJarNames: List<String>,
+    excludedPaths: List<String>,
+) {
     apply<JavaPlugin>()
 
     val fatJarContents by configurations.creating
@@ -438,6 +434,10 @@ fun Project.publishTestJar(projects: List<String>, projectWithFixturesNames: Lis
 
         for (projectName in projectWithFixturesNames) {
             fatJarContents(testFixtures(project(projectName)) as ModuleDependency) { isTransitive = false }
+        }
+
+        for (projectName in projectWithRenamedTestJarNames) {
+            fatJarContents(project(projectName, configuration = "testsJarConfig")) { isTransitive = false }
         }
     }
 
@@ -464,30 +464,6 @@ fun Project.publishTestJar(projects: List<String>, projectWithFixturesNames: Lis
     javadocJar()
 }
 
-fun ConfigurationContainer.getOrCreate(name: String): Configuration = findByName(name) ?: create(name)
-
-fun Jar.setupPublicJar(
-    baseName: String,
-    classifier: String = ""
-) = setupPublicJar(
-    project.provider { baseName },
-    project.provider { classifier }
-)
-
-fun Jar.setupPublicJar(
-    baseName: Provider<String>,
-    classifier: Provider<String> = project.provider { "" }
-) {
-    val buildNumber = project.rootProject.extra["buildNumber"] as String
-    this.archiveBaseName.set(baseName)
-    this.archiveClassifier.set(classifier)
-    manifest.attributes.apply {
-        put("Implementation-Vendor", "JetBrains")
-        put("Implementation-Title", baseName.get())
-        put("Implementation-Version", buildNumber)
-    }
-}
-
 fun Project.addArtifact(configuration: Configuration, task: Task, artifactRef: Any, body: ConfigurablePublishArtifact.() -> Unit = {}) {
     artifacts.add(configuration.name, artifactRef) {
         builtBy(task)
@@ -497,15 +473,6 @@ fun Project.addArtifact(configuration: Configuration, task: Task, artifactRef: A
 
 fun Project.addArtifact(configurationName: String, task: Task, artifactRef: Any, body: ConfigurablePublishArtifact.() -> Unit = {}) =
     addArtifact(configurations.getOrCreate(configurationName), task, artifactRef, body)
-
-fun <T : Task> Project.addArtifact(
-    configurationName: String,
-    task: TaskProvider<T>,
-    body: ConfigurablePublishArtifact.() -> Unit = {}
-): PublishArtifact {
-    configurations.maybeCreate(configurationName)
-    return artifacts.add(configurationName, task, body)
-}
 
 fun <T : Task> Project.addArtifact(
     configurationName: String,

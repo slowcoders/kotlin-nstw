@@ -839,6 +839,18 @@ public class JsLightTreeBlackBoxCodegenWithSeparateKmpCompilationTestGenerated e
     }
 
     @Test
+    @TestMetadata("arrayDeque.kt")
+    public void testArrayDeque() {
+      runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/arrayDeque.kt");
+    }
+
+    @Test
+    @TestMetadata("differentDependenciesWithTheSameName.kt")
+    public void testDifferentDependenciesWithTheSameName() {
+      runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/differentDependenciesWithTheSameName.kt");
+    }
+
+    @Test
     @TestMetadata("expectActualChain2-2.kt")
     public void testExpectActualChain2_2() {
       runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/expectActualChain2-2.kt");
@@ -875,9 +887,27 @@ public class JsLightTreeBlackBoxCodegenWithSeparateKmpCompilationTestGenerated e
     }
 
     @Test
+    @TestMetadata("expectOfActualTypeAliasNotReferenced.kt")
+    public void testExpectOfActualTypeAliasNotReferenced() {
+      runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/expectOfActualTypeAliasNotReferenced.kt");
+    }
+
+    @Test
     @TestMetadata("expectRefinement.kt")
     public void testExpectRefinement() {
       runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/expectRefinement.kt");
+    }
+
+    @Test
+    @TestMetadata("fakeOverrideExpectSuperType.kt")
+    public void testFakeOverrideExpectSuperType() {
+      runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/fakeOverrideExpectSuperType.kt");
+    }
+
+    @Test
+    @TestMetadata("fakeOverrideExpectSuperTypeFromLib.kt")
+    public void testFakeOverrideExpectSuperTypeFromLib() {
+      runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/fakeOverrideExpectSuperTypeFromLib.kt");
     }
 
     @Test
@@ -956,6 +986,12 @@ public class JsLightTreeBlackBoxCodegenWithSeparateKmpCompilationTestGenerated e
     @TestMetadata("simple.kt")
     public void testSimple() {
       runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/simple.kt");
+    }
+
+    @Test
+    @TestMetadata("stdlibRegressions.kt")
+    public void testStdlibRegressions() {
+      runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/stdlibRegressions.kt");
     }
 
     @Test
