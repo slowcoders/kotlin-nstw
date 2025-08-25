@@ -37,6 +37,10 @@ org.gradle.java.installations.auto-detect=false
 ## run test 
 ```sh
 
+./gradlew -Ptest_flags="-g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :native:native.tests:stdlibTest
+
+./gradlew -Ptest_flags="-g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :native:native.tests:stress:test
+
 ./gradlew :nativeCompilerTest --continue
 
 ./gradlew :nativeCompilerTest --continue \
@@ -159,7 +163,7 @@ kotlin.native.isNativeRuntimeDebugInfoEnabled=true
 
 - debugging 용 test 빌드.
 ```sh
-./gradlew -Ptest_flags="-g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:backend.native:tests:cycle_detector
+./gradlew -Ptest_flags="-g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :kotlin-native:native:native.tests:cycle_detector
 ```
 
 - vscode codeLLDB plugin 설치 및 .vscode/launch.json 설정.

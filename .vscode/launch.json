@@ -1,0 +1,59 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch lldb",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/z_rtgc/tests/out/test.kexe",
+            // "program": "${workspaceRoot}/native/native.tests/stress/build/t/bb.out/oa64_NatStrTesGen/testData_array_out_of_memory/testData_array_out_of_memory.kexe",
+            // "program": "${workspaceRoot}/kotlin-native/runtime/build/bin/test/macos_arm64/macos_arm64MmTest.kexe",
+            // "program": "${workspaceRoot}/native/native.tests/codegen-box/build/t/bb.out/oa64_NatCodBoxTesGen/box_annotations_instances_multi-750dc691/box_annotations_instances_multi-750dc691.kexe",
+            // "program": "${workspaceRoot}/test.output/local/macos_x64/localTest.kexe",  // arithmetic_division -> codegen/arithmetic/division.kt
+            // "program": "${workspaceRoot}/test.output/local/cycle_detector/macos_x64/cycle_detector.kexe", // objRef-- on rootRef = 0
+            // "program": "${workspaceRoot}/test.output/framework/testObjCExport/swiftTestExecutable",  // ForeignRef+exception (Ex!##)
+            // "program": "${workspaceRoot}/test.output/local/interop_objc_tests/macos_x64/interop_objc_tests.kexe", // (Ex!)
+            // "program": "${workspaceRoot}/test.output/local/freeze_stress/macos_x64/freeze_stress.kexe",
+            // "program": "${workspaceRoot}/test.output/local/custom_hook_unhandled_exception/macos_x64/custom_hook_unhandled_exception.kexe", // (Ex!)
+            // "program": "${workspaceRoot}/test.output/local/worker_exceptions_terminate_current_legacy/macos_x64/worker_exceptions_terminate_current_legacy.kexe", // (Ex!)
+            // "program": "${workspaceRoot}/test.output/local/interop_exceptions_cCallback/macos_x64/interop_exceptions_cCallback.kexe",
+            // "program": "${workspaceRoot}/test.output/local/exception_in_global_init/macos_x64/exception_in_global_init.kexe",  // (Ex!!!)
+            // "program": "${workspaceRoot}/test.output/local/interop_kotlin_exception_hook/macos_x64/interop_kotlin_exception_hook.kexe", // (Ex!!!)
+            // "program": "${workspaceRoot}/test.output/local/interop_exceptions_cCallback/macos_x64/interop_exceptions_cCallback.kexe",  // (Ex!)
+            // "program": "${workspaceRoot}/test.output/local/worker_exceptions_terminate_hook_current/macos_x64/worker_exceptions_terminate_hook_current.kexe",  // (Ex!)
+            // "program": "${workspaceRoot}/test.output/stdlib/harmonyRegexTest/macos_x64/harmonyRegexTest.kexe",
+            // "program": "${workspaceRoot}/test.output/local/lazy3/macos_x64/lazy3.kexe",
+            // "program": "${workspaceRoot}/test.output/local/cleaner_workers/macos_x64/cleaner_workers.kexe",
+            // "program": "${workspaceRoot}/test.output/local/custom_hook_terminate_unhandled_exception/macos_x64/custom_hook_terminate_unhandled_exception.kexe",
+            // "program": "${workspaceRoot}/test.output/local/cleaner_basic/macos_x64/cleaner_basic.kexe", // weakRefCleaner + exception (Ex!)
+            // "program": "${workspaceRoot}/test.output/local/interop_cleaners_leak/macos_x64/interop_cleaners_leak.kexe", // --> CAdapterGenerator, KObjHolder
+            // "program": "${workspaceRoot}/test.output/local/worker_bound_reference0/macos_x64/worker_bound_reference0.kexe", // (##) may have thread-safety problem on testLocalAccessOnMainThread, testLocalForeignGetWorker
+            // "program": "${workspaceRoot}/test.output/local/freeze6/macos_x64/freeze6.kexe",
+            // "program": "${workspaceRoot}/test.output/local/codegen_escapeAnalysis_stackAllocated/macos_x64/codegen_escapeAnalysis_stackAllocated.kexe", // "-g" 옵션 없이 빌드!
+            // "program": "${workspaceRoot}/test.output/local/leakMemoryWithTestRunner/macos_x64/leakMemoryWithTestRunner.kexe", // leak_memory_test_runner.kt
+            // "program": "${workspaceRoot}/test.output/local/stack_trace_out_of_bounds/macos_x64/stack_trace_out_of_bounds.kexe",
+            // "program": "${workspaceRoot}/test.output/local/check_stacktrace_format/macos_x64/check_stacktrace_format.kexe",
+            // "program": "${workspaceRoot}/test.output/local/kt-37572-libbacktrace/macos_x64/kt-37572-libbacktrace.kexe",
+            // "program": "${workspaceRoot}/test.output/local/interop_objc_kt42172/macos_x64/interop_objc_kt42172.kexe", // custom finalizer function calll!
+            // "program": "${workspaceRoot}/test.output/local/kt36639/macos_x64/kt36639.kexe", // error on opt build. (ObjHolder's frame address order is corrupted)
+            // "program": "${workspaceRoot}/test.output/local/devirtualization_getter_looking_as_box_function/macos_x64/devirtualization_getter_looking_as_box_function.kexe", // stack-allocated object.
+            // "program": "${workspaceRoot}/test.output/local/produce_dynamic/macos_x64/produce_dynamic.kexe", // !!!!
+            // "program": "/Volumes/WorkSpace/kotlin-rtgc/kotlin-native/performance/ring/build/bin/native/benchmarkReleaseExecutable/benchmark.kexe",
+            // "args": ["-p", "Ring::", "-f", "GraphSolver.solve", "-w", "10", "-r", "20"],
+            // "cwd": "${workspaceRoot}/kotlin-native/performance/ring",
+            // "program": "/Volumes/WorkSpace/kotlin-rtgc/kotlin-native/performance/cinterop/build/bin/native/benchmarkReleaseExecutable/benchmark.kexe",
+            // "args": ["-p", "Cinterop::", "-f", "stringToC", "-w", "10", "-r", "20"],
+            // "cwd": "${workspaceRoot}/kotlin-native/performance/cinterop",
+            
+            // "cwd": "${workspaceRoot}",
+            "stopOnEntry": false,  // 참고) type 이 gdb, cppdb 인 경우엔 stopAtEntry 를 사용.
+            "breakpointMode": "file",  // 참고) file 모드에서는 assembly breakpoint 가 동작하지 않는다.
+            "sourceMap": { 
+                "kotlin-native/runtime": "${workspaceFolder}/kotlin-native/runtime" 
+            },
+            // "env": {
+            //     "MallocNanoZone": "1"
+            // }
+        },
+    ]
+}
