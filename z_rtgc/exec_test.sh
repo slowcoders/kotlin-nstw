@@ -3,8 +3,10 @@
 # Xstatic-framework linker-options
 # -g -Xg-generate-debug-trampoline=enable \
 ./kotlin-native/dist/bin/kotlinc-native -g \
+    -Xg-generate-debug-trampoline=enable \
     -Xbinary=stripDebugInfoFromNativeLibs=false \
     -Xruntime-logs=gc=info -Xbinary=gc=nstw \
     -Xdebug-info-version=1 \
-    z_rtgc/tests/$1.kt -o z_rtgc/tests/out/$1.kexe
+    z_rtgc/tests/$1.kt \
+    -o z_rtgc/tests/out/$1.kexe
 # ./z_rtgc/tests/out/$1.kexe

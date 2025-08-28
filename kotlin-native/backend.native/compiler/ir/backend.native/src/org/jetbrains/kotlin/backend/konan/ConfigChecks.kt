@@ -22,7 +22,7 @@ interface ConfigChecks {
 
     fun shouldContainDebugInfo() = config.debug
 
-    fun shouldContainLocationDebugInfo() = shouldContainDebugInfo() || config.lightDebug
+    fun shouldContainLocationDebugInfo() = false //shouldContainDebugInfo() || config.lightDebug
 
     fun shouldContainAnyDebugInfo() = shouldContainDebugInfo() || shouldContainLocationDebugInfo()
 
