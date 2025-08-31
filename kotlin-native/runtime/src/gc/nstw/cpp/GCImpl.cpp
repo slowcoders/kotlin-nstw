@@ -33,6 +33,12 @@ void gc::GC::ThreadData::onThreadRegistration() noexcept {
 }
 
 PERFORMANCE_INLINE void gc::GC::ThreadData::onAllocation(ObjHeader* object) noexcept {
+    /* 
+    AllocInstance(Memory.cpp)
+        mm::AllocateObject(ObjectOps.cpp)
+            auto* object = threadData->allocator().allocateObject(typeInfo);
+            threadData->gc().onAllocation(object);
+    */
     impl_->barriers_.onAllocation(object);
 }
 
@@ -121,8 +127,17 @@ extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeade
     /*
         AssertThreadState(ThreadState::kRunnable);
         beforeStore(desired);
-        direct_.store(desired, order);
+        direct_.storeAtomic(desired, order);
         afterStore(desired);
+        ----
+        gc::beforeHeapRefUpdate(direct_, desired, false);
+            barriers::beforeHeapRefUpdate(ref, value, loadAtomic);
+                gc::barriers::beforeHeapRefUpdate()
+                    if (__builtin_expect(phase == BarriersPhase::kMarkClosure, false)) {
+                        beforeHeapRefUpdateSlowPath(ref, value, loadAtomic);
+                            auto& markQueue = *threadData.gc().impl().mark_.markQueue();
+                            gc::mark::ConcurrentMark::MarkTraits::tryEnqueue(markQueue, prev);
+                    }
     */
 }
 
@@ -139,3 +154,18 @@ extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateVolatileObjectRef(
 extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateStaticRef(ObjHeader** location, const ObjHeader* object) {
     mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
 }
+
+
+// extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW OBJ_GETTER(rtgc_CompareAndSwapVolatileHeapRef, ObjHeader** location, ObjHeader* expectedValue, ObjHeader* newValue) {
+//     ObjHeader* actual = expectedValue;
+//     mm::RefAccessor<false>{location}.compareAndExchange(actual, newValue, std::memory_order_seq_cst);
+//     RETURN_OBJ(actual);
+// }
+
+// extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW bool rtgc_CompareAndSetVolatileHeapRef(ObjHeader** location, ObjHeader* expectedValue, ObjHeader* newValue) {
+//     return mm::RefAccessor<false>{location}.compareAndExchange(expectedValue, newValue, std::memory_order_seq_cst);
+// }
+
+// extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW OBJ_GETTER(rtgc_GetAndSetVolatileHeapRef, ObjHeader** location, ObjHeader* newValue) {
+//     RETURN_OBJ(mm::RefAccessor<false>{location}.exchange(newValue, std::memory_order_seq_cst));
+// }
