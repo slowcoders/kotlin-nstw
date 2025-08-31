@@ -153,7 +153,7 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
             "-gdwarf-2".takeIf { project.kotlinBuildProperties.getBoolean("kotlin.native.isNativeRuntimeDebugInfoEnabled", false) },
             "-std=c++17",
             "-Werror",
-            "-O2",
+            "-O0", // "-O2",
             "-fno-aligned-allocation", // TODO: Remove when all targets support aligned allocation in C++ runtime.
             "-Wall",
             "-Wextra",

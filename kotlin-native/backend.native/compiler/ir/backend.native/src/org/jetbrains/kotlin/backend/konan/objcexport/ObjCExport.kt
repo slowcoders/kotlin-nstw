@@ -230,7 +230,7 @@ private fun ObjCExportedInterface.generateWorkaroundForSwiftSR10177(generationSt
 
     val clangCommand = generationState.config.clang.clangC(
             source.absolutePath,
-            "-O2",
+            "-O0", // "-O2",
             "-emit-llvm",
             "-c", "-o", bitcode.absolutePath
     )

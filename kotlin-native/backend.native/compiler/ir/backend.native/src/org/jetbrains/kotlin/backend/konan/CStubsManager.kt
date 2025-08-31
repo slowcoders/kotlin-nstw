@@ -38,7 +38,8 @@ internal class CStubsManager(private val target: KonanTarget, private val genera
             val cSourcePath = cSource.absolutePath
 
             val clangCommand = clang.clangC(
-                    *compilerOptions.toTypedArray(), "-O2",
+                    *compilerOptions.toTypedArray(), 
+                    "-O0", // "-O2",
                     "-fexceptions", // Allow throwing exceptions through generated stubs.
                     cSourcePath, "-emit-llvm", "-c", "-o", bitcode.absolutePath
             )
