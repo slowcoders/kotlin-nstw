@@ -36,9 +36,15 @@ PERFORMANCE_INLINE void gc::GC::ThreadData::onAllocation(ObjHeader* object) noex
     /* 
     AllocInstance(Memory.cpp)
         mm::AllocateObject(ObjectOps.cpp)
-            auto* object = threadData->allocator().allocateObject(typeInfo);
-            threadData->gc().onAllocation(object);
-    */
+            alloc::Allocator::ThreadData::allocateObject(custom/cpp/AllocatorImpl.cpp)
+                CustomAllocator::CreateObject(custom/cpp/CustomAllocator.hpp)
+                    CustomAllocator::Allocate
+            alloc::Allocator::ThreadData::allocateObject(legacy/cpp/AllocatorImpl.cpp)
+                impl_->objectFactoryThreadQueue().CreateObject(typeInfo);
+        threadData->gc().onAllocation(object);
+*/
+    GC::ObjectData& objectData = alloc::objectDataForObject(object);
+    objectData.set_color(1);
     impl_->barriers_.onAllocation(object);
 }
 

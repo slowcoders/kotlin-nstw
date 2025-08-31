@@ -13,9 +13,11 @@
 #include "IntrusiveList.hpp"
 #include "KAssert.h"
 
+#include "rtgc/RTGC.h"
+
 namespace kotlin::gc {
 
-class GC::ObjectData {
+class GC::ObjectData : public rtgc::GCNode {
     static constexpr intptr_t kNoQueueMark = 1;
 public:
     bool tryMark() noexcept { return trySetNext(reinterpret_cast<ObjectData*>(kNoQueueMark)); }
@@ -48,6 +50,15 @@ private:
         ObjectData* expected = nullptr;
         return next_.compare_exchange_strong(expected, next, std::memory_order_relaxed);
     }
+
+    // uint64_t get_ref_info() const noexcept {
+    //     return ref_info;
+    // }
+    // void set_ref_info(uint64_t ref_info) {
+    //     this->ref_info = ref_info;
+    // }
+
+    // uint64_t ref_info;
 
     std::atomic<ObjectData*> next_ = nullptr;
 };
