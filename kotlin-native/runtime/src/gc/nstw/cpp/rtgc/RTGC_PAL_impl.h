@@ -3,7 +3,11 @@
 
 // #include "Memory.h"
 #include "ObjectTraversal.hpp"
+#include "Allocator.hpp"
+#include <std_support/Atomic.hpp>
 #include "RTGC_PAL.h"
+#include "../GCImpl.hpp"
+
 
 namespace rtgc::pal {
 
@@ -14,6 +18,7 @@ inline GCRef toObject(const GCNode* node) {
     return reinterpret_cast<GCRef>(node + 1);
 }
 
+
 template <bool notNull>
 inline GCNode* toNode(GCRef obj) {
     if (notNull) {
@@ -22,13 +27,20 @@ inline GCNode* toNode(GCRef obj) {
         return NULL;
     }
 
-    uintptr_t bits = reinterpret_cast<uintptr_t>(obj->typeInfoOrMeta_);
-    if ((bits & (OBJECT_TAG_PERMANENT | /*OBJECT_TAG_NONTRIVIAL*/0)) == 0)
-        return reinterpret_cast<ContainerHeader*>(const_cast<ObjHeader*>(obj)) - 1;
-    if ((bits & OBJECT_TAG_PERMANENT) != 0)
-        return nullptr;
-    return (reinterpret_cast<MetaObjHeader*>(bits & ~OBJECT_TAG_MASK))->container_;
+    kotlin::gc::GC::ObjectData& objectData = kotlin::alloc::objectDataForObject((ObjHeader*)obj);
+    void* node = &objectData;
+    return static_cast<GCNode*>(node);
 }
+ 
+template <bool _volatile>
+inline void replaceYoungRef(GCRef* location, GCRef object) {
+    if (!_volatile) {
+        kotlin::mm::RefAccessor<false>{(ObjHeader**)location}.store(const_cast<ObjHeader*>(object));
+    } else {
+        kotlin::mm::RefAccessor<false>{(ObjHeader**)location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
+    }
+}
+
 
 inline bool isPublished(GCRef obj) {
 #if ENABLE_RTGC_MM    

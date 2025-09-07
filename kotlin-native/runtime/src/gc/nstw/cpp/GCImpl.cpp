@@ -13,6 +13,8 @@
 #include "MarkAndSweepUtils.hpp"
 #include "ObjectOps.hpp"
 
+#include "rtgc/RTGC_PAL_impl.h"
+
 using namespace kotlin;
 
 gc::GC::ThreadData::ThreadData(GC& gc, mm::ThreadData& threadData) noexcept :
@@ -129,7 +131,7 @@ void gc::GC::onEpochFinalized(int64_t epoch) noexcept {
 }
 
 extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
-    mm::RefAccessor<false>{location}.store(const_cast<ObjHeader*>(object));
+    rtgc::GCNode::replaceObjectRef_inline<false>((const ObjHeader**)location, const_cast<ObjHeader*>(object), const_cast<ObjHeader*>(owner));
     /*
         AssertThreadState(ThreadState::kRunnable);
         beforeStore(desired);
@@ -148,7 +150,7 @@ extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeade
 }
 
 extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateVolatileObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
-    mm::RefAccessor<false>{location}.storeAtomic(const_cast<ObjHeader*>(object), std::memory_order_seq_cst);
+    rtgc::GCNode::replaceObjectRef_inline<true>((const ObjHeader**)location, const_cast<ObjHeader*>(object), const_cast<ObjHeader*>(owner));
     /*
         AssertThreadState(ThreadState::kRunnable);
         beforeStore(desired);

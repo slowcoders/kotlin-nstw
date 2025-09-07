@@ -15,10 +15,12 @@ namespace rtgc {
 
         class ChildNodeIterator;
 
-        template <bool notNull=false>
+        template <bool notNull=true>
         inline GCNode* toNode(GCRef obj);
 
         inline GCRef toObject(const GCNode* node);
+
+        inline void replaceYoungRef(GCRef* location, GCRef object);
 
         void markPublished(GCNode* node);
 
@@ -88,6 +90,19 @@ namespace rtgc {
             }
             return oldValue;
         }
+
+        template<bool Atomic, typename T>
+        static inline T xchg(volatile T* where, T newValue) {
+            if (Atomic && !NO_THREADS) {
+                auto ref = (kotlin::std_support::atomic_ref<T>*)(where);
+                return ref->exchange(newValue);
+                // return atomic_exchange(where, newValue);
+            }
+            T oldValue = *where;
+            *where = newValue;
+            return oldValue;
+        }
+
     };
 };
 

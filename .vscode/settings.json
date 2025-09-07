@@ -5,6 +5,8 @@
         "vector": "cpp",
         "map": "cpp",
         "memory": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "type_traits": "cpp",
+        "atomic": "cpp"
     }
 }

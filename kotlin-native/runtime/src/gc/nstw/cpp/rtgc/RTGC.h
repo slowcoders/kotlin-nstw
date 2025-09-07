@@ -716,7 +716,11 @@ public:
 
     static void replaceGlobalRef(GCRef* location, GCRef object);
 
-    static void replaceObjectRef(GCRef* location, GCRef object, GCRef owner);
+    template <bool _volatile>
+    static void replaceObjectRef_inline(GCRef* location, GCRef object, GCRef owner);
+
+    static void replaceObjectRef_slow(GCRef* location, GCRef object, GCNode* owner);
+
 
     static void releaseObjectRef(GCNode* objContainer, GCNode* ownerContainer);
 

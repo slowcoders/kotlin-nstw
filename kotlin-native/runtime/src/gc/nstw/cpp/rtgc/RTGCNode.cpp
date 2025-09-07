@@ -518,12 +518,12 @@ void GCNode::replaceGlobalRef(GCRef* location, GCRef object) {
     }
 }
 
-void GCNode::replaceObjectRef(GCRef* location, GCRef object, GCRef owner) {
-    rtgc_assert(owner != NULL);
+void GCNode::replaceObjectRef_slow(GCRef* location, GCRef object, GCNode* referrer) {
     GCRef old = *location;
     if (old != object) {
-        auto referrer = pal::toNode<true>(owner);
+
         if (referrer == nullptr) {
+            rtgc_assert(referrer != nullptr);
             // permanenent 객체이거나 stack 객체이다.
             // "-g" 옵션없이 컴파일한 경우, 로컬 객체를 Stack 내에 allocation 하고, typeInfoOrMeta_에 OBJECT_TAG_PERMANENT_CONTAINER flag 를
             // 추가한다. stack 객체의 생성자 또는 (condition ? stack-obj : heap-obj) 같은 조건문 사용으로 인해 컴파일 단계에서 stack 객체와
@@ -540,17 +540,32 @@ void GCNode::replaceObjectRef(GCRef* location, GCRef object, GCRef owner) {
 
         // @Frozen 속성을 가진 객체(Lock.kt 참조)는 생성자 내에서 필드 변경이 가능하다.
         rtgc_assert(referrer->isThreadLocal() || old == NULL);
-        *location = object;
         if (object != nullptr) {
-            rtgc_assert(object == owner || pal::toNode(object) != referrer);
+            // rtgc_assert(object == owner || pal::toNode(object) != referrer);
             GCNode::retainObjectRef(pal::toNode(object), referrer);
         }
+        
+        // retain 후에 filed 변경. (참고. object 는 stack 임)
+        old = pal::xchg<true>(location, object);
+
         if (old != nullptr) {
-            rtgc_assert(old == owner || pal::toNode(old) != referrer);
+            // rtgc_assert(old == owner || pal::toNode(old) != referrer);
             GCNode::releaseObjectRef(pal::toNode(old), referrer);
         }
     }
 }
+
+template <bool _volatile>
+void GCNode::replaceObjectRef_inline(GCRef* location, GCRef object, GCRef owner) {
+    rtgc_assert(owner != NULL);
+    auto referrer = pal::toNode<true>(owner);
+    if (referrer->isYoung()) {
+        pal::replaceYoungRef<_volatile>(location, object);
+    } else {
+        replaceObjectRef_slow(location, object, referrer);
+    }
+}
+
 
 // void GCContext::enterFrame(GCFrame* frame) {
 //     rtgc_assert(_currentException == NULL);
