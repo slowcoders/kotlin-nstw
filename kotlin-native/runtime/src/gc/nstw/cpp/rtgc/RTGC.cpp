@@ -309,7 +309,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                 finishScan<true>(anchor, frame._isTributary);
                 if (!frame._isTributary) {
                     // konan::consoleErrorf("====== unmark tributary %p\n", anchor);
-                    if (0) anchor->unmarkTributary<false>();
+                    if (0) anchor->setTributary<false>(false);
                 }
             }
             continue;

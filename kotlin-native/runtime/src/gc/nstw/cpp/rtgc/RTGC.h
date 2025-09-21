@@ -167,15 +167,6 @@ constexpr ref_count_t RTGC_NODE_FLAGS_MASK = ((ref_count_t)1 << RTGC_NODE_FLAGS_
 #define RTGC_ROOT_REF_INCREMENT     ((rtgc::ref_count_t)RTGC_SAFE_REF_INCREMENT << rtgc::RTGC_SAFE_REF_BITS)
 #define RTGC_OBJECT_REF_INCREMENT   ((rtgc::ref_count_t)RTGC_ROOT_REF_INCREMENT << rtgc::RTGC_ROOT_REF_BITS)
 
-struct RTGCRefBits {
-    uint64_t color: 4;
-    uint64_t type: 4;
-    uint64_t node: RTGC_NODE_FLAGS_BITS - 8;
-    uint64_t safe: RTGC_SAFE_REF_BITS;
-    uint64_t root: RTGC_ROOT_REF_BITS;
-    uint64_t obj:  RTGC_OBJECT_REF_BITS;  
-};
-
 enum GCFlags {
     T_IMMUTABLE     = 0x0400,
     T_SHARED        = 0x0800,
@@ -206,9 +197,84 @@ enum GCFlags {
     FLAG_SUSPECTED      = 0x10,
 };
 
+struct RTGCRefBits {
+    uint64_t color: 4;
+    uint64_t type: 4;
+    uint64_t node: RTGC_NODE_FLAGS_BITS - 8;
+    uint64_t ext_rc: RTGC_SAFE_REF_BITS;
+    uint64_t root: RTGC_ROOT_REF_BITS;
+    uint64_t rc:  RTGC_OBJECT_REF_BITS;  
+};
+
 #define ENABLE_OPT_TRIBUTARY_MARK    false
 
-struct GCNode {
+struct GCNodeRef {
+    friend struct GCNode;
+protected:    
+    union {
+        ref_count_t refCount_flags_;
+        RTGCRefBits refBits_;
+    };
+
+    inline bool isTributary() const {
+        return (this->refCount_flags_ & FLAG_TRIBUTARY) != 0;
+    }
+
+    inline void setTributary(bool isTributary) {
+        if (isTributary) {
+            refCount_flags_ |= FLAG_TRIBUTARY;
+        } else {
+            refCount_flags_ &= ~FLAG_TRIBUTARY;
+        }
+    }
+    
+    // bool hasNodeRef() {
+    //     assert(!isTributary());
+    // }
+
+
+    // GCNode* getAnchorOf(GCNode* ref) {
+    //     assert(!isTributary());
+    //     return (GCNode*)(uint64_t*)ref + node.addr;
+    // }
+
+
+    // GCNode* replaceAnchorIfNull(GCNode* ref, GCNode* anchor) {
+    //     assert(!isTributary());
+    //     uint64_t new_addr = (uint64_t*)anchor - (uint64_t*)ref;
+    //     if (node.addr == 0) {
+    //         node.addr = new_addr;
+    //         return NULL;
+    //     }
+    //     return node.addr == new_addr ? NULL : getAnchorOf(ref);
+    // }
+
+
+    // void setAnchor(GCNode* ref, GCNode* anchor) {
+    //     assert(!isTributary());
+    //     node.addr = (uint64_t*)anchor - (uint64_t*)ref;
+    // }
+
+
+    void increaseExternalRef(bool isTributary) {
+        assert(isTributary == this->isTributary());
+        if (~refBits_.ext_rc == 0) {
+            if (isTributary) {
+                refBits_.rc ++; 
+            } else {
+                refBits_.rc = refBits_.ext_rc + 1;
+                setTributary(true);
+            }
+        } else {
+            refBits_.ext_rc ++;
+            if (isTributary) {
+                refBits_.rc ++; 
+            }
+        }
+    }
+};
+
+struct GCNode : GCNodeRef {
     friend class RTCollector;
 
 public:
@@ -248,16 +314,17 @@ public:
         return (refCount_flags_ & T_MASK) == T_IMMUTABLE;
     }
 
+    inline bool isTributary() const {
+        return (this->refCount_flags_ & FLAG_TRIBUTARY) != 0;
+    }
+
+
     inline bool isAcyclic() const {
         return (refCount_flags_ & (FLAG_ACYCLIC|T_IMMUTABLE)) != 0;
     }
 
     inline bool isDestroyed() const {
         return (refCount_flags_ & FLAG_DESTROYED) != 0;
-    }
-
-    inline bool isTributary() const {
-        return (this->refCount_flags_ & FLAG_TRIBUTARY) != 0;
     }
 
     inline bool isUnstable() const {
@@ -390,16 +457,16 @@ public:
     }
 
     inline unsigned getObjectRefCount() const {
-        return refBits()->obj;
+        return refBits()->rc;
     }
 
     inline unsigned getSafeRefCount() const {
-        return refBits()->safe;
+        return refBits()->ext_rc;
     }
 
     inline void setSafeRefCount(int refCount) {
         rtgc_assert_ref(this, (short)refCount >= 0);
-        (reinterpret_cast<RTGCRefBits*>(&refCount_flags_))->safe = refCount;
+        (reinterpret_cast<RTGCRefBits*>(&refCount_flags_))->ext_rc = refCount;
         rtgc_trace_ref(RTGC_TRACE_GC, this, "setSafeRefCount");
     }
 
@@ -409,7 +476,7 @@ public:
     }
 
     inline int hasObjectRef() const {
-        return refBits()->obj != 0;
+        return refBits()->rc != 0;
     }
 
 
@@ -454,7 +521,7 @@ public:
     }
 
     inline void setObjectRefCount(unsigned size) {
-        ((RTGCRefBits*)&refCount_flags_)->obj = size;
+        ((RTGCRefBits*)&refCount_flags_)->rc = size;
         rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setObjectRefCount");
     }
 
@@ -487,7 +554,7 @@ public:
          *       --> safeRefCount 증가. (Circuit 검사를 미룬다)
          *       참고) referrer 가 this 의 anchor-path 에서 파생된 것이고, anchor-path 가 순환경로를 형성하는 경우,
          *       markTributaryPath() 과정에서 순환경로가 검출되므로 추가적인  Circuit 검사가 필요하지 않다.
-         *       즉, this 가 ramified 이고, referrer 가 tributary 라면, 그 참조는 safe 한다.
+         *       즉, this 가 ramified 이고, referrer 가 tributary 라면, 그 참조는 ext_rc 한다.
          *    2) this 가 tributary node 인 경우,
          *       --> safeRefCount 증가. (어차피 circuit scan 과정에서 다시 감소한다)
          */
@@ -649,8 +716,15 @@ public:
     // }
 
     template<bool Atomic>
-    inline void unmarkTributary() {
-        pal::bit_and<Atomic>(&refCount_flags_, (ref_count_t)~FLAG_TRIBUTARY);
+    inline void setTributary(bool isTributary) {
+        while (true) {
+            GCNodeRef oldBits = *this;
+            GCNodeRef newBits = oldBits;
+            newBits.setTributary(isTributary);
+            if (pal::comp_set<Atomic>(&this->refCount_flags_, 
+                oldBits.refCount_flags_, 
+                newBits.refCount_flags_)) break;
+        }
     }
 
     static RTGC_INLINE void markTributaryPath(GCNode* node) {
@@ -660,7 +734,7 @@ public:
             rtgc_assert_ref(node, !node->isAcyclic());
             rtgc_assert_ref(node, !node->isDestroyed());
             if (node->isTributary()) return;
-            pal::bit_or<true>(&node->refCount_flags_, (ref_count_t)FLAG_TRIBUTARY);
+            node->setTributary<true>(true);
             if ((node = node->anchor_) == NULL) return;
         }
 
@@ -669,7 +743,7 @@ public:
             rtgc_assert_ref(node, !node->isAcyclic());
             rtgc_assert_ref(node, !node->isDestroyed());
             if (node->isTributary()) return;
-            node->refCount_flags_ |= FLAG_TRIBUTARY;
+            node->setTributary<false>(true);
             if ((node = node->anchor_) == NULL) return;
         }
     }
@@ -777,7 +851,7 @@ private:
              * @zee ref_count_t type 과 관계없이 value 를 int64_t 로 설정하면 오류 발생. llvm 버그???
              */
             new_rc = old_rc - INCREMENT;
-            if (refBits_.safe > 0) {
+            if (refBits_.ext_rc > 0) {
                 new_rc -= RTGC_SAFE_REF_INCREMENT;
             }
             if (!Atomic) {
@@ -825,10 +899,6 @@ private:
     }
 
 protected:  
-    union {
-        ref_count_t refCount_flags_;
-        RTGCRefBits refBits_;
-    };
     GCNode* anchor_;
 };
 
