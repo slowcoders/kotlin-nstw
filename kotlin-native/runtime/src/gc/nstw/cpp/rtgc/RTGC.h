@@ -215,6 +215,7 @@ protected:
         ref_count_t refCount_flags_;
         RTGCRefBits refBits_;
     };
+    GCNode* anchor_;
 
     inline bool isTributary() const {
         return (this->refCount_flags_ & FLAG_TRIBUTARY) != 0;
@@ -255,53 +256,6 @@ protected:
     //     node.addr = (uint64_t*)anchor - (uint64_t*)ref;
     // }
 
-
-    void increaseExternalRef(bool isTributary) {
-        assert(isTributary == this->isTributary());
-        if (~refBits_.ext_rc == 0) {
-            if (isTributary) {
-                refBits_.rc ++; 
-            } else {
-                refBits_.rc = refBits_.ext_rc + 1;
-                setTributary(true);
-            }
-        } else {
-            refBits_.ext_rc ++;
-            if (isTributary) {
-                refBits_.rc ++; 
-            }
-        }
-    }
-};
-
-struct GCNode : GCNodeRef {
-    friend class RTCollector;
-
-public:
-    inline void init(GCContext* context, bool immutable, bool acyclic) {
-        int flags;
-        if (immutable) {
-            flags = T_IMMUTABLE | T_SHARED | FLAG_ACYCLIC;
-            pal::markPublished(this);
-            // TODO Lock context!!!
-            if (GCPolicy::canSuspendGC()) {
-                context = GCContext::getSharedContext();
-            }
-        } else {
-            flags = acyclic ? FLAG_ACYCLIC : 0;
-        }
-        refCount_flags_ = flags;
-        context->onCreateInstance(this);
-    }
-
-    uint8_t& byteFlags() {
-        return *(uint8_t*)(&refCount_flags_);
-    }
-
-    uint8_t byteFlags() const {
-        return *(uint8_t*)(&refCount_flags_);
-    }
-
     inline bool isThreadLocal() const {
         return (refCount_flags_ & T_MASK) == 0;
     }
@@ -314,9 +268,9 @@ public:
         return (refCount_flags_ & T_MASK) == T_IMMUTABLE;
     }
 
-    inline bool isTributary() const {
-        return (this->refCount_flags_ & FLAG_TRIBUTARY) != 0;
-    }
+    // inline bool isTributary() const {
+    //     return (this->refCount_flags_ & FLAG_TRIBUTARY) != 0;
+    // }
 
 
     inline bool isAcyclic() const {
@@ -355,85 +309,7 @@ public:
         return get_color() == S_STABLE_ANCHORED;
     }
 
-    inline void markImmutable(bool isRoot=false) {
-        rtgc_assert_ref(this, !isDestroyed());
-        rtgc_assert_ref(this, isRoot ? isThreadLocal() : !isImmutable());
-        refCount_flags_ |= isRoot ? T_IMMUTABLE : (T_IMMUTABLE | T_SHARED);
-        set_color(S_WHITE);
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "markImmutable");
-        if (!isRoot) {
-            pal::markPublished(this);
-        }
-    }
-
-    inline void markShared() {
-        rtgc_assert_ref(this, !isDestroyed());
-        rtgc_assert_ref(this, isThreadLocal());
-        refCount_flags_ |= T_SHARED;
-        pal::markPublished(this);
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "markShared");
-    }
-
-    inline void markAcyclic() {
-        rtgc_assert_ref(this, !isDestroyed());
-        refCount_flags_ |= FLAG_ACYCLIC;
-    }
-
-    void markDestroyed(GCNode* prevGarbage) {
-        rtgc_assert_ref(this, !this->isDestroyed());
-        refCount_flags_ |= FLAG_DESTROYED;
-        rtgc_trace_ref(RTGC_TRACE_FREE, this, "markDestroyed");
-        anchor_ = prevGarbage;
-    }
-
-    bool markSuspected(uint8_t additionalFlags) {        
-        rtgc_assert_ref(this, !this->isDestroyed());
-        // rtgc_assert_ref(this, get_color() == S_WHITE || get_color() == S_BLACK);
-        //  || get_color() == S_UNSTABLE || get_color() == S_UNSTABLE_TAIL);
-        const bool SUSPECTED_FLAG_IN_BYTE_FLAGS = FLAG_SUSPECTED < 0x100;
-        /* SUSPECTED_FLAG_IN_BYTE_FLAGS:
-           FLAG_SUSPECTED 가 s_color 와 동일 byte 범위 내에 있고,
-           본 함수가 항상 shared_context 가 lock 된 상태에서 호출되는 경우 */
-        if (SUSPECTED_FLAG_IN_BYTE_FLAGS || !GCPolicy::canSuspendGC() || this->isThreadLocal()) {
-            if (this->isSuspected()) return false;
-
-            byteFlags() |= FLAG_SUSPECTED | additionalFlags;
-            return true;
-        } else {
-            additionalFlags |= FLAG_SUSPECTED;
-            auto rc = refCount_flags_;
-            while ((rc & FLAG_SUSPECTED) == 0) {
-                auto new_v = (rc & ~S_MASK) | additionalFlags;
-                ref_count_t old_rc = pal::comp_xchg<true>(&refCount_flags_, rc, new_v);
-                if (old_rc == rc) {
-                    rtgc_assert_ref(this, (signed_ref_count_t)refCount_flags_ >= 0);
-                    rtgc_trace_ref(RTGC_TRACE_GC, this, "markSuspected shared");
-                    return true;
-                }
-                if (old_rc & FLAG_DESTROYED) return false;
-                rc = old_rc;
-            } 
-            return false;
-        }
-    }
-
-    template <bool noGarbage=true>
-    void unmarkSuspected() {
-        rtgc_assert_ref(this, !noGarbage || !this->isDestroyed());
-        byteFlags() &= ~FLAG_SUSPECTED;
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "unmarkSuspected");
-    }
-
-    void unmarkStableAnchored() {
-        if (this->isStableAnchored()) {
-            set_color(0);
-            rtgc_trace_ref(RTGC_TRACE_GC, this, "unmarkStableAnchored");
-        }
-    }
-    // void markToFree() {
-    //   rtgc_assert_ref(this, (this->refCount_flags_ & FLAG_TO_FREE) == 0);
-    //   this->refCount_flags_ |= FLAG_TO_FREE;
-    // }
+    //============================================//
 
     inline GCNode* getAnchor() const {
         return anchor_;
@@ -443,8 +319,15 @@ public:
         this->anchor_ = node;
     }
 
+    inline void setAnchor(GCNode* node) {
+        /// ?
+        rtgc_assert(false);
+
+        this->anchor_ = node;
+    }
+
     inline signed_ref_count_t refCount() const {
-        rtgc_assert_ref(this, !isDestroyed());
+        // rtgc_assert_ref(this, !isDestroyed());
         return refCount_flags_ / RTGC_ROOT_REF_INCREMENT;
     }
 
@@ -465,9 +348,9 @@ public:
     }
 
     inline void setSafeRefCount(int refCount) {
-        rtgc_assert_ref(this, (short)refCount >= 0);
+        // rtgc_assert_ref(this, (short)refCount >= 0);
         (reinterpret_cast<RTGCRefBits*>(&refCount_flags_))->ext_rc = refCount;
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "setSafeRefCount");
+        // rtgc_trace_ref(RTGC_TRACE_GC, this, "setSafeRefCount");
     }
 
 
@@ -481,13 +364,335 @@ public:
 
 
     inline void setRefCount(signed_ref_count_t refCount) {
-        rtgc_assert_ref(this, !isDestroyed());
+        // rtgc_assert_ref(this, !isDestroyed());
         refCount_flags_ = (refCount_flags_ & (RTGC_ROOT_REF_INCREMENT-1)) + (refCount * RTGC_ROOT_REF_INCREMENT);
-        rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setRefCount");
+        // rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setRefCount");
     }
 
     inline void setRefCountAndFlags(uint32_t refCount, uint16_t flags) {
         refCount_flags_ = (refCount * RTGC_ROOT_REF_INCREMENT) + flags;
+    }
+
+
+    inline void setRootRefCount(unsigned size) {
+        ((RTGCRefBits*)&refCount_flags_)->root = size;
+        // rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setRootRefCount");
+    }
+
+    inline void setObjectRefCount(unsigned size) {
+        ((RTGCRefBits*)&refCount_flags_)->rc = size;
+        // rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setObjectRefCount");
+    }
+
+    inline bool isYoung() const {
+        return false;// (refCount_flags_ & T_MASK) == T_SHARED;
+    }
+
+
+    void increaseExternalRef(bool isTributary) {
+        assert(isTributary == this->isTributary());
+        if (~refBits_.ext_rc == 0) {
+            if (isTributary) {
+                refBits_.rc ++; 
+            } else {
+                refBits_.rc = refBits_.ext_rc + 1;
+                setTributary(true);
+            }
+        } else {
+            refBits_.ext_rc ++;
+            if (isTributary) {
+                refBits_.rc ++; 
+            }
+        }
+    }
+
+    //////
+
+    uint8_t& byteFlags() {
+        return *(uint8_t*)(&refCount_flags_);
+    }
+
+    uint8_t byteFlags() const {
+        return *(uint8_t*)(&refCount_flags_);
+    }
+
+    inline const RTGCRefBits* refBits() const {
+        return reinterpret_cast<const RTGCRefBits*>(&refCount_flags_);
+    }
+
+
+    int get_color() const {
+        return *(uint8_t*)&this->refCount_flags_ & S_MASK; 
+    }
+
+    bool onCircuit() {
+        uint8_t color = this->get_color();
+        return color == S_RED || color == S_PINK || color == S_BROWN;
+    }
+
+    void set_color(uint8_t color) {
+        // rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert((color & S_MASK) == color);
+        // TODO read and write is not thread-safe
+        byteFlags() = (byteFlags() & ~S_MASK) | color; 
+        // rtgc_trace_ref(RTGC_TRACE_GC, this, "set_color");
+    }
+
+    inline bool marked() const {
+        // // rtgc_assert_ref(this, isThreadLocal());
+        // rtgc_assert_ref(this, !isDestroyed());
+        return (refCount_flags_ & FLAG_MARKED) != 0;
+    }
+
+    inline void mark() {
+        // // rtgc_assert_ref(this, isThreadLocal());
+        // rtgc_assert_ref(this, !isDestroyed());
+        refCount_flags_ |= FLAG_MARKED;
+    }
+
+    inline void unMark() {
+        // // rtgc_assert_ref(this, isThreadLocal());
+        // rtgc_assert_ref(this, !isDestroyed());
+        refCount_flags_ &= ~FLAG_MARKED;
+    }
+
+};
+
+struct GCNode {
+    friend class RTCollector;
+
+    GCNodeRef ref_;
+    
+public:
+    inline void init(GCContext* context, bool immutable, bool acyclic) {
+        int flags;
+        if (immutable) {
+            flags = T_IMMUTABLE | T_SHARED | FLAG_ACYCLIC;
+            pal::markPublished(this);
+            // TODO Lock context!!!
+            if (GCPolicy::canSuspendGC()) {
+                context = GCContext::getSharedContext();
+            }
+        } else {
+            flags = acyclic ? FLAG_ACYCLIC : 0;
+        }
+        ref_.refCount_flags_ = flags;
+        context->onCreateInstance(this);
+    }
+
+    uint8_t& byteFlags() {
+        return ref_.byteFlags();
+    }
+
+    uint8_t byteFlags() const {
+        return ref_.byteFlags();
+    }
+
+    inline bool isThreadLocal() const {
+        return ref_.isThreadLocal();
+    }
+
+    inline bool isImmutable() const {
+        return ref_.isImmutable();
+    }
+
+    inline bool isImmutableRoot() const {
+        return ref_.isImmutableRoot();
+    }
+
+    inline bool isTributary() const {
+        return ref_.isTributary();
+    }
+
+
+    inline bool isAcyclic() const {
+        return ref_.isAcyclic();
+    }
+
+    inline bool isDestroyed() const {
+        return ref_.isDestroyed();
+    }
+
+    inline bool isUnstable() const {
+        return ref_.isUnstable();
+    }
+
+    bool isSuspected() const {
+        return ref_.isSuspected();
+    }
+
+    bool isStableAnchored() const {
+        return ref_.isStableAnchored();
+    }
+
+#define BEGIN_ATOMIC_REF()  \
+    while (true) { \
+        GCNodeRef oldRef = ref_;    \
+        GCNodeRef newRef = oldRef;  \
+
+#define END_ATOMIC_REF(Atomic) \
+        if (pal::comp_set<Atomic>(&ref_.refCount_flags_, \
+            oldRef.refCount_flags_, newRef.refCount_flags_)) break; \
+    }
+
+    inline void markImmutable(bool isRoot=false) {
+        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert_ref(this, isRoot ? isThreadLocal() : !isImmutable());
+
+        BEGIN_ATOMIC_REF()
+            newRef.refCount_flags_ |= isRoot ? T_IMMUTABLE : (T_IMMUTABLE | T_SHARED);
+            newRef.set_color(S_WHITE);
+        END_ATOMIC_REF(false)
+
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "markImmutable");
+        if (!isRoot) {
+            pal::markPublished(this);
+        }
+    }
+
+    inline void markShared() {
+        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert_ref(this, isThreadLocal());
+        BEGIN_ATOMIC_REF()
+            newRef.refCount_flags_ |= T_SHARED;
+        END_ATOMIC_REF(false)
+        pal::markPublished(this);
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "markShared");
+    }
+
+    inline void markAcyclic() {
+        rtgc_assert_ref(this, !isDestroyed());
+        BEGIN_ATOMIC_REF()
+            newRef.refCount_flags_ |= FLAG_ACYCLIC;
+        END_ATOMIC_REF(false)
+    }
+
+    void markDestroyed(GCNode* prevGarbage) {
+        rtgc_assert_ref(this, !this->isDestroyed());
+        BEGIN_ATOMIC_REF()
+            newRef.refCount_flags_ |= FLAG_DESTROYED;
+            newRef.anchor_ = prevGarbage;
+        END_ATOMIC_REF(false)
+        rtgc_trace_ref(RTGC_TRACE_FREE, this, "markDestroyed");
+    }
+
+    bool markSuspected(uint8_t additionalFlags) {        
+        rtgc_assert_ref(this, !this->isDestroyed());
+        // rtgc_assert_ref(this, get_color() == S_WHITE || get_color() == S_BLACK);
+        //  || get_color() == S_UNSTABLE || get_color() == S_UNSTABLE_TAIL);
+        const bool SUSPECTED_FLAG_IN_BYTE_FLAGS = FLAG_SUSPECTED < 0x100;
+        /* SUSPECTED_FLAG_IN_BYTE_FLAGS:
+           FLAG_SUSPECTED 가 s_color 와 동일 byte 범위 내에 있고,
+           본 함수가 항상 shared_context 가 lock 된 상태에서 호출되는 경우 */
+        if (SUSPECTED_FLAG_IN_BYTE_FLAGS || !GCPolicy::canSuspendGC() || this->isThreadLocal()) {
+            if (this->isSuspected()) return false;
+            BEGIN_ATOMIC_REF()
+                newRef.byteFlags() |= FLAG_SUSPECTED | additionalFlags;
+            END_ATOMIC_REF(false)
+            return true;
+        } else {
+            additionalFlags |= FLAG_SUSPECTED;
+            auto rc = ref_.refCount_flags_;
+            while ((rc & FLAG_SUSPECTED) == 0) {
+                auto new_v = (rc & ~S_MASK) | additionalFlags;
+                ref_count_t old_rc = pal::comp_xchg<true>(&ref_.refCount_flags_, rc, new_v);
+                if (old_rc == rc) {
+                    rtgc_assert_ref(this, (signed_ref_count_t)ref_.refCount_flags_ >= 0);
+                    rtgc_trace_ref(RTGC_TRACE_GC, this, "markSuspected shared");
+                    return true;
+                }
+                if (old_rc & FLAG_DESTROYED) return false;
+                rc = old_rc;
+            } 
+            return false;
+        }
+    }
+
+    template <bool noGarbage=true>
+    void unmarkSuspected() {
+        rtgc_assert_ref(this, !noGarbage || !this->isDestroyed());
+        BEGIN_ATOMIC_REF()
+            newRef.byteFlags() &= ~FLAG_SUSPECTED;
+        END_ATOMIC_REF(false)
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "unmarkSuspected");
+    }
+
+    void unmarkStableAnchored() {
+        if (this->isStableAnchored()) {
+            BEGIN_ATOMIC_REF()
+                newRef.set_color(0);
+            END_ATOMIC_REF(false)
+            rtgc_trace_ref(RTGC_TRACE_GC, this, "unmarkStableAnchored");
+        }
+    }
+    // void markToFree() {
+    //   rtgc_assert_ref(this, (this->refCount_flags_ & FLAG_TO_FREE) == 0);
+    //   this->refCount_flags_ |= FLAG_TO_FREE;
+    // }
+
+    inline GCNode* getAnchor() const {
+        return ref_.getAnchor();
+    }
+
+    inline void setAnchor_unsafe(GCNode* node) {
+        ref_.setAnchor_unsafe(node);
+    }
+
+    inline void setAnchor(GCNode* node) {
+        ref_.setAnchor(node);
+    }
+
+    inline signed_ref_count_t refCount() const {
+        rtgc_assert_ref(this, !isDestroyed());
+        return ref_.refCount();
+    }
+
+    ref_count_t refCountBitFlags() const {
+        return ref_.refCountBitFlags();
+    }
+
+    inline ref_count_t getRootRefCount() const {
+        return ref_.getRootRefCount();
+    }
+
+    inline unsigned getObjectRefCount() const {
+        return ref_.getObjectRefCount();
+    }
+
+    inline unsigned getSafeRefCount() const {
+        return ref_.getSafeRefCount();
+    }
+
+    inline void setSafeRefCount(int refCount) {
+        rtgc_assert_ref(this, (short)refCount >= 0);
+        BEGIN_ATOMIC_REF()
+            newRef.setSafeRefCount(refCount)    ;
+        END_ATOMIC_REF(false)
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "setSafeRefCount");
+    }
+
+
+    inline bool hasRootRef() const {
+        return ref_.hasRootRef();
+    }
+
+    inline int hasObjectRef() const {
+        return ref_.hasObjectRef();
+    }
+
+
+    inline void setRefCount(signed_ref_count_t refCount) {
+        rtgc_assert_ref(this, !isDestroyed());
+        BEGIN_ATOMIC_REF()
+            newRef.setRefCount(refCount);
+        END_ATOMIC_REF(false)
+        rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setRefCount");
+    }
+
+    inline void setRefCountAndFlags(uint32_t refCount, uint16_t flags) {
+        BEGIN_ATOMIC_REF()
+            newRef.setRefCountAndFlags(refCount, flags);
+        END_ATOMIC_REF(false)
     }
 
     template <bool Atomic>
@@ -495,7 +700,7 @@ public:
         ref_count_t survival_mask = RTGC_OBJECT_REF_MASK | RTGC_ROOT_REF_MASK;
         if (GCPolicy::LAZY_GC) survival_mask |=  FLAG_SUSPECTED;
         
-        ref_count_t rc = refCount_flags_; 
+        ref_count_t rc = ref_.refCount_flags_; 
         if (rc & FLAG_DESTROYED) return false;
         if ((rc & survival_mask) == 0) return false;
         if (!Atomic) {
@@ -504,7 +709,7 @@ public:
         } 
         
         while (true) {
-            ref_count_t old_rc = pal::comp_xchg<true>(&refCount_flags_, rc, rc + RTGC_ROOT_REF_INCREMENT);
+            ref_count_t old_rc = pal::comp_xchg<true>(&ref_.refCount_flags_, rc, rc + RTGC_ROOT_REF_INCREMENT);
             if (old_rc == rc) {
                 markTouched</*Atomic=*/true, false>(rc);
                 return true;
@@ -516,17 +721,21 @@ public:
     }
 
     inline void setRootRefCount(unsigned size) {
-        ((RTGCRefBits*)&refCount_flags_)->root = size;
+        BEGIN_ATOMIC_REF()
+            newRef.setRootRefCount(size);
+        END_ATOMIC_REF(false)
         rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setRootRefCount");
     }
 
     inline void setObjectRefCount(unsigned size) {
-        ((RTGCRefBits*)&refCount_flags_)->rc = size;
+        BEGIN_ATOMIC_REF()
+            newRef.setObjectRefCount(size);
+        END_ATOMIC_REF(false)
         rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setObjectRefCount");
     }
 
     inline bool isYoung() const {
-        return false;// (refCount_flags_ & T_MASK) == T_SHARED;
+        return ref_.isYoung();
     }
 
     template<bool Atomic>
@@ -559,7 +768,7 @@ public:
          *       --> safeRefCount 증가. (어차피 circuit scan 과정에서 다시 감소한다)
          */
         bool isSafeRef __attribute__((unused))  = referrer->isSuspected();
-        if (!pal::comp_set<Atomic>(&anchor_, (GCNode*)NULL, referrer)) {
+        if (!pal::comp_set<Atomic>(&ref_.anchor_, (GCNode*)NULL, referrer)) {
             markTributaryPath(referrer);
             isSafeRef |= !this->isTributary();
         } else {
@@ -597,7 +806,7 @@ public:
         }
         
 
-        bool disconneted = !this->isAcyclic() && pal::comp_set<Atomic>(&anchor_, referrer, (GCNode*)nullptr);
+        bool disconneted = !this->isAcyclic() && pal::comp_set<Atomic>(&ref_.anchor_, referrer, (GCNode*)nullptr);
         ref_count_t rc = this->decrease_object_ref_count<Atomic>(false);
         if (rc < RTGC_ROOT_REF_INCREMENT) {
             return ReachableState::Unreachable;
@@ -644,7 +853,7 @@ public:
     template <bool Atomic>
     RTGC_INLINE void releaseRoot(bool decreaseRoot) {
         rtgc_assert_ref(this, !isDestroyed());
-        ref_count_t rc = decreaseRoot ? update_root_ref_count<Atomic>(false) : refCount_flags_;
+        ref_count_t rc = decreaseRoot ? update_root_ref_count<Atomic>(false) : ref_.refCount_flags_;
         ref_count_t check_unstable_mask = S_MASK | RTGC_ROOT_REF_MASK | RTGC_SAFE_REF_MASK | FLAG_ACYCLIC | T_IMMUTABLE | FLAG_SUSPECTED;
         if (rc < RTGC_ROOT_REF_INCREMENT) {
             // rtgc_log("releaseRoot: %p refCount_flags_=%llx, rc=%llx, root=%llu\n", 
@@ -717,14 +926,9 @@ public:
 
     template<bool Atomic>
     inline void setTributary(bool isTributary) {
-        while (true) {
-            GCNodeRef oldBits = *this;
-            GCNodeRef newBits = oldBits;
-            newBits.setTributary(isTributary);
-            if (pal::comp_set<Atomic>(&this->refCount_flags_, 
-                oldBits.refCount_flags_, 
-                newBits.refCount_flags_)) break;
-        }
+        BEGIN_ATOMIC_REF()
+            newRef.setTributary(isTributary);
+        END_ATOMIC_REF(Atomic)
     }
 
     static RTGC_INLINE void markTributaryPath(GCNode* node) {
@@ -735,7 +939,7 @@ public:
             rtgc_assert_ref(node, !node->isDestroyed());
             if (node->isTributary()) return;
             node->setTributary<true>(true);
-            if ((node = node->anchor_) == NULL) return;
+            if ((node = node->getAnchor()) == NULL) return;
         }
 
         while (true) {
@@ -744,43 +948,48 @@ public:
             rtgc_assert_ref(node, !node->isDestroyed());
             if (node->isTributary()) return;
             node->setTributary<false>(true);
-            if ((node = node->anchor_) == NULL) return;
+            if ((node = node->getAnchor()) == NULL) return;
         }
     }
 
     int get_color() const {
-        return *(uint8_t*)&this->refCount_flags_ & S_MASK; 
+        return ref_.get_color();
     }
 
     bool onCircuit() {
-        uint8_t color = this->get_color();
-        return color == S_RED || color == S_PINK || color == S_BROWN;
+        return ref_.onCircuit();
     }
 
     void set_color(uint8_t color) {
         rtgc_assert_ref(this, !isDestroyed());
         rtgc_assert((color & S_MASK) == color);
         // TODO read and write is not thread-safe
-        byteFlags() = (byteFlags() & ~S_MASK) | color; 
+        BEGIN_ATOMIC_REF()
+            newRef.set_color(color);
+        END_ATOMIC_REF(false)
         rtgc_trace_ref(RTGC_TRACE_GC, this, "set_color");
     }
 
     inline bool marked() const {
         // rtgc_assert_ref(this, isThreadLocal());
         rtgc_assert_ref(this, !isDestroyed());
-        return (refCount_flags_ & FLAG_MARKED) != 0;
+        return ref_.marked();
     }
 
     inline void mark() {
         // rtgc_assert_ref(this, isThreadLocal());
         rtgc_assert_ref(this, !isDestroyed());
-        refCount_flags_ |= FLAG_MARKED;
+        BEGIN_ATOMIC_REF()
+            newRef.mark();
+        END_ATOMIC_REF(false)
     }
 
     inline void unMark() {
         // rtgc_assert_ref(this, isThreadLocal());
         rtgc_assert_ref(this, !isDestroyed());
-        refCount_flags_ &= ~FLAG_MARKED;
+        BEGIN_ATOMIC_REF()
+            newRef.unMark();
+        END_ATOMIC_REF(false)
     }
 
 
@@ -817,7 +1026,7 @@ private:
         }
         rtgc_assert_ref(this, !isDestroyed());
         rtgc_assert_ref(this, isThreadLocal() != Atomic);
-        unsigned_ref_count_t old_rc = this->refCount_flags_;
+        unsigned_ref_count_t old_rc = ref_.refCount_flags_;
         unsigned_ref_count_t new_rc;
         while (true) {
             /**
@@ -825,10 +1034,10 @@ private:
              */
             new_rc = old_rc + INCREMENT;
             if (!Atomic) {
-                refCount_flags_ = new_rc;
+                ref_.refCount_flags_ = new_rc;
                 break;
             }
-            unsigned_ref_count_t res = pal::comp_xchg<true>(&refCount_flags_, old_rc, new_rc);
+            unsigned_ref_count_t res = pal::comp_xchg<true>(&ref_.refCount_flags_, old_rc, new_rc);
             if (old_rc == res) break;
             old_rc = res;
         }
@@ -843,22 +1052,22 @@ private:
         signed_ref_count_t INCREMENT = RTGC_OBJECT_REF_INCREMENT;
         rtgc_assert_ref(this, !isDestroyed());
         rtgc_assert_ref(this, isThreadLocal() != Atomic);
-        rtgc_assert_ref(this, (signed_ref_count_t)refCount_flags_ >= INCREMENT);
-        unsigned_ref_count_t old_rc = this->refCount_flags_;
+        rtgc_assert_ref(this, (signed_ref_count_t)ref_.refCount_flags_ >= INCREMENT);
+        unsigned_ref_count_t old_rc = ref_.refCount_flags_;
         unsigned_ref_count_t new_rc;
         while (true) {
             /**
              * @zee ref_count_t type 과 관계없이 value 를 int64_t 로 설정하면 오류 발생. llvm 버그???
              */
             new_rc = old_rc - INCREMENT;
-            if (refBits_.ext_rc > 0) {
+            if (ref_.refBits_.ext_rc > 0) {
                 new_rc -= RTGC_SAFE_REF_INCREMENT;
             }
             if (!Atomic) {
-                refCount_flags_ = new_rc;
+                ref_.refCount_flags_ = new_rc;
                 break;
             }
-            unsigned_ref_count_t res = pal::comp_xchg<true>(&refCount_flags_, old_rc, new_rc);
+            unsigned_ref_count_t res = pal::comp_xchg<true>(&ref_.refCount_flags_, old_rc, new_rc);
             if (old_rc == res) break;
             old_rc = res;
         }
@@ -872,7 +1081,7 @@ private:
         signed_ref_count_t INCREMENT = RTGC_ROOT_REF_INCREMENT;
         rtgc_assert_ref(this, !isDestroyed());
         rtgc_assert_ref(this, isThreadLocal() != Atomic);
-        unsigned_ref_count_t old_rc = this->refCount_flags_;
+        unsigned_ref_count_t old_rc = ref_.refCount_flags_;
         unsigned_ref_count_t new_rc;
         rtgc_assert_ref(this, doIncrease || (int16_t)reinterpret_cast<RTGCRefBits*>(&old_rc)->root > 0);
         while (true) {
@@ -881,10 +1090,10 @@ private:
              */
             new_rc = doIncrease ? old_rc + INCREMENT : old_rc - INCREMENT;
             if (!Atomic) {
-                refCount_flags_ = new_rc;
+                ref_.refCount_flags_ = new_rc;
                 break;
             }
-            unsigned_ref_count_t res = pal::comp_xchg<true>(&refCount_flags_, old_rc, new_rc);
+            unsigned_ref_count_t res = pal::comp_xchg<true>(&ref_.refCount_flags_, old_rc, new_rc);
             if (old_rc == res) break;
             old_rc = res;
         }
@@ -895,11 +1104,9 @@ private:
     }
     
     inline const RTGCRefBits* refBits() const {
-        return reinterpret_cast<const RTGCRefBits*>(&refCount_flags_);
+        return ref_.refBits();
     }
 
-protected:  
-    GCNode* anchor_;
 };
 
 inline void GCContext::onCreateInstance(GCNode* node) {

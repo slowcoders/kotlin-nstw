@@ -43,48 +43,49 @@ struct ContainerHeader : public rtgc::GCNode {
   }
 
 
-  #define buffered_flags refCount_flags_
-  inline bool buffered() const {
-#if USE_RTGC
-    rtgc_assert(!rtgc::ENABLE_BK_GC);
-    return isSuspected();
-#else    
-    return (buffered_flags & CONTAINER_TAG_GC_BUFFERED) != 0;
-#endif
-  }
+//   #define buffered_flags refCount_flags_
+//   inline bool buffered() const {
+// #if USE_RTGC
+//     rtgc_assert(!rtgc::ENABLE_BK_GC);
+//     return isSuspected();
+// #else    
+//     return (buffered_flags & CONTAINER_TAG_GC_BUFFERED) != 0;
+// #endif
+//   }
 
-  inline void setBuffered() {
-#if USE_RTGC
-    rtgc_assert(!USE_RTGC);
-#else
-    buffered_flags |= CONTAINER_TAG_GC_BUFFERED;
-#endif
-  }
+//   inline void setBuffered() {
+// #if USE_RTGC
+//     rtgc_assert(!USE_RTGC);
+// #else
+//     buffered_flags |= CONTAINER_TAG_GC_BUFFERED;
+// #endif
+//   }
 
-  inline void resetBuffered() {
-#if USE_RTGC
-    // already cleared in RTGC
-    // rtgc_assert(!isSuspected());
-    // rtgc_assert(isThreadLocal() || isImmutable());
-#else
-    buffered_flags &= ~CONTAINER_TAG_GC_BUFFERED;
-#endif
-  }
+//   inline void resetBuffered() {
+// #if USE_RTGC
+//     // already cleared in RTGC
+//     // rtgc_assert(!isSuspected());
+//     // rtgc_assert(isThreadLocal() || isImmutable());
+// #else
+//     buffered_flags &= ~CONTAINER_TAG_GC_BUFFERED;
+// #endif
+//   }
 
-  inline bool seen() const {
-    rtgc_assert(!isDestroyed());
-    return (buffered_flags & CONTAINER_TAG_GC_SEEN) != 0;
-  }
+  // inline bool seen() const {
+  //   rtgc_assert(!isDestroyed());
+  //   return (buffered_flags & CONTAINER_TAG_GC_SEEN) != 0;
+  // }
 
-  inline void setSeen() {
-    rtgc_assert_ref(this, !isDestroyed());
-    buffered_flags |= CONTAINER_TAG_GC_SEEN;
-  }
+  // inline void setSeen() {
+  //   rtgc_assert_ref(this, !isDestroyed());
+  //   buffered_flags |= CONTAINER_TAG_GC_SEEN;
+  // }
 
-  inline void resetSeen() {
-    rtgc_assert_ref(this, !isDestroyed());
-    buffered_flags &= ~CONTAINER_TAG_GC_SEEN;
-  }
+  // inline void resetSeen() {
+  //   rtgc_assert_ref(this, !isDestroyed());
+  //   ref_.resetSeen
+  //   buffered_flags &= ~CONTAINER_TAG_GC_SEEN;
+  // }
 
   // Following operations only work on freed container which is in finalization queue.
   // We cannot use 'this' here, as it conflicts with aliasing analysis in clang.
