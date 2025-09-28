@@ -543,8 +543,6 @@ public:
         ref_count_t rc = decreaseRoot ? update_root_ref_count<Atomic>(false) : ref_.refCount_flags_;
         ref_count_t check_unstable_mask = S_MASK | RTGC_ROOT_REF_MASK | RTGC_SAFE_REF_MASK | FLAG_ACYCLIC | T_IMMUTABLE | FLAG_SUSPECTED;
         if (rc < RTGC_ROOT_REF_INCREMENT) {
-            // rtgc_log("releaseRoot: %p refCount_flags_=%llx, rc=%llx, root=%llu\n", 
-            //     this, (unsigned long long)refCount_flags_, (unsigned long long)rc, (unsigned long long)refBits()->root);
             GCContext::enqueUnstable(this, ReachableState::Unreachable);
         } else if ((rc & check_unstable_mask) == 0) {
             // tributary 여부와 관계없이 외부로부터의 진입 경로가 없는 순환 경로를 탐지한다.
@@ -770,7 +768,6 @@ private:
         rtgc_assert_ref(this, isThreadLocal() != Atomic);
         unsigned_ref_count_t old_rc = ref_.refCount_flags_;
         unsigned_ref_count_t new_rc;
-        rtgc_assert_ref(this, doIncrease || (int16_t)reinterpret_cast<RTGCRefBits*>(&old_rc)->root > 0);
         while (true) {
             /**
              * @zee ref_count_t type 과 관계없이 value 를 int64_t 로 설정하면 오류 발생. llvm 버그???
@@ -786,14 +783,9 @@ private:
         }
         rtgc_trace_ref(RTGC_TRACE_REF, this, "ref-count-changed");
         rtgc_assert_ref(this, (signed_ref_count_t)new_rc >= 0);
-        rtgc_assert_ref(this, !doIncrease || (int16_t)reinterpret_cast<RTGCRefBits*>(&new_rc)->root > 0);
         return new_rc;
     }
     
-    inline const RTGCRefBits* refBits() const {
-        return ref_.refBits();
-    }
-
 };
 
 inline void GCContext::onCreateInstance(GCNode* node) {
