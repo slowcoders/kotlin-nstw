@@ -4,19 +4,11 @@
 #include "RTGC_def.h"
 #include "RTGC_PAL.h"
 
-#define RTGC_NO_FRAME   0
-#define RTGC_PER_FRAME  1
-#define RTGC_TRIGGER    2
-
-#define RTGC_MODE     RTGC_PER_FRAME
-
 namespace rtgc {
 
 typedef uint64_t ref_count_t;
 typedef int64_t  signed_ref_count_t;
 typedef uint64_t unsigned_ref_count_t;
-
-
 
 constexpr int  RTGC_SAFE_REF_BITS   = 16;   // 12  // 4K
 constexpr int  RTGC_ROOT_REF_BITS   = 16;   // 12  // 4K
@@ -83,7 +75,7 @@ protected:
     GCNode* anchor_;
 
     inline bool isTributary() const {
-        return (this->refCount_flags_ & FLAG_TRIBUTARY) != 0;
+        return (refCount_flags_ & FLAG_TRIBUTARY) != 0;
     }
 
     inline void setTributary(bool isTributary) {
@@ -134,7 +126,7 @@ protected:
     }
 
     // inline bool isTributary() const {
-    //     return (this->refCount_flags_ & FLAG_TRIBUTARY) != 0;
+    //     return (refCount_flags_ & FLAG_TRIBUTARY) != 0;
     // }
 
 
@@ -152,20 +144,6 @@ protected:
         // return get_color() == S_UNSTABLE;
     }
 
-    // inline bool isUnstableTail() const {
-    //     return get_color() == S_UNSTABLE_TAIL;
-    // }
-
-    // inline bool isUnstableOrTail() const {
-    //     return get_color() >= S_UNSTABLE_TAIL;
-    // }
-
-
-    // inline bool isUnstableOrSuspected() const {
-    //     auto color_an_suspected = this->refCount_flags_ & (S_MASK | FLAG_SUSPECTED);
-    //     return color_an_suspected >= S_UNSTABLE_TAIL;
-    // }
-
     bool isSuspected() const {
         return (refCount_flags_ & FLAG_SUSPECTED) != 0;
     }
@@ -181,18 +159,10 @@ protected:
     }
 
     inline void setAnchor_unsafe(GCNode* node) {
-        this->anchor_ = node;
-    }
-
-    inline void setAnchor(GCNode* node) {
-        /// ?
-        rtgc_assert(false);
-
-        this->anchor_ = node;
+        anchor_ = node;
     }
 
     inline signed_ref_count_t refCount() const {
-        // rtgc_assert_ref(this, !isDestroyed());
         return refCount_flags_ / RTGC_ROOT_REF_INCREMENT;
     }
 
@@ -213,9 +183,7 @@ protected:
     }
 
     inline void setSafeRefCount(int refCount) {
-        // rtgc_assert_ref(this, (short)refCount >= 0);
         (reinterpret_cast<RTGCRefBits*>(&refCount_flags_))->ext_rc = refCount;
-        // rtgc_trace_ref(RTGC_TRACE_GC, this, "setSafeRefCount");
     }
 
 
@@ -229,9 +197,7 @@ protected:
 
 
     inline void setRefCount(signed_ref_count_t refCount) {
-        // rtgc_assert_ref(this, !isDestroyed());
         refCount_flags_ = (refCount_flags_ & (RTGC_ROOT_REF_INCREMENT-1)) + (refCount * RTGC_ROOT_REF_INCREMENT);
-        // rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setRefCount");
     }
 
     inline void setRefCountAndFlags(uint32_t refCount, uint16_t flags) {
@@ -241,12 +207,10 @@ protected:
 
     inline void setRootRefCount(unsigned size) {
         ((RTGCRefBits*)&refCount_flags_)->root = size;
-        // rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setRootRefCount");
     }
 
     inline void setObjectRefCount(unsigned size) {
         ((RTGCRefBits*)&refCount_flags_)->rc = size;
-        // rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setObjectRefCount");
     }
 
     inline bool isYoung() const {
@@ -254,10 +218,10 @@ protected:
     }
 
 
-    void increaseExternalRef(bool isTributary) {
-        assert(isTributary == this->isTributary());
+    void increaseExternalRef(bool _isTributary) {
+        assert(_isTributary == isTributary());
         if (~refBits_.ext_rc == 0) {
-            if (isTributary) {
+            if (_isTributary) {
                 refBits_.rc ++; 
             } else {
                 refBits_.rc = refBits_.ext_rc + 1;
@@ -265,7 +229,7 @@ protected:
             }
         } else {
             refBits_.ext_rc ++;
-            if (isTributary) {
+            if (_isTributary) {
                 refBits_.rc ++; 
             }
         }
@@ -287,37 +251,29 @@ protected:
 
 
     int get_color() const {
-        return *(uint8_t*)&this->refCount_flags_ & S_MASK; 
+        return *(uint8_t*)&refCount_flags_ & S_MASK; 
     }
 
     bool onCircuit() {
-        uint8_t color = this->get_color();
+        uint8_t color = get_color();
         return color == S_RED || color == S_PINK || color == S_BROWN;
     }
 
     void set_color(uint8_t color) {
-        // rtgc_assert_ref(this, !isDestroyed());
         rtgc_assert((color & S_MASK) == color);
         // TODO read and write is not thread-safe
         byteFlags() = (byteFlags() & ~S_MASK) | color; 
-        // rtgc_trace_ref(RTGC_TRACE_GC, this, "set_color");
     }
 
     inline bool marked() const {
-        // // rtgc_assert_ref(this, isThreadLocal());
-        // rtgc_assert_ref(this, !isDestroyed());
         return (refCount_flags_ & FLAG_MARKED) != 0;
     }
 
     inline void mark() {
-        // // rtgc_assert_ref(this, isThreadLocal());
-        // rtgc_assert_ref(this, !isDestroyed());
         refCount_flags_ |= FLAG_MARKED;
     }
 
     inline void unMark() {
-        // // rtgc_assert_ref(this, isThreadLocal());
-        // rtgc_assert_ref(this, !isDestroyed());
         refCount_flags_ &= ~FLAG_MARKED;
     }
 

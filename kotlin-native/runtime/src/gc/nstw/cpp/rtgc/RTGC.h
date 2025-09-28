@@ -5,6 +5,12 @@
 #include "RTGC_PAL.h"
 #include "RTGC_Ref.h"
 
+#define RTGC_NO_FRAME   0
+#define RTGC_PER_FRAME  1
+#define RTGC_TRIGGER    2
+
+#define RTGC_MODE     RTGC_PER_FRAME
+
 namespace rtgc {
 
 typedef pal::_Deque<GCNode*> NodeDeque;
@@ -321,10 +327,6 @@ public:
 
     inline void setAnchor_unsafe(GCNode* node) {
         ref_.setAnchor_unsafe(node);
-    }
-
-    inline void setAnchor(GCNode* node) {
-        ref_.setAnchor(node);
     }
 
     inline signed_ref_count_t refCount() const {
