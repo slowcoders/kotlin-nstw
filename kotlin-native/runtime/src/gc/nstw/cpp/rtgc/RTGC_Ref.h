@@ -29,9 +29,9 @@ enum GCFlags {
     RT_YOUNG = 0x00,
     RT_ACYCLIC = 0x01,
     RT_RAMIFIED_FULL_RC = 0x02,
-    RT_RAMIFIED_WITH_ANCHOR = 0x03,
-    RT_TRIBUTARY_WITH_SHORTCUT = 0x04,
-    RT_TRIBUTARY_WITH_OFFSET = 0x05,
+    RT_RAMIFIED_with_ANCHOR = 0x03,
+    RT_TRIBUTARY_with_SHORTCUT = 0x04,
+    RT_TRIBUTARY_with_OFFSET = 0x05,
     RT_TRIBUTARY_FULL_RC = 0x06,
     RT_CIRCUIT = 0x07,
 
@@ -110,7 +110,7 @@ struct RtTributary_Shorcut {
     uint64_t shortcut:  40;  
 };
 
-struct RtTributary {
+struct RtTributary_Offset {
     COMMON_BITS()
     uint64_t ext_rc: 8;  
     uint64_t rc:  16;
@@ -123,6 +123,12 @@ struct RtTributary_FullRc {
     uint64_t rc:  32;
 };
 
+struct RtCircuit {
+    COMMON_BITS()
+    uint64_t rc:  8;  
+    uint64_t circuit_id:  32;
+};
+
 #define ENABLE_OPT_TRIBUTARY_MARK    false
 
 struct GCNodeRef {
@@ -131,8 +137,14 @@ protected:
     union {
         ref_count_t refCount_flags_;
         RTGCRefBits refBits_;
+        RtYoung youngBits_;
+        RtCircuit circuitBits_;
         RtAcyclic acyclicBits_;
-        RtRamified_Anchor ramifiedBits_;
+        RtRamified_Anchor ramifiedAnchorBits_;        
+        RtRamified_FullRc ramifiedFullRcBits_;        
+        RtTributary_Shorcut tributaryShorcutBits_;
+        RtTributary_Offset tributaryOffsetBits_;
+        RtTributary_FullRc tributaryFullRcBits_;
     };
     GCNode* anchor_;
 
@@ -140,13 +152,16 @@ protected:
         return refCount_flags_ & REF_TYPE_MASK;
     }
 
+    inline void setRefType(int type) {
+        refCount_flags_ = (refCount_flags_ & ~REF_TYPE_MASK) | type;
+    }
 
     inline bool isYoung() const {
         return false;// refType() == RT_YOUNG;
     }
 
     inline bool isTributary() const {
-        return refType() >= RT_TRIBUTARY_WITH_SHORTCUT;
+        return refType() >= RT_TRIBUTARY_with_SHORTCUT;
     }
 
     inline bool isThreadLocal() const {
@@ -170,17 +185,13 @@ protected:
     }
 
     inline bool isUnstable() const {
-        ref_count_t check_unstable_mask = RTGC_ROOT_REF_MASK | RTGC_SAFE_REF_MASK | FLAG_ACYCLIC | T_IMMUTABLE;
-        return (refCount_flags_ & check_unstable_mask) == 0;
-        // return get_color() == S_UNSTABLE;
+        rtgc_assert(!isYoung());
+        rtgc_assert(!isDestroyed() && !isEnquedToScan());
+        return getExternalRefCount() == 0;
     }
 
     bool isEnquedToScan() const {
         return (refCount_flags_ & FLAG_SUSPECTED) != 0;
-    }
-
-    bool isStableAnchored() const {
-        return get_color() == S_STABLE_ANCHORED;
     }
 
     //============================================//
@@ -210,26 +221,46 @@ protected:
 
 
     inline GCNode* getAnchorOf(const GCNode* node) const {
-        rtgc_assert(!isTributary());
-        return (GCNode*)(uint64_t*)node + refBits_.addr;
+        rtgc_assert(refType() == RT_RAMIFIED_with_ANCHOR);
+        return (GCNode*)((uint64_t*)node + ramifiedAnchorBits_.addr);
+    }
+
+    inline bool canAssignAnchor() const {
+        return refType() == RT_RAMIFIED_with_ANCHOR;
     }
 
     inline void setAnchor_unsafe(GCNode* node) {
-        rtgc_assert(!isTributary());
-        refBits_.root = (uint64_t*)node - (uint64_t*)anchor_;
+        rtgc_assert(refType() == RT_RAMIFIED_with_ANCHOR);
+        ramifiedAnchorBits_.addr = (uint64_t*)node - (uint64_t*)anchor_;
+    }
+
+    inline void setAnchor(GCNode* node) {
+        rtgc_assert(refType() == RT_RAMIFIED_with_ANCHOR);
+        ramifiedAnchorBits_.addr = (uint64_t*)node - (uint64_t*)anchor_;
         rtgc_assert(node == getAnchorOf(node));
     }
 
     inline signed_ref_count_t refCount() const {
-        return refBits()->rc;
-    }
-
-    inline unsigned getExternalRefCount() const {
-        return refBits()->ext_rc;
-    }
-
-    inline void setExternalRefCount(int refCount) {
-        (reinterpret_cast<RTGCRefBits*>(&refCount_flags_))->ext_rc = refCount;
+        rtgc_assert(!isYoung());
+        switch (refType()) {
+            case RT_ACYCLIC:
+                return acyclicBits_.ext_rc;
+            case RT_RAMIFIED_FULL_RC:
+                return ramifiedAnchorBits_.ext_rc;
+            case RT_RAMIFIED_with_ANCHOR:
+                return ramifiedFullRcBits_.ext_rc;
+            case RT_TRIBUTARY_with_SHORTCUT:
+                return tributaryShorcutBits_.ext_rc;
+            case RT_TRIBUTARY_with_OFFSET:
+                return tributaryOffsetBits_.rc;
+            case RT_TRIBUTARY_FULL_RC:
+                return tributaryFullRcBits_.rc;
+            case RT_CIRCUIT:
+                return circuitBits_.rc;
+            default:
+                rtgc_assert(false);
+                return 0;
+        }
     }
 
     ref_count_t refCountBitFlags() const {
@@ -237,53 +268,156 @@ protected:
     }
 
 
-    inline bool hasExternalRef() const {
-        return refBits()->ext_rc != 0;
-    }
-
-
-    inline void setRefCount(signed_ref_count_t refCount) {
-        refCount_flags_ = (refCount_flags_ & (RTGC_ROOT_REF_INCREMENT-1)) + (refCount * RTGC_ROOT_REF_INCREMENT);
-    }
-
-    inline void setRefCountAndFlags(uint32_t refCount, uint16_t flags) {
-        refCount_flags_ = (refCount * RTGC_ROOT_REF_INCREMENT) + flags;
-    }
-
-    inline void setObjectRefCount(unsigned size) {
-        ((RTGCRefBits*)&refCount_flags_)->rc = size;
-    }
-
     template <bool Atomic>
     inline ref_count_t increaseAcyclicRefCount() {
         rtgc_assert(isAcyclic());
-        pal::bit_add<Atomic>(&refCount_flags_, 0x100);
-        return acyclicBits_.rc;
+        pal::bit_add<Atomic>(&refCount_flags_, (ref_count_t)+0x100);
+        return acyclicBits_.ext_rc;
     }
 
     template <bool Atomic>
     inline ref_count_t decreaseAcyclicRefCount() {
         rtgc_assert(isAcyclic());
-        pal::bit_add<Atomic>(&refCount_flags_, -0x100);
-        return acyclicBits_.rc;
+        ref_count_t delta = -0x100;
+        pal::bit_add<Atomic>(&refCount_flags_, delta);
+        return acyclicBits_.ext_rc;
     }
 
-    bool increaseExternalRef() {
-        bool tributary = isTributary();
-        if (~refBits_.ext_rc == 0) {
-            if (tributary) {
-                refBits_.rc ++; 
-            } else {
-                refBits_.rc = refBits_.ext_rc + 1;
-                setTributary(true);
-                return false;
-            }
-        } else {
-            refBits_.ext_rc ++;
-            if (tributary) {
-                refBits_.rc ++; 
-            }
+
+    inline unsigned getExternalRefCount() const {
+        rtgc_assert(!isYoung());
+        switch (refType()) {
+            case RT_ACYCLIC:
+                return acyclicBits_.ext_rc;
+            case RT_RAMIFIED_FULL_RC:
+                return ramifiedAnchorBits_.ext_rc;
+            case RT_RAMIFIED_with_ANCHOR:
+                return ramifiedFullRcBits_.ext_rc;
+            case RT_TRIBUTARY_with_SHORTCUT:
+                return tributaryShorcutBits_.ext_rc;
+            case RT_TRIBUTARY_with_OFFSET:
+                return tributaryOffsetBits_.ext_rc;
+            case RT_TRIBUTARY_FULL_RC:
+                return tributaryFullRcBits_.ext_rc;
+            case RT_CIRCUIT:
+                rtgc_assert("not impl" == 0);
+                return circuitBits_.rc;
+            default:
+                rtgc_assert("should not be here" == 0);
+                return 0;
         }
+    }
+
+
+    inline bool tryDecreaseExternalRefCount() {
+        rtgc_assert(!isYoung());
+        switch (refType()) {
+            case RT_ACYCLIC:
+                if (acyclicBits_.ext_rc == 0) return false;
+                acyclicBits_.ext_rc --;
+                break;          
+            case RT_RAMIFIED_FULL_RC:
+                if (ramifiedAnchorBits_.ext_rc == 0) return false;
+                ramifiedAnchorBits_.ext_rc --;
+                break;
+            case RT_RAMIFIED_with_ANCHOR:
+                if (ramifiedFullRcBits_.ext_rc == 0) return false;
+                ramifiedFullRcBits_.ext_rc --;
+                break;
+            case RT_TRIBUTARY_with_SHORTCUT:
+                if (tributaryShorcutBits_.ext_rc == 0) return false;
+                tributaryShorcutBits_.ext_rc --;
+                break;
+            case RT_TRIBUTARY_with_OFFSET:
+                if (tributaryOffsetBits_.ext_rc == 0) return false;
+                tributaryOffsetBits_.ext_rc --;
+                break;
+            case RT_TRIBUTARY_FULL_RC:
+                if (tributaryFullRcBits_.ext_rc == 0) return false;
+                tributaryFullRcBits_.ext_rc --;
+                break;
+            case RT_CIRCUIT:
+                rtgc_assert("not impl" == 0);
+            default:
+                rtgc_assert("should not be here" == 0);
+                return 0;
+        }
+        return true;
+    }
+
+
+    inline void saveExternalRefCount() {
+        switch (refType()) {
+            case RT_ACYCLIC:
+            case RT_RAMIFIED_FULL_RC:
+            case RT_RAMIFIED_with_ANCHOR:
+                rtgc_assert("should not be here" == 0);
+
+            case RT_TRIBUTARY_with_SHORTCUT:
+                // ignore
+                break;
+            case RT_TRIBUTARY_with_OFFSET:
+                tributaryOffsetBits_.ext_rc = tributaryOffsetBits_.rc;
+                break;
+            case RT_TRIBUTARY_FULL_RC:
+                tributaryFullRcBits_.ext_rc = tributaryFullRcBits_.rc;
+                break;
+            case RT_CIRCUIT:
+                rtgc_assert("not impl" == 0);
+            default:
+                rtgc_assert("should not be here" == 0);
+        }        
+    }
+
+    bool increaseObjectRef() {
+        int erc;
+        int rc2;
+        switch (refType()) {
+            case RT_ACYCLIC:
+                rtgc_assert("should not be here" == 0);
+                break;
+            case RT_RAMIFIED_with_ANCHOR:
+                erc = ramifiedAnchorBits_.ext_rc;
+                if (~erc != 0) {
+                    ramifiedAnchorBits_.ext_rc ++;
+                    break;
+                }
+                setRefType(RT_RAMIFIED_FULL_RC);
+                ramifiedFullRcBits_.ext_rc = erc + 1;
+                break;
+
+                // no break;
+            case RT_RAMIFIED_FULL_RC:
+                ramifiedFullRcBits_.ext_rc ++;
+                rtgc_assert(ramifiedFullRcBits_.ext_rc != 0);
+                break;
+
+            case RT_TRIBUTARY_with_SHORTCUT:
+                erc = tributaryShorcutBits_.ext_rc;
+                setRefType(RT_TRIBUTARY_with_OFFSET);
+                tributaryOffsetBits_.ext_rc = erc;
+                tributaryOffsetBits_.rc = erc + 1;
+                break;
+            case RT_TRIBUTARY_with_OFFSET:
+                rc2 = tributaryOffsetBits_.rc;
+                if (~rc2 != 0) {
+                    tributaryOffsetBits_.rc ++;
+                    break;
+                }
+                erc = tributaryOffsetBits_.ext_rc;
+                setRefType(RT_TRIBUTARY_FULL_RC);
+                tributaryFullRcBits_.ext_rc = erc;
+                tributaryFullRcBits_.rc = rc2;
+                break;
+            case RT_TRIBUTARY_FULL_RC:
+                tributaryFullRcBits_.rc ++;
+                rtgc_assert(tributaryFullRcBits_.rc != 0);
+                break;
+            case RT_CIRCUIT:
+                rtgc_assert("not impl" == 0);
+            default:
+                rtgc_assert("should not be here" == 0);
+        }        
         return true;
     }
 
@@ -291,18 +425,41 @@ protected:
         return false;        
     }
 
-    bool decreaseExternalRef() {
-        bool unstable = hasUnsafeReferrer();
-        if (unstable) {
-            rtgc_assert(refBits_.rc > 0); 
-            refBits_.rc --;
-            if (refBits_.ext_rc != 0) {
-                refBits_.ext_rc --; 
-            }
-        } else {
-            rtgc_assert(refBits_.ext_rc > 0); 
-            refBits_.ext_rc --; 
-        }
+    bool decreaseObjectRef() {
+        switch (refType()) {
+            case RT_ACYCLIC:
+                rtgc_assert("should not be here" == 0);
+                break;
+            case RT_RAMIFIED_with_ANCHOR:
+                ramifiedAnchorBits_.ext_rc--;
+                rtgc_assert(ramifiedAnchorBits_.ext_rc >= 0);
+                break;
+            case RT_RAMIFIED_FULL_RC:
+                ramifiedFullRcBits_.ext_rc --;
+                rtgc_assert(ramifiedFullRcBits_.ext_rc >= 0);
+                break;
+
+            case RT_TRIBUTARY_with_SHORTCUT:
+                tributaryShorcutBits_.ext_rc --;
+                rtgc_assert(tributaryShorcutBits_.ext_rc >= 0);
+                break;
+
+            case RT_TRIBUTARY_with_OFFSET:
+                if (tributaryOffsetBits_.ext_rc != 0) {
+                    tributaryOffsetBits_.ext_rc --;
+                } 
+                tributaryOffsetBits_.rc --;
+                rtgc_assert(tributaryOffsetBits_.rc >= 0);
+                break;
+            case RT_TRIBUTARY_FULL_RC:
+                tributaryFullRcBits_.ext_rc --;
+                rtgc_assert(tributaryFullRcBits_.rc >= 0);
+                break;
+            case RT_CIRCUIT:
+                rtgc_assert("not impl" == 0);
+            default:
+                rtgc_assert("should not be here" == 0);
+        }        
         return true;
     }    
     //////

@@ -35,7 +35,8 @@ struct ContainerHeader : public rtgc::GCNode {
 
   inline void setContainerSize(unsigned size) {
     rtgc_assert(this->isDestroyed());
-    GCNode::setObjectRefCount(size);
+    rtgc_assert("Not impl" == 0);
+    // GCNode::setObjectRefCount(size);
   }
 
   inline bool hasContainerSize() {

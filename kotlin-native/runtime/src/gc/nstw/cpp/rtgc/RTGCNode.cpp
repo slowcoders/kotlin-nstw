@@ -194,7 +194,7 @@ void GCContext::enqueUnstable(GCNode* unstable, ReachableState state) {
     GCContext* context;
     if (GCPolicy::LAZY_GC) {
         if (unstable->isEnquedToScan()) return;
-        rtgc_assert_ref(unstable, !unstable->hasExternalRef());
+        rtgc_assert_ref(unstable, unstable->isUnstable());
         rtgc_assert_ref(unstable, !unstable->isDestroyed());
         rtgc_assert_ref(unstable, isGarbage || !unstable->isAcyclic());
 
@@ -421,7 +421,7 @@ int GCNode::inspectUnstables(GCNode* unstable) {
 
         if (unstable->isThreadLocal()) {
             rtgc_trace_ref(RTGC_TRACE_GC, unstable, "check cyclic");
-            rtgc_assert_ref(unstable, !unstable->hasExternalRef());
+            rtgc_assert_ref(unstable, unstable->isUnstable());
             rtgc_assert_ref(unstable, unstable->refCount() != 0);
             rtgc_assert_ref(unstable, unstable->isThreadLocal());
 

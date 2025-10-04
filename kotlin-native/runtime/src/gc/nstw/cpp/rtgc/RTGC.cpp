@@ -156,7 +156,7 @@ bool RTCollector::markCyclicPath(GCNode* anchor, GCNode* end) {
     _external_rc --;
     for (GCNode* node = anchor;; node = node->getAnchor()) {
         if (!isRedOrPink(node)) {
-            node->setExternalRefCount(node->getExternalRefCount() - 1);
+            node->decreaseObjectRefCount();
             enqueCircuitNode(node);
         }
         if (node == end) break;
@@ -252,7 +252,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
         markGray(anchor);
         frame._rc = _external_rc;
         frame._count = _circuitNodes.size();
-        anchor->setExternalRefCount(anchor->refCount());
+        anchor->saveExternalRefCount();
 
         GCNode* node;
         bool isTributray = false;
@@ -302,7 +302,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                     /* 중간에 circuit 을 포함할 수 있다.*/
                     bool isComplexCircuit = _circuitNodes.size() > 0;
                     rtgc_trace_ref(RTGC_TRACE_GC, node, isComplexCircuit ? "multi-cycle found" : "gray found");
-                    // node->setExternalRefCount(node->getExternalRefCount() - 1);
+                    // node->decreaseObjectRefCount();
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     if (node == suspected) {
                         node->setAnchor_unsafe(anchor);
@@ -315,7 +315,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                 }
                 case S_BROWN: 
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "found brown");
-                    node->setExternalRefCount(node->getExternalRefCount() - 1);
+                    node->decreaseObjectRefCount();
                     node = findRedOrPink(node);
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     break;
@@ -323,7 +323,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                 case S_PINK:
                 case S_RED:
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "found red");
-                    node->setExternalRefCount(node->getExternalRefCount() - 1);
+                    node->decreaseObjectRefCount();
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     break;
 
@@ -342,7 +342,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                 case S_CYCLIC_BLACK:
                     if (node->getExternalRefCount() > 0) {
                         if (node->getAnchor() == NULL || node->getExternalRefCount() > 1) {
-                            node->setExternalRefCount(node->getExternalRefCount() - 1);
+                            node->decreaseObjectRefCount();
                         }
                     }
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "skip trace");
@@ -477,25 +477,10 @@ void GCContext::collectCyclicGarbage() {
                 continue;
             }
 
-            if (node->hasExternalRef()) {
+            if (node->getExternalRefCount() != 0) {
                 // node->markUnstable();
             } else if (!node->isImmutable() && !node->isAcyclic() && node->isUnstable()) {
                 collector.scanSuspected(node);
-                // if (!node->isDestroyed()) {
-                //     GCNode* n = node->getAnchor();
-                //     if (n != NULL && n->get_color() == S_WHITE) {
-                //         for (; n != NULL; n = n->getAnchor()) {
-                //             if (n->isEnquedToScan()) break;
-                //             if (n->refCount() > 1) {
-                //                 if (n->getExternalRefCount() == 0) {
-                //                     n->setExternalRefCount(1);
-                //                 }
-                //                 n->set_color(S_BLACK);
-                //                 collector._blackNodes.push_back(n);
-                //             }
-                //         }
-                //     }
-                // }
             }
             node->unmarkEnquedToScan();
         }

@@ -157,14 +157,14 @@ public:
     inline void init(GCContext* context, bool immutable, bool acyclic) {
         int flags;
         if (immutable) {
-            flags = T_IMMUTABLE | T_SHARED | FLAG_ACYCLIC;
+            flags = T_IMMUTABLE | T_SHARED | RT_ACYCLIC;
             pal::markPublished(this);
             // TODO Lock context!!!
             if (GCPolicy::canSuspendGC()) {
                 context = GCContext::getSharedContext();
             }
         } else {
-            flags = acyclic ? FLAG_ACYCLIC : 0;
+            flags = acyclic ? RT_ACYCLIC : 0;
         }
         ref_.refCount_flags_ = flags;
         context->onCreateInstance(this);
@@ -209,10 +209,6 @@ public:
 
     bool isEnquedToScan() const {
         return ref_.isEnquedToScan();
-    }
-
-    bool isStableAnchored() const {
-        return ref_.isStableAnchored();
     }
 
 #define BEGIN_ATOMIC_REF()  \
@@ -300,18 +296,6 @@ public:
         rtgc_trace_ref(RTGC_TRACE_GC, this, "unmarkEnquedToScan");
     }
 
-    void unmarkStableAnchored() {
-        if (this->isStableAnchored()) {
-            BEGIN_ATOMIC_REF()
-                newRef.set_color(0);
-            END_ATOMIC_REF(false)
-            rtgc_trace_ref(RTGC_TRACE_GC, this, "unmarkStableAnchored");
-        }
-    }
-    // void markToFree() {
-    //   rtgc_assert_ref(this, (this->refCount_flags_ & FLAG_TO_FREE) == 0);
-    //   this->refCount_flags_ |= FLAG_TO_FREE;
-    // }
 
     inline GCNode* getAnchor() const {
         return ref_.getAnchorOf(this);
@@ -333,31 +317,18 @@ public:
         return ref_.getExternalRefCount();
     }
 
-    inline void setExternalRefCount(int refCount) {
-        rtgc_assert_ref(this, (short)refCount >= 0);
+    inline void saveExternalRefCount() {
         BEGIN_ATOMIC_REF()
-            newRef.setExternalRefCount(refCount)    ;
+            newRef.saveExternalRefCount();
         END_ATOMIC_REF(false)
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "setExternalRefCount");
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "saveExternalRefCount");
     }
 
-
-    inline bool hasExternalRef() const {
-        return ref_.hasExternalRef();
-    }
-
-    inline void setRefCount(signed_ref_count_t refCount) {
-        rtgc_assert_ref(this, !isDestroyed());
+    inline void decreaseObjectRefCount() {
         BEGIN_ATOMIC_REF()
-            newRef.setRefCount(refCount);
+            if (!newRef.tryDecreaseExternalRefCount()) break;
         END_ATOMIC_REF(false)
-        rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setRefCount");
-    }
-
-    inline void setRefCountAndFlags(uint32_t refCount, uint16_t flags) {
-        BEGIN_ATOMIC_REF()
-            newRef.setRefCountAndFlags(refCount, flags);
-        END_ATOMIC_REF(false)
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "decreaseObjectRefCount");
     }
 
     template <bool Atomic>
@@ -385,13 +356,6 @@ public:
         } 
     }
 
-    inline void setObjectRefCount(unsigned size) {
-        BEGIN_ATOMIC_REF()
-            newRef.setObjectRefCount(size);
-        END_ATOMIC_REF(false)
-        rtgc_trace_ref(RTGC_TRACE_GC | RTGC_TRACE_REF, this, "setObjectRefCount");
-    }
-
     inline bool isYoung() const {
         return ref_.isYoung();
     }
@@ -413,19 +377,19 @@ public:
         while (true) {
             GCNodeRef oldMain = this->ref_;
             GCNodeRef newMain = oldMain;
-            bool ext_rc_overflow = !newMain.increaseExternalRef();
+            bool ext_rc_overflow = !newMain.increaseObjectRef();
             if (ext_rc_overflow) {
                 markTributaryPath(oldMain.getAnchorOf(this));
                 goto increase_ext_rc_only;
             } 
             else if (newMain.canAssignAnchor()) {
                 newMain.setAnchor_unsafe(referrer);
-                if (!cmp_set(&_mainRef, oldMain, newMain)) continue;
+                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
                 break;
             } 
             else {
                 increase_ext_rc_only:
-                if (!cmp_set(&_mainRef, oldMain, newMain)) continue;
+                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
             }
 
 
@@ -487,19 +451,19 @@ public:
         while (true) {
             GCNodeRef oldMain = this->ref_;
             GCNodeRef newMain = oldMain;
-            bool ext_rc_overflow = !newMain.increaseExternalRef();
+            bool ext_rc_overflow = !newMain.increaseObjectRef();
             if (ext_rc_overflow) {
                 markTributaryPath(oldMain.getAnchorOf(this));
                 goto increase_ext_rc_only;
             } 
             else if (newMain.canAssignAnchor()) {
                 newMain.setAnchor_unsafe(referrer);
-                if (!cmp_set(&_mainRef, oldMain, newMain)) continue;
+                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
                 break;
             } 
             else {
                 increase_ext_rc_only:
-                if (!cmp_set(&_mainRef, oldMain, newMain)) continue;
+                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
             }
 
 
