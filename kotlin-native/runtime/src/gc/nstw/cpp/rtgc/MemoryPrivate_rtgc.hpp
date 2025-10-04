@@ -30,7 +30,7 @@ struct ContainerHeader : public rtgc::GCNode {
 
   inline unsigned containerSize() const {
     rtgc_assert(this->isDestroyed());
-    return GCNode::getObjectRefCount();
+    return GCNode::refCount();
   }
 
   inline void setContainerSize(unsigned size) {
@@ -47,7 +47,7 @@ struct ContainerHeader : public rtgc::GCNode {
 //   inline bool buffered() const {
 // #if USE_RTGC
 //     rtgc_assert(!rtgc::ENABLE_BK_GC);
-//     return isSuspected();
+//     return isEnquedToScan();
 // #else    
 //     return (buffered_flags & CONTAINER_TAG_GC_BUFFERED) != 0;
 // #endif
@@ -64,7 +64,7 @@ struct ContainerHeader : public rtgc::GCNode {
 //   inline void resetBuffered() {
 // #if USE_RTGC
 //     // already cleared in RTGC
-//     // rtgc_assert(!isSuspected());
+//     // rtgc_assert(!isEnquedToScan());
 //     // rtgc_assert(isThreadLocal() || isImmutable());
 // #else
 //     buffered_flags &= ~CONTAINER_TAG_GC_BUFFERED;

@@ -24,7 +24,21 @@ constexpr ref_count_t RTGC_NODE_FLAGS_MASK = ((ref_count_t)1 << RTGC_NODE_FLAGS_
 #define RTGC_ROOT_REF_INCREMENT     ((rtgc::ref_count_t)RTGC_SAFE_REF_INCREMENT << rtgc::RTGC_SAFE_REF_BITS)
 #define RTGC_OBJECT_REF_INCREMENT   ((rtgc::ref_count_t)RTGC_ROOT_REF_INCREMENT << rtgc::RTGC_ROOT_REF_BITS)
 
+
 enum GCFlags {
+    RT_YOUNG = 0x00,
+    RT_ACYCLIC = 0x01,
+    RT_RAMIFIED_FULL_RC = 0x02,
+    RT_RAMIFIED_WITH_ANCHOR = 0x03,
+    RT_TRIBUTARY_WITH_SHORTCUT = 0x04,
+    RT_TRIBUTARY_WITH_OFFSET = 0x05,
+    RT_TRIBUTARY_FULL_RC = 0x06,
+    RT_CIRCUIT = 0x07,
+
+    REF_TYPE_MASK = 0x7,
+
+
+
     T_IMMUTABLE     = 0x0400,
     T_SHARED        = 0x0800,
     T_MASK          = T_IMMUTABLE | T_SHARED,
@@ -54,13 +68,59 @@ enum GCFlags {
     FLAG_SUSPECTED      = 0x10,
 };
 
+
+#define COMMON_BITS()   \
+    uint64_t color: 4;  \
+    uint64_t type: 4;   \
+    uint64_t node: 8;   \
+
+
 struct RTGCRefBits {
-    uint64_t color: 4;
-    uint64_t type: 4;
-    uint64_t node: RTGC_NODE_FLAGS_BITS - 8;
-    uint64_t ext_rc: RTGC_SAFE_REF_BITS;
-    uint64_t root: RTGC_ROOT_REF_BITS;
-    uint64_t rc:  RTGC_OBJECT_REF_BITS;  
+    COMMON_BITS()
+    uint64_t ext_rc: 16;
+    uint64_t rc:  32;  
+};
+
+struct RtYoung {
+    COMMON_BITS()
+    uint64_t reserved:  16;  
+    uint64_t idx:  32;  
+};
+
+struct RtAcyclic {
+    COMMON_BITS()
+    uint64_t ext_rc:  48;  
+};
+
+struct RtRamified_FullRc {
+    COMMON_BITS()
+    uint64_t ext_rc: 48;  
+};
+
+struct RtRamified_Anchor {
+    COMMON_BITS()
+    uint64_t ext_rc: 8;  
+    uint64_t addr:  40;  
+};
+
+// Long Shorcut 사용 시 반드시 Anchor 필요. --> Dest 가 Deallocation 될 수 있음.
+struct RtTributary_Shorcut {
+    COMMON_BITS()
+    uint64_t ext_rc: 8;  
+    uint64_t shortcut:  40;  
+};
+
+struct RtTributary {
+    COMMON_BITS()
+    uint64_t ext_rc: 8;  
+    uint64_t rc:  16;
+    uint64_t offset:  16;  
+};
+
+struct RtTributary_FullRc {
+    COMMON_BITS()
+    uint64_t ext_rc: 8;  
+    uint64_t rc:  32;
 };
 
 #define ENABLE_OPT_TRIBUTARY_MARK    false
@@ -71,12 +131,59 @@ protected:
     union {
         ref_count_t refCount_flags_;
         RTGCRefBits refBits_;
+        RtAcyclic acyclicBits_;
+        RtRamified_Anchor ramifiedBits_;
     };
     GCNode* anchor_;
 
-    inline bool isTributary() const {
-        return (refCount_flags_ & FLAG_TRIBUTARY) != 0;
+    inline int refType() const {
+        return refCount_flags_ & REF_TYPE_MASK;
     }
+
+
+    inline bool isYoung() const {
+        return false;// refType() == RT_YOUNG;
+    }
+
+    inline bool isTributary() const {
+        return refType() >= RT_TRIBUTARY_WITH_SHORTCUT;
+    }
+
+    inline bool isThreadLocal() const {
+        return false; //(refCount_flags_ & T_MASK) == 0;
+    }
+
+    inline bool isImmutable() const {
+        return false; // (refCount_flags_ & T_IMMUTABLE) != 0;
+    }
+
+    inline bool isImmutableRoot() const {
+        return false; // (refCount_flags_ & T_MASK) == T_IMMUTABLE;
+    }
+
+    inline bool isAcyclic() const {
+        return refType() == RT_ACYCLIC;
+    }
+
+    inline bool isDestroyed() const {
+        return (refCount_flags_ & FLAG_DESTROYED) != 0;
+    }
+
+    inline bool isUnstable() const {
+        ref_count_t check_unstable_mask = RTGC_ROOT_REF_MASK | RTGC_SAFE_REF_MASK | FLAG_ACYCLIC | T_IMMUTABLE;
+        return (refCount_flags_ & check_unstable_mask) == 0;
+        // return get_color() == S_UNSTABLE;
+    }
+
+    bool isEnquedToScan() const {
+        return (refCount_flags_ & FLAG_SUSPECTED) != 0;
+    }
+
+    bool isStableAnchored() const {
+        return get_color() == S_STABLE_ANCHORED;
+    }
+
+    //============================================//
 
     inline void setTributary(bool isTributary) {
         if (isTributary) {
@@ -91,12 +198,6 @@ protected:
     // }
 
 
-    // GCNode* getAnchorOf(GCNode* ref) {
-    //     assert(!isTributary());
-    //     return (GCNode*)(uint64_t*)ref + node.addr;
-    // }
-
-
     // GCNode* replaceAnchorIfNull(GCNode* ref, GCNode* anchor) {
     //     assert(!isTributary());
     //     uint64_t new_addr = (uint64_t*)anchor - (uint64_t*)ref;
@@ -108,91 +209,36 @@ protected:
     // }
 
 
-    // void setAnchor(GCNode* ref, GCNode* anchor) {
-    //     assert(!isTributary());
-    //     node.addr = (uint64_t*)anchor - (uint64_t*)ref;
-    // }
-
-    inline bool isThreadLocal() const {
-        return (refCount_flags_ & T_MASK) == 0;
-    }
-
-    inline bool isImmutable() const {
-        return (refCount_flags_ & T_IMMUTABLE) != 0;
-    }
-
-    inline bool isImmutableRoot() const {
-        return (refCount_flags_ & T_MASK) == T_IMMUTABLE;
-    }
-
-    // inline bool isTributary() const {
-    //     return (refCount_flags_ & FLAG_TRIBUTARY) != 0;
-    // }
-
-
-    inline bool isAcyclic() const {
-        return (refCount_flags_ & (FLAG_ACYCLIC|T_IMMUTABLE)) != 0;
-    }
-
-    inline bool isDestroyed() const {
-        return (refCount_flags_ & FLAG_DESTROYED) != 0;
-    }
-
-    inline bool isUnstable() const {
-        ref_count_t check_unstable_mask = RTGC_ROOT_REF_MASK | RTGC_SAFE_REF_MASK | FLAG_ACYCLIC | T_IMMUTABLE;
-        return (refCount_flags_ & check_unstable_mask) == 0;
-        // return get_color() == S_UNSTABLE;
-    }
-
-    bool isSuspected() const {
-        return (refCount_flags_ & FLAG_SUSPECTED) != 0;
-    }
-
-    bool isStableAnchored() const {
-        return get_color() == S_STABLE_ANCHORED;
-    }
-
-    //============================================//
-
-    inline GCNode* getAnchor() const {
-        return anchor_;
+    inline GCNode* getAnchorOf(const GCNode* node) const {
+        rtgc_assert(!isTributary());
+        return (GCNode*)(uint64_t*)node + refBits_.addr;
     }
 
     inline void setAnchor_unsafe(GCNode* node) {
-        anchor_ = node;
+        rtgc_assert(!isTributary());
+        refBits_.root = (uint64_t*)node - (uint64_t*)anchor_;
+        rtgc_assert(node == getAnchorOf(node));
     }
 
     inline signed_ref_count_t refCount() const {
-        return refCount_flags_ / RTGC_ROOT_REF_INCREMENT;
+        return refBits()->rc;
+    }
+
+    inline unsigned getExternalRefCount() const {
+        return refBits()->ext_rc;
+    }
+
+    inline void setExternalRefCount(int refCount) {
+        (reinterpret_cast<RTGCRefBits*>(&refCount_flags_))->ext_rc = refCount;
     }
 
     ref_count_t refCountBitFlags() const {
         return refCount_flags_;
     }
 
-    inline ref_count_t getRootRefCount() const {
-        return refBits()->root;
-    }
 
-    inline unsigned getObjectRefCount() const {
-        return refBits()->rc;
-    }
-
-    inline unsigned getSafeRefCount() const {
-        return refBits()->ext_rc;
-    }
-
-    inline void setSafeRefCount(int refCount) {
-        (reinterpret_cast<RTGCRefBits*>(&refCount_flags_))->ext_rc = refCount;
-    }
-
-
-    inline bool hasRootRef() const {
-        return refBits()->root != 0;
-    }
-
-    inline int hasObjectRef() const {
-        return refBits()->rc != 0;
+    inline bool hasExternalRef() const {
+        return refBits()->ext_rc != 0;
     }
 
 
@@ -204,37 +250,61 @@ protected:
         refCount_flags_ = (refCount * RTGC_ROOT_REF_INCREMENT) + flags;
     }
 
-
-    inline void setRootRefCount(unsigned size) {
-        ((RTGCRefBits*)&refCount_flags_)->root = size;
-    }
-
     inline void setObjectRefCount(unsigned size) {
         ((RTGCRefBits*)&refCount_flags_)->rc = size;
     }
 
-    inline bool isYoung() const {
-        return false;// (refCount_flags_ & T_MASK) == T_SHARED;
+    template <bool Atomic>
+    inline ref_count_t increaseAcyclicRefCount() {
+        rtgc_assert(isAcyclic());
+        pal::bit_add<Atomic>(&refCount_flags_, 0x100);
+        return acyclicBits_.rc;
     }
 
+    template <bool Atomic>
+    inline ref_count_t decreaseAcyclicRefCount() {
+        rtgc_assert(isAcyclic());
+        pal::bit_add<Atomic>(&refCount_flags_, -0x100);
+        return acyclicBits_.rc;
+    }
 
-    void increaseExternalRef(bool _isTributary) {
-        assert(_isTributary == isTributary());
+    bool increaseExternalRef() {
+        bool tributary = isTributary();
         if (~refBits_.ext_rc == 0) {
-            if (_isTributary) {
+            if (tributary) {
                 refBits_.rc ++; 
             } else {
                 refBits_.rc = refBits_.ext_rc + 1;
                 setTributary(true);
+                return false;
             }
         } else {
             refBits_.ext_rc ++;
-            if (_isTributary) {
+            if (tributary) {
                 refBits_.rc ++; 
             }
         }
+        return true;
     }
 
+    bool hasUnsafeReferrer() const {
+        return false;        
+    }
+
+    bool decreaseExternalRef() {
+        bool unstable = hasUnsafeReferrer();
+        if (unstable) {
+            rtgc_assert(refBits_.rc > 0); 
+            refBits_.rc --;
+            if (refBits_.ext_rc != 0) {
+                refBits_.ext_rc --; 
+            }
+        } else {
+            rtgc_assert(refBits_.ext_rc > 0); 
+            refBits_.ext_rc --; 
+        }
+        return true;
+    }    
     //////
 
     uint8_t& byteFlags() {

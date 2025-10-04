@@ -193,8 +193,8 @@ void GCContext::enqueUnstable(GCNode* unstable, ReachableState state) {
     bool isGarbage = state == ReachableState::Unreachable;
     GCContext* context;
     if (GCPolicy::LAZY_GC) {
-        if (unstable->isSuspected()) return;
-        rtgc_assert_ref(unstable, !unstable->hasRootRef());
+        if (unstable->isEnquedToScan()) return;
+        rtgc_assert_ref(unstable, !unstable->hasExternalRef());
         rtgc_assert_ref(unstable, !unstable->isDestroyed());
         rtgc_assert_ref(unstable, isGarbage || !unstable->isAcyclic());
 
@@ -205,7 +205,7 @@ void GCContext::enqueUnstable(GCNode* unstable, ReachableState state) {
         if (isGarbage && context->_gcInProgress) {
             context->enqueGarbage(unstable);
         }
-        else if (unstable->markSuspected(isGarbage ? 0 : S_UNSTABLE_0)) {
+        else if (unstable->markEnquedToScan(isGarbage ? 0 : S_UNSTABLE_0)) {
             context->_unstableNodes.push_back(unstable);
             // context->_suspectedNodes->push_back(unstable);
         }
@@ -292,13 +292,13 @@ void GCContext::destroyGarbages() {
                         if (!GCPolicy::canSuspendGC() || !isSharedContext || node->isThreadLocal()) {
                             if (res == ReachableState::Unreachable) {
                                 this->enqueGarbage(node);
-                            } else if (node->markSuspected(S_UNSTABLE_0)) {
+                            } else if (node->markEnquedToScan(S_UNSTABLE_0)) {
                                 rtgc_assert_ref(node, !node->isAcyclic());
                                 _unstableNodes.push_back(node);
                             }
                         } else {
                             SpinLock lock(&_triggerLock);
-                            if (node->markSuspected(res == ReachableState::Unreachable ? 0 : S_UNSTABLE_0)) {
+                            if (node->markEnquedToScan(res == ReachableState::Unreachable ? 0 : S_UNSTABLE_0)) {
                                 g_sharedContext._unstableNodes.push_back(node);
                             }
                         }
@@ -325,10 +325,11 @@ void GCContext::destroyGarbages() {
             for (auto node : _unstableNodes) {
                 if (node == NULL) continue;
                 
-                node->unmarkSuspected<false>();
-                if (node->hasRootRef()) continue;
+                node->unmarkEnquedToScan<false>();
+                // no nstw.
+                // if (node->hasStackRef()) continue;
 
-                if (!node->hasObjectRef()) {
+                if (node->refCount() == 0) {
                     if (GCPolicy::canSuspendGC() && this != &g_sharedContext) {
                         rtgc_assert_ref(node, node->isThreadLocal());
                     }
@@ -379,9 +380,9 @@ void GCContext::enqueSuspectedNode(GCNode* suspected) {
     rtgc_assert_ref(suspected, isSharedContext == !suspected->isThreadLocal());
 
     if (isSharedContext) SpinLock::lock(&_triggerLock);
-    rtgc_assert_ref(suspected, !isSharedContext || !suspected->isSuspected());
+    rtgc_assert_ref(suspected, !isSharedContext || !suspected->isEnquedToScan());
 
-    if (suspected->markSuspected(S_UNSTABLE_0)) {
+    if (suspected->markEnquedToScan(S_UNSTABLE_0)) {
         rtgc_trace_ref(RTGC_TRACE_GC, suspected, "enqueSuspectedNode");
         // rtgc_log("s %p %x\n", suspected, (int)suspected->refCountBitFlags());
         rtgc_assert_ref(suspected, !suspected->isAcyclic());
@@ -395,7 +396,7 @@ int GCContext::deallocGarbages() {
     int garbageInSuspected = 0;
     for (GCNode* garbage = _destroyedQ; garbage != NULL;) {
         GCNode* next = garbage->getAnchor();
-        if (garbage->isSuspected()) {
+        if (garbage->isEnquedToScan()) {
             garbageInSuspected ++;
         } else {
             pal::deallocNode(this, garbage);
@@ -412,61 +413,65 @@ int GCContext::deallocGarbages() {
 }
 
 int GCNode::inspectUnstables(GCNode* unstable) {
-    rtgc_assert(!unstable->isDestroyed());
-    rtgc_assert(!unstable->isSuspected());
-    rtgc_assert_ref(unstable, !unstable->isAcyclic());
-
-    if (unstable->isThreadLocal()) {
-        rtgc_trace_ref(RTGC_TRACE_GC, unstable, "check cyclic");
-        rtgc_assert_ref(unstable, !unstable->hasRootRef());
-        rtgc_assert_ref(unstable, unstable->hasObjectRef());
-        rtgc_assert_ref(unstable, unstable->isThreadLocal());
-
-        int max_repeat = 8; // 순환 경로 내 무한 루프 방지 용.
-        int obj_rc = unstable->getObjectRefCount();
-        for (GCNode* node = unstable->getAnchor(); node != NULL && --max_repeat > 0; node = node->getAnchor()) {
-            if (node->isDestroyed()) {
-                return FLAG_SUSPECTED;
-            }
-            if (!node->hasObjectRef()) {
-                // 경로 시작점에 다다른 경우, 검색을 멈춘다.
-                rtgc_trace_ref(RTGC_TRACE_REF, node, "not garbage");
-                goto skip_cyclic_check;
-            }
-            if (node->isSuspected()) {
-                rtgc_trace_ref(RTGC_TRACE_REF, node, "sibling suspected detected");
-                goto skip_cyclic_check;
-            }
-
-            if (node == unstable) {
-                if (obj_rc == 1) {
-                    return FLAG_DESTROYED;
-                }
-                GCNode::markTributaryPath(unstable);
-                break;
-            }
-            // if (node->get_color() == S_UNSTABLE) {
-            //     rtgc_trace_ref(RTGC_TRACE_REF, node, "sibling suspected detected");
-            //     goto skip_cyclic_check;
-            // }
-
-            if (node->hasRootRef()) {
-                // 검사를 미룬다.
-                // if (!node->isStableAnchored()) {
-                //     node->markUnstable();
-                // }
-                rtgc_trace_ref(RTGC_TRACE_REF, node, "skip unstable!");
-            skip_cyclic_check:
-                rtgc_assert(!unstable->isSuspected());
-                // unstable->set_color(S_UNSTABLE_TAIL);
-                return 0;
-            }
-
-            obj_rc += node->getObjectRefCount() - 1;
-            rtgc_assert(obj_rc >= 0);
-        }
-    }
     return FLAG_SUSPECTED;
+    if (false) {
+        rtgc_assert(!unstable->isDestroyed());
+        rtgc_assert(!unstable->isEnquedToScan());
+        rtgc_assert_ref(unstable, !unstable->isAcyclic());
+
+        if (unstable->isThreadLocal()) {
+            rtgc_trace_ref(RTGC_TRACE_GC, unstable, "check cyclic");
+            rtgc_assert_ref(unstable, !unstable->hasExternalRef());
+            rtgc_assert_ref(unstable, unstable->refCount() != 0);
+            rtgc_assert_ref(unstable, unstable->isThreadLocal());
+
+            int max_repeat = 8; // 순환 경로 내 무한 루프 방지 용.
+            int obj_rc = unstable->refCount();
+            for (GCNode* node = unstable->getAnchor(); node != NULL && --max_repeat > 0; node = node->getAnchor()) {
+                if (node->isDestroyed()) {
+                    return FLAG_SUSPECTED;
+                }
+                // no nstw.
+                // if (node->refCount() == 0) {
+                //     // 경로 시작점에 다다른 경우, 검색을 멈춘다.
+                //     rtgc_trace_ref(RTGC_TRACE_REF, node, "not garbage");
+                //     goto skip_cyclic_check;
+                // }
+                if (node->isEnquedToScan()) {
+                    rtgc_trace_ref(RTGC_TRACE_REF, node, "sibling suspected detected");
+                    goto skip_cyclic_check;
+                }
+
+                if (node == unstable) {
+                    if (obj_rc == 1) {
+                        return FLAG_DESTROYED;
+                    }
+                    GCNode::markTributaryPath(unstable);
+                    break;
+                }
+                // if (node->get_color() == S_UNSTABLE) {
+                //     rtgc_trace_ref(RTGC_TRACE_REF, node, "sibling suspected detected");
+                //     goto skip_cyclic_check;
+                // }
+
+                if (false/*no nstw. node->hasStackRef()*/) {
+                    // 검사를 미룬다.
+                    // if (!node->isStableAnchored()) {
+                    //     node->markUnstable();
+                    // }
+                    rtgc_trace_ref(RTGC_TRACE_REF, node, "skip unstable!");
+                skip_cyclic_check:
+                    rtgc_assert(!unstable->isEnquedToScan());
+                    // unstable->set_color(S_UNSTABLE_TAIL);
+                    return 0;
+                }
+
+                obj_rc += node->refCount() - 1;
+                rtgc_assert(obj_rc >= 0);
+            }
+        }
+        return FLAG_SUSPECTED;
+    }
 }
 
 void GCNode::retainObjectRef(GCNode* objContainer, GCNode* referrer) {
