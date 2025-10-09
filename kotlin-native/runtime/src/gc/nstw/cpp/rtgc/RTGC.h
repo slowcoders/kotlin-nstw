@@ -145,9 +145,17 @@ namespace GCPolicy {
 struct GCNode {
     friend class RTCollector;
 
-    GCNodeRef ref_;
-    
+    volatile GCNodeRef ref_;
+
+    const GCNodeRef getRef() const {
+        GCNodeRef ref;
+        ref.refCount_flags_ = this->ref_.refCount_flags_;
+        return ref;
+    }
+
+
 public:
+
     inline void init(GCContext* context, bool immutable, bool acyclic) {
         int flags;
         if (immutable) {
@@ -164,53 +172,49 @@ public:
         context->onCreateInstance(this);
     }
 
-    uint8_t& byteFlags() {
-        return ref_.byteFlags();
-    }
-
-    uint8_t byteFlags() const {
-        return ref_.byteFlags();
-    }
-
     inline bool isThreadLocal() const {
-        return ref_.isThreadLocal();
+        return getRef().isThreadLocal();
+    }
+
+    inline bool isYoung() const {
+        return getRef().isYoung();
     }
 
     inline bool isImmutable() const {
-        return ref_.isImmutable();
+        return getRef().isImmutable();
     }
 
     inline bool isImmutableRoot() const {
-        return ref_.isImmutableRoot();
+        return getRef().isImmutableRoot();
     }
 
     inline bool isTributary() const {
-        return ref_.isTributary();
+        return getRef().isTributary();
     }
 
     inline bool isAcyclic() const {
-        return ref_.isAcyclic();
+        return getRef().isAcyclic();
     }
 
     inline bool isPrimitiveRef() const {
-        return ref_.isPrimitiveRef();
+        return getRef().isPrimitiveRef();
     }
 
     inline bool isDestroyed() const {
-        return ref_.isDestroyed();
+        return getRef().isDestroyed();
     }
 
     inline bool isUnstable() const {
-        return ref_.isUnstable();
+        return getRef().isUnstable();
     }
 
     bool isEnquedToScan() const {
-        return ref_.isEnquedToScan();
+        return getRef().isEnquedToScan();
     }
 
 #define BEGIN_ATOMIC_REF()  \
     while (true) { \
-        GCNodeRef oldRef = ref_;    \
+        GCNodeRef oldRef = getRef();    \
         GCNodeRef newRef = oldRef;  \
 
 #define END_ATOMIC_REF(Atomic) \
@@ -218,30 +222,30 @@ public:
             oldRef.refCount_flags_, newRef.refCount_flags_)) break; \
     }
 
-    inline void markImmutable(bool isRoot=false) {
-        rtgc_assert_ref(this, !isDestroyed());
-        rtgc_assert_ref(this, isRoot ? isThreadLocal() : !isImmutable());
+    // inline void markImmutable(bool isRoot=false) {
+    //     rtgc_assert_ref(this, !isDestroyed());
+    //     rtgc_assert_ref(this, isRoot ? isThreadLocal() : !isImmutable());
 
-        BEGIN_ATOMIC_REF()
-            newRef.refCount_flags_ |= isRoot ? T_IMMUTABLE : (T_IMMUTABLE | T_SHARED);
-            newRef.set_color(S_WHITE);
-        END_ATOMIC_REF(false)
+    //     BEGIN_ATOMIC_REF()
+    //         newRef.refCount_flags_ |= isRoot ? T_IMMUTABLE : (T_IMMUTABLE | T_SHARED);
+    //         newRef.set_color(S_WHITE);
+    //     END_ATOMIC_REF(false)
 
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "markImmutable");
-        if (!isRoot) {
-            pal::markPublished(this);
-        }
-    }
+    //     rtgc_trace_ref(RTGC_TRACE_GC, this, "markImmutable");
+    //     if (!isRoot) {
+    //         pal::markPublished(this);
+    //     }
+    // }
 
-    inline void markShared() {
-        rtgc_assert_ref(this, !isDestroyed());
-        rtgc_assert_ref(this, isThreadLocal());
-        BEGIN_ATOMIC_REF()
-            newRef.refCount_flags_ |= T_SHARED;
-        END_ATOMIC_REF(false)
-        pal::markPublished(this);
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "markShared");
-    }
+    // inline void markShared() {
+    //     rtgc_assert_ref(this, !isDestroyed());
+    //     rtgc_assert_ref(this, isThreadLocal());
+    //     BEGIN_ATOMIC_REF()
+    //         newRef.refCount_flags_ |= T_SHARED;
+    //     END_ATOMIC_REF(false)
+    //     pal::markPublished(this);
+    //     rtgc_trace_ref(RTGC_TRACE_GC, this, "markShared");
+    // }
 
     void markDestroyed(GCNode* prevGarbage) {
         rtgc_assert_ref(this, !this->isDestroyed());
@@ -252,66 +256,36 @@ public:
         rtgc_trace_ref(RTGC_TRACE_FREE, this, "markDestroyed");
     }
 
-    bool markEnquedToScan(uint8_t additionalFlags) {        
-        rtgc_assert_ref(this, !this->isDestroyed());
-        // rtgc_assert_ref(this, get_color() == S_WHITE || get_color() == S_BLACK);
-        //  || get_color() == S_UNSTABLE || get_color() == S_UNSTABLE_TAIL);
-        const bool SUSPECTED_FLAG_IN_BYTE_FLAGS = FLAG_SUSPECTED < 0x100;
-        /* SUSPECTED_FLAG_IN_BYTE_FLAGS:
-           FLAG_SUSPECTED 가 s_color 와 동일 byte 범위 내에 있고,
-           본 함수가 항상 shared_context 가 lock 된 상태에서 호출되는 경우 */
-        if (SUSPECTED_FLAG_IN_BYTE_FLAGS || !GCPolicy::canSuspendGC() || this->isThreadLocal()) {
-            if (this->isEnquedToScan()) return false;
-            BEGIN_ATOMIC_REF()
-                newRef.byteFlags() |= FLAG_SUSPECTED | additionalFlags;
-            END_ATOMIC_REF(false)
-            return true;
-        } else {
-            additionalFlags |= FLAG_SUSPECTED;
-            auto rc = ref_.refCount_flags_;
-            while ((rc & FLAG_SUSPECTED) == 0) {
-                auto new_v = (rc & ~S_MASK) | additionalFlags;
-                ref_count_t old_rc = pal::comp_xchg<true>(&ref_.refCount_flags_, rc, new_v);
-                if (old_rc == rc) {
-                    rtgc_assert_ref(this, (signed_ref_count_t)ref_.refCount_flags_ >= 0);
-                    rtgc_trace_ref(RTGC_TRACE_GC, this, "markEnquedToScan shared");
-                    return true;
-                }
-                if (old_rc & FLAG_DESTROYED) return false;
-                rc = old_rc;
-            } 
-            return false;
-        }
-    }
-
     template <bool noGarbage=true>
     void unmarkEnquedToScan() {
         rtgc_assert_ref(this, !noGarbage || !this->isDestroyed());
         BEGIN_ATOMIC_REF()
-            newRef.byteFlags() &= ~FLAG_SUSPECTED;
+            newRef.setEnquedToScan(false);
         END_ATOMIC_REF(false)
         rtgc_trace_ref(RTGC_TRACE_GC, this, "unmarkEnquedToScan");
     }
 
 
     inline GCNode* getAnchor() const {
-        return ref_.getAnchorOf(this);
+        return getRef().getAnchorOf(this);
     }
 
     inline void setAnchor_unsafe(GCNode* node) {
-        ref_.setAnchor_unsafe(node);
+        BEGIN_ATOMIC_REF()
+            newRef.setAnchor_unsafe(node);
+        END_ATOMIC_REF(true)
     }
 
     inline signed_ref_count_t refCount() const {
-        return ref_.refCount();
+        return getRef().refCount();
     }
 
     inline ref_count_t refCountBitFlags() const {
-        return ref_.refCountBitFlags();
+        return getRef().refCountBitFlags();
     }
 
     inline unsigned getExternalRefCount() const {
-        return ref_.getExternalRefCount();
+        return getRef().getExternalRefCount();
     }
 
     inline void saveExternalRefCount() {
@@ -329,10 +303,6 @@ public:
         return true;
     }
 
-    inline bool isYoung() const {
-        return ref_.isYoung();
-    }
-
     inline int tryAssignAnchor(GCNode* anchor) {
         int res;
         BEGIN_ATOMIC_REF()
@@ -340,6 +310,28 @@ public:
         if (res >= 0) break;
         END_ATOMIC_REF(true);
         return res;
+    }
+
+    template <bool Atomic>
+    inline bool increasePrimitiveRefCount_andCheckAcyclic() {
+        rtgc_assert(!isYoung());
+        rtgc_assert(isPrimitiveRef());
+        ref_count_t delta = 0;
+        ((RtPrimtive*)&delta)->common_rc = 1;
+        ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_.refCount_flags_, +delta);
+        rtgc_assert(((RtPrimtive*)&res_rc)->common_rc != 0);
+        return ((GCNodeRef*)&res_rc)->isAcyclic();
+    }
+
+    template <bool Atomic>
+    inline ReachableStatus decreasePrimitiveRefCount() {
+        rtgc_assert(!isYoung());
+        rtgc_assert(isPrimitiveRef());
+        rtgc_assert(this->ref_.primitiveBits_.common_rc != 0);
+        ref_count_t delta = 0;
+        ((RtPrimtive*)&delta)->common_rc = 1;
+        ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_.refCount_flags_, -delta);
+        return res_rc < delta ? ReachableStatus::Unreachable : ReachableStatus::Reachable;
     }
 
     template<bool Atomic>
@@ -368,15 +360,14 @@ public:
         }
         
         if (this->isPrimitiveRef()) {
-            this->ref_.increasePrimitiveRefCount<Atomic>();    
-            if (!this->isAcyclic()) {
+            if (this->increasePrimitiveRefCount_andCheckAcyclic<Atomic>()) {
                 markTributaryPath(referrer);
             }
             return;
         }
 
         while (true) {
-            GCNodeRef oldMain = this->ref_;
+            GCNodeRef oldMain = this->getRef();
             GCNodeRef newMain = oldMain;
             GCNode* erasedAnchor = newMain.increaseRef_andGetErasedAnchor(this, isRootRef);
             if (!isRootRef && erasedAnchor == NULL && newMain.tryAssignAnchor(this, referrer)) {
@@ -451,11 +442,11 @@ public:
 
         ReachableStatus rt;
         if (this->isPrimitiveRef()) {
-            rt = this->ref_.decreasePrimitiveRefCount<Atomic>();
+            rt = this->decreasePrimitiveRefCount<Atomic>();
         }
         else 
         while (true) {
-            GCNodeRef oldMain = this->ref_;
+            GCNodeRef oldMain = this->getRef();
             GCNodeRef newMain = oldMain;
             rt = newMain.decreaseRef_andCheckReachable(false);
             bool markTributaryReferrer = !isRootRef
@@ -499,7 +490,7 @@ public:
                 }
                 return context;
             }
-            case FLAG_SUSPECTED:
+            case FLAG_ENQUED_TO_SCAN:
                 if (context == NULL) {
                     context = pal::getCurrentThreadGCContext();
                 }
@@ -522,11 +513,17 @@ public:
         END_ATOMIC_REF(Atomic)
     }
 
+    void eraseShortcut() {
+        BEGIN_ATOMIC_REF()
+            newRef.eraseShortcut();
+        END_ATOMIC_REF(true)
+    }
+
     static RTGC_INLINE void markTributaryPath(GCNode* node) {
         rtgc_assert(node != NULL);
 
         if (node->isTributary()) {
-            node->ref_.eraseShortcut();
+            node->eraseShortcut();
             return;
         }
 
@@ -549,11 +546,11 @@ public:
     }
 
     int get_color() const {
-        return ref_.get_color();
+        return getRef().get_color();
     }
 
-    bool onCircuit() {
-        return ref_.onCircuit();
+    bool onCircuit() const {
+        return getRef().onCircuit();
     }
 
     void set_color(uint8_t color) {
@@ -569,7 +566,7 @@ public:
     inline bool marked() const {
         // rtgc_assert_ref(this, isThreadLocal());
         rtgc_assert_ref(this, !isDestroyed());
-        return ref_.marked();
+        return getRef().marked();
     }
 
     inline void mark() {
@@ -616,9 +613,9 @@ public:
 
 inline void GCContext::onCreateInstance(GCNode* node) {
     if (1 && GCPolicy::LAZY_GC) {
-        node->markEnquedToScan(0);
-        _unstableNodes.push_back(node);
-        // _suspectedNodes->push_back(node);
+        // node->markEnquedToScan(0);
+        // _unstableNodes.push_back(node);
+        // // _suspectedNodes->push_back(node);
     }
 }
 

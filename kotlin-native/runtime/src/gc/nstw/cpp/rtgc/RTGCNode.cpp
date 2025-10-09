@@ -204,7 +204,8 @@ void GCContext::enqueUnstable(GCNode* unstable, bool isGarbage) {
         if (isGarbage && context->_gcInProgress) {
             context->enqueGarbage(unstable);
         }
-        else if (unstable->markEnquedToScan(isGarbage ? 0 : S_UNSTABLE_0)) {
+        else {
+            rtgc_assert(unstable->isEnquedToScan());
             context->_unstableNodes.push_back(unstable);
             // context->_suspectedNodes->push_back(unstable);
         }
@@ -383,12 +384,13 @@ void GCContext::enqueSuspectedNode(GCNode* suspected) {
     if (isSharedContext) SpinLock::lock(&_triggerLock);
     rtgc_assert_ref(suspected, !isSharedContext || !suspected->isEnquedToScan());
 
-    if (suspected->markEnquedToScan(S_UNSTABLE_0)) {
+    // if (suspected->markEnquedToScan(S_UNSTABLE_0)) {
+    rtgc_assert(suspected->isEnquedToScan());
         rtgc_trace_ref(RTGC_TRACE_GC, suspected, "enqueSuspectedNode");
         // rtgc_log("s %p %x\n", suspected, (int)suspected->refCountBitFlags());
         rtgc_assert_ref(suspected, !suspected->isPrimitiveRef());
         _suspectedNodes->push_back(suspected);
-    }
+    // }
     if (isSharedContext) SpinLock::unlock(&_triggerLock);
 }
 
@@ -414,7 +416,7 @@ int GCContext::deallocGarbages() {
 }
 
 int GCNode::inspectUnstables(GCNode* unstable) {
-    return FLAG_SUSPECTED;
+    return FLAG_ENQUED_TO_SCAN;
     if (false) {
         rtgc_assert(!unstable->isDestroyed());
         rtgc_assert(!unstable->isEnquedToScan());
@@ -430,7 +432,7 @@ int GCNode::inspectUnstables(GCNode* unstable) {
             int obj_rc = unstable->refCount();
             for (GCNode* node = unstable->getAnchor(); node != NULL && --max_repeat > 0; node = node->getAnchor()) {
                 if (node->isDestroyed()) {
-                    return FLAG_SUSPECTED;
+                    return FLAG_ENQUED_TO_SCAN;
                 }
                 // no nstw.
                 // if (node->refCount() == 0) {
@@ -471,7 +473,7 @@ int GCNode::inspectUnstables(GCNode* unstable) {
                 rtgc_assert(obj_rc >= 0);
             }
         }
-        return FLAG_SUSPECTED;
+        return FLAG_ENQUED_TO_SCAN;
     }
 }
 

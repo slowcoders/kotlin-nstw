@@ -50,14 +50,13 @@ enum GCFlags {
     REF_TYPE_MASK  = 0x07,
     REF_TYPE2_MASK = 0x37,
 
+    FLAG_ENQUED_TO_SCAN      = 0x10,
 
 
     T_IMMUTABLE     = 0x0400,
     T_SHARED        = 0x0800,
     T_MASK          = T_IMMUTABLE | T_SHARED,
 
-    FLAG_ACYCLIC    = 0x0100,
-    FLAG_TRIBUTARY  = 0x0200,
     FLAG_MARKED     = 0x2000,
     FLAG_DESTROYED  = 0x1000,
 
@@ -74,7 +73,6 @@ enum GCFlags {
     S_UNSTABLE_0 = 0,
     S_MASK              = 0x0F,
 
-    FLAG_SUSPECTED      = 0x10,
 };
 
 
@@ -189,17 +187,24 @@ protected:
     }
 
     bool isEnquedToScan() const {
-        return (refCount_flags_ & FLAG_SUSPECTED) != 0;
+        return (refCount_flags_ & FLAG_ENQUED_TO_SCAN) != 0;
     }
 
+    void setEnquedToScan(bool isEnqued) {
+        if (isEnqued) {
+            refCount_flags_ |= FLAG_ENQUED_TO_SCAN;
+        } else {
+            refCount_flags_ &= ~FLAG_ENQUED_TO_SCAN;
+        }
+    }
     //============================================//
 
     inline void setTributary(bool isTributary) {
-        if (isTributary) {
-            refCount_flags_ |= FLAG_TRIBUTARY;
-        } else {
-            refCount_flags_ &= ~FLAG_TRIBUTARY;
-        }
+        // if (isTributary) {
+        //     refCount_flags_ |= FLAG_TRIBUTARY;
+        // } else {
+        //     refCount_flags_ &= ~FLAG_TRIBUTARY;
+        // }
     }
     
     inline void eraseShortcut() {
@@ -260,29 +265,6 @@ protected:
 
     ref_count_t refCountBitFlags() const {
         return refCount_flags_;
-    }
-
-
-    template <bool Atomic>
-    inline ref_count_t increasePrimitiveRefCount() {
-        rtgc_assert(!isYoung());
-        rtgc_assert(isPrimitiveRef());
-        ref_count_t delta = 0;
-        ((RtPrimtive*)&delta)->common_rc = 1;
-        pal::bit_add<Atomic>(&refCount_flags_, +delta);
-        rtgc_assert(primitiveBits_.common_rc != 0);
-        return primitiveBits_.common_rc;
-    }
-
-    template <bool Atomic>
-    inline ReachableStatus decreasePrimitiveRefCount() {
-        rtgc_assert(!isYoung());
-        rtgc_assert(isPrimitiveRef());
-        rtgc_assert(primitiveBits_.common_rc != 0);
-        ref_count_t delta = 0;
-        ((RtPrimtive*)&delta)->common_rc = 1;
-        ref_count_t res_rc = pal::bit_add<Atomic>(&refCount_flags_, -delta);
-        return res_rc < delta ? ReachableStatus::Unreachable : ReachableStatus::Reachable;
     }
 
 
@@ -496,7 +478,7 @@ protected:
         return *(uint8_t*)&refCount_flags_ & S_MASK; 
     }
 
-    bool onCircuit() {
+    bool onCircuit() const {
         uint8_t color = get_color();
         return color == S_RED || color == S_PINK || color == S_BROWN;
     }
