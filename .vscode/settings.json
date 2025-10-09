@@ -8,5 +8,6 @@
         "unordered_map": "cpp",
         "type_traits": "cpp",
         "atomic": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/Users/zeedhoon/slowcoders/kotlin/kotlin-nstw/kotlin-native/libllvmext"
 }

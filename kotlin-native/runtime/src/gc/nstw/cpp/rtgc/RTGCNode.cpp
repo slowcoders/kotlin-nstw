@@ -101,13 +101,13 @@ NO_INLINE
 void GCNode::updateStackRefCount(GCRef old, GCRef assigned) {
     rtgc_assert(old != assigned);
 
-    GCNode* node;
+    GCNode* node; // ????????
     if ((node = _toPublishedNode(assigned)) != NULL) {
-        GCPolicy::LAZY_GC ? node->retainRoot<true>() : node->retainRoot();
+        node->retainRoot();
     }
 
     if ((node = _toPublishedNode(old)) != NULL) {
-        GCPolicy::LAZY_GC ? node->releaseRoot<true>(true) : node->releaseRoot(true);
+        node->releaseRoot();
     }
 }
 
@@ -189,16 +189,15 @@ void GCContext::init(GCFrame* initialFrame) {
 // }
 
 
-void GCContext::enqueUnstable(GCNode* unstable, ReachableState state) {
-    bool isGarbage = state == ReachableState::Unreachable;
+void GCContext::enqueUnstable(GCNode* unstable, bool isGarbage) {
     GCContext* context;
     if (GCPolicy::LAZY_GC) {
         if (unstable->isEnquedToScan()) return;
         rtgc_assert_ref(unstable, unstable->isUnstable());
         rtgc_assert_ref(unstable, !unstable->isDestroyed());
-        rtgc_assert_ref(unstable, isGarbage || !unstable->isAcyclic());
+        rtgc_assert_ref(unstable, isGarbage || !unstable->isPrimitiveRef());
 
-        const bool isSharedContext = GCPolicy::canSuspendGC() && !unstable->isThreadLocal();
+        const bool isSharedContext = true; // nstw. GCPolicy::canSuspendGC() && !unstable->isThreadLocal();
         context = isSharedContext ? &g_sharedContext : pal::getCurrentThreadGCContext();
 
         if (isSharedContext) SpinLock::lock(&_triggerLock);
@@ -287,22 +286,24 @@ void GCContext::destroyGarbages() {
                     if (node == nullptr || node == garbage || node->isDestroyed()) continue;
 
                     // rtgc_trace_ref_2(RTGC_TRACE_REF, node, garbage, "rtgc_clearObjectRefField");
-                    ReachableState res = node->removeReferrer(garbage);
-                    if (res != 0) {
+                    node->removeReferrer(garbage, true);
+                    /* nstw
+                    if (res != ReachableStatus::Reachable) {
                         if (!GCPolicy::canSuspendGC() || !isSharedContext || node->isThreadLocal()) {
-                            if (res == ReachableState::Unreachable) {
+                            if (res == ReachableStatus::Unreachable) {
                                 this->enqueGarbage(node);
                             } else if (node->markEnquedToScan(S_UNSTABLE_0)) {
-                                rtgc_assert_ref(node, !node->isAcyclic());
+                                rtgc_assert_ref(node, !node->isPrimitiveRef());
                                 _unstableNodes.push_back(node);
                             }
                         } else {
                             SpinLock lock(&_triggerLock);
-                            if (node->markEnquedToScan(res == ReachableState::Unreachable ? 0 : S_UNSTABLE_0)) {
+                            if (node->markEnquedToScan(res == ReachableStatus::Unreachable ? 0 : S_UNSTABLE_0)) {
                                 g_sharedContext._unstableNodes.push_back(node);
                             }
                         }
                     }
+                    */
                 }
             }
 
@@ -337,7 +338,7 @@ void GCContext::destroyGarbages() {
                         this->enqueGarbage(node);
                     }
                 } else if (node->isUnstable()) {
-                    rtgc_assert_ref(node, !node->isAcyclic());
+                    rtgc_assert_ref(node, !node->isPrimitiveRef());
                     node->resolveUnstable(this);
                 }
             }
@@ -375,7 +376,7 @@ void GCContext::clearGarbages(int collectCyclicThreashold) {
 void GCContext::enqueSuspectedNode(GCNode* suspected) {
     const bool isSharedContext = GCPolicy::canSuspendGC() && this == &g_sharedContext;
 
-    rtgc_assert_ref(suspected, !suspected->isAcyclic());
+    rtgc_assert_ref(suspected, !suspected->isPrimitiveRef());
     rtgc_assert_ref(suspected, !suspected->isDestroyed());
     rtgc_assert_ref(suspected, isSharedContext == !suspected->isThreadLocal());
 
@@ -385,7 +386,7 @@ void GCContext::enqueSuspectedNode(GCNode* suspected) {
     if (suspected->markEnquedToScan(S_UNSTABLE_0)) {
         rtgc_trace_ref(RTGC_TRACE_GC, suspected, "enqueSuspectedNode");
         // rtgc_log("s %p %x\n", suspected, (int)suspected->refCountBitFlags());
-        rtgc_assert_ref(suspected, !suspected->isAcyclic());
+        rtgc_assert_ref(suspected, !suspected->isPrimitiveRef());
         _suspectedNodes->push_back(suspected);
     }
     if (isSharedContext) SpinLock::unlock(&_triggerLock);
@@ -417,7 +418,7 @@ int GCNode::inspectUnstables(GCNode* unstable) {
     if (false) {
         rtgc_assert(!unstable->isDestroyed());
         rtgc_assert(!unstable->isEnquedToScan());
-        rtgc_assert_ref(unstable, !unstable->isAcyclic());
+        rtgc_assert_ref(unstable, !unstable->isPrimitiveRef());
 
         if (unstable->isThreadLocal()) {
             rtgc_trace_ref(RTGC_TRACE_GC, unstable, "check cyclic");
@@ -496,10 +497,10 @@ void GCNode::releaseObjectRef(GCNode* node, GCNode* referrer) {
         // rtgc_trace_ref_2(RTGC_TRACE_REF, node, referrer, "GCNode::releaseObjectRef");
         rtgc_assert(!node->isDestroyed());
         if (node != referrer) {
-            ReachableState res = node->removeReferrer(referrer);
-            if (res != 0) {
-                GCContext::enqueUnstable(node, res);
-            }
+            node->removeReferrer(referrer, false);
+            // if (res != 0) {
+            //     GCContext::enqueUnstable(node, res);
+            // }
         }
     }
 }
@@ -519,7 +520,7 @@ void GCNode::replaceGlobalRef(GCRef* location, GCRef object) {
         node->retainRoot();
     }
     if ((node = pal::toNode(old)) != NULL) {
-        node->releaseRoot(true);
+        node->releaseRoot();
     }
 }
 
@@ -619,9 +620,9 @@ void GCNode::replaceObjectRef_inline(GCRef* location, GCRef object, GCRef owner)
 //     if (!GCPolicy::LAZY_GC || !GCPolicy::canSuspendGC() || _gcEnabled) {
 //         pal::foreachFrameRefs(frame, [](GCNode* node) {
 //             if (!GCPolicy::LAZY_GC) {
-//                 node->releaseRoot(true);    
+//                 node->releaseRoot();    
 //             } else if (!node->isThreadLocal()) {
-//                 node->releaseRoot(true);
+//                 node->releaseRoot();
 //             }
 //         });
 //     }
@@ -703,12 +704,12 @@ void GCNode::replaceObjectRef_inline(GCRef* location, GCRef object, GCRef owner)
 //     size_t count = frame == NULL ? _exceptionStack.size() : (size_t)frame->rtgc_spSize;
 //     rtgc_assert(_exceptionStack.size() >= (size_t)count);
 //     for (auto iter = _exceptionStack.begin(); count-- > 0; iter++) {  
-//         (*iter)->releaseRoot(true);
+//         (*iter)->releaseRoot();
 //     }
 //     _exceptionStack.resize(0);
 //     bool frameChanged = _currentFrame != frame;
 //     if (frameChanged) setCurrentFrame(frame);
-//     pal::toNode(_currentException)->releaseRoot(true);
+//     pal::toNode(_currentException)->releaseRoot();
 //     // if (frameChanged) {
 //         resumeFrame();
 //     // } else if (ELASTIC_FRAME) {
@@ -806,13 +807,13 @@ void GCContext::setLocalGCStatus(bool enableGC) {
     FrameOverlay* frame = _currentFrame;
     pal::foreachFrameRefs(frame, [enableGC](GCNode* node) { 
         if (!node->isThreadLocal()) {
-            if (enableGC) node->retainRoot(); else node->releaseRoot(true); 
+            if (enableGC) node->retainRoot(); else node->releaseRoot(); 
         }
     });
 
     while ((frame = frame->previous) != NULL) {
         pal::foreachFrameRefs(frame, [enableGC](GCNode* node) { 
-            if (enableGC) node->retainRoot(); else node->releaseRoot(true); 
+            if (enableGC) node->retainRoot(); else node->releaseRoot(); 
         });
     }
 

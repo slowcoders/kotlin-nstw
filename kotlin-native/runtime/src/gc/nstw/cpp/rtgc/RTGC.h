@@ -16,12 +16,6 @@ namespace rtgc {
 typedef pal::_Deque<GCNode*> NodeDeque;
 typedef pal::_Vector<GCNode*> NodeVector;
 
-enum ReachableState {
-    Reachable,
-    Unreachable,
-    Unstable
-};
-
 enum SharedGCStatus {
     Suspended,
     Triggered,
@@ -96,7 +90,7 @@ struct GCContext {
 
     void collectCyclicGarbage();
 
-    static void enqueUnstable(GCNode* node, ReachableState state);
+    static void enqueUnstable(GCNode* node, bool isGarbage);
 
     static GCContext* getGCContext(GCNode* node);
 
@@ -157,14 +151,14 @@ public:
     inline void init(GCContext* context, bool immutable, bool acyclic) {
         int flags;
         if (immutable) {
-            flags = T_IMMUTABLE | T_SHARED | RT_ACYCLIC;
+            flags = RT2_PRIMITIVE_IMMUTABLE | T_SHARED | RT2_PRIMITIVE_ACYCLIC;
             pal::markPublished(this);
             // TODO Lock context!!!
             if (GCPolicy::canSuspendGC()) {
                 context = GCContext::getSharedContext();
             }
         } else {
-            flags = acyclic ? RT_ACYCLIC : 0;
+            flags = acyclic ? RT2_PRIMITIVE_ACYCLIC : 0;
         }
         ref_.refCount_flags_ = flags;
         context->onCreateInstance(this);
@@ -194,9 +188,12 @@ public:
         return ref_.isTributary();
     }
 
-
     inline bool isAcyclic() const {
         return ref_.isAcyclic();
+    }
+
+    inline bool isPrimitiveRef() const {
+        return ref_.isPrimitiveRef();
     }
 
     inline bool isDestroyed() const {
@@ -324,11 +321,11 @@ public:
         rtgc_trace_ref(RTGC_TRACE_GC, this, "saveExternalRefCount");
     }
 
-    inline void decreaseObjectRefCount() {
+    inline void decreaseExternalRefCount() {
         BEGIN_ATOMIC_REF()
             if (!newRef.tryDecreaseExternalRefCount()) break;
         END_ATOMIC_REF(false)
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "decreaseObjectRefCount");
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "decreaseExternalRefCount");
     }
 
     template <bool Atomic>
@@ -362,172 +359,8 @@ public:
 
     template<bool Atomic>
     RTGC_INLINE void addReferrer(GCNode* referrer) {
-        rtgc_assert_ref(this, referrer != this);
-        rtgc_assert_ref(this, !isDestroyed());
-        rtgc_assert_ref(this, isThreadLocal() != Atomic);
-        rtgc_assert_ref(referrer, !referrer->isYoung());
-        rtgc_trace_ref(RTGC_TRACE_GC, referrer, "add-as-referrer");
-
-        
-        if (this->isAcyclic()) {
-            this->ref_.increaseAcyclicRefCount<Atomic>();    
-            return;
-        }
-
-        while (true) {
-            GCNodeRef oldMain = this->ref_;
-            GCNodeRef newMain = oldMain;
-            bool ext_rc_overflow = !newMain.increaseObjectRef();
-            if (ext_rc_overflow) {
-                markTributaryPath(oldMain.getAnchorOf(this));
-                goto increase_ext_rc_only;
-            } 
-            else if (newMain.canAssignAnchor()) {
-                newMain.setAnchor_unsafe(referrer);
-                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
-                break;
-            } 
-            else {
-                increase_ext_rc_only:
-                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
-            }
-
-
-            //=====================================================//
-            #if 0
-            add_second_anchor:
-            AuxRef oldAux = _auxRef;
-            if (oldAux.canAssignAnchor()) {
-                // multi anchor 를 사용하면, tributary marking 횟수를 줄일 수 있다. 
-                newAux newAux = oldAux;
-                newAux.setAnchor(referrer);
-                if (cmp_set(&_newAux, oldAux, newAux)) break;
-            }
-
-
-            if (!newMain.isDirty() && !referrer->_mainRef.isDirty()) {
-                GCNode* oldAnchor = newMain.replaceAnchorIfNull(referrer);
-                if (oldAnchor != NULL && oldAnchor->isDirty()) {
-                    if (!cmp_set(&_mainRef, oldMain, newMain)) continue;
-                    markTributaryPath(oldAnchor);
-                    break;
-                }
-                newAux newAux = oldAux;
-                oldAnchor = newAux.replaceAnchorIfNull(referrer);
-                if (oldAnchor != NULL && oldAnchor->isDirty()) {
-                    if (!cmp_set(&_auxRef, oldAux, newAux)) goto add_second_anchor;
-                    markTributaryPath(oldAnchor);
-                    break;
-                }
-            }
-            #endif
-
-            markTributaryPath(referrer);
-            break;
-        }
+        retainRC<Atomic, false>(referrer);
     }
-
-    RTGC_INLINE ReachableState removeReferrer(GCNode* referrer) {
-        return (this->isThreadLocal()) ? removeReferrer<false>(referrer) : removeReferrer<true>(referrer);
-    }
-
-    template<bool Atomic>
-    RTGC_INLINE ReachableState removeReferrer(GCNode* referrer) {
-        rtgc_assert_ref(this, referrer != this);
-        rtgc_assert(referrer != NULL);
-        rtgc_assert_ref(this, !isDestroyed());
-        rtgc_assert_ref(referrer, !referrer->isYoung());
-
-        rtgc_trace_ref(RTGC_TRACE_REF, this, "removeReferrer");
-
-        if (this->isAcyclic()) {
-            if (!this->ref_.decreaseAcyclicRefCount<Atomic>()) {
-                return ReachableState::Unreachable;
-            } else {
-                return ReachableState::Reachable;
-            }
-        }
-
-        while (true) {
-            GCNodeRef oldMain = this->ref_;
-            GCNodeRef newMain = oldMain;
-            bool ext_rc_overflow = !newMain.increaseObjectRef();
-            if (ext_rc_overflow) {
-                markTributaryPath(oldMain.getAnchorOf(this));
-                goto increase_ext_rc_only;
-            } 
-            else if (newMain.canAssignAnchor()) {
-                newMain.setAnchor_unsafe(referrer);
-                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
-                break;
-            } 
-            else {
-                increase_ext_rc_only:
-                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
-            }
-
-
-            //=====================================================//
-            #if 0
-            add_second_anchor:
-            AuxRef oldAux = _auxRef;
-            if (oldAux.canAssignAnchor()) {
-                // multi anchor 를 사용하면, tributary marking 횟수를 줄일 수 있다. 
-                newAux newAux = oldAux;
-                newAux.setAnchor(referrer);
-                if (cmp_set(&_newAux, oldAux, newAux)) break;
-            }
-
-
-            if (!newMain.isDirty() && !referrer->_mainRef.isDirty()) {
-                GCNode* oldAnchor = newMain.replaceAnchorIfNull(referrer);
-                if (oldAnchor != NULL && oldAnchor->isDirty()) {
-                    if (!cmp_set(&_mainRef, oldMain, newMain)) continue;
-                    markTributaryPath(oldAnchor);
-                    break;
-                }
-                newAux newAux = oldAux;
-                oldAnchor = newAux.replaceAnchorIfNull(referrer);
-                if (oldAnchor != NULL && oldAnchor->isDirty()) {
-                    if (!cmp_set(&_auxRef, oldAux, newAux)) goto add_second_anchor;
-                    markTributaryPath(oldAnchor);
-                    break;
-                }
-            }
-            #endif
-
-            markTributaryPath(referrer);
-            break;
-        }
-        
-        bool disconneted = !this->isAcyclic() && pal::comp_set<Atomic>(&ref_.anchor_, referrer, (GCNode*)nullptr);
-        ref_count_t rc = this->decrease_object_ref_count<Atomic>(false);
-        if (rc < RTGC_ROOT_REF_INCREMENT) {
-            return ReachableState::Unreachable;
-        } else if (this->isAcyclic()) {
-            return ReachableState::Reachable;
-        }
-
-
-        if (disconneted) {
-            if (ENABLE_OPT_TRIBUTARY_MARK && rc >= RTGC_OBJECT_REF_INCREMENT) {
-                /**
-                 * 동일 anchor 에 의한 다수의 참조 중 일부가 단절되면, 
-                 * 실제 연결되어 있음에도 anchor 가 다른 Node 로 변경될 수 있는데, 이 때 단절된 경로가 tributary 로 변경되지 않은 문제가 있다.
-                 * 이에, anchor_path 단절 시 obj-ref-count > 0 이면, 일단 TributaryPath 로 marking 한다.
-                 * 또는, 별도의 brokenRamifiedNodes 에 추가한 후, 별도 검사 수행 후 Tributary Marking 여부를 결정한다.
-                 */
-                markTributaryPath(referrer);
-            }
-        } 
-
-        ref_count_t check_unstable_mask = RTGC_ROOT_REF_MASK | RTGC_SAFE_REF_MASK | FLAG_ACYCLIC | T_IMMUTABLE;
-        if ((rc & check_unstable_mask) == 0) {
-            return ReachableState::Unstable;
-        } else {
-            return ReachableState::Reachable;
-        }
-    }  
 
     RTGC_INLINE void retainRoot() { 
         this->isThreadLocal() ? retainRoot<false>() : retainRoot<true>();
@@ -535,33 +368,136 @@ public:
 
     template <bool Atomic>
     inline void retainRoot() { 
-        rtgc_assert_ref(this, isThreadLocal() != Atomic);
-        ref_count_t rc = update_root_ref_count<Atomic>(true);
-        markTouched<Atomic, false>(rc);
+        retainRC<Atomic, true>(NULL);
+        // markTouched<Atomic, false>(rc);
     }
 
-    RTGC_INLINE void releaseRoot(bool decreaseRoot) { 
-        if (isThreadLocal()) releaseRoot<false>(decreaseRoot); else releaseRoot<true>(decreaseRoot);
-    }
-
-    template <bool Atomic>
-    RTGC_INLINE void releaseRoot(bool decreaseRoot) {
+    template<bool Atomic, bool isRootRef>
+    RTGC_INLINE void retainRC(GCNode* referrer) {
         rtgc_assert_ref(this, !isDestroyed());
-        ref_count_t rc = decreaseRoot ? update_root_ref_count<Atomic>(false) : ref_.refCount_flags_;
-        ref_count_t check_unstable_mask = S_MASK | RTGC_ROOT_REF_MASK | RTGC_SAFE_REF_MASK | FLAG_ACYCLIC | T_IMMUTABLE | FLAG_SUSPECTED;
-        if (rc < RTGC_ROOT_REF_INCREMENT) {
-            GCContext::enqueUnstable(this, ReachableState::Unreachable);
-        } else if ((rc & check_unstable_mask) == 0) {
-            // tributary 여부와 관계없이 외부로부터의 진입 경로가 없는 순환 경로를 탐지한다.
-            // 1) 외부 진입 불가 순환 경로의 생성
-            // obj-ref-count=0 인 상태에서 anchor 가 설정되었고,
-            // anchor->anchor 값이 null 이 아닌 경우, anchor 를 unsafe 로 설정한다.
-            // 2) unsafe 해제.
-            // unsafe 객체를 새로이 참조하는 경우, unsafe -> unstable 로 변경.
-            // anchor->anchor 값이 null 이 아닌 경우, anchor 를 unsafe 로 설정한다.
-            GCContext::enqueUnstable(this, ReachableState::Unstable);
+        rtgc_assert_ref(this, isThreadLocal() != Atomic);
+        if (!isRootRef) {
+            rtgc_assert_ref(this, referrer != this);
+            rtgc_assert_ref(referrer, !referrer->isYoung());
+            rtgc_trace_ref(RTGC_TRACE_GC, referrer, "add-as-referrer");
         }
-    }    
+        
+        if (this->isPrimitiveRef()) {
+            this->ref_.increasePrimitiveRefCount<Atomic>();    
+            if (!this->isAcyclic()) {
+                markTributaryPath(referrer);
+            }
+            return;
+        }
+
+        while (true) {
+            GCNodeRef oldMain = this->ref_;
+            GCNodeRef newMain = oldMain;
+            GCNode* erasedAnchor = newMain.increaseRef_andGetErasedAnchor(this, isRootRef);
+            if (!isRootRef && erasedAnchor == NULL && newMain.canAssignAnchor()) {
+                newMain.setAnchor_unsafe(referrer);
+                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
+                break;
+            } 
+            else {
+                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
+            }
+
+
+            //=====================================================//
+            #if 0
+            add_second_anchor:
+            AuxRef oldAux = _auxRef;
+            if (oldAux.canAssignAnchor()) {
+                // multi anchor 를 사용하면, tributary marking 횟수를 줄일 수 있다. 
+                newAux newAux = oldAux;
+                newAux.setAnchor(referrer);
+                if (cmp_set(&_newAux, oldAux, newAux)) break;
+            }
+
+
+            if (!newMain.isDirty() && !referrer->_mainRef.isDirty()) {
+                GCNode* oldAnchor = newMain.replaceAnchorIfNull(referrer);
+                if (oldAnchor != NULL && oldAnchor->isDirty()) {
+                    if (!cmp_set(&_mainRef, oldMain, newMain)) continue;
+                    markTributaryPath(oldAnchor);
+                    break;
+                }
+                newAux newAux = oldAux;
+                oldAnchor = newAux.replaceAnchorIfNull(referrer);
+                if (oldAnchor != NULL && oldAnchor->isDirty()) {
+                    if (!cmp_set(&_auxRef, oldAux, newAux)) goto add_second_anchor;
+                    markTributaryPath(oldAnchor);
+                    break;
+                }
+            }
+            #endif
+
+            if (erasedAnchor != NULL) {
+                /** TODO.
+                erasedAnchor->eraseShotcut();
+                */
+                markTributaryPath(erasedAnchor);
+            }
+            if (!isRootRef) {
+                markTributaryPath(referrer);
+            }
+            break;
+        }
+    }
+
+    RTGC_INLINE void removeReferrer(GCNode* referrer, bool calledInGc) {
+        if (this->isThreadLocal()) releaseRC<false, false>(referrer, calledInGc);
+                              else releaseRC<true, false>(referrer, calledInGc);
+    }
+
+    RTGC_INLINE void releaseRoot() { 
+        if (this->isThreadLocal()) this->releaseRC<false, true>(NULL, false);
+                              else releaseRC<true, true>(NULL, false);
+    }
+
+    template<bool Atomic, bool isRootRef>
+    RTGC_INLINE void releaseRC(GCNode* referrer, bool calledInGc) {
+        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_trace_ref(RTGC_TRACE_REF, this, "releaseRC");
+        if (!isRootRef) {
+            rtgc_assert_ref(this, referrer != this);
+            rtgc_assert(referrer != NULL);
+            rtgc_assert_ref(referrer, !referrer->isYoung());
+        }
+
+        ReachableStatus rt;
+        if (this->isPrimitiveRef()) {
+            rt = this->ref_.decreasePrimitiveRefCount<Atomic>();
+        }
+        else 
+        while (true) {
+            GCNodeRef oldMain = this->ref_;
+            GCNodeRef newMain = oldMain;
+            rt = newMain.decreaseRef_andCheckReachable(false);
+            bool markTributaryReferrer = !isRootRef
+                && newMain.canAssignAnchor() 
+                && newMain.tryEraseAnchor(this, referrer)
+                && rt != ReachableStatus::Unreachable;
+
+            if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) 
+                continue;
+
+            if (markTributaryReferrer) {
+                /**
+                 * 동일 anchor 에 의한 다수의 참조 중 일부가 단절되면, 
+                 * 실제 연결되어 있음에도 anchor 가 다른 Node 로 변경될 수 있는데, 이 때 단절된 경로가 tributary 로 변경되지 않는 문제가 있다.
+                 * 이에, anchor_path 단절 시 obj-ref-count > 0 이면, 일단 TributaryPath 로 marking 한다.
+                 * 또는, 별도의 brokenRamifiedNodes 에 추가한 후, 별도 검사 수행 후 Tributary Marking 여부를 결정한다.
+                 */
+                markTributaryPath(referrer);
+            }
+        }
+        if (rt != ReachableStatus::Reachable) {
+            GCContext::enqueUnstable(this, calledInGc && rt == ReachableStatus::Unreachable);
+        }
+    }  
+
 
     RTGC_INLINE GCContext* resolveUnstable(GCContext* context) {
         rtgc_trace_ref(RTGC_TRACE_GC, this, "resolveUnstable");
@@ -607,8 +543,13 @@ public:
     static RTGC_INLINE void markTributaryPath(GCNode* node) {
         rtgc_assert(node != NULL);
 
+        if (node->isTributary()) {
+            node->ref_.eraseShortcut();
+            return;
+        }
+
         while (!node->isThreadLocal()) {
-            rtgc_assert_ref(node, !node->isAcyclic());
+            rtgc_assert_ref(node, !node->isPrimitiveRef());
             rtgc_assert_ref(node, !node->isDestroyed());
             if (node->isTributary()) return;
             node->setTributary<true>(true);
@@ -617,7 +558,7 @@ public:
 
         while (true) {
             rtgc_assert_ref(node, node->isThreadLocal());
-            rtgc_assert_ref(node, !node->isAcyclic());
+            rtgc_assert_ref(node, !node->isPrimitiveRef());
             rtgc_assert_ref(node, !node->isDestroyed());
             if (node->isTributary()) return;
             node->setTributary<false>(true);
@@ -689,62 +630,6 @@ public:
     static int inspectUnstables(GCNode* node);
 
 
-private:
-
-    template <bool Atomic>
-    inline ref_count_t decrease_object_ref_count(bool safeRefOnly) {
-        signed_ref_count_t INCREMENT = RTGC_OBJECT_REF_INCREMENT;
-        rtgc_assert_ref(this, !isDestroyed());
-        rtgc_assert_ref(this, isThreadLocal() != Atomic);
-        rtgc_assert_ref(this, (signed_ref_count_t)ref_.refCount_flags_ >= INCREMENT);
-        unsigned_ref_count_t old_rc = ref_.refCount_flags_;
-        unsigned_ref_count_t new_rc;
-        while (true) {
-            /**
-             * @zee ref_count_t type 과 관계없이 value 를 int64_t 로 설정하면 오류 발생. llvm 버그???
-             */
-            new_rc = old_rc - INCREMENT;
-            if (ref_.refBits_.ext_rc > 0) {
-                new_rc -= RTGC_SAFE_REF_INCREMENT;
-            }
-            if (!Atomic) {
-                ref_.refCount_flags_ = new_rc;
-                break;
-            }
-            unsigned_ref_count_t res = pal::comp_xchg<true>(&ref_.refCount_flags_, old_rc, new_rc);
-            if (old_rc == res) break;
-            old_rc = res;
-        }
-        rtgc_trace_ref(RTGC_TRACE_REF, this, "ref-count-changed");
-        rtgc_assert_ref(this, (signed_ref_count_t)new_rc >= 0);
-        return new_rc;
-    }
-
-    template <bool Atomic>
-    inline ref_count_t update_root_ref_count(bool doIncrease) {
-        signed_ref_count_t INCREMENT = RTGC_ROOT_REF_INCREMENT;
-        rtgc_assert_ref(this, !isDestroyed());
-        rtgc_assert_ref(this, isThreadLocal() != Atomic);
-        unsigned_ref_count_t old_rc = ref_.refCount_flags_;
-        unsigned_ref_count_t new_rc;
-        while (true) {
-            /**
-             * @zee ref_count_t type 과 관계없이 value 를 int64_t 로 설정하면 오류 발생. llvm 버그???
-             */
-            new_rc = doIncrease ? old_rc + INCREMENT : old_rc - INCREMENT;
-            if (!Atomic) {
-                ref_.refCount_flags_ = new_rc;
-                break;
-            }
-            unsigned_ref_count_t res = pal::comp_xchg<true>(&ref_.refCount_flags_, old_rc, new_rc);
-            if (old_rc == res) break;
-            old_rc = res;
-        }
-        rtgc_trace_ref(RTGC_TRACE_REF, this, "ref-count-changed");
-        rtgc_assert_ref(this, (signed_ref_count_t)new_rc >= 0);
-        return new_rc;
-    }
-    
 };
 
 inline void GCContext::onCreateInstance(GCNode* node) {

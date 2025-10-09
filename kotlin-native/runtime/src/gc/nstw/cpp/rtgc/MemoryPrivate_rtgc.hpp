@@ -30,7 +30,8 @@ struct ContainerHeader : public rtgc::GCNode {
 
   inline unsigned containerSize() const {
     rtgc_assert(this->isDestroyed());
-    return GCNode::refCount();
+    rtgc_assert("Not impl" == 0);
+    return 0;//GCNode::refCount();
   }
 
   inline void setContainerSize(unsigned size) {

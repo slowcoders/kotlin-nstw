@@ -58,7 +58,7 @@ public:
     }
 
     template<bool Atomic>
-    RTGC_INLINE ReachableState removeReferrer(GCNode* referrer) {
+    RTGC_INLINE ReachableStatus removeReferrer(GCNode* referrer) {
         while (this->isCyclic()) {
             GlobalCircuitLock lock;
             if (!this->isCyclic()) break;
@@ -68,10 +68,10 @@ public:
             if (referrer == this->anchor_ || this_ring == this->_anchor && this_ring->_sharedCyclicHead == referrer) {
                 rtgc_assert_ref(referrer, referrer->isCyclic());
                 this_ring->breakRing(referrer);
-                return ReachableState::Unstable;
+                return ReachableStatus::Unstable;
             } 
 
-            this->decreaseObjectRefCount<Atomic>(false);
+            this->decreaseExternalRefCount<Atomic>(false);
             GCCircuit* this_circuit = this_ring->getCircuit();
             if (referrer->isCyclic()) {
                 GCCircuit* anchor_circuit = referrer->getCircuit();
