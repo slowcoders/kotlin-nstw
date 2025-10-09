@@ -32,6 +32,15 @@ namespace rtgc {
         bool isPublished(GCRef obj);
 
         template<bool Atomic, typename T>
+        static inline T bit_read(volatile T* where) {
+            if (Atomic && !NO_THREADS) {
+                return *where;
+            } else {
+                return *where;
+            }
+        }
+
+        template<bool Atomic, typename T>
         static inline T bit_or(volatile T* where, T bits) {
             if (Atomic && !NO_THREADS) {
                 return __sync_fetch_and_or(where, bits);

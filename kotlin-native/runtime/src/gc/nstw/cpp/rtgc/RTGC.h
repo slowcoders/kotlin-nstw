@@ -149,7 +149,7 @@ struct GCNode {
 
     const GCNodeRef getRef() const {
         GCNodeRef ref;
-        ref.refCount_flags_ = this->ref_.refCount_flags_;
+        ref.refCount_flags_ = pal::bit_read<true>(&ref_.refCount_flags_);
         return ref;
     }
 
@@ -217,42 +217,16 @@ public:
         GCNodeRef oldRef = getRef();    \
         GCNodeRef newRef = oldRef;  \
 
+#define REF_COMP_SET(Atomic, old_, new_)  \
+    pal::comp_set<Atomic>(&ref_.refCount_flags_, old_.refCount_flags_, new_.refCount_flags_)
+
 #define END_ATOMIC_REF(Atomic) \
-        if (pal::comp_set<Atomic>(&ref_.refCount_flags_, \
-            oldRef.refCount_flags_, newRef.refCount_flags_)) break; \
+        if (REF_COMP_SET(Atomic, oldRef, newRef)) break; \
     }
-
-    // inline void markImmutable(bool isRoot=false) {
-    //     rtgc_assert_ref(this, !isDestroyed());
-    //     rtgc_assert_ref(this, isRoot ? isThreadLocal() : !isImmutable());
-
-    //     BEGIN_ATOMIC_REF()
-    //         newRef.refCount_flags_ |= isRoot ? T_IMMUTABLE : (T_IMMUTABLE | T_SHARED);
-    //         newRef.set_color(S_WHITE);
-    //     END_ATOMIC_REF(false)
-
-    //     rtgc_trace_ref(RTGC_TRACE_GC, this, "markImmutable");
-    //     if (!isRoot) {
-    //         pal::markPublished(this);
-    //     }
-    // }
-
-    // inline void markShared() {
-    //     rtgc_assert_ref(this, !isDestroyed());
-    //     rtgc_assert_ref(this, isThreadLocal());
-    //     BEGIN_ATOMIC_REF()
-    //         newRef.refCount_flags_ |= T_SHARED;
-    //     END_ATOMIC_REF(false)
-    //     pal::markPublished(this);
-    //     rtgc_trace_ref(RTGC_TRACE_GC, this, "markShared");
-    // }
 
     void markDestroyed(GCNode* prevGarbage) {
         rtgc_assert_ref(this, !this->isDestroyed());
-        BEGIN_ATOMIC_REF()
-            newRef.refCount_flags_ |= FLAG_DESTROYED;
-            newRef.anchor_ = prevGarbage;
-        END_ATOMIC_REF(false)
+        ref_.refCount_flags_ |= FLAG_DESTROYED;
         rtgc_trace_ref(RTGC_TRACE_FREE, this, "markDestroyed");
     }
 
@@ -261,7 +235,7 @@ public:
         rtgc_assert_ref(this, !noGarbage || !this->isDestroyed());
         BEGIN_ATOMIC_REF()
             newRef.setEnquedToScan(false);
-        END_ATOMIC_REF(false)
+        END_ATOMIC_REF(noGarbage)
         rtgc_trace_ref(RTGC_TRACE_GC, this, "unmarkEnquedToScan");
     }
 
@@ -291,14 +265,14 @@ public:
     inline void saveExternalRefCount() {
         BEGIN_ATOMIC_REF()
             newRef.saveExternalRefCount();
-        END_ATOMIC_REF(false)
+        END_ATOMIC_REF(true)
         rtgc_trace_ref(RTGC_TRACE_GC, this, "saveExternalRefCount");
     }
 
     inline bool tryDecreaseExternalRefCount(int min_external_rc) {
         BEGIN_ATOMIC_REF()
             if (!newRef.tryDecreaseExternalRefCount(min_external_rc)) return false;
-        END_ATOMIC_REF(false)
+        END_ATOMIC_REF(true)
         rtgc_trace_ref(RTGC_TRACE_GC, this, "tryDecreaseExternalRefCount");
         return true;
     }
@@ -371,11 +345,11 @@ public:
             GCNodeRef newMain = oldMain;
             GCNode* erasedAnchor = newMain.increaseRef_andGetErasedAnchor(this, isRootRef);
             if (!isRootRef && erasedAnchor == NULL && newMain.tryAssignAnchor(this, referrer)) {
-                if (!pal::comp_set<Atomic>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
+                if (!REF_COMP_SET(Atomic, oldMain, newMain)) continue;
                 break;
             } 
             else {
-                if (!pal::comp_set<Atomic>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
+                if (!REF_COMP_SET(Atomic, oldMain, newMain)) continue;
             }
 
 
@@ -453,7 +427,7 @@ public:
                 && newMain.tryEraseAnchor(this, referrer)
                 && rt != ReachableStatus::Unreachable;
 
-            if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) 
+            if (!REF_COMP_SET(true, oldMain, newMain)) 
                 continue;
 
             if (markTributaryReferrer) {
@@ -559,7 +533,7 @@ public:
         // TODO read and write is not thread-safe
         BEGIN_ATOMIC_REF()
             newRef.set_color(color);
-        END_ATOMIC_REF(false)
+        END_ATOMIC_REF(true)
         rtgc_trace_ref(RTGC_TRACE_GC, this, "set_color");
     }
 
@@ -574,7 +548,7 @@ public:
         rtgc_assert_ref(this, !isDestroyed());
         BEGIN_ATOMIC_REF()
             newRef.mark();
-        END_ATOMIC_REF(false)
+        END_ATOMIC_REF(true)
     }
 
     inline void unMark() {
@@ -582,7 +556,7 @@ public:
         rtgc_assert_ref(this, !isDestroyed());
         BEGIN_ATOMIC_REF()
             newRef.unMark();
-        END_ATOMIC_REF(false)
+        END_ATOMIC_REF(true)
     }
 
 
