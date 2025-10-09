@@ -71,7 +71,7 @@ public:
                 return ReachableStatus::Unstable;
             } 
 
-            this->decreaseExternalRefCount<Atomic>(false);
+            this->tryDecreaseExternalRefCount<Atomic>(false);
             GCCircuit* this_circuit = this_ring->getCircuit();
             if (referrer->isCyclic()) {
                 GCCircuit* anchor_circuit = referrer->getCircuit();

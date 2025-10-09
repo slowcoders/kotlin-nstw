@@ -321,40 +321,25 @@ public:
         rtgc_trace_ref(RTGC_TRACE_GC, this, "saveExternalRefCount");
     }
 
-    inline void decreaseExternalRefCount() {
+    inline bool tryDecreaseExternalRefCount(int min_external_rc) {
         BEGIN_ATOMIC_REF()
-            if (!newRef.tryDecreaseExternalRefCount()) break;
+            if (!newRef.tryDecreaseExternalRefCount(min_external_rc)) return false;
         END_ATOMIC_REF(false)
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "decreaseExternalRefCount");
-    }
-
-    template <bool Atomic>
-    inline bool tryIncRootRefCount() { 
-        ref_count_t survival_mask = RTGC_OBJECT_REF_MASK | RTGC_ROOT_REF_MASK;
-        if (GCPolicy::LAZY_GC) survival_mask |=  FLAG_SUSPECTED;
-        
-        ref_count_t rc = ref_.refCount_flags_; 
-        if (rc & FLAG_DESTROYED) return false;
-        if ((rc & survival_mask) == 0) return false;
-        if (!Atomic) {
-            retainRoot<false>();
-            return true;
-        } 
-        
-        while (true) {
-            ref_count_t old_rc = pal::comp_xchg<true>(&ref_.refCount_flags_, rc, rc + RTGC_ROOT_REF_INCREMENT);
-            if (old_rc == rc) {
-                markTouched</*Atomic=*/true, false>(rc);
-                return true;
-            }
-            rc = old_rc;
-            if (rc & FLAG_DESTROYED) return false;
-            if ((rc & survival_mask) == 0) return false;
-        } 
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "tryDecreaseExternalRefCount");
+        return true;
     }
 
     inline bool isYoung() const {
         return ref_.isYoung();
+    }
+
+    inline int tryAssignAnchor(GCNode* anchor) {
+        int res;
+        BEGIN_ATOMIC_REF()
+        res = newRef.tryAssignAnchor(this, anchor);
+        if (res >= 0) break;
+        END_ATOMIC_REF(true);
+        return res;
     }
 
     template<bool Atomic>
@@ -394,13 +379,12 @@ public:
             GCNodeRef oldMain = this->ref_;
             GCNodeRef newMain = oldMain;
             GCNode* erasedAnchor = newMain.increaseRef_andGetErasedAnchor(this, isRootRef);
-            if (!isRootRef && erasedAnchor == NULL && newMain.canAssignAnchor()) {
-                newMain.setAnchor_unsafe(referrer);
-                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
+            if (!isRootRef && erasedAnchor == NULL && newMain.tryAssignAnchor(this, referrer)) {
+                if (!pal::comp_set<Atomic>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
                 break;
             } 
             else {
-                if (!pal::comp_set<true>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
+                if (!pal::comp_set<Atomic>(&ref_.refCount_flags_, oldMain.refCount_flags_, newMain.refCount_flags_)) continue;
             }
 
 
@@ -408,10 +392,9 @@ public:
             #if 0
             add_second_anchor:
             AuxRef oldAux = _auxRef;
-            if (oldAux.canAssignAnchor()) {
+            newAux newAux = oldAux;
+            if (newAux.tryAssignAnchor(this, referrer)) {
                 // multi anchor 를 사용하면, tributary marking 횟수를 줄일 수 있다. 
-                newAux newAux = oldAux;
-                newAux.setAnchor(referrer);
                 if (cmp_set(&_newAux, oldAux, newAux)) break;
             }
 
@@ -476,7 +459,6 @@ public:
             GCNodeRef newMain = oldMain;
             rt = newMain.decreaseRef_andCheckReachable(false);
             bool markTributaryReferrer = !isRootRef
-                && newMain.canAssignAnchor() 
                 && newMain.tryEraseAnchor(this, referrer)
                 && rt != ReachableStatus::Unreachable;
 

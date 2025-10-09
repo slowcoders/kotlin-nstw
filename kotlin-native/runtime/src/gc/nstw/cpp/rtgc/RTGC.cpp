@@ -73,23 +73,17 @@ public:
         rtgc_trace_ref(RTGC_TRACE_GC, node, "markBrown");
     }
 
-    template <bool _clearMark>
     inline void finishScan(GCNode* node, bool isTributary) { 
         if (node->refCount() > 1) {
             if (node->get_color() >= S_GRAY) {
-                if (!((node->get_color() == S_GRAY || node->get_color() == S_STABLE_ANCHORED))) {
-                    rtgc_assert(node->get_color() == S_GRAY || node->get_color() == S_STABLE_ANCHORED);
-                }
                 node->set_color(isTributary ? S_TRIBUTARY_BLACK : S_BLACK); 
             } else {
                 node->set_color(S_CYCLIC_BLACK); 
             }
             rtgc_trace_ref(RTGC_TRACE_GC, node, "markBlack");
             _blackNodes.push_back(node);
-        } else if (_clearMark) {
-            clearMark(node);
         } else {
-            rtgc_assert(node->get_color() == S_STABLE_ANCHORED);
+            clearMark(node);
         }
     }
 
@@ -105,13 +99,7 @@ public:
     }
 
     inline static void clearMark(GCNode* node) {
-        // rtgc_assert(node->get_color() != S_UNSTABLE);
-        if (node->get_color() >= S_GRAY) {
-            rtgc_assert(node->get_color() == S_GRAY || node->get_color() == S_STABLE_ANCHORED);
-            node->set_color(S_WHITE); //S_STABLE_ANCHORED); 
-        } else {
-            node->set_color(S_WHITE); 
-        }
+        node->set_color(S_WHITE); 
         rtgc_trace_ref(RTGC_TRACE_GC, node, "clearMark");
     }
 
@@ -156,7 +144,7 @@ bool RTCollector::markCyclicPath(GCNode* anchor, GCNode* end) {
     _external_rc --;
     for (GCNode* node = anchor;; node = node->getAnchor()) {
         if (!isRedOrPink(node)) {
-            node->decreaseExternalRefCount();
+            node->tryDecreaseExternalRefCount(0);
             enqueCircuitNode(node);
         }
         if (node == end) break;
@@ -189,7 +177,8 @@ static const bool MARK_PINK_ON_SMALL_CIRCUIT_START = false;
 void RTCollector::scanSuspected(GCNode* suspected) {
     rtgc_trace_ref(RTGC_TRACE_GC, suspected, "\nscanSuspected");
 
-    const bool scanTributaryOnly = suspected->isTributary();
+    rtgc_assert(suspected->isTributary());
+
 
     this->_external_rc = 1;
     this->_toVisit.resize(0);
@@ -206,7 +195,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
         auto* anchor = frame._node;
         rtgc_assert(!anchor->isDestroyed());
         int mark = anchor->get_color();
-        if (mark != S_WHITE && mark < S_STABLE_ANCHORED) {
+        if (mark != S_WHITE) {
             _toVisit.pop_back();
             if (mark == S_RED || (MARK_PINK_ON_SMALL_CIRCUIT_START && mark == S_PINK)) {
                 markBrown(anchor);
@@ -216,7 +205,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                     for (auto iter = _circuitNodes.rbegin(); --toPopup >= 0; iter ++) {
                         GCNode* node = *iter;
                         rtgc_trace_ref(RTGC_TRACE_GC, node, "clear reds");
-                        finishScan<true>(node, false);
+                        finishScan(node, false);
                     }
                     if (MARK_PINK_ON_SMALL_CIRCUIT_START && mark == S_PINK) {
                         GCNode* cyclic_anchor = _circuitNodes[frame._count];
@@ -241,7 +230,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
             } else if (mark != S_BLACK && mark != S_TRIBUTARY_BLACK && mark != S_CYCLIC_BLACK) {
                 // anchor 가 toVisited 에 다수 포함될 수 있다.
                 // 이 때, anchor 의 obj_ref_cnt > 1 이므로, WHITE 로 변경되지 않는다.
-                finishScan<true>(anchor, frame._isTributary);
+                finishScan(anchor, frame._isTributary);
                 // if (!frame._isTributary) {
                 //     // konan::consoleErrorf("====== unmark tributary %p\n", anchor);
                 //     if (0) anchor->setTributary<false>(false);
@@ -261,15 +250,8 @@ void RTCollector::scanSuspected(GCNode* suspected) {
 
             rtgc_assert_ref(node, !node->isDestroyed());
 
-            if (node->isAcyclic()) {
+            if (!node->isTributary()) {
                 rtgc_trace_ref(RTGC_TRACE_GC, node, "skip primitive");
-                continue;
-            }
-
-            rtgc_assert(scanTributaryOnly || !node->isTributary());
-            rtgc_assert_ref(node, anchor->isTributary() || !node->isTributary());
-            if (scanTributaryOnly && !node->isTributary()) {
-                rtgc_trace_ref(RTGC_TRACE_GC, node, "skip primary");
                 isTributray = true;
                 continue;
             }
@@ -277,32 +259,22 @@ void RTCollector::scanSuspected(GCNode* suspected) {
             // tributary anchor 는 자유롭게 변경할 수 있다(????)
             int mark = node->get_color();                
             switch (mark) {
-                // case S_UNSTABLE:
-                // case S_UNSTABLE_TAIL:
-                // case S_STABLE_ANCHORED:
-                //     node->set_color(S_WHITE);//STABLE_ANCHORED);
-                    // no-break;
                 case S_WHITE:
-                    if (!scanTributaryOnly) {
-                        rtgc_assert_ref(node, node->getAnchor() == anchor);
-                    } else if (RTGC_CRC_2 && node->refCount() < 16
-                            && node->getAnchor() != NULL && node->getAnchor() != anchor) {         
-                        this->_bridges.push_back(Bridge(node, anchor));
-                        cnt = _toVisit.size();
+                    if (!node->tryAssignAnchor(anchor)) {
                         isTributray = true;
-                        break;
-                    } else {         
-                        node->setAnchor_unsafe(anchor);                
+                        cnt = _toVisit.size();
+                        if (!node->tryDecreaseExternalRefCount(1)) {
+                            rtgc_trace_ref(RTGC_TRACE_GC, node, "push white");
+                            _toVisit.push_back(node);
+                        }
                     }
-                    rtgc_trace_ref(RTGC_TRACE_GC, node, "push white");
-                    _toVisit.push_back(node);
                     break;
                 
                 case S_GRAY: {
                     /* 중간에 circuit 을 포함할 수 있다.*/
                     bool isComplexCircuit = _circuitNodes.size() > 0;
                     rtgc_trace_ref(RTGC_TRACE_GC, node, isComplexCircuit ? "multi-cycle found" : "gray found");
-                    // node->decreaseExternalRefCount();
+                    // node->tryDecreaseExternalRefCount();
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     if (node == suspected) {
                         node->setAnchor_unsafe(anchor);
@@ -315,7 +287,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                 }
                 case S_BROWN: 
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "found brown");
-                    node->decreaseExternalRefCount();
+                    // node->tryDecreaseExternalRefCount();
                     node = findRedOrPink(node);
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     break;
@@ -323,7 +295,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                 case S_PINK:
                 case S_RED:
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "found red");
-                    node->decreaseExternalRefCount();
+                    // node->tryDecreaseExternalRefCount();
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     break;
 
@@ -340,11 +312,6 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                     }
                 case S_BLACK:
                 case S_CYCLIC_BLACK:
-                    if (node->getExternalRefCount() > 0) {
-                        if (node->getAnchor() == NULL || node->getExternalRefCount() > 1) {
-                            node->decreaseExternalRefCount();
-                        }
-                    }
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "skip trace");
                     isTributray = true;
                     break;
@@ -404,31 +371,16 @@ void RTCollector::scanSuspected(GCNode* suspected) {
     if (_external_rc== 0) {
         rtgc_trace(RTGC_TRACE_GC, "found garbage circuit\n");
         _cntCyclicGarbage = _circuitNodes.size();
-        // cnt = _toVisit.size();
-        // for (auto iter = _toVisit.adr_at(0); --cnt >= 0; iter++) {
-        //     uint8_t color = iter->_node->get_color();
-        //     rtgc_assert(color != S_WHITE);
-        //     if (color == S_STABLE_ANCHORED) {
-        //         finishScan<false>(iter->_node, false);
-        //     }
-        // }
-        if (RTGC_DEBUG) {
-            // for (auto iter = _circuitNodes.begin() + _cntCyclicGarbage; iter < _circuitNodes.end(); iter++) {
-            //     uint8_t color = (*iter)->get_color();
-            //     rtgc_assert_ref(*iter, color == S_RED || color == S_BROWN);            
-            //     (*iter)->set_color(color - (S_GRAY - S_GRAY_T));
-            // }
-        }
     } else {
         rtgc_trace(RTGC_TRACE_GC, "not found garbage\n");
         for (auto iter = _circuitNodes.begin() + _cntCyclicGarbage; iter < _circuitNodes.end(); iter++) {
-            finishScan<true>(*iter, false);
+            finishScan(*iter, false);
         }
         _circuitNodes.resize(_cntCyclicGarbage);
 
         cnt = _toVisit.size();
         for (auto iter = _toVisit.adr_at(0) ; --cnt >= 0; iter++) {
-            finishScan<true>(iter->_node, false);
+            finishScan(iter->_node, false);
         }
     }
 }

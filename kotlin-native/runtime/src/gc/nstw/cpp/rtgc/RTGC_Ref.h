@@ -71,10 +71,6 @@ enum GCFlags {
     S_CYCLIC_BLACK      = 0x0A,
     S_TRIBUTARY_BLACK      = 0x0B,
 
-    S_STABLE_ANCHORED       = 0x0C,
-
-    // S_UNSTABLE_TAIL     = 0x0E,
-    // S_UNSTABLE          = 0x0F,
     S_UNSTABLE_0 = 0,
     S_MASK              = 0x0F,
 
@@ -97,7 +93,7 @@ struct RtPrimtive {
 struct RtRamified_Anchor {
     COMMON_BITS()
     uint64_t common_rc: 8;  
-    uint64_t addr:  40;  
+    int64_t addr:  40;  
 };
 
 // Long Shorcut 사용 시 반드시 Anchor 필요. --> Dest 가 Deallocation 될 수 있음.
@@ -217,13 +213,18 @@ protected:
         return (GCNode*)((uint64_t*)node + ramifiedAnchorBits_.addr);
     }
 
-    inline bool canAssignAnchor() const {
-        return refType() == RT_RAMIFIED_with_ANCHOR
-            && ramifiedAnchorBits_.addr == 0;
+    inline int tryAssignAnchor(GCNode* node, GCNode* anchor) {
+        if (refType() != RT_RAMIFIED_with_ANCHOR) return false;
+        intptr_t offset = (uint64_t*)node - (uint64_t*)anchor;
+        if (ramifiedAnchorBits_.addr == 0) {
+            ramifiedAnchorBits_.addr = offset;
+            return -1;
+        }
+        return (ramifiedAnchorBits_.addr == offset);
     }
 
     inline bool tryEraseAnchor(GCNode* node, GCNode* anchor) {
-        rtgc_assert(canAssignAnchor());
+        if (refType() != RT_RAMIFIED_with_ANCHOR) return false;
         if (ramifiedAnchorBits_.addr == (uint64_t*)node - (uint64_t*)anchor) {
             ramifiedAnchorBits_.addr = 0;
             return true;
@@ -233,14 +234,9 @@ protected:
 
 
     inline void setAnchor_unsafe(GCNode* node) {
-        rtgc_assert(canAssignAnchor());
-        ramifiedAnchorBits_.addr = (uint64_t*)node - (uint64_t*)anchor_;
-    }
-
-    inline void setAnchor(GCNode* node) {
         rtgc_assert(refType() == RT_RAMIFIED_with_ANCHOR);
+        rtgc_assert(ramifiedAnchorBits_.addr == 0);
         ramifiedAnchorBits_.addr = (uint64_t*)node - (uint64_t*)anchor_;
-        rtgc_assert(node == getAnchorOf(node));
     }
 
     inline signed_ref_count_t refCount() const {
@@ -311,7 +307,7 @@ protected:
     }
 
 
-    inline bool tryDecreaseExternalRefCount() {
+    inline bool tryDecreaseExternalRefCount(int min_external_rc) {
         rtgc_assert(!isYoung());
         switch (refType()) {
             case RT_PRIMITIVE:
@@ -322,13 +318,13 @@ protected:
                 this->setRefType(RT_TRIBUTARY_with_OFFSET);
                 tributaryOffsetBits_.rc = tributaryShorcutBits_.common_rc;
                 tributaryOffsetBits_.ext_rc = tributaryOffsetBits_.rc - 1;
-                break;
+                return (tributaryOffsetBits_.ext_rc >= min_external_rc);
             case RT_TRIBUTARY_with_OFFSET:
-                if (tributaryOffsetBits_.ext_rc == 0) return false;
+                if (tributaryOffsetBits_.ext_rc == min_external_rc) return false;
                 tributaryOffsetBits_.ext_rc --;
                 break;
             case RT_TRIBUTARY_FULL_RC:
-                if (tributaryFullRcBits_.ext_rc == 0) return false;
+                if (tributaryFullRcBits_.ext_rc == min_external_rc) return false;
                 tributaryFullRcBits_.ext_rc --;
                 break;
             case RT_CIRCUIT:
