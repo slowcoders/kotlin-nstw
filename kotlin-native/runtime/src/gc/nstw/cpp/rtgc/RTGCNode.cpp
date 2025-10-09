@@ -194,7 +194,7 @@ void GCContext::enqueUnstable(GCNode* unstable, bool isGarbage) {
     if (GCPolicy::LAZY_GC) {
         if (unstable->isEnquedToScan()) return;
         rtgc_assert_ref(unstable, unstable->isUnstable());
-        rtgc_assert_ref(unstable, !unstable->isDestroyed());
+        rtgc_assert_ref(unstable, !unstable->isGarbageMarked());
         rtgc_assert_ref(unstable, isGarbage || !unstable->isPrimitiveRef());
 
         const bool isSharedContext = true; // nstw. GCPolicy::canSuspendGC() && !unstable->isThreadLocal();
@@ -230,7 +230,7 @@ void GCContext::enqueUnstable(GCNode* unstable, bool isGarbage) {
 }
 
 ALWAYS_INLINE void GCContext::enqueGarbage(GCNode* garbage) {
-    garbage->markDestroyed(_garbageQ);
+    garbage->markGarbage(_garbageQ);
     _garbageQ = garbage;
 }
 
@@ -263,7 +263,7 @@ void GCContext::destroyGarbages() {
             if (RESURRECTABLE_FINALIZER) {
                 GCNode* nextNode = NULL;
                 for (GCNode* garbage = garbageQ; garbage != NULL; garbage = nextNode) {
-                    nextNode = garbage->getAnchor();
+                    nextNode = garbage->getNextGarbage();
                     if (pal::finalizeObject(garbage)) {
                         lastNode = garbage;
                     } else if (lastNode == NULL) {
@@ -284,7 +284,7 @@ void GCContext::destroyGarbages() {
                 for (pal::RefFieldIterator iter(garbage); (field = iter.nextField()) != nullptr;) {
                     auto node = pal::toNode(*field);
                     if (RTGC_DEBUG) *field = (GCRef)0xDDDDEEEEFFFF0000L; //   nullptr;
-                    if (node == nullptr || node == garbage || node->isDestroyed()) continue;
+                    if (node == nullptr || node == garbage || node->isGarbageMarked()) continue;
 
                     // rtgc_trace_ref_2(RTGC_TRACE_REF, node, garbage, "rtgc_clearObjectRefField");
                     node->removeReferrer(garbage, true);
@@ -335,7 +335,7 @@ void GCContext::destroyGarbages() {
                     if (GCPolicy::canSuspendGC() && this != &g_sharedContext) {
                         rtgc_assert_ref(node, node->isThreadLocal());
                     }
-                    if (!node->isDestroyed()) {
+                    if (!node->isGarbageMarked()) {
                         this->enqueGarbage(node);
                     }
                 } else if (node->isUnstable()) {
@@ -378,7 +378,7 @@ void GCContext::enqueSuspectedNode(GCNode* suspected) {
     const bool isSharedContext = GCPolicy::canSuspendGC() && this == &g_sharedContext;
 
     rtgc_assert_ref(suspected, !suspected->isPrimitiveRef());
-    rtgc_assert_ref(suspected, !suspected->isDestroyed());
+    rtgc_assert_ref(suspected, !suspected->isGarbageMarked());
     rtgc_assert_ref(suspected, isSharedContext == !suspected->isThreadLocal());
 
     if (isSharedContext) SpinLock::lock(&_triggerLock);
@@ -418,7 +418,7 @@ int GCContext::deallocGarbages() {
 int GCNode::inspectUnstables(GCNode* unstable) {
     return FLAG_ENQUED_TO_SCAN;
     if (false) {
-        rtgc_assert(!unstable->isDestroyed());
+        rtgc_assert(!unstable->isGarbageMarked());
         rtgc_assert(!unstable->isEnquedToScan());
         rtgc_assert_ref(unstable, !unstable->isPrimitiveRef());
 
@@ -431,7 +431,7 @@ int GCNode::inspectUnstables(GCNode* unstable) {
             int max_repeat = 8; // 순환 경로 내 무한 루프 방지 용.
             int obj_rc = unstable->refCount();
             for (GCNode* node = unstable->getAnchor(); node != NULL && --max_repeat > 0; node = node->getAnchor()) {
-                if (node->isDestroyed()) {
+                if (node->isGarbageMarked()) {
                     return FLAG_ENQUED_TO_SCAN;
                 }
                 // no nstw.
@@ -481,7 +481,7 @@ void GCNode::retainObjectRef(GCNode* objContainer, GCNode* referrer) {
     rtgc_assert(referrer != NULL);
     if (objContainer != nullptr) {
         // rtgc_trace_ref_2(RTGC_TRACE_REF, objContainer, referrer, "GCNode::retainObjectRef");
-        rtgc_assert_ref(objContainer, !objContainer->isDestroyed());
+        rtgc_assert_ref(objContainer, !objContainer->isGarbageMarked());
         if (objContainer != referrer) {
             if (objContainer->isThreadLocal()) {
                 objContainer->addReferrer<false>(referrer);
@@ -497,7 +497,7 @@ void GCNode::releaseObjectRef(GCNode* node, GCNode* referrer) {
 
     if (node != nullptr) {
         // rtgc_trace_ref_2(RTGC_TRACE_REF, node, referrer, "GCNode::releaseObjectRef");
-        rtgc_assert(!node->isDestroyed());
+        rtgc_assert(!node->isGarbageMarked());
         if (node != referrer) {
             node->removeReferrer(referrer, false);
             // if (res != 0) {

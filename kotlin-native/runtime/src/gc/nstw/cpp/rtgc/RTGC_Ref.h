@@ -45,10 +45,13 @@ enum GCFlags {
     RT2_PRIMITIVE_ACYCLIC     = 0x10 | RT_PRIMITIVE,
     RT2_PRIMITIVE_RAMIFIED    = 0x20 | RT_PRIMITIVE,
     RT2_PRIMITIVE_IMMUTABLE   = 0x30 | RT2_PRIMITIVE_ACYCLIC,
+ 
+    RT2_PRIMITIVE_GARBAGE     = 0x70 | RT_PRIMITIVE,
+
 
 
     REF_TYPE_MASK  = 0x07,
-    REF_TYPE2_MASK = 0x37,
+    REF_TYPE2_MASK = 0x77,
 
     FLAG_ENQUED_TO_SCAN      = 0x10,
 
@@ -81,6 +84,11 @@ enum GCFlags {
     uint64_t type: 4;   \
     uint64_t node: 8;   \
 
+
+struct RtYoungOrDestroyed {
+    COMMON_BITS()
+    uint64_t addr:  40;  
+};
 
 struct RtPrimtive {
     COMMON_BITS()
@@ -129,6 +137,7 @@ protected:
         ref_count_t refCount_flags_;
         RtCircuit circuitBits_;
         RtPrimtive primitiveBits_;
+        RtYoungOrDestroyed youngOrDestroyedBits_;
         RtRamified_Anchor ramifiedAnchorBits_;        
         RtTributary_Shorcut tributaryShorcutBits_;
         RtTributary_Offset tributaryOffsetBits_;
@@ -140,11 +149,18 @@ protected:
         return refCount_flags_ & REF_TYPE_MASK;
     }
 
-    inline int refType2() const {
+    inline int refType2() volatile const {
         return refCount_flags_ & REF_TYPE2_MASK;
     }
 
     inline void setRefType(int type) {
+        rtgc_assert((type & REF_TYPE_MASK) == type);
+        rtgc_assert(type != RT_PRIMITIVE);
+        refCount_flags_ = (refCount_flags_ & ~REF_TYPE_MASK) | type;
+    }
+
+    inline void setRefType2(int type) {
+        rtgc_assert((type & REF_TYPE2_MASK) == type);
         refCount_flags_ = (refCount_flags_ & ~REF_TYPE_MASK) | type;
     }
 
@@ -176,13 +192,27 @@ protected:
         return refType() == RT_PRIMITIVE;
     }
 
-    inline bool isDestroyed() const {
-        return (refCount_flags_ & FLAG_DESTROYED) != 0;
+    inline bool isGarbageMarked() volatile const {
+        return refType2() == RT2_PRIMITIVE_GARBAGE;
+    }
+
+    inline void markGarbage() volatile {
+        refCount_flags_ = (refCount_flags_ & ~REF_TYPE2_MASK) | RT2_PRIMITIVE_GARBAGE;
+    }
+
+    inline GCNode* nextGarbageOf(const GCNode* node) const {
+        rtgc_assert(isGarbageMarked());
+        return (GCNode*)((uint64_t*)node + youngOrDestroyedBits_.addr);
+    }
+
+    inline void setNextGarbage(GCNode* node, GCNode* nextGarbage) volatile {
+        rtgc_assert(isGarbageMarked());
+        youngOrDestroyedBits_.addr = (uint64_t*)node - (uint64_t*)nextGarbage;
     }
 
     inline bool isUnstable() const {
         rtgc_assert(!isYoung());
-        rtgc_assert(!isDestroyed() && !isEnquedToScan());
+        rtgc_assert(!isGarbageMarked() && !isEnquedToScan());
         return getExternalRefCount() == 0;
     }
 

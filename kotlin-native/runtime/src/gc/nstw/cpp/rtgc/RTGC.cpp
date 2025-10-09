@@ -90,7 +90,7 @@ public:
     inline void enqueCircuitNode(GCNode* node) {
         rtgc_trace_ref(RTGC_TRACE_GC, node, "enqueCircuitNode");
         rtgc_assert_ref(node, node->isThreadLocal());
-        rtgc_assert_ref(node, !node->isDestroyed());
+        rtgc_assert_ref(node, !node->isGarbageMarked());
         rtgc_assert_ref(node, node->get_color() == S_GRAY);
         node->set_color(S_RED); 
 
@@ -121,10 +121,10 @@ public:
 
     void destroyGarbages() {
         for (GCNode* node : _blackNodes) {
-            if (node->isDestroyed()) {
+            if (node->isGarbageMarked()) {
                 continue;
             }
-            rtgc_assert(!node->isDestroyed());
+            rtgc_assert(!node->isGarbageMarked());
             uint8_t color;
             switch (node->get_color()) {
             case S_BLACK:           color = S_WHITE; break;
@@ -193,7 +193,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
     while (!_toVisit.empty()) {
         VisitFrame& frame = _toVisit.back();
         auto* anchor = frame._node;
-        rtgc_assert(!anchor->isDestroyed());
+        rtgc_assert(!anchor->isGarbageMarked());
         int mark = anchor->get_color();
         if (mark != S_WHITE) {
             _toVisit.pop_back();
@@ -248,7 +248,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
         for (rtgc::pal::ChildNodeIterator iter(anchor); (node = iter.nextNode()) != NULL; ) {
             if (node == anchor) continue;
 
-            rtgc_assert_ref(node, !node->isDestroyed());
+            rtgc_assert_ref(node, !node->isGarbageMarked());
 
             if (!node->isTributary()) {
                 rtgc_trace_ref(RTGC_TRACE_GC, node, "skip primitive");
@@ -405,7 +405,7 @@ void GCContext::collectCyclicGarbage() {
             rtgc_assert_ref(node, node->isEnquedToScan());
 
             rtgc_trace_ref(RTGC_TRACE_GC, node, "collectCyclicGarbage");
-            if (node->isDestroyed()) {
+            if (node->isGarbageMarked()) {
                 if (RTGC_DEBUG) {
                     node->unmarkEnquedToScan<false>();
                 }
@@ -486,7 +486,7 @@ ref_count_t GCNode::getExternalRefCountOfThreadLocalSubGraph(GCNode* root, NodeV
         auto* anchor = _toVisit.back();
         rtgc_assert(anchor->isThreadLocal());
         _toVisit.pop_back();
-        rtgc_assert(!anchor->isDestroyed());
+        rtgc_assert(!anchor->isGarbageMarked());
 
         if (anchor->marked()) {
             rc -= (RTGC_OBJECT_REF_INCREMENT >> (RTGC_NODE_FLAGS_BITS + RTGC_SAFE_REF_BITS));
@@ -497,7 +497,7 @@ ref_count_t GCNode::getExternalRefCountOfThreadLocalSubGraph(GCNode* root, NodeV
 
         GCNode* node;
         for (rtgc::pal::ChildNodeIterator iter(anchor); (node = iter.nextNode()) != NULL; ) {
-            rtgc_assert_ref(node, !node->isDestroyed());
+            rtgc_assert_ref(node, !node->isGarbageMarked());
             if (node->isThreadLocal()) {
                 if (!node->marked()) {
                     rc += node->refCount();

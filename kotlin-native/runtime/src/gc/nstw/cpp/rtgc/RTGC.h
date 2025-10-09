@@ -200,8 +200,8 @@ public:
         return getRef().isPrimitiveRef();
     }
 
-    inline bool isDestroyed() const {
-        return getRef().isDestroyed();
+    inline bool isGarbageMarked() const {
+        return getRef().isGarbageMarked();
     }
 
     inline bool isUnstable() const {
@@ -224,15 +224,24 @@ public:
         if (REF_COMP_SET(Atomic, oldRef, newRef)) break; \
     }
 
-    void markDestroyed(GCNode* prevGarbage) {
-        rtgc_assert_ref(this, !this->isDestroyed());
-        ref_.refCount_flags_ |= FLAG_DESTROYED;
-        rtgc_trace_ref(RTGC_TRACE_FREE, this, "markDestroyed");
+    GCNode* getNextGarbage() const {
+        return getRef().nextGarbageOf(this);
+    }
+
+    void setNextGarbage(GCNode* nextGarbage) {
+        ref_.setNextGarbage(this, nextGarbage);
+    }
+
+    void markGarbage(GCNode* prevGarbage) {
+        rtgc_assert_ref(this, !this->isGarbageMarked());
+        ref_.markGarbage();
+        ref_.setNextGarbage(this, prevGarbage);
+        rtgc_trace_ref(RTGC_TRACE_FREE, this, "markGarbage");
     }
 
     template <bool noGarbage=true>
     void unmarkEnquedToScan() {
-        rtgc_assert_ref(this, !noGarbage || !this->isDestroyed());
+        rtgc_assert_ref(this, !noGarbage || !this->isGarbageMarked());
         BEGIN_ATOMIC_REF()
             newRef.setEnquedToScan(false);
         END_ATOMIC_REF(noGarbage)
@@ -325,7 +334,7 @@ public:
 
     template<bool Atomic, bool isRootRef>
     RTGC_INLINE void retainRC(GCNode* referrer) {
-        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert_ref(this, !isGarbageMarked());
         rtgc_assert_ref(this, isThreadLocal() != Atomic);
         if (!isRootRef) {
             rtgc_assert_ref(this, referrer != this);
@@ -406,7 +415,7 @@ public:
 
     template<bool Atomic, bool isRootRef>
     RTGC_INLINE void releaseRC(GCNode* referrer, bool calledInGc) {
-        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert_ref(this, !isGarbageMarked());
         rtgc_trace_ref(RTGC_TRACE_REF, this, "releaseRC");
         if (!isRootRef) {
             rtgc_assert_ref(this, referrer != this);
@@ -459,7 +468,7 @@ public:
                 for (GCNode* node = this;;) {
                     GCNode* anchor = node->getAnchor();
                     context->enqueGarbage(node);
-                    if (anchor->isDestroyed()) break;
+                    if (anchor->isGarbageMarked()) break;
                     node = anchor;
                 }
                 return context;
@@ -503,7 +512,7 @@ public:
 
         while (!node->isThreadLocal()) {
             rtgc_assert_ref(node, !node->isPrimitiveRef());
-            rtgc_assert_ref(node, !node->isDestroyed());
+            rtgc_assert_ref(node, !node->isGarbageMarked());
             if (node->isTributary()) return;
             node->setTributary<true>(true);
             if ((node = node->getAnchor()) == NULL) return;
@@ -512,7 +521,7 @@ public:
         while (true) {
             rtgc_assert_ref(node, node->isThreadLocal());
             rtgc_assert_ref(node, !node->isPrimitiveRef());
-            rtgc_assert_ref(node, !node->isDestroyed());
+            rtgc_assert_ref(node, !node->isGarbageMarked());
             if (node->isTributary()) return;
             node->setTributary<false>(true);
             if ((node = node->getAnchor()) == NULL) return;
@@ -528,7 +537,7 @@ public:
     }
 
     void set_color(uint8_t color) {
-        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert_ref(this, !isGarbageMarked());
         rtgc_assert((color & S_MASK) == color);
         // TODO read and write is not thread-safe
         BEGIN_ATOMIC_REF()
@@ -539,13 +548,13 @@ public:
 
     inline bool marked() const {
         // rtgc_assert_ref(this, isThreadLocal());
-        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert_ref(this, !isGarbageMarked());
         return getRef().marked();
     }
 
     inline void mark() {
         // rtgc_assert_ref(this, isThreadLocal());
-        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert_ref(this, !isGarbageMarked());
         BEGIN_ATOMIC_REF()
             newRef.mark();
         END_ATOMIC_REF(true)
@@ -553,7 +562,7 @@ public:
 
     inline void unMark() {
         // rtgc_assert_ref(this, isThreadLocal());
-        rtgc_assert_ref(this, !isDestroyed());
+        rtgc_assert_ref(this, !isGarbageMarked());
         BEGIN_ATOMIC_REF()
             newRef.unMark();
         END_ATOMIC_REF(true)

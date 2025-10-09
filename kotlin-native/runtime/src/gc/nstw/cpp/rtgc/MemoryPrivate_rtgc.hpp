@@ -29,19 +29,19 @@ typedef enum {
 struct ContainerHeader : public rtgc::GCNode {
 
   inline unsigned containerSize() const {
-    rtgc_assert(this->isDestroyed());
+    rtgc_assert(this->isGarbageMarked());
     rtgc_assert("Not impl" == 0);
     return 0;//GCNode::refCount();
   }
 
   inline void setContainerSize(unsigned size) {
-    rtgc_assert(this->isDestroyed());
+    rtgc_assert(this->isGarbageMarked());
     rtgc_assert("Not impl" == 0);
     // GCNode::setObjectRefCount(size);
   }
 
   inline bool hasContainerSize() {
-    return this->isDestroyed();
+    return this->isGarbageMarked();
   }
 
 
@@ -74,17 +74,17 @@ struct ContainerHeader : public rtgc::GCNode {
 //   }
 
   // inline bool seen() const {
-  //   rtgc_assert(!isDestroyed());
+  //   rtgc_assert(!isGarbageMarked());
   //   return (buffered_flags & CONTAINER_TAG_GC_SEEN) != 0;
   // }
 
   // inline void setSeen() {
-  //   rtgc_assert_ref(this, !isDestroyed());
+  //   rtgc_assert_ref(this, !isGarbageMarked());
   //   buffered_flags |= CONTAINER_TAG_GC_SEEN;
   // }
 
   // inline void resetSeen() {
-  //   rtgc_assert_ref(this, !isDestroyed());
+  //   rtgc_assert_ref(this, !isGarbageMarked());
   //   ref_.resetSeen
   //   buffered_flags &= ~CONTAINER_TAG_GC_SEEN;
   // }
