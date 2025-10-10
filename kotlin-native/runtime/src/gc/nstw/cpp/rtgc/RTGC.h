@@ -433,20 +433,23 @@ public:
             GCNodeRef newMain = oldMain;
             rt = newMain.decreaseRef_andCheckReachable(false);
             bool markTributaryReferrer = !isRootRef
-                && newMain.tryEraseAnchor(this, referrer)
-                && rt != ReachableStatus::Unreachable;
+                && newMain.tryEraseAnchor(this, referrer);
 
             if (!REF_COMP_SET(true, oldMain, newMain)) 
                 continue;
 
             if (markTributaryReferrer) {
-                /**
-                 * 동일 anchor 에 의한 다수의 참조 중 일부가 단절되면, 
-                 * 실제 연결되어 있음에도 anchor 가 다른 Node 로 변경될 수 있는데, 이 때 단절된 경로가 tributary 로 변경되지 않는 문제가 있다.
-                 * 이에, anchor_path 단절 시 obj-ref-count > 0 이면, 일단 TributaryPath 로 marking 한다.
-                 * 또는, 별도의 brokenRamifiedNodes 에 추가한 후, 별도 검사 수행 후 Tributary Marking 여부를 결정한다.
-                 */
-                markTributaryPath(referrer);
+                if (rt != ReachableStatus::Unreachable) {
+                    /**
+                     * 동일 anchor 에 의한 다수의 참조 중 일부가 단절되면, 
+                     * 실제 연결되어 있음에도 anchor 가 다른 Node 로 변경될 수 있는데, 이 때 단절된 경로가 tributary 로 변경되지 않는 문제가 있다.
+                     * 이에, anchor_path 단절 시 obj-ref-count > 0 이면, 일단 TributaryPath 로 marking 한다.
+                     * 또는, 별도의 brokenRamifiedNodes 에 추가한 후, 별도 검사 수행 후 Tributary Marking 여부를 결정한다.
+                     */
+                    markTributaryPath(referrer);
+                }
+            } else if (!isRootRef) {
+                referrer->tryEraseTributraryShortcut();
             }
         }
         if (rt != ReachableStatus::Reachable) {
@@ -490,31 +493,37 @@ public:
     }
 
     template<bool Atomic>
-    inline void setTributary(bool isTributary) {
+    inline void setTributary(bool isTributary, GCNode* shortcut) {
         BEGIN_ATOMIC_REF()
-            newRef.setTributary(isTributary);
+            newRef.setTributary(isTributary, this, shortcut);
         END_ATOMIC_REF(Atomic)
+        if (shortcut != NULL && shortcut->getAnchor() != this) {
+            tryEraseTributraryShortcut();
+        }
     }
 
-    void eraseShortcut() {
+    bool tryEraseTributraryShortcut() {
         BEGIN_ATOMIC_REF()
-            newRef.eraseShortcut();
+            if (!newRef.isTributary()) return false;
+            if (!newRef.tryEraseTributraryShortcut()) return true;
         END_ATOMIC_REF(true)
+        return true;
     }
 
     static RTGC_INLINE void markTributaryPath(GCNode* node) {
         rtgc_assert(node != NULL);
 
-        if (node->isTributary()) {
-            node->eraseShortcut();
+        if (node->tryEraseTributraryShortcut()) {
             return;
         }
 
+        GCNode* shortcut = NULL;
         while (!node->isThreadLocal()) {
             rtgc_assert_ref(node, !node->isPrimitiveRef());
             rtgc_assert_ref(node, !node->isGarbageMarked());
             if (node->isTributary()) return;
-            node->setTributary<true>(true);
+            node->setTributary<true>(true, shortcut);
+            shortcut = node;
             if ((node = node->getAnchor()) == NULL) return;
         }
 
@@ -523,7 +532,8 @@ public:
             rtgc_assert_ref(node, !node->isPrimitiveRef());
             rtgc_assert_ref(node, !node->isGarbageMarked());
             if (node->isTributary()) return;
-            node->setTributary<false>(true);
+            node->setTributary<false>(true, shortcut);
+            shortcut = node;
             if ((node = node->getAnchor()) == NULL) return;
         }
     }

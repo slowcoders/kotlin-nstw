@@ -229,17 +229,49 @@ protected:
     }
     //============================================//
 
-    inline void setTributary(bool isTributary) {
-        // if (isTributary) {
-        //     refCount_flags_ |= FLAG_TRIBUTARY;
-        // } else {
-        //     refCount_flags_ &= ~FLAG_TRIBUTARY;
-        // }
+    inline void setTributary(bool isTributary, GCNode* node, GCNode* shortcut) {
+        rtgc_assert(!this->isTributary());
+        switch (refType()) {
+            case RT_PRIMITIVE:
+                rtgc_assert(refType2() == RT2_PRIMITIVE_RAMIFIED);
+                setRefType2(RT_TRIBUTARY_FULL_RC);
+                tributaryFullRcBits_.rc = primitiveBits_.common_rc;
+                tributaryFullRcBits_.ext_rc = tributaryFullRcBits_.rc;
+                break;
+            case RT_RAMIFIED_with_ANCHOR:
+                setRefType2(RT_TRIBUTARY_with_SHORTCUT);
+                tributaryShorcutBits_.common_rc = ramifiedAnchorBits_.common_rc;
+                tributaryShorcutBits_.shortcut = (int64_t*)node - (int64_t*)shortcut;
+                break;
+            case RT_TRIBUTARY_with_SHORTCUT:
+            case RT_TRIBUTARY_with_OFFSET:
+            case RT_TRIBUTARY_FULL_RC:
+            default:
+                rtgc_assert("Should not be here!" == 0);
+                break;
+            case RT_CIRCUIT:
+                rtgc_assert("Not impl" == 0);
+        }
     }
     
-    inline void eraseShortcut() {
-        rtgc_assert(isTributary());
-        tributaryShorcutBits_.shortcut = 0;
+    inline bool tryEraseTributraryShortcut() {
+        switch (refType()) {
+            case RT_TRIBUTARY_with_SHORTCUT:
+                if (tributaryShorcutBits_.shortcut == 0) return false;
+                tributaryShorcutBits_.shortcut = 0;
+                return true;
+            case RT_TRIBUTARY_with_OFFSET:
+                if (tributaryOffsetBits_.offset == 0) return false;
+                tributaryOffsetBits_.offset = 0;
+                return true;
+            case RT_TRIBUTARY_FULL_RC:
+                return false;
+            case RT_CIRCUIT:
+                rtgc_assert("Not impl" == 0);
+                return false;
+            default:
+                throw "Should not be here";
+        }
     }
 
 
