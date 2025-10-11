@@ -45,7 +45,7 @@ struct ContainerHeader : public rtgc::GCNode {
   }
 
 
-//   #define buffered_flags refCount_flags_
+//   #define buffered_flags _rcBits
 //   inline bool buffered() const {
 // #if USE_RTGC
 //     rtgc_assert(!rtgc::ENABLE_BK_GC);

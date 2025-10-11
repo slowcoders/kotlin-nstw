@@ -34,21 +34,21 @@ enum ReachableStatus {
 };
 
 enum GCFlags {
-    RT_PRIMITIVE = 0x00,
+    NT_PRIMITIVE = 0x00,
 
-    RT_RAMIFIED_with_ANCHOR   = 0x01,
-    RT_TRIBUTARY_with_SHORTCUT = 0x02,
+    NT_RAMIFIED_with_ANCHOR   = 0x01,
+    NT_TRIBUTARY_with_SHORTCUT = 0x02,
     
-    RT_TRIBUTARY_with_OFFSET  = 0x03,
-    RT_TRIBUTARY_FULL_RC      = 0x04,
-    RT_CIRCUIT                = 0x07,
+    NT_TRIBUTARY_with_OFFSET  = 0x03,
+    NT_TRIBUTARY_FULL_RC      = 0x04,
+    NT_CIRCUIT                = 0x07,
 
-    RT2_PRIMITIVE_YOUNG       = (0 << 3) | RT_PRIMITIVE,
-    RT2_PRIMITIVE_ACYCLIC     = (1 << 3) | RT_PRIMITIVE,
-    RT2_PRIMITIVE_RAMIFIED    = (2 << 3) | RT_PRIMITIVE,
-    RT2_PRIMITIVE_IMMUTABLE   = (3 << 3) | RT2_PRIMITIVE_ACYCLIC,
+    NT2_PRIMITIVE_YOUNG       = (0 << 3) | NT_PRIMITIVE,
+    NT2_PRIMITIVE_ACYCLIC     = (1 << 3) | NT_PRIMITIVE,
+    NT2_PRIMITIVE_RAMIFIED    = (2 << 3) | NT_PRIMITIVE,
+    NT2_PRIMITIVE_IMMUTABLE   = (3 << 3) | NT2_PRIMITIVE_ACYCLIC,
  
-    RT2_PRIMITIVE_GARBAGE     = (7 << 3) | RT_PRIMITIVE,
+    NT2_PRIMITIVE_GARBAGE     = (7 << 3) | NT_PRIMITIVE,
 
 
 
@@ -85,44 +85,44 @@ enum GCFlags {
     uint64_t node: 8;   \
 
 
-struct RtYoungOrDestroyed {
+struct NtYoungOrDestroyed {
     COMMON_BITS()
     uint64_t addr:  40;  
 };
 
-struct RtPrimtive {
+struct NtPrimtive {
     COMMON_BITS()
     uint64_t idx:  16;  
     uint64_t common_rc:  32;  
 };
 
-struct RtRamified_Anchor {
+struct NtRamified_Anchor {
     COMMON_BITS()
     uint64_t common_rc: 8;  
     int64_t addr:  40;  
 };
 
 // Long Shorcut 사용 시 반드시 Anchor 필요. --> Dest 가 Deallocation 될 수 있음.
-struct RtTributary_Shorcut {
+struct NtTributary_Shorcut {
     COMMON_BITS()
     uint64_t common_rc: 8;  
     uint64_t shortcut:  40;  
 };
 
-struct RtTributary_Offset {
+struct NtTributary_Offset {
     COMMON_BITS()
     uint64_t ext_rc: 8;  
     uint64_t rc:  16;
     uint64_t offset:  16;  
 };
 
-struct RtTributary_FullRc {
+struct NtTributary_Rc32 {
     COMMON_BITS()
     uint64_t ext_rc: 8;  
     uint64_t rc:  32;
 };
 
-struct RtCircuit {
+struct NtCircuit {
     COMMON_BITS()
     uint64_t common_rc:  8;  
     uint64_t circuit_id:  32;
@@ -134,81 +134,81 @@ struct GCNodeRef {
     friend struct GCNode;
 protected:    
     union {
-        ref_count_t refCount_flags_;
-        RtCircuit circuitBits_;
-        RtPrimtive primitiveBits_;
-        RtYoungOrDestroyed youngOrDestroyedBits_;
-        RtRamified_Anchor ramifiedAnchorBits_;        
-        RtTributary_Shorcut tributaryShorcutBits_;
-        RtTributary_Offset tributaryOffsetBits_;
-        RtTributary_FullRc tributaryFullRcBits_;
+        ref_count_t _rcBits;
+        NtCircuit _ntCircuit;
+        NtPrimtive _ntPrimitive;
+        NtYoungOrDestroyed _ntYoungOrDestroyed;
+        NtRamified_Anchor _ntRamified_anchor;        
+        NtTributary_Shorcut _ntTibutary_shorcut;
+        NtTributary_Offset _ntTributary_offset;
+        NtTributary_Rc32 _ntTributary_rc32;
     };
     // GCNode* anchor_;
 
 // public:
-    inline int refType() const {
-        return refCount_flags_ & REF_TYPE_MASK;
+    inline int nodeType() const {
+        return _rcBits & REF_TYPE_MASK;
     }
 
-    inline int refType2() volatile const {
-        return refCount_flags_ & REF_TYPE2_MASK;
+    inline int nodeType2() volatile const {
+        return _rcBits & REF_TYPE2_MASK;
     }
 
-    inline void setRefType(int type) {
+    inline void setNodeType(int type) {
         rtgc_assert((type & REF_TYPE_MASK) == type);
-        rtgc_assert(type != RT_PRIMITIVE);
-        refCount_flags_ = (refCount_flags_ & ~REF_TYPE_MASK) | type;
+        rtgc_assert(type != NT_PRIMITIVE);
+        _rcBits = (_rcBits & ~REF_TYPE_MASK) | type;
     }
 
-    inline void setRefType2(int type) {
+    inline void setNodeType2(int type) {
         rtgc_assert((type & REF_TYPE2_MASK) == type);
-        refCount_flags_ = (refCount_flags_ & ~REF_TYPE_MASK) | type;
+        _rcBits = (_rcBits & ~REF_TYPE_MASK) | type;
     }
 
     inline bool isYoung() const {
-        return false;// refType() == RT2_PRIMITIVE_YOUNG;
+        return false;// nodeType() == NT2_PRIMITIVE_YOUNG;
     }
 
     inline bool isTributary() const {
-        return refType() >= RT_TRIBUTARY_with_SHORTCUT;
+        return nodeType() >= NT_TRIBUTARY_with_SHORTCUT;
     }
 
     inline bool isThreadLocal() const {
-        return false; //(refCount_flags_ & T_MASK) == 0;
+        return false; //(_rcBits & T_MASK) == 0;
     }
 
     inline bool isImmutable() const {
-        return false; // (refCount_flags_ & T_IMMUTABLE) != 0;
+        return false; // (_rcBits & T_IMMUTABLE) != 0;
     }
 
     inline bool isImmutableRoot() const {
-        return false; // (refCount_flags_ & T_MASK) == T_IMMUTABLE;
+        return false; // (_rcBits & T_MASK) == T_IMMUTABLE;
     }
 
     inline bool isAcyclic() const {
-        return (refType2() & RT2_PRIMITIVE_ACYCLIC) != 0;
+        return (nodeType2() & NT2_PRIMITIVE_ACYCLIC) != 0;
     }
 
     inline bool isPrimitiveRef() const {
-        return refType() == RT_PRIMITIVE;
+        return nodeType() == NT_PRIMITIVE;
     }
 
     inline bool isGarbageMarked() volatile const {
-        return refType2() == RT2_PRIMITIVE_GARBAGE;
+        return nodeType2() == NT2_PRIMITIVE_GARBAGE;
     }
 
     inline void markGarbage() volatile {
-        refCount_flags_ = (refCount_flags_ & ~REF_TYPE2_MASK) | RT2_PRIMITIVE_GARBAGE;
+        _rcBits = (_rcBits & ~REF_TYPE2_MASK) | NT2_PRIMITIVE_GARBAGE;
     }
 
     inline GCNode* nextGarbageOf(const GCNode* node) const {
         rtgc_assert(isGarbageMarked());
-        return (GCNode*)((uint64_t*)node + youngOrDestroyedBits_.addr);
+        return (GCNode*)((uint64_t*)node + _ntYoungOrDestroyed.addr);
     }
 
     inline void setNextGarbage(GCNode* node, GCNode* nextGarbage) volatile {
         rtgc_assert(isGarbageMarked());
-        youngOrDestroyedBits_.addr = getOffset(node, nextGarbage);
+        _ntYoungOrDestroyed.addr = getOffset(node, nextGarbage);
     }
 
     inline bool isUnstable() const {
@@ -218,19 +218,19 @@ protected:
     }
 
     bool isRemembered() const {
-        return (refCount_flags_ & FLAG_REMEMBERED) != 0;
+        return (_rcBits & FLAG_REMEMBERED) != 0;
     }
 
     bool isEnquedToScan() const {
-        return (refCount_flags_ & (FLAG_ENQUED_TO_SCAN | FLAG_REMEMBERED)) != 0;
+        return (_rcBits & (FLAG_ENQUED_TO_SCAN | FLAG_REMEMBERED)) != 0;
     }
 
     void setEnquedToScan(bool isEnqued) {
         if (isEnqued) {
             rtgc_assert(!isEnquedToScan());
-            refCount_flags_ |= FLAG_ENQUED_TO_SCAN;
+            _rcBits |= FLAG_ENQUED_TO_SCAN;
         } else {
-            refCount_flags_ &= ~(FLAG_ENQUED_TO_SCAN | FLAG_REMEMBERED);
+            _rcBits &= ~(FLAG_ENQUED_TO_SCAN | FLAG_REMEMBERED);
         }
     }
 
@@ -241,42 +241,42 @@ protected:
 
     inline void setTributary(bool isTributary, GCNode* node, GCNode* shortcut) {
         rtgc_assert(!this->isTributary());
-        switch (refType()) {
-            case RT_PRIMITIVE:
-                rtgc_assert(refType2() == RT2_PRIMITIVE_RAMIFIED);
-                setRefType2(RT_TRIBUTARY_FULL_RC);
-                tributaryFullRcBits_.rc = primitiveBits_.common_rc;
-                tributaryFullRcBits_.ext_rc = tributaryFullRcBits_.rc;
+        switch (nodeType()) {
+            case NT_PRIMITIVE:
+                rtgc_assert(nodeType2() == NT2_PRIMITIVE_RAMIFIED);
+                setNodeType2(NT_TRIBUTARY_FULL_RC);
+                _ntTributary_rc32.rc = _ntPrimitive.common_rc;
+                _ntTributary_rc32.ext_rc = _ntTributary_rc32.rc;
                 break;
-            case RT_RAMIFIED_with_ANCHOR:
-                setRefType2(RT_TRIBUTARY_with_SHORTCUT);
-                tributaryShorcutBits_.common_rc = ramifiedAnchorBits_.common_rc;
-                tributaryShorcutBits_.shortcut = getOffset(node, shortcut);
+            case NT_RAMIFIED_with_ANCHOR:
+                setNodeType2(NT_TRIBUTARY_with_SHORTCUT);
+                _ntTibutary_shorcut.common_rc = _ntRamified_anchor.common_rc;
+                _ntTibutary_shorcut.shortcut = getOffset(node, shortcut);
                 break;
-            case RT_TRIBUTARY_with_SHORTCUT:
-            case RT_TRIBUTARY_with_OFFSET:
-            case RT_TRIBUTARY_FULL_RC:
+            case NT_TRIBUTARY_with_SHORTCUT:
+            case NT_TRIBUTARY_with_OFFSET:
+            case NT_TRIBUTARY_FULL_RC:
             default:
                 rtgc_assert("Should not be here!" == 0);
                 break;
-            case RT_CIRCUIT:
+            case NT_CIRCUIT:
                 rtgc_assert("Not impl" == 0);
         }
     }
     
     inline bool tryEraseTributraryShortcut() {
-        switch (refType()) {
-            case RT_TRIBUTARY_with_SHORTCUT:
-                if (tributaryShorcutBits_.shortcut == 0) return false;
-                tributaryShorcutBits_.shortcut = 0;
+        switch (nodeType()) {
+            case NT_TRIBUTARY_with_SHORTCUT:
+                if (_ntTibutary_shorcut.shortcut == 0) return false;
+                _ntTibutary_shorcut.shortcut = 0;
                 return true;
-            case RT_TRIBUTARY_with_OFFSET:
-                if (tributaryOffsetBits_.offset == 0) return false;
-                tributaryOffsetBits_.offset = 0;
+            case NT_TRIBUTARY_with_OFFSET:
+                if (_ntTributary_offset.offset == 0) return false;
+                _ntTributary_offset.offset = 0;
                 return true;
-            case RT_TRIBUTARY_FULL_RC:
+            case NT_TRIBUTARY_FULL_RC:
                 return false;
-            case RT_CIRCUIT:
+            case NT_CIRCUIT:
                 rtgc_assert("Not impl" == 0);
                 return false;
             default:
@@ -286,24 +286,24 @@ protected:
 
 
     inline GCNode* getAnchorOf(const GCNode* node) const {
-        rtgc_assert(refType() == RT_RAMIFIED_with_ANCHOR);
-        return (GCNode*)((uint64_t*)node + ramifiedAnchorBits_.addr);
+        rtgc_assert(nodeType() == NT_RAMIFIED_with_ANCHOR);
+        return (GCNode*)((uint64_t*)node + _ntRamified_anchor.addr);
     }
 
     inline int tryAssignAnchor(GCNode* node, GCNode* anchor) {
-        if (refType() != RT_RAMIFIED_with_ANCHOR) return false;
+        if (nodeType() != NT_RAMIFIED_with_ANCHOR) return false;
         intptr_t offset = getOffset(node, anchor);
-        if (ramifiedAnchorBits_.addr == 0) {
-            ramifiedAnchorBits_.addr = offset;
+        if (_ntRamified_anchor.addr == 0) {
+            _ntRamified_anchor.addr = offset;
             return -1;
         }
-        return (ramifiedAnchorBits_.addr == offset);
+        return (_ntRamified_anchor.addr == offset);
     }
 
     inline bool tryEraseAnchor(GCNode* node, GCNode* anchor) {
-        if (refType() != RT_RAMIFIED_with_ANCHOR) return false;
-        if (ramifiedAnchorBits_.addr == getOffset(node, anchor)) {
-            ramifiedAnchorBits_.addr = 0;
+        if (nodeType() != NT_RAMIFIED_with_ANCHOR) return false;
+        if (_ntRamified_anchor.addr == getOffset(node, anchor)) {
+            _ntRamified_anchor.addr = 0;
             return true;
         };
         return false;
@@ -311,24 +311,24 @@ protected:
 
 
     inline void setAnchor_unsafe(GCNode* node, GCNode* anchor) {
-        rtgc_assert(refType() == RT_RAMIFIED_with_ANCHOR);
-        rtgc_assert(ramifiedAnchorBits_.addr == 0);
-        ramifiedAnchorBits_.addr = getOffset(node, anchor);
+        rtgc_assert(nodeType() == NT_RAMIFIED_with_ANCHOR);
+        rtgc_assert(_ntRamified_anchor.addr == 0);
+        _ntRamified_anchor.addr = getOffset(node, anchor);
     }
 
     inline signed_ref_count_t refCount() const {
         rtgc_assert(!isYoung());
-        switch (refType()) {
-            case RT_PRIMITIVE:
-                return primitiveBits_.common_rc;
-            case RT_TRIBUTARY_with_SHORTCUT:
-                return tributaryShorcutBits_.common_rc;
-            case RT_TRIBUTARY_with_OFFSET:
-                return tributaryOffsetBits_.rc;
-            case RT_TRIBUTARY_FULL_RC:
-                return tributaryFullRcBits_.rc;
-            case RT_CIRCUIT:
-                return circuitBits_.common_rc;
+        switch (nodeType()) {
+            case NT_PRIMITIVE:
+                return _ntPrimitive.common_rc;
+            case NT_TRIBUTARY_with_SHORTCUT:
+                return _ntTibutary_shorcut.common_rc;
+            case NT_TRIBUTARY_with_OFFSET:
+                return _ntTributary_offset.rc;
+            case NT_TRIBUTARY_FULL_RC:
+                return _ntTributary_rc32.rc;
+            case NT_CIRCUIT:
+                return _ntCircuit.common_rc;
             default:
                 rtgc_assert(false);
                 return 0;
@@ -336,24 +336,24 @@ protected:
     }
 
     ref_count_t refCountBitFlags() const {
-        return refCount_flags_;
+        return _rcBits;
     }
 
 
     inline unsigned getExternalRefCount() const {
         rtgc_assert(!isYoung());
-        switch (refType()) {
-            case RT_PRIMITIVE:
-                return primitiveBits_.common_rc;
-            case RT_TRIBUTARY_with_SHORTCUT:
-                return tributaryShorcutBits_.common_rc;
-            case RT_TRIBUTARY_with_OFFSET:
-                return tributaryOffsetBits_.ext_rc;
-            case RT_TRIBUTARY_FULL_RC:
-                return tributaryFullRcBits_.ext_rc;
-            case RT_CIRCUIT:
+        switch (nodeType()) {
+            case NT_PRIMITIVE:
+                return _ntPrimitive.common_rc;
+            case NT_TRIBUTARY_with_SHORTCUT:
+                return _ntTibutary_shorcut.common_rc;
+            case NT_TRIBUTARY_with_OFFSET:
+                return _ntTributary_offset.ext_rc;
+            case NT_TRIBUTARY_FULL_RC:
+                return _ntTributary_rc32.ext_rc;
+            case NT_CIRCUIT:
                 rtgc_assert("not impl" == 0);
-                return circuitBits_.common_rc;
+                return _ntCircuit.common_rc;
             default:
                 rtgc_assert("should not be here" == 0);
                 return 0;
@@ -363,25 +363,25 @@ protected:
 
     inline bool tryDecreaseExternalRefCount(int min_external_rc) {
         rtgc_assert(!isYoung());
-        switch (refType()) {
-            case RT_PRIMITIVE:
+        switch (nodeType()) {
+            case NT_PRIMITIVE:
                 rtgc_assert("should not be here" == 0);
                 break;
 
-            case RT_TRIBUTARY_with_SHORTCUT:
-                this->setRefType(RT_TRIBUTARY_with_OFFSET);
-                tributaryOffsetBits_.rc = tributaryShorcutBits_.common_rc;
-                tributaryOffsetBits_.ext_rc = tributaryOffsetBits_.rc - 1;
-                return (tributaryOffsetBits_.ext_rc >= min_external_rc);
-            case RT_TRIBUTARY_with_OFFSET:
-                if (tributaryOffsetBits_.ext_rc == min_external_rc) return false;
-                tributaryOffsetBits_.ext_rc --;
+            case NT_TRIBUTARY_with_SHORTCUT:
+                this->setNodeType(NT_TRIBUTARY_with_OFFSET);
+                _ntTributary_offset.rc = _ntTibutary_shorcut.common_rc;
+                _ntTributary_offset.ext_rc = _ntTributary_offset.rc - 1;
+                return (_ntTributary_offset.ext_rc >= min_external_rc);
+            case NT_TRIBUTARY_with_OFFSET:
+                if (_ntTributary_offset.ext_rc == min_external_rc) return false;
+                _ntTributary_offset.ext_rc --;
                 break;
-            case RT_TRIBUTARY_FULL_RC:
-                if (tributaryFullRcBits_.ext_rc == min_external_rc) return false;
-                tributaryFullRcBits_.ext_rc --;
+            case NT_TRIBUTARY_FULL_RC:
+                if (_ntTributary_rc32.ext_rc == min_external_rc) return false;
+                _ntTributary_rc32.ext_rc --;
                 break;
-            case RT_CIRCUIT:
+            case NT_CIRCUIT:
                 rtgc_assert("not impl" == 0);
             default:
                 rtgc_assert("should not be here" == 0);
@@ -392,29 +392,29 @@ protected:
 
 
     inline void saveExternalRefCount() {
-        switch (refType()) {
-            case RT2_PRIMITIVE_ACYCLIC:
-            case RT2_PRIMITIVE_RAMIFIED:
-            case RT_RAMIFIED_with_ANCHOR:
+        switch (nodeType()) {
+            case NT2_PRIMITIVE_ACYCLIC:
+            case NT2_PRIMITIVE_RAMIFIED:
+            case NT_RAMIFIED_with_ANCHOR:
                 rtgc_assert("should not be here" == 0);
 
-            case RT_TRIBUTARY_with_SHORTCUT:
+            case NT_TRIBUTARY_with_SHORTCUT:
                 rtgc_assert("should not be here" == 0);
                 break;
 
-            case RT_TRIBUTARY_with_OFFSET:
-                tributaryOffsetBits_.ext_rc = tributaryOffsetBits_.rc;
-                if (tributaryOffsetBits_.ext_rc != tributaryOffsetBits_.rc) {
-                    tributaryOffsetBits_.ext_rc = -1;
+            case NT_TRIBUTARY_with_OFFSET:
+                _ntTributary_offset.ext_rc = _ntTributary_offset.rc;
+                if (_ntTributary_offset.ext_rc != _ntTributary_offset.rc) {
+                    _ntTributary_offset.ext_rc = -1;
                 }
                 break;
-            case RT_TRIBUTARY_FULL_RC:
-                tributaryFullRcBits_.ext_rc = tributaryFullRcBits_.rc;
-                if (tributaryFullRcBits_.ext_rc != tributaryFullRcBits_.rc) {
-                    tributaryFullRcBits_.ext_rc = -1;
+            case NT_TRIBUTARY_FULL_RC:
+                _ntTributary_rc32.ext_rc = _ntTributary_rc32.rc;
+                if (_ntTributary_rc32.ext_rc != _ntTributary_rc32.rc) {
+                    _ntTributary_rc32.ext_rc = -1;
                 }
                 break;
-            case RT_CIRCUIT:
+            case NT_CIRCUIT:
                 rtgc_assert("not impl" == 0);
             default:
                 rtgc_assert("should not be here" == 0);
@@ -424,49 +424,49 @@ protected:
     GCNode* increaseRef_andGetErasedAnchor(GCNode* ref, bool isRootRef) {
         int erc;
         GCNode* anchor;
-        switch (refType()) {
-            case RT2_PRIMITIVE_ACYCLIC:
+        switch (nodeType()) {
+            case NT2_PRIMITIVE_ACYCLIC:
                 rtgc_assert("should not be here" == 0);
                 break;
-            case RT_RAMIFIED_with_ANCHOR:
-                if (++ramifiedAnchorBits_.common_rc != 0) break;
+            case NT_RAMIFIED_with_ANCHOR:
+                if (++_ntRamified_anchor.common_rc != 0) break;
 
                 anchor = getAnchorOf(ref);
-                setRefType(RT2_PRIMITIVE_RAMIFIED);
-                primitiveBits_.common_rc = (uint)~ramifiedAnchorBits_.common_rc + 1;
+                setNodeType(NT2_PRIMITIVE_RAMIFIED);
+                _ntPrimitive.common_rc = (uint)~_ntRamified_anchor.common_rc + 1;
                 return anchor;
 
-            case RT_TRIBUTARY_with_SHORTCUT:
-                erc = tributaryShorcutBits_.common_rc;
+            case NT_TRIBUTARY_with_SHORTCUT:
+                erc = _ntTibutary_shorcut.common_rc;
                 if (isRootRef) {
-                    if (++tributaryShorcutBits_.common_rc != 0) break;
+                    if (++_ntTibutary_shorcut.common_rc != 0) break;
                 }
-                setRefType(RT_TRIBUTARY_with_OFFSET);
-                tributaryOffsetBits_.ext_rc = erc;
-                tributaryOffsetBits_.rc = erc + 1;
+                setNodeType(NT_TRIBUTARY_with_OFFSET);
+                _ntTributary_offset.ext_rc = erc;
+                _ntTributary_offset.rc = erc + 1;
                 break;
-            case RT_TRIBUTARY_with_OFFSET:
-                erc = tributaryOffsetBits_.ext_rc;
-                if (++tributaryOffsetBits_.rc != 0) {
+            case NT_TRIBUTARY_with_OFFSET:
+                erc = _ntTributary_offset.ext_rc;
+                if (++_ntTributary_offset.rc != 0) {
                     if (isRootRef && ~erc != 0) {
-                        tributaryOffsetBits_.ext_rc ++;
+                        _ntTributary_offset.ext_rc ++;
                     }
                     break;
                 }
                 if (isRootRef) erc ++;
-                setRefType(RT_TRIBUTARY_FULL_RC);
-                tributaryFullRcBits_.ext_rc = erc;
-                tributaryFullRcBits_.rc = (uint)~tributaryOffsetBits_.rc + 1;
+                setNodeType(NT_TRIBUTARY_FULL_RC);
+                _ntTributary_rc32.ext_rc = erc;
+                _ntTributary_rc32.rc = (uint)~_ntTributary_offset.rc + 1;
                 break;
 
-            case RT_TRIBUTARY_FULL_RC:
-                if (isRootRef && ++tributaryFullRcBits_.ext_rc == 0) {
-                    tributaryFullRcBits_.ext_rc = -1;
+            case NT_TRIBUTARY_FULL_RC:
+                if (isRootRef && ++_ntTributary_rc32.ext_rc == 0) {
+                    _ntTributary_rc32.ext_rc = -1;
                 }
-                tributaryFullRcBits_.rc ++;
-                rtgc_assert(tributaryFullRcBits_.rc != 0);
+                _ntTributary_rc32.rc ++;
+                rtgc_assert(_ntTributary_rc32.rc != 0);
                 break;
-            case RT_CIRCUIT:
+            case NT_CIRCUIT:
                 rtgc_assert("not impl" == 0);
             default:
                 rtgc_assert("should not be here" == 0);
@@ -479,55 +479,55 @@ protected:
     }
 
     ReachableStatus decreaseRef_andCheckReachable(bool isRootRef) {
-        switch (refType()) {
-            case RT_PRIMITIVE:
+        switch (nodeType()) {
+            case NT_PRIMITIVE:
                 rtgc_assert(isRootRef);
-                rtgc_assert(primitiveBits_.common_rc > 0);
-                return --primitiveBits_.common_rc == 0 ? Unreachable : Reachable;
+                rtgc_assert(_ntPrimitive.common_rc > 0);
+                return --_ntPrimitive.common_rc == 0 ? Unreachable : Reachable;
 
-            case RT_RAMIFIED_with_ANCHOR:
-                rtgc_assert(ramifiedAnchorBits_.common_rc > 0);
-                return --ramifiedAnchorBits_.common_rc == 0 ? Unreachable : Reachable;
+            case NT_RAMIFIED_with_ANCHOR:
+                rtgc_assert(_ntRamified_anchor.common_rc > 0);
+                return --_ntRamified_anchor.common_rc == 0 ? Unreachable : Reachable;
 
-            case RT_TRIBUTARY_with_SHORTCUT:
-                rtgc_assert(tributaryShorcutBits_.common_rc > 0);
-                return --tributaryShorcutBits_.common_rc == 0 ? Unreachable : Reachable;
+            case NT_TRIBUTARY_with_SHORTCUT:
+                rtgc_assert(_ntTibutary_shorcut.common_rc > 0);
+                return --_ntTibutary_shorcut.common_rc == 0 ? Unreachable : Reachable;
 
-            case RT_TRIBUTARY_with_OFFSET:
-                rtgc_assert(tributaryOffsetBits_.rc > 0);
-                if (--tributaryOffsetBits_.rc == 0) {
-                    rtgc_assert(tributaryOffsetBits_.ext_rc <= 1);
-                    tributaryOffsetBits_.ext_rc = 0;
+            case NT_TRIBUTARY_with_OFFSET:
+                rtgc_assert(_ntTributary_offset.rc > 0);
+                if (--_ntTributary_offset.rc == 0) {
+                    rtgc_assert(_ntTributary_offset.ext_rc <= 1);
+                    _ntTributary_offset.ext_rc = 0;
                     return Unreachable;
                 }
 
-                if (tributaryOffsetBits_.ext_rc == 0) {
+                if (_ntTributary_offset.ext_rc == 0) {
                     rtgc_assert(isEnquedToScan());
                     return EnquedToScan;
                 }
-                if (--tributaryOffsetBits_.ext_rc == 0) {
+                if (--_ntTributary_offset.ext_rc == 0) {
                     return Unstable;
                 } 
                 return Reachable;
                 
-            case RT_TRIBUTARY_FULL_RC:
-                rtgc_assert(tributaryFullRcBits_.rc > 0);
-                if (--tributaryFullRcBits_.rc == 0) {
-                    rtgc_assert(tributaryFullRcBits_.ext_rc <= 1);
-                    tributaryFullRcBits_.ext_rc = 0;
+            case NT_TRIBUTARY_FULL_RC:
+                rtgc_assert(_ntTributary_rc32.rc > 0);
+                if (--_ntTributary_rc32.rc == 0) {
+                    rtgc_assert(_ntTributary_rc32.ext_rc <= 1);
+                    _ntTributary_rc32.ext_rc = 0;
                     return Unreachable;
                 }
 
-                if (tributaryFullRcBits_.ext_rc == 0) {
+                if (_ntTributary_rc32.ext_rc == 0) {
                     rtgc_assert(isEnquedToScan());
                     return EnquedToScan;
                 }
-                if (--tributaryFullRcBits_.ext_rc == 0) {
+                if (--_ntTributary_rc32.ext_rc == 0) {
                     return Unstable;
                 } 
                 return Reachable;
 
-            case RT_CIRCUIT:
+            case NT_CIRCUIT:
                 rtgc_assert("not impl" == 0);
             default:
                 rtgc_assert("should not be here" == 0);
@@ -538,16 +538,16 @@ protected:
     //////
 
     uint8_t& byteFlags() {
-        return *(uint8_t*)(&refCount_flags_);
+        return *(uint8_t*)(&_rcBits);
     }
 
     uint8_t byteFlags() const {
-        return *(uint8_t*)(&refCount_flags_);
+        return *(uint8_t*)(&_rcBits);
     }
 
 
     int get_color() const {
-        return *(uint8_t*)&refCount_flags_ & S_MASK; 
+        return *(uint8_t*)&_rcBits & S_MASK; 
     }
 
     bool onCircuit() const {
@@ -562,15 +562,15 @@ protected:
     }
 
     inline bool marked() const {
-        return (refCount_flags_ & FLAG_MARKED) != 0;
+        return (_rcBits & FLAG_MARKED) != 0;
     }
 
     inline void mark() {
-        refCount_flags_ |= FLAG_MARKED;
+        _rcBits |= FLAG_MARKED;
     }
 
     inline void unMark() {
-        refCount_flags_ &= ~FLAG_MARKED;
+        _rcBits &= ~FLAG_MARKED;
     }
 
 };

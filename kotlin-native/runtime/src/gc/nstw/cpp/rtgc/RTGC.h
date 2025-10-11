@@ -158,7 +158,7 @@ struct GCNode {
 
     const GCNodeRef getRef() const {
         GCNodeRef ref;
-        ref.refCount_flags_ = pal::bit_read<true>(&ref_.refCount_flags_);
+        ref._rcBits = pal::bit_read<true>(&ref_._rcBits);
         return ref;
     }
 
@@ -168,16 +168,16 @@ public:
     inline void init(GCContext* context, bool immutable, bool acyclic) {
         int flags;
         if (immutable) {
-            flags = RT2_PRIMITIVE_IMMUTABLE | RT2_PRIMITIVE_ACYCLIC;
+            flags = NT2_PRIMITIVE_IMMUTABLE | NT2_PRIMITIVE_ACYCLIC;
             pal::markPublished(this);
             // TODO Lock context!!!
             if (GCPolicy::canSuspendGC()) {
                 context = GCContext::getSharedContext();
             }
         } else {
-            flags = acyclic ? RT2_PRIMITIVE_ACYCLIC : 0;
+            flags = acyclic ? NT2_PRIMITIVE_ACYCLIC : 0;
         }
-        ref_.refCount_flags_ = flags;
+        ref_._rcBits = flags;
         context->onCreateInstance(this);
     }
 
@@ -227,7 +227,7 @@ public:
         GCNodeRef newRef = oldRef;  \
 
 #define REF_COMP_SET(Atomic, old_, new_)  \
-    pal::comp_set<Atomic>(&ref_.refCount_flags_, old_.refCount_flags_, new_.refCount_flags_)
+    pal::comp_set<Atomic>(&ref_._rcBits, old_._rcBits, new_._rcBits)
 
 #define END_ATOMIC_REF(Atomic) \
         if (REF_COMP_SET(Atomic, oldRef, newRef)) break; \
@@ -339,8 +339,8 @@ public:
                     return;
                 }
 
-                ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_.refCount_flags_, PRIMITIVE_INCREMENT);
-                rtgc_assert(((RtPrimtive*)&res_rc)->common_rc != 0);
+                ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_._rcBits, PRIMITIVE_INCREMENT);
+                rtgc_assert(((NtPrimtive*)&res_rc)->common_rc != 0);
                 if (!oldMain.isAcyclic()) {
                     referrer->enquePendingTributary();
                 }
@@ -438,7 +438,7 @@ public:
                 }
 
                 rtgc_assert(oldMain.refCount() != 0);
-                ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_.refCount_flags_, -PRIMITIVE_INCREMENT);
+                ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_._rcBits, -PRIMITIVE_INCREMENT);
                 rt = res_rc < PRIMITIVE_INCREMENT ? ReachableStatus::Unreachable : ReachableStatus::Reachable;
                 break;
             }

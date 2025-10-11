@@ -256,21 +256,21 @@ void GCNode::scanRemembered() {
         if (node == nullptr) continue;
         while (true) {
             GCNodeRef ref = node->getRef();
-            int refType = ref.refType();
-            switch (refType) {
-                case RT_PRIMITIVE:
-                    switch (ref.refType2()) {
-                        case RT2_PRIMITIVE_RAMIFIED:
+            int nodeType = ref.nodeType();
+            switch (nodeType) {
+                case NT_PRIMITIVE:
+                    switch (ref.nodeType2()) {
+                        case NT2_PRIMITIVE_RAMIFIED:
                             cntTributaryBranch = 2;
                             break;
-                        case RT2_PRIMITIVE_YOUNG:
+                        case NT2_PRIMITIVE_YOUNG:
                             GCContext::scanYoungRef(node);
                             ref = node->getRef();
                             cntTributaryBranch += (int)node->isTributary();
                     }
                     break;
 
-                case RT_RAMIFIED_with_ANCHOR: {
+                case NT_RAMIFIED_with_ANCHOR: {
                     GCNodeRef newRef = ref;
                     if (newRef.tryAssignAnchor(node, this)) {
                         if (!REF_COMP_SET(true, ref, newRef)) continue;
@@ -280,16 +280,16 @@ void GCNode::scanRemembered() {
                     }
                     break;
                 }
-                case RT_TRIBUTARY_with_SHORTCUT:
-                case RT_TRIBUTARY_with_OFFSET:
-                case RT_TRIBUTARY_FULL_RC:
+                case NT_TRIBUTARY_with_SHORTCUT:
+                case NT_TRIBUTARY_with_OFFSET:
+                case NT_TRIBUTARY_FULL_RC:
                     cntTributaryBranch ++;
                     break;
 
                 default:
                     rtgc_assert("Should not be here!" == 0);
                     break;
-                case RT_CIRCUIT:
+                case NT_CIRCUIT:
                     rtgc_assert("Not impl" == 0);
             }
             break;
