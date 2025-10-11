@@ -92,6 +92,15 @@ struct GCContext {
 
     static void enqueUnstable(GCNode* node, bool isGarbage);
 
+    static void enqueRememberedSet(GCNode* node);
+
+    static void scanYoungRef(GCNode* node);
+
+    template <bool markTributary>
+    static bool detectRamifiedCircle(GCNode* node, GCNode* root);
+
+    static void scanRememberedSet();
+
     static GCContext* getGCContext(GCNode* node);
 
     // static GCContext* getCurrentContext() {
@@ -159,7 +168,7 @@ public:
     inline void init(GCContext* context, bool immutable, bool acyclic) {
         int flags;
         if (immutable) {
-            flags = RT2_PRIMITIVE_IMMUTABLE | T_SHARED | RT2_PRIMITIVE_ACYCLIC;
+            flags = RT2_PRIMITIVE_IMMUTABLE | RT2_PRIMITIVE_ACYCLIC;
             pal::markPublished(this);
             // TODO Lock context!!!
             if (GCPolicy::canSuspendGC()) {
@@ -253,9 +262,9 @@ public:
         return getRef().getAnchorOf(this);
     }
 
-    inline void setAnchor_unsafe(GCNode* node) {
+    inline void setAnchor_unsafe(GCNode* anchor) {
         BEGIN_ATOMIC_REF()
-            newRef.setAnchor_unsafe(node);
+            newRef.setAnchor_unsafe(this, anchor);
         END_ATOMIC_REF(true)
     }
 
@@ -295,28 +304,6 @@ public:
         return res;
     }
 
-    template <bool Atomic>
-    inline bool increasePrimitiveRefCount_andCheckAcyclic() {
-        rtgc_assert(!isYoung());
-        rtgc_assert(isPrimitiveRef());
-        ref_count_t delta = 0;
-        ((RtPrimtive*)&delta)->common_rc = 1;
-        ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_.refCount_flags_, +delta);
-        rtgc_assert(((RtPrimtive*)&res_rc)->common_rc != 0);
-        return ((GCNodeRef*)&res_rc)->isAcyclic();
-    }
-
-    template <bool Atomic>
-    inline ReachableStatus decreasePrimitiveRefCount() {
-        rtgc_assert(!isYoung());
-        rtgc_assert(isPrimitiveRef());
-        rtgc_assert(this->ref_.primitiveBits_.common_rc != 0);
-        ref_count_t delta = 0;
-        ((RtPrimtive*)&delta)->common_rc = 1;
-        ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_.refCount_flags_, -delta);
-        return res_rc < delta ? ReachableStatus::Unreachable : ReachableStatus::Reachable;
-    }
-
     template<bool Atomic>
     RTGC_INLINE void addReferrer(GCNode* referrer) {
         retainRC<Atomic, false>(referrer);
@@ -334,6 +321,7 @@ public:
 
     template<bool Atomic, bool isRootRef>
     RTGC_INLINE void retainRC(GCNode* referrer) {
+        rtgc_trace_ref(RTGC_TRACE_REF, this, "retainRC");
         rtgc_assert_ref(this, !isGarbageMarked());
         rtgc_assert_ref(this, isThreadLocal() != Atomic);
         if (!isRootRef) {
@@ -342,24 +330,40 @@ public:
             rtgc_trace_ref(RTGC_TRACE_GC, referrer, "add-as-referrer");
         }
         
-        if (this->isPrimitiveRef()) {
-            if (this->increasePrimitiveRefCount_andCheckAcyclic<Atomic>()) {
-                markTributaryPath(referrer);
-            }
-            return;
-        }
-
         while (true) {
             GCNodeRef oldMain = this->getRef();
+
+            if (oldMain.isPrimitiveRef()) {
+                if (oldMain.isYoung()) {
+                    GCContext::enqueRememberedSet(referrer);
+                    return;
+                }
+
+                ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_.refCount_flags_, PRIMITIVE_INCREMENT);
+                rtgc_assert(((RtPrimtive*)&res_rc)->common_rc != 0);
+                if (!oldMain.isAcyclic()) {
+                    referrer->enquePendingTributary();
+                }
+                return;
+            }
+
+
             GCNodeRef newMain = oldMain;
             GCNode* erasedAnchor = newMain.increaseRef_andGetErasedAnchor(this, isRootRef);
             if (!isRootRef && erasedAnchor == NULL && newMain.tryAssignAnchor(this, referrer)) {
                 if (!REF_COMP_SET(Atomic, oldMain, newMain)) continue;
-                break;
+                GCNodeRef referrerRef = referrer->getRef();
+                if (!referrerRef.isTributary() && !referrerRef.isRemembered()) {
+                    /**
+                     * ramified path 의 시작점에 ramified anchor 가 추가되었다.
+                     * Circuit 생성여부를 확인한다.
+                     * 주의) 아직 referrer 의 field 는 변경되지 않은 상태.
+                     */
+                    GCContext::detectRamifiedCircle<false>(referrer, this);
+                }
+                return;
             } 
-            else {
-                if (!REF_COMP_SET(Atomic, oldMain, newMain)) continue;
-            }
+            if (!REF_COMP_SET(Atomic, oldMain, newMain)) continue;
 
 
             //=====================================================//
@@ -377,14 +381,14 @@ public:
                 GCNode* oldAnchor = newMain.replaceAnchorIfNull(referrer);
                 if (oldAnchor != NULL && oldAnchor->isDirty()) {
                     if (!cmp_set(&_mainRef, oldMain, newMain)) continue;
-                    markTributaryPath(oldAnchor);
+                    enquePendingTributary(oldAnchor);
                     break;
                 }
                 newAux newAux = oldAux;
                 oldAnchor = newAux.replaceAnchorIfNull(referrer);
                 if (oldAnchor != NULL && oldAnchor->isDirty()) {
                     if (!cmp_set(&_auxRef, oldAux, newAux)) goto add_second_anchor;
-                    markTributaryPath(oldAnchor);
+                    enquePendingTributary(oldAnchor);
                     break;
                 }
             }
@@ -394,10 +398,10 @@ public:
                 /** TODO.
                 erasedAnchor->eraseShotcut();
                 */
-                markTributaryPath(erasedAnchor);
+                erasedAnchor->enquePendingTributary();
             }
             if (!isRootRef) {
-                markTributaryPath(referrer);
+                referrer->enquePendingTributary();
             }
             break;
         }
@@ -415,8 +419,9 @@ public:
 
     template<bool Atomic, bool isRootRef>
     RTGC_INLINE void releaseRC(GCNode* referrer, bool calledInGc) {
-        rtgc_assert_ref(this, !isGarbageMarked());
         rtgc_trace_ref(RTGC_TRACE_REF, this, "releaseRC");
+        rtgc_assert_ref(this, !isGarbageMarked());
+        rtgc_assert_ref(this, isThreadLocal() != Atomic);
         if (!isRootRef) {
             rtgc_assert_ref(this, referrer != this);
             rtgc_assert(referrer != NULL);
@@ -424,12 +429,20 @@ public:
         }
 
         ReachableStatus rt;
-        if (this->isPrimitiveRef()) {
-            rt = this->decreasePrimitiveRefCount<Atomic>();
-        }
-        else 
         while (true) {
             GCNodeRef oldMain = this->getRef();
+
+            if (oldMain.isPrimitiveRef()) {
+                if (oldMain.isYoung()) {
+                    return;
+                }
+
+                rtgc_assert(oldMain.refCount() != 0);
+                ref_count_t res_rc = pal::bit_add<Atomic>(&this->ref_.refCount_flags_, -PRIMITIVE_INCREMENT);
+                rt = res_rc < PRIMITIVE_INCREMENT ? ReachableStatus::Unreachable : ReachableStatus::Reachable;
+                break;
+            }
+
             GCNodeRef newMain = oldMain;
             rt = newMain.decreaseRef_andCheckReachable(false);
             bool markTributaryReferrer = !isRootRef
@@ -446,7 +459,7 @@ public:
                      * 이에, anchor_path 단절 시 obj-ref-count > 0 이면, 일단 TributaryPath 로 marking 한다.
                      * 또는, 별도의 brokenRamifiedNodes 에 추가한 후, 별도 검사 수행 후 Tributary Marking 여부를 결정한다.
                      */
-                    markTributaryPath(referrer);
+                    referrer->enquePendingTributary();
                 }
             } else if (!isRootRef) {
                 referrer->tryEraseTributraryShortcut();
@@ -493,13 +506,15 @@ public:
     }
 
     template<bool Atomic>
-    inline void setTributary(bool isTributary, GCNode* shortcut) {
+    inline bool setTributary(bool isTributary, GCNode* shortcut) {
         BEGIN_ATOMIC_REF()
             newRef.setTributary(isTributary, this, shortcut);
         END_ATOMIC_REF(Atomic)
         if (shortcut != NULL && shortcut->getAnchor() != this) {
             tryEraseTributraryShortcut();
+            return false;
         }
+        return true;
     }
 
     bool tryEraseTributraryShortcut() {
@@ -510,31 +525,9 @@ public:
         return true;
     }
 
-    static RTGC_INLINE void markTributaryPath(GCNode* node) {
-        rtgc_assert(node != NULL);
-
-        if (node->tryEraseTributraryShortcut()) {
-            return;
-        }
-
-        GCNode* shortcut = NULL;
-        while (!node->isThreadLocal()) {
-            rtgc_assert_ref(node, !node->isPrimitiveRef());
-            rtgc_assert_ref(node, !node->isGarbageMarked());
-            if (node->isTributary()) return;
-            node->setTributary<true>(true, shortcut);
-            shortcut = node;
-            if ((node = node->getAnchor()) == NULL) return;
-        }
-
-        while (true) {
-            rtgc_assert_ref(node, node->isThreadLocal());
-            rtgc_assert_ref(node, !node->isPrimitiveRef());
-            rtgc_assert_ref(node, !node->isGarbageMarked());
-            if (node->isTributary()) return;
-            node->setTributary<false>(true, shortcut);
-            shortcut = node;
-            if ((node = node->getAnchor()) == NULL) return;
+    void enquePendingTributary() {
+        if (!tryEraseTributraryShortcut()) {
+            GCContext::enqueRememberedSet(this);
         }
     }
 
@@ -578,6 +571,7 @@ public:
         END_ATOMIC_REF(true)
     }
 
+    void scanRemembered();
 
     static ref_count_t getExternalRefCountOfThreadLocalSubGraph(GCNode* node, NodeVector* nodes);
     

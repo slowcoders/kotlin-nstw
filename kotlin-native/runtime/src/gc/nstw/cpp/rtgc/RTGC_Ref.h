@@ -24,6 +24,8 @@ constexpr ref_count_t RTGC_NODE_FLAGS_MASK = ((ref_count_t)1 << RTGC_NODE_FLAGS_
 #define RTGC_ROOT_REF_INCREMENT     ((rtgc::ref_count_t)RTGC_SAFE_REF_INCREMENT << rtgc::RTGC_SAFE_REF_BITS)
 #define RTGC_OBJECT_REF_INCREMENT   ((rtgc::ref_count_t)RTGC_ROOT_REF_INCREMENT << rtgc::RTGC_ROOT_REF_BITS)
 
+constexpr ref_count_t PRIMITIVE_INCREMENT = 0x1000;
+
 enum ReachableStatus {
     Reachable,
     Unreachable,
@@ -41,24 +43,21 @@ enum GCFlags {
     RT_TRIBUTARY_FULL_RC      = 0x04,
     RT_CIRCUIT                = 0x07,
 
-    RT2_PRIMITIVE_YOUNG       = 0x00 | RT_PRIMITIVE,
-    RT2_PRIMITIVE_ACYCLIC     = 0x10 | RT_PRIMITIVE,
-    RT2_PRIMITIVE_RAMIFIED    = 0x20 | RT_PRIMITIVE,
-    RT2_PRIMITIVE_IMMUTABLE   = 0x30 | RT2_PRIMITIVE_ACYCLIC,
+    RT2_PRIMITIVE_YOUNG       = (0 << 3) | RT_PRIMITIVE,
+    RT2_PRIMITIVE_ACYCLIC     = (1 << 3) | RT_PRIMITIVE,
+    RT2_PRIMITIVE_RAMIFIED    = (2 << 3) | RT_PRIMITIVE,
+    RT2_PRIMITIVE_IMMUTABLE   = (3 << 3) | RT2_PRIMITIVE_ACYCLIC,
  
-    RT2_PRIMITIVE_GARBAGE     = 0x70 | RT_PRIMITIVE,
+    RT2_PRIMITIVE_GARBAGE     = (7 << 3) | RT_PRIMITIVE,
 
 
 
     REF_TYPE_MASK  = 0x07,
-    REF_TYPE2_MASK = 0x77,
+    REF_TYPE2_MASK = (7 << 3) | REF_TYPE_MASK,
 
-    FLAG_ENQUED_TO_SCAN      = 0x10,
+    FLAG_ENQUED_TO_SCAN      = 0x40,
+    FLAG_REMEMBERED          = 0x80,
 
-
-    T_IMMUTABLE     = 0x0400,
-    T_SHARED        = 0x0800,
-    T_MASK          = T_IMMUTABLE | T_SHARED,
 
     FLAG_MARKED     = 0x2000,
     FLAG_DESTROYED  = 0x1000,
@@ -80,8 +79,9 @@ enum GCFlags {
 
 
 #define COMMON_BITS()   \
-    uint64_t color: 4;  \
-    uint64_t type: 4;   \
+    uint64_t type: 3;   \
+    uint64_t color: 3;  \
+    uint64_t enque: 2;  \
     uint64_t node: 8;   \
 
 
@@ -143,8 +143,9 @@ protected:
         RtTributary_Offset tributaryOffsetBits_;
         RtTributary_FullRc tributaryFullRcBits_;
     };
-    GCNode* anchor_;
+    // GCNode* anchor_;
 
+// public:
     inline int refType() const {
         return refCount_flags_ & REF_TYPE_MASK;
     }
@@ -207,7 +208,7 @@ protected:
 
     inline void setNextGarbage(GCNode* node, GCNode* nextGarbage) volatile {
         rtgc_assert(isGarbageMarked());
-        youngOrDestroyedBits_.addr = (uint64_t*)node - (uint64_t*)nextGarbage;
+        youngOrDestroyedBits_.addr = getOffset(node, nextGarbage);
     }
 
     inline bool isUnstable() const {
@@ -216,16 +217,25 @@ protected:
         return getExternalRefCount() == 0;
     }
 
+    bool isRemembered() const {
+        return (refCount_flags_ & FLAG_REMEMBERED) != 0;
+    }
+
     bool isEnquedToScan() const {
-        return (refCount_flags_ & FLAG_ENQUED_TO_SCAN) != 0;
+        return (refCount_flags_ & (FLAG_ENQUED_TO_SCAN | FLAG_REMEMBERED)) != 0;
     }
 
     void setEnquedToScan(bool isEnqued) {
         if (isEnqued) {
+            rtgc_assert(!isEnquedToScan());
             refCount_flags_ |= FLAG_ENQUED_TO_SCAN;
         } else {
-            refCount_flags_ &= ~FLAG_ENQUED_TO_SCAN;
+            refCount_flags_ &= ~(FLAG_ENQUED_TO_SCAN | FLAG_REMEMBERED);
         }
+    }
+
+    static int64_t getOffset(GCNode* node, GCNode* anchor) {
+        return (ref_count_t*)node - (ref_count_t*)anchor;
     }
     //============================================//
 
@@ -241,7 +251,7 @@ protected:
             case RT_RAMIFIED_with_ANCHOR:
                 setRefType2(RT_TRIBUTARY_with_SHORTCUT);
                 tributaryShorcutBits_.common_rc = ramifiedAnchorBits_.common_rc;
-                tributaryShorcutBits_.shortcut = (int64_t*)node - (int64_t*)shortcut;
+                tributaryShorcutBits_.shortcut = getOffset(node, shortcut);
                 break;
             case RT_TRIBUTARY_with_SHORTCUT:
             case RT_TRIBUTARY_with_OFFSET:
@@ -282,7 +292,7 @@ protected:
 
     inline int tryAssignAnchor(GCNode* node, GCNode* anchor) {
         if (refType() != RT_RAMIFIED_with_ANCHOR) return false;
-        intptr_t offset = (uint64_t*)node - (uint64_t*)anchor;
+        intptr_t offset = getOffset(node, anchor);
         if (ramifiedAnchorBits_.addr == 0) {
             ramifiedAnchorBits_.addr = offset;
             return -1;
@@ -292,7 +302,7 @@ protected:
 
     inline bool tryEraseAnchor(GCNode* node, GCNode* anchor) {
         if (refType() != RT_RAMIFIED_with_ANCHOR) return false;
-        if (ramifiedAnchorBits_.addr == (uint64_t*)node - (uint64_t*)anchor) {
+        if (ramifiedAnchorBits_.addr == getOffset(node, anchor)) {
             ramifiedAnchorBits_.addr = 0;
             return true;
         };
@@ -300,10 +310,10 @@ protected:
     }
 
 
-    inline void setAnchor_unsafe(GCNode* node) {
+    inline void setAnchor_unsafe(GCNode* node, GCNode* anchor) {
         rtgc_assert(refType() == RT_RAMIFIED_with_ANCHOR);
         rtgc_assert(ramifiedAnchorBits_.addr == 0);
-        ramifiedAnchorBits_.addr = (uint64_t*)node - (uint64_t*)anchor_;
+        ramifiedAnchorBits_.addr = getOffset(node, anchor);
     }
 
     inline signed_ref_count_t refCount() const {

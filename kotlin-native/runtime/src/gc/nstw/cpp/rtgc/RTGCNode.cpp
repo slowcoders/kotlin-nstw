@@ -188,6 +188,130 @@ void GCContext::init(GCFrame* initialFrame) {
 //     }
 // }
 
+void GCContext::scanYoungRef(GCNode* node) {
+}
+
+template <bool markTributary>
+bool GCContext::detectRamifiedCircle(GCNode* node, GCNode* root) {
+    rtgc_assert(node != NULL);
+    rtgc_assert(!node->isTributary());
+
+    const int MAX_NODES = 2048;
+    GCNode* nodes[MAX_NODES];
+    nodes[0] = node;
+    int cntNode = 1;
+
+    while ((node = node->getAnchor()) != NULL && !node->isTributary()) {
+        rtgc_assert_ref(node, !node->isGarbageMarked());
+        if (node == root) {
+            rtgc_assert("Not impl!!!" == 0);
+        }
+        nodes[cntNode++] = node;
+        if (cntNode == MAX_NODES && !detectRamifiedCircle<markTributary>(node, root)) {
+            return false;
+        }
+    }
+
+    if (root->onCircuit()) {
+        rtgc_assert("Not impl" == 0);
+    }
+    else if (markTributary) {
+        while (--cntNode > 0) {
+            node = nodes[cntNode];
+            if (!node->setTributary<false>(true, nodes[cntNode-1])) {
+                return false;
+            }
+        }
+    }
+    return true;
+
+/*    
+    while (!node->isThreadLocal()) {    
+        rtgc_assert_ref(node, !node->isPrimitiveRef());
+        rtgc_assert_ref(node, !node->isGarbageMarked());
+        if (node->isTributary()) return;
+        node->setTributary<true>(true, shortcut);
+        shortcut = node;
+        if ((node = node->getAnchor()) == NULL) return;
+    }
+
+    while (true) {
+        rtgc_assert_ref(node, node->isThreadLocal());
+        rtgc_assert_ref(node, !node->isPrimitiveRef());
+        rtgc_assert_ref(node, !node->isGarbageMarked());
+        if (node->isTributary()) return;
+        node->setTributary<false>(true, shortcut);
+        shortcut = node;
+        if ((node = node->getAnchor()) == NULL) return;
+    }
+*/
+}
+
+void GCNode::scanRemembered() {
+    GCRef* field;
+    int  cntTributaryBranch = 0;
+    bool checkRamifiedCircuit = true;
+    for (pal::RefFieldIterator iter(this); (field = iter.nextField()) != nullptr;) {
+        auto node = pal::toNode(*field);
+        if (node == nullptr) continue;
+        while (true) {
+            GCNodeRef ref = node->getRef();
+            int refType = ref.refType();
+            switch (refType) {
+                case RT_PRIMITIVE:
+                    switch (ref.refType2()) {
+                        case RT2_PRIMITIVE_RAMIFIED:
+                            cntTributaryBranch = 2;
+                            break;
+                        case RT2_PRIMITIVE_YOUNG:
+                            GCContext::scanYoungRef(node);
+                            ref = node->getRef();
+                            cntTributaryBranch += (int)node->isTributary();
+                    }
+                    break;
+
+                case RT_RAMIFIED_with_ANCHOR: {
+                    GCNodeRef newRef = ref;
+                    if (newRef.tryAssignAnchor(node, this)) {
+                        if (!REF_COMP_SET(true, ref, newRef)) continue;
+                        checkRamifiedCircuit = true;
+                    } else {
+                        cntTributaryBranch ++;
+                    }
+                    break;
+                }
+                case RT_TRIBUTARY_with_SHORTCUT:
+                case RT_TRIBUTARY_with_OFFSET:
+                case RT_TRIBUTARY_FULL_RC:
+                    cntTributaryBranch ++;
+                    break;
+
+                default:
+                    rtgc_assert("Should not be here!" == 0);
+                    break;
+                case RT_CIRCUIT:
+                    rtgc_assert("Not impl" == 0);
+            }
+            break;
+        }
+    }
+    if (cntTributaryBranch) {
+        if (cntTributaryBranch > 1) {
+            this->tryEraseTributraryShortcut();
+        }
+        if (!this->isTributary()) {
+            this->setTributary<true>(true, NULL);
+            GCContext::detectRamifiedCircle<true>(this, this);
+        }
+    }
+    if (checkRamifiedCircuit) {
+        GCContext::detectRamifiedCircle<false>(this, this);
+    }
+}
+
+void GCContext::scanRememberedSet() {
+
+}
 
 void GCContext::enqueUnstable(GCNode* unstable, bool isGarbage) {
     GCContext* context;
@@ -275,36 +399,20 @@ void GCContext::destroyGarbages() {
             }
 
             for (GCNode* garbage = garbageQ; garbage != NULL; garbage = garbage->getAnchor()) {
+                rtgc_assert(garbage->isGarbageMarked());
+                rtgc_assert(!garbage->isImmutableRoot());
                 if (!RESURRECTABLE_FINALIZER) {
                     lastNode = garbage;
                     if (!pal::finalizeObject(garbage)) continue;
                 }
-                rtgc_assert(!garbage->isImmutableRoot());
                 GCRef* field;
                 for (pal::RefFieldIterator iter(garbage); (field = iter.nextField()) != nullptr;) {
                     auto node = pal::toNode(*field);
                     if (RTGC_DEBUG) *field = (GCRef)0xDDDDEEEEFFFF0000L; //   nullptr;
-                    if (node == nullptr || node == garbage || node->isGarbageMarked()) continue;
+                    if (node == nullptr || node->isGarbageMarked()) continue;
 
                     // rtgc_trace_ref_2(RTGC_TRACE_REF, node, garbage, "rtgc_clearObjectRefField");
                     node->removeReferrer(garbage, true);
-                    /* nstw
-                    if (res != ReachableStatus::Reachable) {
-                        if (!GCPolicy::canSuspendGC() || !isSharedContext || node->isThreadLocal()) {
-                            if (res == ReachableStatus::Unreachable) {
-                                this->enqueGarbage(node);
-                            } else if (node->markEnquedToScan(S_UNSTABLE_0)) {
-                                rtgc_assert_ref(node, !node->isPrimitiveRef());
-                                _unstableNodes.push_back(node);
-                            }
-                        } else {
-                            SpinLock lock(&_triggerLock);
-                            if (node->markEnquedToScan(res == ReachableStatus::Unreachable ? 0 : S_UNSTABLE_0)) {
-                                g_sharedContext._unstableNodes.push_back(node);
-                            }
-                        }
-                    }
-                    */
                 }
             }
 
@@ -320,32 +428,6 @@ void GCContext::destroyGarbages() {
             pal::processPendingRefCountUpdate(this);
         }
 
-        if (_unstableNodes.empty()) break;
-        else {
-            /* TODO. SharedContextLock 을 이용해 context 를 스위칭하고, GC 중인 SharedContext 는 Lock 없이 scan 한다.*/
-            if (isSharedContext) SpinLock::lock(&_triggerLock);
-            for (auto node : _unstableNodes) {
-                if (node == NULL) continue;
-                
-                node->unmarkEnquedToScan<false>();
-                // no nstw.
-                // if (node->hasStackRef()) continue;
-
-                if (node->refCount() == 0) {
-                    if (GCPolicy::canSuspendGC() && this != &g_sharedContext) {
-                        rtgc_assert_ref(node, node->isThreadLocal());
-                    }
-                    if (!node->isGarbageMarked()) {
-                        this->enqueGarbage(node);
-                    }
-                } else if (node->isUnstable()) {
-                    rtgc_assert_ref(node, !node->isPrimitiveRef());
-                    node->resolveUnstable(this);
-                }
-            }
-            _unstableNodes.resize(0);
-            if (isSharedContext) SpinLock::unlock(&_triggerLock);
-        }
     }
     _destroyedQ = destroyedQ;
 }
@@ -449,7 +531,7 @@ int GCNode::inspectUnstables(GCNode* unstable) {
                     if (obj_rc == 1) {
                         return FLAG_DESTROYED;
                     }
-                    GCNode::markTributaryPath(unstable);
+                    GCContext::detectRamifiedCircle<true>(unstable, unstable);
                     break;
                 }
                 // if (node->get_color() == S_UNSTABLE) {
