@@ -179,7 +179,10 @@ void RTCollector::scanSuspected(GCNode* suspected) {
 
     rtgc_assert(suspected->isTributary());
 
-
+    __int128 i128 = 0;
+    i128 += 1;
+    rtgc_assert_f(true, "__i128 %d\n", (int)i128);
+    
     this->_external_rc = 1;
     this->_toVisit.resize(0);
     rtgc_assert(_cntCyclicGarbage == _circuitNodes.size());
