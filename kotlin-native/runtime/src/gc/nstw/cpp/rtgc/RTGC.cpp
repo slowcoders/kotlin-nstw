@@ -170,8 +170,6 @@ void RTCollector::destroyCyclicGarbages() {
     _circuitNodes.clear();
 }
 
-static const bool MARK_PINK_ON_SMALL_CIRCUIT_START = false;
-
 
 
 void RTCollector::scanSuspected(GCNode* suspected) {
@@ -200,7 +198,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
         int mark = anchor->get_color();
         if (mark != S_WHITE) {
             _toVisit.pop_back();
-            if (mark == S_RED || (MARK_PINK_ON_SMALL_CIRCUIT_START && mark == S_PINK)) {
+            if (mark == S_RED) {
                 markBrown(anchor);
                 if (isGray(anchor->getAnchor())) {
                     rtgc_trace_ref(RTGC_TRACE_GC, anchor, "begin clear reds");
@@ -209,17 +207,6 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                         GCNode* node = *iter;
                         rtgc_trace_ref(RTGC_TRACE_GC, node, "clear reds");
                         finishScan(node, false);
-                    }
-                    if (MARK_PINK_ON_SMALL_CIRCUIT_START && mark == S_PINK) {
-                        GCNode* cyclic_anchor = _circuitNodes[frame._count];
-                        if (RTGC_DEBUG) {
-                            GCNode* node;
-                            for (rtgc::pal::ChildNodeIterator iter(cyclic_anchor); (node = iter.nextNode()) != NULL; ) {
-                                if (node == anchor) break;
-                            }
-                            rtgc_assert(node != NULL);
-                        }
-                        anchor->setAnchor_unsafe(cyclic_anchor);
                     }
                     _circuitNodes.resize(frame._count);
                     _external_rc = frame._rc;
@@ -281,10 +268,6 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     if (node == suspected) {
                         node->setAnchor_unsafe(anchor);
-                    } else if (MARK_PINK_ON_SMALL_CIRCUIT_START && !isComplexCircuit && node->refCount() < 5) {
-                        // rtgc_log("pink\n");
-                        rtgc_assert(node->getAnchor()->get_color() == S_GRAY || node->getAnchor()->get_color() == S_PINK);
-                        node->set_color(S_PINK);
                     }
                     break;
                 }
