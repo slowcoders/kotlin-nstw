@@ -20,6 +20,7 @@ namespace rtgc {
 
         inline GCRef toObject(const GCNode* node);
 
+        template <bool _volatile>
         inline void replaceYoungRef(GCRef* location, GCRef object);
 
         void markPublished(GCNode* node);

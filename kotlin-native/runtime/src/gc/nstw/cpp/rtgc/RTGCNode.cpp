@@ -152,7 +152,7 @@ void GCContext::init(GCFrame* initialFrame) {
     _refStackSize = 0;
     _gcInProgress = false;
     _isLocalGcTriggered = false;
-    setCurrentFrame(initialFrame);
+    // setCurrentFrame(initialFrame);
     if (GCPolicy::canSuspendGC()) {
         SpinLock lock(&_triggerLock);
         _gcEnabled = _sharedGCStatus == SharedGCStatus::Triggered;
@@ -362,16 +362,17 @@ ALWAYS_INLINE void GCContext::enqueGarbage(GCNode* garbage) {
 static const bool RESURRECTABLE_FINALIZER = false;
 
 void GCContext::collectGarbagesInCurrentFrame(bool clearCyclicGarbage) {
-    if (GCPolicy::LAZY_GC) {
-        if (GCPolicy::canSuspendGC()) {
-            rtgc::GCContext::triggerGC();
-            syncGCStatus();
-        } else {
-            retainCurrentFrame();
-        }
-    }
-    clearGarbages(clearCyclicGarbage);
-    resumeFrame();
+    rtgc_assert("Not Impl" == 0);
+    // if (GCPolicy::LAZY_GC) {
+    //     if (GCPolicy::canSuspendGC()) {
+    //         rtgc::GCContext::triggerGC();
+    //         syncGCStatus();
+    //     } else {
+    //         retainCurrentFrame();
+    //     }
+    // }
+    // clearGarbages(clearCyclicGarbage);
+    // resumeFrame();
 }
 
 void GCContext::destroyGarbages() {
@@ -430,6 +431,10 @@ void GCContext::destroyGarbages() {
 
     }
     _destroyedQ = destroyedQ;
+}
+
+void GCContext::enqueRememberedSet(GCNode* node) {
+    g_sharedContext._rememberedSet.push_back(node);
 }
 
 void GCContext::clearGarbages(int collectCyclicThreashold) {
@@ -642,17 +647,6 @@ void GCNode::replaceObjectRef_slow(GCRef* location, GCRef object, GCNode* referr
             // rtgc_assert(old == owner || pal::toNode(old) != referrer);
             GCNode::releaseObjectRef(pal::toNode(old), referrer);
         }
-    }
-}
-
-template <bool _volatile>
-void GCNode::replaceObjectRef_inline(GCRef* location, GCRef object, GCRef owner) {
-    rtgc_assert(owner != NULL);
-    auto referrer = pal::toNode<true>(owner);
-    if (referrer->isYoung()) {
-        pal::replaceYoungRef<_volatile>(location, object);
-    } else {
-        replaceObjectRef_slow(location, object, referrer);
     }
 }
 

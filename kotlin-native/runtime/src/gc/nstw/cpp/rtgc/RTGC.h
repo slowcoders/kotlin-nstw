@@ -34,6 +34,7 @@ constexpr bool ENABLE_BK_GC = false;
 struct GCContext {
     NodeDeque*  _suspectedNodes;
     NodeVector  _unstableNodes;
+    NodeVector  _rememberedSet;
     NodeDeque   _nodeDeques[4];
     GCNode*     _garbageQ;
     GCNode*     _destroyedQ;
@@ -60,11 +61,11 @@ struct GCContext {
 
     void init(GCFrame* initialFrame);
 
-    void enterFrame(GCFrame* frame);
+    // void enterFrame(GCFrame* frame);
 
-    void leaveFrame(GCFrame* frame);
+    // void leaveFrame(GCFrame* frame);
 
-    void rewindFrame(GCFrame* frame);
+    // void rewindFrame(GCFrame* frame);
 
     void setLocalGCStatus(bool enableGC);
 
@@ -72,9 +73,9 @@ struct GCContext {
 
     void terminateContext();
 
-    void saveExceptionStack(GCRef exception);
+    // void saveExceptionStack(GCRef exception);
 
-    void clearExceptionStack(int count);
+    // void clearExceptionStack(int count);
 
     void onCreateInstance(GCNode* node);
     
@@ -121,11 +122,11 @@ struct GCContext {
 
 // private:
     int  deallocGarbages();
-    void checkLocalGCThreashold();
-    void retainCurrentFrame();
+    // void checkLocalGCThreashold();
+    // void retainCurrentFrame();
 
-    void setCurrentFrame(GCFrame* frame);
-    bool resumeFrame();
+    // void setCurrentFrame(GCFrame* frame);
+    // bool resumeFrame();
 };
 
 namespace GCPolicy {  
@@ -138,9 +139,9 @@ namespace GCPolicy {
       return canSuspendGC() && _sharedGCStatus == SharedGCStatus::Suspended;
     }
 
-    inline void checkToResumeGC(GCContext* context) {
-      if (GCPolicy::LAZY_GC) context->checkLocalGCThreashold();
-    }
+    // inline void checkToResumeGC(GCContext* context) {
+    //   if (GCPolicy::LAZY_GC) context->checkLocalGCThreashold();
+    // }
 
     template <bool Nullable>
     inline bool shouldRetainStackRef(GCRef obj) {
@@ -584,7 +585,15 @@ public:
     static void replaceGlobalRef(GCRef* location, GCRef object);
 
     template <bool _volatile>
-    static void replaceObjectRef_inline(GCRef* location, GCRef object, GCRef owner);
+    static void replaceObjectRef_inline(GCRef* location, GCRef object, GCRef owner) {
+        rtgc_assert(owner != NULL);
+        auto referrer = pal::toNode<true>(owner);
+        if (referrer->isYoung()) {
+            pal::replaceYoungRef<_volatile>(location, object);
+        } else {
+            replaceObjectRef_slow(location, object, referrer);
+        }
+    }
 
     static void replaceObjectRef_slow(GCRef* location, GCRef object, GCNode* owner);
 

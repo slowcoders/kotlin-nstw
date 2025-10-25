@@ -63,9 +63,9 @@ org.gradle.java.installations.auto-detect=false
 ## Runime Tests. GC 포함. C++ 
 ## output: ./kotlin-native/runtime/build/bin/test/macos_arm64/*.kexe
 ./gradlew :kotlin-native:runtime:hostRuntimeTests \
+    -Pgtest_filter=MarkAndSweepUtilsSweepTest.SweepEmpty
     -Pgtest_filter=STMS/STWMarkGCTest/0.MultipleMutatorsWeaks
     -Pgtest_filter=ThreadStateDeathTest.ReentrantStateSwitch_CalledFromNativeGuard
-    -Pgtest_filter=MarkAndSweepUtilsSweepTest.SweepEmpty
     -Pgtest_filter=PMCS/TracingGCTest/300ParallelWithGCThreads.RootSet
 
 
