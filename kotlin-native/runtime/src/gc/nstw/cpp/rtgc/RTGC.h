@@ -287,18 +287,18 @@ public:
         rtgc_trace_ref(RTGC_TRACE_GC, this, "saveExternalRefCount");
     }
 
-    inline bool tryDecreaseExternalRefCount(int min_external_rc) {
+    inline bool tryDecreaseExternalRefCount_andMarkDirty(int min_external_rc) {
         BEGIN_ATOMIC_REF()
-            if (!newRef.tryDecreaseExternalRefCount(min_external_rc)) return false;
+            if (!newRef.tryDecreaseExternalRefCount_andMarkDirty(min_external_rc)) return false;
         END_ATOMIC_REF(true)
-        rtgc_trace_ref(RTGC_TRACE_GC, this, "tryDecreaseExternalRefCount");
+        rtgc_trace_ref(RTGC_TRACE_GC, this, "tryDecreaseExternalRefCount_andMarkDirty");
         return true;
     }
 
-    inline int tryAssignAnchor(GCNode* anchor) {
+    inline int tryAssignRamifiedAnchor(GCNode* anchor) {
         int res;
         BEGIN_ATOMIC_REF()
-        res = newRef.tryAssignAnchor(this, anchor);
+        res = newRef.tryAssignRamifiedAnchor(this, anchor);
         if (res >= 0) break;
         END_ATOMIC_REF(true);
         return res;
@@ -350,7 +350,7 @@ public:
 
             GCNodeRef newMain = oldMain;
             GCNode* erasedAnchor = newMain.increaseRef_andGetErasedAnchor(this, isRootRef);
-            if (!isRootRef && erasedAnchor == NULL && newMain.tryAssignAnchor(this, referrer)) {
+            if (!isRootRef && erasedAnchor == NULL && newMain.tryAssignRamifiedAnchor(this, referrer)) {
                 if (!REF_COMP_SET(Atomic, oldMain, newMain)) continue;
                 GCNodeRef referrerRef = referrer->getRef();
                 if (!referrerRef.isTributary() && !referrerRef.isRemembered()) {
@@ -371,7 +371,7 @@ public:
             add_second_anchor:
             AuxRef oldAux = _auxRef;
             newAux newAux = oldAux;
-            if (newAux.tryAssignAnchor(this, referrer)) {
+            if (newAux.tryAssignRamifiedAnchor(this, referrer)) {
                 // multi anchor 를 사용하면, tributary marking 횟수를 줄일 수 있다. 
                 if (cmp_set(&_newAux, oldAux, newAux)) break;
             }
@@ -533,6 +533,10 @@ public:
 
     int get_color() const {
         return getRef().get_color();
+    }
+
+    int get_color_type() const {
+        return getRef().get_color_type();
     }
 
     bool onCircuit() const {

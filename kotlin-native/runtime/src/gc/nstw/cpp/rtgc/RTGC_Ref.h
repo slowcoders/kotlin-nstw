@@ -63,17 +63,20 @@ enum GCFlags {
     FLAG_DESTROYED  = 0x1000,
 
     S_WHITE             = 0,
-    S_PINK              = 0x01,  // Small Circuit 의 진입점.
+    S_GRAY              = 0x01,  // Small Circuit 의 진입점.
     S_RED               = 0x02,  // Scan 중인 Circuit;
     S_BROWN             = 0x03,  // Scan 이 끝난 Circuit
+    S_BLACK             = 0x04,
+    S_DIRTY             = 0x08,
     
-    S_GRAY              = 0x08,
-    S_BLACK             = 0x09,
-    S_CYCLIC_BLACK      = 0x0A,
-    S_TRIBUTARY_BLACK      = 0x0B,
+    S_DIRTY_WHITE       = S_DIRTY + S_WHITE,
+    S_DIRTY_BLACK       = S_DIRTY + S_BLACK,
+    S_DIRTY_BROWN       = S_DIRTY + S_BROWN,
+    S_DIRTY_GRAY        = S_DIRTY + S_GRAY,
 
     S_UNSTABLE_0 = 0,
     S_MASK              = 0x0F,
+    S_TYPE_MASK         = 0x07,
 
 };
 
@@ -290,7 +293,7 @@ protected:
         return (GCNode*)((uint64_t*)node + _ntRamified_anchor.addr);
     }
 
-    inline int tryAssignAnchor(GCNode* node, GCNode* anchor) {
+    inline int tryAssignRamifiedAnchor(GCNode* node, GCNode* anchor) {
         if (nodeType() != NT_RAMIFIED_with_ANCHOR) return false;
         intptr_t offset = getOffset(node, anchor);
         if (_ntRamified_anchor.addr == 0) {
@@ -361,7 +364,7 @@ protected:
     }
 
 
-    inline bool tryDecreaseExternalRefCount(int min_external_rc) {
+    inline bool tryDecreaseExternalRefCount_andMarkDirty(int min_external_rc) {
         rtgc_assert(!isYoung());
         switch (nodeType()) {
             case NT_PRIMITIVE:
@@ -550,9 +553,13 @@ protected:
         return *(uint8_t*)&_rcBits & S_MASK; 
     }
 
+    int get_color_type() const {
+        return *(uint8_t*)&_rcBits & S_TYPE_MASK; 
+    }
+
     bool onCircuit() const {
         uint8_t color = get_color();
-        return color == S_RED || color == S_PINK || color == S_BROWN;
+        return color == S_RED || color == S_BROWN;
     }
 
     void set_color(uint8_t color) {

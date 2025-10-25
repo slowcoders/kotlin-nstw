@@ -272,7 +272,7 @@ void GCNode::scanRemembered() {
 
                 case NT_RAMIFIED_with_ANCHOR: {
                     GCNodeRef newRef = ref;
-                    if (newRef.tryAssignAnchor(node, this)) {
+                    if (newRef.tryAssignRamifiedAnchor(node, this)) {
                         if (!REF_COMP_SET(true, ref, newRef)) continue;
                         checkRamifiedCircuit = true;
                     } else {

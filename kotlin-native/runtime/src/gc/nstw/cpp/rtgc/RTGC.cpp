@@ -45,8 +45,8 @@ struct Bridge {
 
 class RTCollector {
     NodeVector _circuitNodes;
+    NodeVector _dirtyNodes;
     rtgc::mem::HugeArray<VisitFrame>  _toVisit;
-    rtgc::mem::HugeArray<Bridge>  _bridges;
     int _external_rc;
     int _rootRefCount;
     size_t _cntCyclicGarbage;
@@ -54,7 +54,9 @@ class RTCollector {
 public:
     NodeDeque _blackNodes;
 
-    RTCollector() { _cntCyclicGarbage = 0; _bridges.initialize(); _toVisit.initialize(); }
+    RTCollector() { 
+        _cntCyclicGarbage = 0; 
+        _toVisit.initialize(); }
     
     inline static bool isRedOrPink(GCNode* node) { return node->get_color() <= S_RED; }
 
@@ -73,13 +75,9 @@ public:
         rtgc_trace_ref(RTGC_TRACE_GC, node, "markBrown");
     }
 
-    inline void finishScan(GCNode* node, bool isTributary) { 
+    inline void finishScan(GCNode* node, bool isDirty) { 
         if (node->refCount() > 1) {
-            if (node->get_color() >= S_GRAY) {
-                node->set_color(isTributary ? S_TRIBUTARY_BLACK : S_BLACK); 
-            } else {
-                node->set_color(S_CYCLIC_BLACK); 
-            }
+            node->set_color(isDirty ? S_DIRTY_BLACK : S_BLACK); 
             rtgc_trace_ref(RTGC_TRACE_GC, node, "markBlack");
             _blackNodes.push_back(node);
         } else {
@@ -125,14 +123,7 @@ public:
                 continue;
             }
             rtgc_assert(!node->isGarbageMarked());
-            uint8_t color;
-            switch (node->get_color()) {
-            case S_BLACK:           color = S_WHITE; break;
-            case S_TRIBUTARY_BLACK: color = S_WHITE; break;
-            case S_CYCLIC_BLACK:    color = S_WHITE; break;
-            default: color = S_WHITE; // rtgc_assert(false);
-            }
-            node->set_color(color);
+            node->set_color(S_WHITE);
         }
         destroyCyclicGarbages();        
     }
@@ -144,7 +135,7 @@ bool RTCollector::markCyclicPath(GCNode* anchor, GCNode* end) {
     _external_rc --;
     for (GCNode* node = anchor;; node = node->getAnchor()) {
         if (!isRedOrPink(node)) {
-            node->tryDecreaseExternalRefCount(0);
+            node->tryDecreaseExternalRefCount_andMarkDirty(0);
             enqueCircuitNode(node);
         }
         if (node == end) break;
@@ -195,7 +186,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
         VisitFrame& frame = _toVisit.back();
         auto* anchor = frame._node;
         rtgc_assert(!anchor->isGarbageMarked());
-        int mark = anchor->get_color();
+        int mark = anchor->get_color_type();
         if (mark != S_WHITE) {
             _toVisit.pop_back();
             if (mark == S_RED) {
@@ -217,7 +208,7 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                     rtgc_trace(RTGC_TRACE_GC, "clear _circuitNodes with brown");
                     goto scan_finshed;
                 }
-            } else if (mark != S_BLACK && mark != S_TRIBUTARY_BLACK && mark != S_CYCLIC_BLACK) {
+            } else if (mark != S_BLACK) {
                 // anchor 가 toVisited 에 다수 포함될 수 있다.
                 // 이 때, anchor 의 obj_ref_cnt > 1 이므로, WHITE 로 변경되지 않는다.
                 finishScan(anchor, frame._isTributary);
@@ -248,40 +239,47 @@ void RTCollector::scanSuspected(GCNode* suspected) {
 
             // tributary anchor 는 자유롭게 변경할 수 있다(????)
             int mark = node->get_color();                
-            switch (mark) {
-                case S_WHITE:
-                    if (!node->tryAssignAnchor(anchor)) {
-                        isTributray = true;
+            switch (mark & S_TYPE_MASK) {
+                case S_WHITE: {
+                    bool isDirty = (mark & S_DIRTY) != 0;
+                    if (!isDirty) {
+                        if (node->tryAssignRamifiedAnchor(anchor)) break;
                         cnt = _toVisit.size();
-                        if (!node->tryDecreaseExternalRefCount(1)) {
-                            rtgc_trace_ref(RTGC_TRACE_GC, node, "push white");
-                            _toVisit.push_back(node);
+                        isTributray = true;
+                    }
+                    if (node->tryDecreaseExternalRefCount_andMarkDirty(1)) {
+                        if (!isDirty) {
+                            _dirtyNodes.push_back(node);
                         }
+                    } else {
+                        rtgc_trace_ref(RTGC_TRACE_GC, node, "push white");
+                        _toVisit.push_back(node);
                     }
                     break;
-                
+                }
+
                 case S_GRAY: {
                     /* 중간에 circuit 을 포함할 수 있다.*/
                     bool isComplexCircuit = _circuitNodes.size() > 0;
                     rtgc_trace_ref(RTGC_TRACE_GC, node, isComplexCircuit ? "multi-cycle found" : "gray found");
-                    // node->tryDecreaseExternalRefCount();
+                    // node->tryDecreaseExternalRefCount_andMarkDirty();
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     if (node == suspected) {
                         node->setAnchor_unsafe(anchor);
                     }
                     break;
                 }
+
                 case S_BROWN: 
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "found brown");
-                    // node->tryDecreaseExternalRefCount();
+                    // node->tryDecreaseExternalRefCount_andMarkDirty();
                     node = findRedOrPink(node);
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     break;
 
-                case S_PINK:
                 case S_RED:
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "found red");
-                    // node->tryDecreaseExternalRefCount();
+                    // node->tryDecreaseExternalRefCount_andMarkDirty();
                     if (!markCyclicPath(anchor, node)) goto scan_finshed;
                     break;
 
@@ -289,15 +287,9 @@ void RTCollector::scanSuspected(GCNode* suspected) {
                 // case S_BROWN_T:
                 // case S_RED_T:
                 //     rtgc_assert_ref(node, rtgc::ENABLE_BK_GC);
-                    break;
+                //    break;
 
-                case S_TRIBUTARY_BLACK:
-                    if (RTGC_CRC_2 && node->getAnchor() != NULL && node->getAnchor() != anchor) {         
-                        // UNFINISHED_BLACK 으로 처리.
-                        this->_bridges.push_back(Bridge(node, anchor));
-                    }
                 case S_BLACK:
-                case S_CYCLIC_BLACK:
                     rtgc_trace_ref(RTGC_TRACE_GC, node, "skip trace");
                     isTributray = true;
                     break;
@@ -317,43 +309,6 @@ void RTCollector::scanSuspected(GCNode* suspected) {
     }
 
     scan_finshed:
-    if (_external_rc != 0 && !_bridges.empty()) {
-        // konan::consoleErrorf("====== bridge nodes: %d\n", (int)_bridges.size());
-        for (bool rescan = true; rescan; ) {
-            rescan = false;
-            cnt = _bridges.size();
-            for (auto iter = &_bridges.front(); --cnt >= 0; iter ++) {
-                Bridge& bridge = *iter;
-                if (bridge.isCircuitBridge()) {
-                    bridge._foreignNode = NULL;
-                    for (GCNode* n = bridge._localNode; !n->onCircuit(); n = n->getAnchor()) {
-                        n->set_color(S_CYCLIC_BLACK);
-                        _external_rc += n->refCount() - 1;
-                    }
-                    _external_rc -= 1;
-                    rtgc_assert(_external_rc >= 0);
-                    // konan::consoleErrorf("====== red bridge found\n");
-                    rescan = true;
-                }
-            }
-        }
-
-        cnt = _bridges.size();
-        for (auto iter = &_bridges.front(); --cnt >= 0; iter ++) {
-            Bridge& bridge = *iter;
-            GCNode* node = bridge._foreignNode;
-            if (node != NULL) {
-                node->set_color(S_BLACK);
-                _blackNodes.push_back(node);
-            }
-        }
-
-        if (_external_rc == 0) {
-            // konan::consoleErrorf("====== garbage bridge found\n");
-        }
-    }
-    this->_bridges.clear();
-
     if (_external_rc== 0) {
         rtgc_trace(RTGC_TRACE_GC, "found garbage circuit\n");
         _cntCyclicGarbage = _circuitNodes.size();
