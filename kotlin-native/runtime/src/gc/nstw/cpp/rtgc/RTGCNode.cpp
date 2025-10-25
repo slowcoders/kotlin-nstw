@@ -4,7 +4,7 @@
 #include "Natives.h"
 #include "StackTrace.hpp"
 
-#include "MemoryPrivate_rtgc.hpp"
+#include "RTGC.h"
 #include "RTGC_PAL_impl.h"
 #include <thread>
 #include <pthread.h>

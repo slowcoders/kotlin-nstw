@@ -18,6 +18,7 @@ using namespace kotlin;
 OBJ_GETTER(mm::AllocateObject, ThreadData* threadData, const TypeInfo* typeInfo) noexcept {
     AssertThreadState(threadData, ThreadState::kRunnable);
     // TODO: Make this work with GCs that can stop thread at any point.
+    // rtgc-check
     auto* object = threadData->allocator().allocateObject(typeInfo);
     threadData->gc().onAllocation(object);
     // Prevents unsafe class publication (see KT-58995).

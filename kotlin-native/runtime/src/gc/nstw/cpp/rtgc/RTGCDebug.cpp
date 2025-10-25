@@ -1,4 +1,4 @@
-#include "MemoryPrivate_rtgc.hpp"
+#include "RTGC.h"
 #include "KString.h"
 #include "Porting.h"
 #include "std_support/CStdlib.hpp"
