@@ -1,6 +1,12 @@
 KtNameReferenceExpression(589,592): 'bar'
   KtSimpleNameReference:
-    (in pkg.Foo) open fun bar()
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in pkg.Foo) open fun bar()
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

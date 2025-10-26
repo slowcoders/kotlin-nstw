@@ -7,6 +7,7 @@ import kotlin.Boolean
 import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmField
+import org.jetbrains.kotlin.buildtools.api.KotlinReleaseVersion
 
 /**
  * @since 2.3.0
@@ -54,37 +55,43 @@ public interface CommonToolArguments {
    */
   public class CommonToolArgument<V>(
     public val id: String,
+    public val availableSinceVersion: KotlinReleaseVersion,
   )
 
   public companion object {
     /**
-     * Display the compiler version.
-     */
-    @JvmField
-    public val VERSION: CommonToolArgument<Boolean> = CommonToolArgument("VERSION")
-
-    /**
-     * Enable verbose logging output.
-     */
-    @JvmField
-    public val VERBOSE: CommonToolArgument<Boolean> = CommonToolArgument("VERBOSE")
-
-    /**
-     * Don't generate any warnings.
-     */
-    @JvmField
-    public val NOWARN: CommonToolArgument<Boolean> = CommonToolArgument("NOWARN")
-
-    /**
      * Report an error if there are any warnings.
      */
     @JvmField
-    public val WERROR: CommonToolArgument<Boolean> = CommonToolArgument("WERROR")
+    public val WERROR: CommonToolArgument<Boolean> =
+        CommonToolArgument("WERROR", KotlinReleaseVersion(1, 2, 0))
 
     /**
      * Enable extra checkers for K2.
      */
     @JvmField
-    public val WEXTRA: CommonToolArgument<Boolean> = CommonToolArgument("WEXTRA")
+    public val WEXTRA: CommonToolArgument<Boolean> =
+        CommonToolArgument("WEXTRA", KotlinReleaseVersion(2, 1, 0))
+
+    /**
+     * Don't generate any warnings.
+     */
+    @JvmField
+    public val NOWARN: CommonToolArgument<Boolean> =
+        CommonToolArgument("NOWARN", KotlinReleaseVersion(1, 0, 0))
+
+    /**
+     * Enable verbose logging output.
+     */
+    @JvmField
+    public val VERBOSE: CommonToolArgument<Boolean> =
+        CommonToolArgument("VERBOSE", KotlinReleaseVersion(1, 0, 0))
+
+    /**
+     * Display the compiler version.
+     */
+    @JvmField
+    public val VERSION: CommonToolArgument<Boolean> =
+        CommonToolArgument("VERSION", KotlinReleaseVersion(1, 0, 0))
   }
 }

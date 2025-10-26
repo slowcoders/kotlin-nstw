@@ -70,6 +70,7 @@ data class KotlinLikeDumpOptions(
     val normalizeNames: Boolean = false,
     val printExpectDeclarations: Boolean = true,
     val collapseObjectLiteralBlock: Boolean = false,
+    val printVariableInitializers: Boolean = true,
 
     /**
      * Whether to print member declarations (default: true).
@@ -723,7 +724,7 @@ private class KotlinLikeDumper(val p: Printer, val options: KotlinLikeDumpOption
                     isExternal = isExternal,
                     isOverride = overriddenSymbols.isNotEmpty(),
                     isFakeOverride = isFakeOverride,
-                    isLateinit = isTailrec,
+                    isTailrec = isTailrec,
                     isSuspend = isSuspend,
                     isInline = isInline,
                     isInfix = isInfix,
@@ -996,9 +997,11 @@ private class KotlinLikeDumper(val p: Printer, val options: KotlinLikeDumpOption
         p(declaration.isConst, "const")
         declaration.run { printVariable(isVar, normalizedName(variableNameData), type) }
 
-        declaration.initializer?.let {
-            p.printWithNoIndent(" = ")
-            it.accept(this, declaration)
+        if (options.printVariableInitializers) {
+            declaration.initializer?.let {
+                p.printWithNoIndent(" = ")
+                it.accept(this, declaration)
+            }
         }
     }
 
@@ -1012,7 +1015,7 @@ private class KotlinLikeDumper(val p: Printer, val options: KotlinLikeDumpOption
         p.printlnWithNoIndent()
         p.pushIndent()
 
-        declaration.delegate.accept(this, declaration)
+        declaration.delegate?.accept(this, declaration)
         p.printlnWithNoIndent()
 
         declaration.getter.printAccessor("get", declaration)

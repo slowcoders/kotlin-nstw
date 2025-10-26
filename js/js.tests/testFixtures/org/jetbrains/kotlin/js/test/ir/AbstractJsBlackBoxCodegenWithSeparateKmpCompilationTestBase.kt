@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.js.test.converters.Fir2IrCliWebFacade
 import org.jetbrains.kotlin.js.test.converters.FirCliWebFacade
 import org.jetbrains.kotlin.js.test.converters.FirKlibSerializerCliWebFacade
 import org.jetbrains.kotlin.js.test.converters.JsIrPreSerializationLoweringFacade
-import org.jetbrains.kotlin.js.test.fir.setupDefaultDirectivesForFirJsBoxTest
+import org.jetbrains.kotlin.js.test.fir.setUpDefaultDirectivesForJsBoxTest
 import org.jetbrains.kotlin.js.test.ir.AbstractJsBlackBoxCodegenTestBase.JsBackendFacades
 import org.jetbrains.kotlin.test.FirParser
 import org.jetbrains.kotlin.test.TargetBackend
@@ -21,13 +21,13 @@ import org.jetbrains.kotlin.test.directives.DiagnosticsDirectives.DIAGNOSTICS
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives.DISABLE_DOUBLE_CHECKING_COMMON_DIAGNOSTICS
 import org.jetbrains.kotlin.test.frontend.fir.FirCliMetadataFrontendFacade
 import org.jetbrains.kotlin.test.frontend.fir.FirCliMetadataSerializerFacade
-import org.jetbrains.kotlin.test.model.FrontendKinds
 import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.runners.AbstractKotlinCompilerWithTargetBackendTest
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.configuration.CommonEnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.configuration.DelegatingEnvironmentConfiguratorForSeparateKmpCompilation
-import org.jetbrains.kotlin.test.services.configuration.JsEnvironmentConfigurator
+import org.jetbrains.kotlin.test.services.configuration.JsFirstStageEnvironmentConfigurator
+import org.jetbrains.kotlin.test.services.configuration.JsSecondStageEnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.configuration.MetadataEnvironmentConfiguratorForSeparateKmpCompilation
 import org.jetbrains.kotlin.test.services.isLeafModuleInMppGraph
 
@@ -38,7 +38,7 @@ abstract class AbstractJsBlackBoxCodegenWithSeparateKmpCompilationTestBase(
 ) : AbstractKotlinCompilerWithTargetBackendTest(TargetBackend.JS_IR) {
 
     override fun configure(builder: TestConfigurationBuilder) = with(builder) {
-        setupDefaultDirectivesForFirJsBoxTest(parser)
+        setUpDefaultDirectivesForJsBoxTest(parser)
         defaultDirectives {
             +SEPARATE_KMP_COMPILATION
             +DISABLE_DOUBLE_CHECKING_COMMON_DIAGNOSTICS
@@ -47,11 +47,11 @@ abstract class AbstractJsBlackBoxCodegenWithSeparateKmpCompilationTestBase(
         }
 
         commonServicesConfigurationForJsCodegenTest(
-            targetFrontend = FrontendKinds.FIR,
             customConfigurators = listOf(
                 ::CommonEnvironmentConfigurator,
                 ::MetadataEnvironmentConfiguratorForSeparateKmpCompilation,
-                ::JsEnvironmentConfiguratorForSeparateKmpCompilation,
+                ::JsFirstStageEnvironmentConfiguratorForSeparateKmpCompilation,
+                ::JsSecondStageEnvironmentConfiguratorForSeparateKmpCompilation,
             )
         )
 
@@ -80,9 +80,17 @@ abstract class AbstractJsBlackBoxCodegenWithSeparateKmpCompilationTestBase(
     }
 }
 
-class JsEnvironmentConfiguratorForSeparateKmpCompilation(
+class JsFirstStageEnvironmentConfiguratorForSeparateKmpCompilation(
     testServices: TestServices
-) : DelegatingEnvironmentConfiguratorForSeparateKmpCompilation(testServices, ::JsEnvironmentConfigurator) {
+) : DelegatingEnvironmentConfiguratorForSeparateKmpCompilation(testServices, ::JsFirstStageEnvironmentConfigurator) {
+    override fun shouldApply(module: TestModule): Boolean {
+        return module.isLeafModuleInMppGraph(testServices)
+    }
+}
+
+class JsSecondStageEnvironmentConfiguratorForSeparateKmpCompilation(
+    testServices: TestServices
+) : DelegatingEnvironmentConfiguratorForSeparateKmpCompilation(testServices, ::JsSecondStageEnvironmentConfigurator) {
     override fun shouldApply(module: TestModule): Boolean {
         return module.isLeafModuleInMppGraph(testServices)
     }

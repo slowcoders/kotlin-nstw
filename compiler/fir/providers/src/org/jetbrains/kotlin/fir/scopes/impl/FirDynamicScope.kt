@@ -17,9 +17,9 @@ import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.builder.buildProperty
-import org.jetbrains.kotlin.fir.declarations.builder.buildSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.builder.buildNamedFunction
 import org.jetbrains.kotlin.fir.declarations.builder.buildValueParameter
 import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.moduleData
@@ -126,7 +126,7 @@ class FirDynamicMembersStorage(val session: FirSession) : FirSessionComponent {
 
     fun getDynamicScopeFor(scopeSession: ScopeSession): FirDynamicScope = dynamicScopeCacheByScope.getValue(scopeSession, null)
 
-    val functionsCacheByName: FirCache<Name, FirSimpleFunction, Nothing?> =
+    val functionsCacheByName: FirCache<Name, FirNamedFunction, Nothing?> =
         cachesFactory.createCache { name -> buildPseudoFunctionByName(name) }
 
     val propertiesCacheByName: FirCache<Name, FirProperty, Nothing?> =
@@ -144,7 +144,7 @@ class FirDynamicMembersStorage(val session: FirSession) : FirSessionComponent {
         )
     }
 
-    private fun buildPseudoFunctionByName(name: Name): FirSimpleFunction = buildSimpleFunction {
+    private fun buildPseudoFunctionByName(name: Name): FirNamedFunction = buildNamedFunction {
         status = FirResolvedDeclarationStatusImpl(
             Visibilities.Public,
             Modality.FINAL,
@@ -165,7 +165,7 @@ class FirDynamicMembersStorage(val session: FirSession) : FirSessionComponent {
 
         val parameter = buildValueParameter {
             moduleData = session.moduleData
-            containingDeclarationSymbol = this@buildSimpleFunction.symbol
+            containingDeclarationSymbol = this@buildNamedFunction.symbol
             origin = FirDeclarationOrigin.DynamicScope
             resolvePhase = FirResolvePhase.BODY_RESOLVE
             returnTypeRef = anyArrayTypeRef

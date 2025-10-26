@@ -1,6 +1,12 @@
 KtNameReferenceExpression(47,53): 'length'
   KtSimpleNameReference:
-    (in <local>: StringBuilder.length) {psi: null} get()
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in <local>: StringBuilder.length) {psi: null} get()
 
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

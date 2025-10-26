@@ -8,7 +8,7 @@ package org.jetbrains.kotlin.backend.jvm.lower
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
-import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
+import org.jetbrains.kotlin.backend.common.phaser.PhasePrerequisites
 import org.jetbrains.kotlin.backend.jvm.*
 import org.jetbrains.kotlin.backend.jvm.ir.*
 import org.jetbrains.kotlin.backend.jvm.lower.FunctionReferenceLowering.Companion.calculateOwnerKClass
@@ -16,13 +16,17 @@ import org.jetbrains.kotlin.codegen.inline.loadCompiledInlineFunction
 import org.jetbrains.kotlin.codegen.optimization.nullCheck.usesLocalExceptParameterNullCheck
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
+import org.jetbrains.kotlin.ir.IrAttribute
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.builders.declarations.*
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.*
-import org.jetbrains.kotlin.ir.expressions.impl.*
+import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrGetObjectValueImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrInstanceInitializerCallImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrRawFunctionReferenceImpl
 import org.jetbrains.kotlin.ir.irFlag
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.types.IrSimpleType
@@ -43,11 +47,12 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Constructs `KProperty` instances returned by expressions such as `A::x` and `A()::x`.
  */
-@PhaseDescription(
-    name = "PropertyReference",
+@PhasePrerequisites(
     // This must be done after contents of functions are extracted into separate classes, or else the `$$delegatedProperties`
     // field will end up in the wrong class (not the one that declares the delegated property).
-    prerequisite = [FunctionReferenceLowering::class, SuspendLambdaLowering::class, PropertyReferenceDelegationLowering::class],
+    FunctionReferenceLowering::class,
+    SuspendLambdaLowering::class,
+    PropertyReferenceDelegationLowering::class,
 )
 internal class PropertyReferenceLowering(val context: JvmBackendContext) : IrElementTransformerVoidWithContext(), FileLoweringPass {
     companion object {
@@ -527,7 +532,7 @@ internal class PropertyReferenceLowering(val context: JvmBackendContext) : IrEle
 }
 
 /**
- * An origin for IrFunctionReferences which prevents inline class mangling. This only exists because of
+ * An [IrAttribute] for [IrRawFunctionReference]s which prevents inline class mangling. This only exists because of
  * inconsistencies between `RuntimeTypeMapper` and `KotlinTypeMapper`. The `RuntimeTypeMapper` does not
  * perform inline class mangling and so in the absence of jvm signatures in the metadata we need to avoid
  * inline class mangling as well in the function references used as arguments to the signature string intrinsic.

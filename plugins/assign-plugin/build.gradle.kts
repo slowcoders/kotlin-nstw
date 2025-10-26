@@ -5,6 +5,7 @@ plugins {
     id("jps-compatible")
     id("java-test-fixtures")
     id("project-tests-convention")
+    id("test-inputs-check")
 }
 
 dependencies {
@@ -22,6 +23,7 @@ dependencies {
 
     testFixturesImplementation(testFixtures(project(":compiler:tests-common")))
     testFixturesImplementation(libs.junit.jupiter.api)
+    testFixturesImplementation(testFixtures(project(":generators:test-generator")))
 
     testFixturesImplementation(project(":kotlin-reflect"))
     testRuntimeOnly(project(":core:descriptors.runtime"))
@@ -36,12 +38,7 @@ optInToExperimentalCompilerApi()
 
 sourceSets {
     "main" { none() }
-    "test" {
-        generatedTestDir()
-    }
-    "testFixtures" {
-        projectDefault()
-    }
+    "testFixtures" { projectDefault() }
 }
 
 publish()
@@ -52,10 +49,15 @@ javadocJar()
 testsJar()
 
 projectTests {
-    testTask(jUnitMode = JUnitMode.JUnit5) {
-        dependsOn(":dist")
-        workingDir = rootDir
-    }
+    testData(project.isolated, "testData")
+
+    testGenerator("org.jetbrains.kotlin.assignment.plugin.TestGeneratorKt", generateTestsInBuildDirectory = true)
 
     withJvmStdlibAndReflect()
+    withScriptRuntime()
+    withMockJdkRuntime()
+    withMockJdkAnnotationsJar()
+    withTestJar()
+
+    testTask(jUnitMode = JUnitMode.JUnit5)
 }

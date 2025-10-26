@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.backend.jvm.*
 import org.jetbrains.kotlin.codegen.ASSERTIONS_DISABLED_FIELD_NAME
 import org.jetbrains.kotlin.codegen.AsmUtil
+import org.jetbrains.kotlin.codegen.inline.classFileContainsMethod
 import org.jetbrains.kotlin.codegen.inline.coroutines.FOR_INLINE_SUFFIX
 import org.jetbrains.kotlin.codegen.mangleNameIfNeeded
 import org.jetbrains.kotlin.codegen.state.JvmBackendConfig
@@ -33,7 +34,6 @@ import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irExprBody
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.declarations.*
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.Companion.UNDERSCORE_PARAMETER
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrClassReferenceImpl
@@ -44,7 +44,6 @@ import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrVariableSymbol
 import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.*
-import org.jetbrains.kotlin.ir.util.erasedUpperBound
 import org.jetbrains.kotlin.ir.util.getArrayElementType
 import org.jetbrains.kotlin.ir.util.isBoxedArray
 import org.jetbrains.kotlin.ir.util.isSubtypeOf
@@ -63,7 +62,6 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.jvm.AsmTypes
-import org.jetbrains.kotlin.resolve.jvm.JvmConstants
 import org.jetbrains.kotlin.resolve.multiplatform.OptionalAnnotationUtil
 import org.jetbrains.kotlin.resolve.source.PsiSourceElement
 import org.jetbrains.kotlin.utils.DFS
@@ -258,7 +256,10 @@ fun IrDeclaration.shouldBeExposedByAnnotationOrFlag(languageVersionSettings: Lan
 // Do not duplicate function without inline classes in parameters, since it would lead to CONFLICTING_JVM_DECLARATIONS
 private fun IrDeclaration.isFunctionWhichCanBeExposed(): Boolean {
     if (this !is IrFunction || origin == IrDeclarationOrigin.GENERATED_SINGLE_FIELD_VALUE_CLASS_MEMBER) return false
+    // No sense in exposing suspend functions - they cannot be called from Java in normal way anyway
     if (isSuspend) return false
+    // Cannot expose open or abstract - @JvmName problem
+    if (isOverridable) return false
     if (parameters.any { it.type.isInlineClassType() }) return true
     if (!returnType.isInlineClassType()) return false
     // It is not explicitly annotated, global and returns inline class, do not expose it, since otherwise
@@ -477,7 +478,7 @@ fun classFileContainsMethod(classId: ClassId, function: IrFunction, context: Jvm
         listOf(*Type.getArgumentTypes(originalDescriptor), Type.getObjectType("kotlin/coroutines/Continuation"))
             .joinToString(prefix = "(", postfix = ")", separator = "") + AsmTypes.OBJECT_TYPE
     else originalDescriptor
-    return org.jetbrains.kotlin.codegen.classFileContainsMethod(classId, context.state, Method(originalSignature.name, descriptor))
+    return classFileContainsMethod(classId, context.state, Method(originalSignature.name, descriptor))
 }
 
 val DeclarationDescriptorWithSource.psiElement: PsiElement?
@@ -507,8 +508,6 @@ fun IrFunction.extensionReceiverName(config: JvmBackendConfig): String {
     else
         AsmUtil.LABELED_THIS_PARAMETER + mangleNameIfNeeded(callableName.asString())
 }
-
-fun IrFunction.anonymousContextParameterName(parameter: IrValueParameter): String? = anonymousContextParameterName(parameter, JvmConstants.INVALID_CHARS)
 
 fun IrFunction.isBridge(): Boolean =
     origin == IrDeclarationOrigin.BRIDGE || origin == IrDeclarationOrigin.BRIDGE_SPECIAL

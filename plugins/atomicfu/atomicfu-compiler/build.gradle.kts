@@ -109,7 +109,7 @@ dependencies {
     // todo: remove unnecessary dependencies
     testImplementation(project(":kotlin-compiler-runner-unshaded"))
 
-    testImplementation(commonDependency("commons-lang:commons-lang"))
+    testImplementation(commonDependency("org.apache.commons:commons-lang3"))
     testApi(testFixtures(project(":compiler:tests-common")))
     testApi(testFixtures(project(":compiler:tests-common-new")))
     testApi(testFixtures(project(":compiler:test-infrastructure")))
@@ -121,7 +121,6 @@ dependencies {
 
     testRuntimeOnly(kotlinStdlib())
     testRuntimeOnly(project(":kotlin-preloader")) // it's required for ant tests
-    testRuntimeOnly(project(":compiler:backend-common"))
     testRuntimeOnly(commonDependency("org.fusesource.jansi", "jansi"))
 
     atomicfuJsClasspath("org.jetbrains.kotlinx:atomicfu-js:0.25.0") { isTransitive = false }
@@ -210,17 +209,9 @@ projectTests {
         }
     }
 
-    val inputTags = findProperty("kotlin.native.tests.tags")?.toString()
-    val tags = buildString {
-        append("atomicfu-native") // Include all tests with the "atomicfu-native" tag
-        if (inputTags != null) {
-            append("&($inputTags)")
-        }
-    }
-
     nativeTestTask(
         taskName = "nativeTest",
-        tag = tags,
+        tag = "atomicfu-native",
         requirePlatformLibs = true,
         customCompilerDependencies = listOf(atomicfuJvmClasspath),
         customTestDependencies = listOf(atomicfuNativeKlib),
@@ -237,9 +228,8 @@ projectTests {
         jvmArgs("--add-opens=java.base/java.io=ALL-UNNAMED")
     }
 
-    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateAtomicfuTestsKt") {
+    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateAtomicfuTestsKt", doNotSetFixturesSourceSetDependency = true) {
         javaLauncher.set(project.getToolchainLauncherFor(JdkMajorVersion.JDK_11_0))
-        dependsOn(":compiler:generateTestData")
     }
 
     withJvmStdlibAndReflect()

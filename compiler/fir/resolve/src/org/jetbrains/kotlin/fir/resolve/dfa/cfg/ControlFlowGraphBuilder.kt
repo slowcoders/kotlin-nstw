@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.fir.declarations.utils.hasExplicitBackingField
 import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.builder.buildUnitExpression
+import org.jetbrains.kotlin.fir.expressions.impl.FirSingleExpressionBlock
 import org.jetbrains.kotlin.fir.references.toResolvedConstructorSymbol
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.resolve.dfa.*
@@ -198,6 +199,9 @@ class ControlFlowGraphBuilder private constructor(
                             }
                     }
                 }
+                // Refer to the comment above. The same reasoning applies here: we don't want to create Nothing-returning stub for
+                // fun() = returnValue. Instead, in this case we will collect returnValue in the `is JumpNode` branch.
+                function.body is FirSingleExpressionBlock -> null
                 // fun() { terminatingExpression } -> nothing (checker will emit an error if return type is not Unit)
                 // fun() { throw } or fun() { returnsNothing() } -> Nothing-returning stub
                 else -> FirStub.takeIf { _ -> previousNodes.all { it is StubNode } }
@@ -257,13 +261,13 @@ class ControlFlowGraphBuilder private constructor(
     fun enterFunction(function: FirFunction): Pair<LocalFunctionDeclarationNode?, FunctionEnterNode> {
         require(function !is FirAnonymousFunction)
         val name = when (function) {
-            is FirSimpleFunction -> function.name.asString()
+            is FirNamedFunction -> function.name.asString()
             is FirPropertyAccessor -> if (function.isGetter) "<getter>" else "<setter>"
             is FirConstructor -> "<init>"
             else -> throw IllegalArgumentException("Unknown function: ${function.render()}")
         }
 
-        val localFunctionNode = runIf(function is FirSimpleFunction && function.isLocal && bodyBuildingMode) {
+        val localFunctionNode = runIf(function is FirNamedFunction && function.isLocal && bodyBuildingMode) {
             createLocalFunctionDeclarationNode(function).also { addNewSimpleNode(it) }
         }
         val kind = when {

@@ -38,7 +38,7 @@ object FirWasmJsInteropTypesChecker : FirBasicDeclarationChecker(MppCheckerKind.
 
         fun isJsCodeDeclaration(): Boolean {
             return when (declaration) {
-                is FirSimpleFunction -> declaration.hasValidJsCodeBody()
+                is FirNamedFunction -> declaration.hasValidJsCodeBody()
                 is FirProperty -> declaration.hasValidJsCodeBody()
                 else -> false
             }
@@ -87,7 +87,7 @@ object FirWasmJsInteropTypesChecker : FirBasicDeclarationChecker(MppCheckerKind.
             if (isBasicFunctionType(session)) return true
 
             // aside from the aforementioned cases, only external types are supported
-            return toRegularClassSymbol(session)?.isEffectivelyExternal(session) == true
+            return this.toRegularClassSymbol()?.isEffectivelyExternal(session) == true
         }
 
         fun FirTypeRef.checkSupportInJsInterop(position: Position, fallbackSource: KtSourceElement?) {

@@ -17,6 +17,7 @@ dependencies {
     testFixturesApi(project(":compiler:ir.serialization.native"))
     testFixturesApi(project(":compiler:test-infrastructure"))
     testFixturesApi(project(":kotlin-util-klib-abi"))
+    testFixturesApi(testFixtures(project(":native:kotlin-native-utils")))
     testFixturesApi(testFixtures(project(":native:native.tests")))
     testFixturesApi(testFixtures(project(":kotlin-util-klib-abi")))
 }
@@ -25,7 +26,6 @@ sourceSets {
     "main" { none() }
     "test" {
         projectDefault()
-        generatedTestDir()
     }
     "testFixtures" { projectDefault() }
 }
@@ -35,12 +35,13 @@ projectTests {
     testData(project(":compiler").isolated, "testData/codegen")
     testData(project(":compiler").isolated, "testData/ir")
     testData(project(":compiler").isolated, "testData/diagnostics")
+    testData(project(":compiler").isolated, "testData/loadJava")
     testData(project(":native:native.tests").isolated, "testData/klib")
     testData(project(":native:native.tests").isolated, "testData/irProvidersMismatch")
+    testData(project(":native:native.tests").isolated, "testData/oneStageCompilation")
 
     nativeTestTask(
         "test",
-        null,
         allowParallelExecution = true,
         requirePlatformLibs = true,
     ) {
@@ -58,9 +59,8 @@ projectTests {
         systemProperty("user.dir", layout.buildDirectory.asFile.get().absolutePath)
     }
 
-    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateKlibNativeTestsKt") {
+    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateKlibNativeTestsKt", generateTestsInBuildDirectory = true) {
         javaLauncher.set(project.getToolchainLauncherFor(JdkMajorVersion.JDK_11_0))
-        dependsOn(":compiler:generateTestData")
     }
 }
 

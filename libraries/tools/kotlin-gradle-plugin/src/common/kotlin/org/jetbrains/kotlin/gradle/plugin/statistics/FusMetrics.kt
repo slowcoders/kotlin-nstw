@@ -10,7 +10,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.tooling.events.FailureResult
 import org.gradle.tooling.events.FinishEvent
 import org.gradle.tooling.events.task.TaskFinishEvent
-import org.jetbrains.kotlin.build.report.metrics.GradleBuildPerformanceMetric
+import org.jetbrains.kotlin.build.report.metrics.*
 import org.jetbrains.kotlin.cli.common.arguments.*
 import org.jetbrains.kotlin.compilerRunner.ArgumentUtils
 import org.jetbrains.kotlin.compilerRunner.isKonanIncrementalCompilationEnabled
@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.report.TaskExecutionResult
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrOutputGranularity
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilerExecutionStrategy
 import org.jetbrains.kotlin.gradle.utils.addConfigurationMetrics
 import org.jetbrains.kotlin.gradle.utils.runMetricMethodSafely
 import org.jetbrains.kotlin.konan.target.HostManager
@@ -189,14 +190,14 @@ internal object KotlinTaskExecutionMetrics : FusMetrics {
 
         val metricsMap = buildMetrics.buildPerformanceMetrics.asMap()
 
-        val linesOfCode = metricsMap[GradleBuildPerformanceMetric.SOURCE_LINES_NUMBER]
+        val linesOfCode = metricsMap[SOURCE_LINES_NUMBER]
         if (linesOfCode != null && linesOfCode > 0 && totalTimeMs > 0) {
             metricsConsumer.report(NumericalMetrics.COMPILED_LINES_OF_CODE, linesOfCode)
             metricsConsumer.report(NumericalMetrics.COMPILATION_LINES_PER_SECOND, linesOfCode * 1000 / totalTimeMs, null, linesOfCode)
-            metricsMap[GradleBuildPerformanceMetric.ANALYSIS_LPS]?.also { value ->
+            metricsMap[ANALYSIS_LPS]?.also { value ->
                 metricsConsumer.report(NumericalMetrics.ANALYSIS_LINES_PER_SECOND, value, null, linesOfCode)
             }
-            metricsMap[GradleBuildPerformanceMetric.CODE_GENERATION_LPS]?.also { value ->
+            metricsMap[CODE_GENERATION_LPS]?.also { value ->
                 metricsConsumer.report(NumericalMetrics.CODE_GENERATION_LINES_PER_SECOND, value, null, linesOfCode)
             }
         }
@@ -258,6 +259,7 @@ internal object CompileKotlinTaskMetrics : FusMetrics {
         compilerOptions: KotlinCommonCompilerOptions,
         separateKmpCompilationEnabled: Boolean,
         firRunnerEnabled: Boolean, // jvm only as of 2.2.20
+        executionPolicy: KotlinCompilerExecutionStrategy,
         metricsContainer: StatisticsValuesConsumer,
     ) {
         metricsContainer.report(BooleanMetrics.KOTLIN_PROGRESSIVE_MODE, compilerOptions.progressiveMode.get())
@@ -277,6 +279,7 @@ internal object CompileKotlinTaskMetrics : FusMetrics {
         if (firRunnerEnabled) {
             metricsContainer.report(BooleanMetrics.KOTLIN_INCREMENTAL_FIR_RUNNER_ENABLED, true)
         }
+        metricsContainer.report(StringMetrics.KOTLIN_COMPILER_EXECUTION_POLICY, executionPolicy.propertyValue)
     }
 }
 

@@ -1,6 +1,12 @@
 KtNameReferenceExpression(22,26): 'java'
   KtSimpleNameReference:
-    package java
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      package java
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

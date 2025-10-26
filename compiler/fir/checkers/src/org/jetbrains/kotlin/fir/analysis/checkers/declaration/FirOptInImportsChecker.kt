@@ -35,7 +35,7 @@ object FirOptInImportsChecker : FirFileChecker(MppCheckerKind.Common) {
             when (parentClassSymbol) {
                 is FirRegularClassSymbol -> parentClassSymbol.checkContainingClasses(source)
                 is FirTypeAliasSymbol -> {
-                    val expandedClassSymbol = parentClassSymbol.fullyExpandedClass(context.session) ?: return@forEach
+                    val expandedClassSymbol = parentClassSymbol.fullyExpandedClass() ?: return@forEach
                     expandedClassSymbol.checkContainingClasses(source)
                 }
                 else -> return@forEach
@@ -50,7 +50,7 @@ object FirOptInImportsChecker : FirFileChecker(MppCheckerKind.Common) {
         if (isExperimentalMarker(context.session)) {
             reporter.reportOn(source, FirErrors.OPT_IN_MARKER_CAN_ONLY_BE_USED_AS_ANNOTATION_OR_ARGUMENT_IN_OPT_IN)
         }
-        val containingClassSymbol = this.getContainingClassLookupTag()?.toSymbol(context.session) ?: return
+        val containingClassSymbol = this.getContainingClassLookupTag()?.toSymbol() ?: return
         containingClassSymbol.checkContainingClasses(source)
     }
 

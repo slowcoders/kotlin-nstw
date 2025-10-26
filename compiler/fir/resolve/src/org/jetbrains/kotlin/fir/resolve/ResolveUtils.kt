@@ -19,17 +19,26 @@ import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.builder.*
 import org.jetbrains.kotlin.fir.expressions.impl.FirUnitExpression
 import org.jetbrains.kotlin.fir.references.*
+import org.jetbrains.kotlin.fir.references.builder.FirPropertyWithExplicitBackingFieldResolvedNamedReferenceBuilder
 import org.jetbrains.kotlin.fir.references.builder.buildErrorNamedReference
 import org.jetbrains.kotlin.fir.references.builder.buildResolvedErrorReference
 import org.jetbrains.kotlin.fir.resolve.calls.TypeParameterAsExpression
+import org.jetbrains.kotlin.fir.resolve.calls.candidate.CallKind
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.Candidate
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.FirNamedReferenceWithCandidate
 import org.jetbrains.kotlin.fir.resolve.calls.isVisible
+import org.jetbrains.kotlin.fir.resolve.dfa.FirDataFlowAnalyzer
 import org.jetbrains.kotlin.fir.resolve.dfa.cfg.FirAnonymousFunctionReturnExpressionInfo
 import org.jetbrains.kotlin.fir.resolve.diagnostics.*
 import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.resultType
+import org.jetbrains.kotlin.fir.scopes.FirScope
 import org.jetbrains.kotlin.fir.scopes.FirTypeScope
 import org.jetbrains.kotlin.fir.scopes.ProcessorAction
+import org.jetbrains.kotlin.fir.scopes.impl.FirAbstractSimpleImportingScope
+import org.jetbrains.kotlin.fir.scopes.impl.FirAbstractStarImportingScope
+import org.jetbrains.kotlin.fir.scopes.impl.FirDefaultSimpleImportingScope
+import org.jetbrains.kotlin.fir.scopes.impl.FirDefaultStarImportingScope
+import org.jetbrains.kotlin.fir.scopes.impl.FirPackageMemberScope
 import org.jetbrains.kotlin.fir.scopes.impl.importedFromObjectOrStaticData
 import org.jetbrains.kotlin.fir.scopes.impl.typeAliasConstructorInfo
 import org.jetbrains.kotlin.fir.scopes.processOverriddenFunctions
@@ -220,7 +229,7 @@ fun FirExpression.isImplicitUnitForEmptyLambda(): Boolean =
  */
 fun FirFunction.constructFunctionType(kind: FunctionTypeKind? = null): ConeLookupTagBasedType {
     val receiverTypeRef = when (this) {
-        is FirSimpleFunction -> receiverParameter
+        is FirNamedFunction -> receiverParameter
         is FirAnonymousFunction -> receiverParameter
         else -> null
     }?.typeRef
@@ -336,6 +345,7 @@ fun BodyResolveComponents.buildResolvedQualifierForClass(
     diagnostic: ConeDiagnostic? = null,
     nonFatalDiagnostics: List<ConeDiagnostic> = emptyList(),
     annotations: List<FirAnnotation> = emptyList(),
+    resolvedSymbolOrigin: FirResolvedSymbolOrigin? = null,
 ): FirResolvedQualifier {
     return buildResolvedQualifierForClass(
         symbol,
@@ -347,6 +357,7 @@ fun BodyResolveComponents.buildResolvedQualifierForClass(
         nonFatalDiagnostics,
         annotations,
         explicitParent,
+        resolvedSymbolOrigin,
     )
 }
 
@@ -359,7 +370,8 @@ fun BodyResolveComponents.buildResolvedQualifierForClass(
     diagnostic: ConeDiagnostic?,
     nonFatalDiagnostics: List<ConeDiagnostic>?,
     annotations: List<FirAnnotation>,
-    explicitParent: FirResolvedQualifier?
+    explicitParent: FirResolvedQualifier?,
+    resolvedSymbolOrigin: FirResolvedSymbolOrigin?,
 ): FirResolvedQualifier {
     val builder: FirAbstractResolvedQualifierBuilder = if (diagnostic == null) {
         FirResolvedQualifierBuilder()
@@ -385,9 +397,10 @@ fun BodyResolveComponents.buildResolvedQualifierForClass(
         nonFatalDiagnostics?.let(this.nonFatalDiagnostics::addAll)
         this.annotations.addAll(annotations)
         this.explicitParent = explicitParent
-        this.resolvedToCompanionObject = symbol?.fullyExpandedClass(session)?.resolvedCompanionObjectSymbol != null
+        this.resolvedToCompanionObject = symbol?.fullyExpandedClass()?.resolvedCompanionObjectSymbol != null
+        this.resolvedSymbolOrigin = resolvedSymbolOrigin
     }.build().apply {
-        if (symbol?.classId?.isLocal == true) {
+        if (symbol?.isLocal == true) {
             resultType = typeForQualifierByDeclaration(symbol.fir, session, element = this@apply, file)
                 ?.also { replaceCanBeValue(true) }
                 ?: session.builtinTypes.unitType.coneType
@@ -406,11 +419,12 @@ fun FirResolvedQualifier.unsetResolvedToCompanionIf(condition: Boolean) {
 internal fun FirRegularClassSymbol.toImplicitResolvedQualifierReceiver(
     bodyResolveComponents: BodyResolveComponents,
     source: KtSourceElement?,
+    resolvedToCompanion: Boolean = false,
 ): FirResolvedQualifier {
     val resolvedQualifier = buildResolvedQualifier {
         packageFqName = classId.packageFqName
         relativeClassFqName = classId.relativeClassName
-        resolvedToCompanionObject = false
+        resolvedToCompanionObject = resolvedToCompanion
         symbol = this@toImplicitResolvedQualifierReceiver
         this.source = source
     }.apply {
@@ -515,9 +529,10 @@ private fun BodyResolveComponents.typeFromSymbol(symbol: FirBasedSymbol<*>): Con
 private val ConeKotlinType.isKindOfNothing
     get() = lowerBoundIfFlexible().let { it.isNothing || it.isNullableNothing }
 
-fun BodyResolveComponents.transformExpressionUsingSmartcastInfo(expression: FirExpression): FirExpression {
-    val smartcastStatement = dataFlowAnalyzer.getTypeUsingSmartcastInfo(expression) ?: return expression
-
+fun BodyResolveComponents.transformExpressionUsingSmartcastInfo(
+    expression: FirExpression,
+    smartcastStatement: FirDataFlowAnalyzer.SmartCastStatement,
+): FirExpression {
     val originalTypeWithAliases = expression.resolvedType
     val originalType = originalTypeWithAliases.fullyExpandedType()
 
@@ -587,6 +602,11 @@ fun BodyResolveComponents.transformExpressionUsingSmartcastInfo(expression: FirE
     }
 }
 
+fun BodyResolveComponents.transformExpressionUsingSmartcastInfo(expression: FirExpression): FirExpression {
+    val smartcastStatement = dataFlowAnalyzer.getTypeUsingSmartcastInfo(expression) ?: return expression
+    return transformExpressionUsingSmartcastInfo(expression, smartcastStatement)
+}
+
 fun FirCheckedSafeCallSubject.propagateTypeFromOriginalReceiver(
     nullableReceiverExpression: FirExpression,
     session: FirSession,
@@ -639,7 +659,7 @@ fun BodyResolveComponents.initialTypeOfCandidate(candidate: Candidate): ConeKotl
 fun ConeKotlinType.initialTypeOfCandidate(candidate: Candidate): ConeKotlinType {
     val system = candidate.system
     val resultingSubstitutor = system.buildCurrentSubstitutor()
-    return resultingSubstitutor.safeSubstitute(system, candidate.substitutor.substituteOrSelf(this)) as ConeKotlinType
+    return resultingSubstitutor.safeSubstitute(system, candidate.substitutor.substituteOrSelf(this)).asCone()
 }
 
 /**
@@ -799,6 +819,23 @@ fun FirNamedReferenceWithCandidate.toErrorReference(diagnostic: ConeDiagnostic):
     }
 }
 
+val Candidate.isExplicitBackingFieldAccess: Boolean
+    get() = (symbol as? FirPropertySymbol)?.hasExplicitBackingField == true
+            && callInfo.callKind == CallKind.VariableAccess
+
+fun buildExplicitBackingFieldReference(
+    source: KtSourceElement?,
+    name: Name,
+    candidate: Candidate,
+): FirPropertyWithExplicitBackingFieldResolvedNamedReference =
+    FirPropertyWithExplicitBackingFieldResolvedNamedReferenceBuilder().apply {
+        this.source = source
+        this.name = name
+        this.resolvedSymbol = candidate.symbol
+        hasVisibleBackingField = candidate.hasVisibleBackingField
+        resolvedSymbolOrigin = candidate.originScope?.toResolvedSymbolOrigin()
+    }.build()
+
 val FirTypeParameterSymbol.defaultType: ConeTypeParameterType
     get() = ConeTypeParameterTypeImpl(toLookupTag(), isMarkedNullable = false)
 
@@ -840,4 +877,12 @@ fun FirQualifiedAccessExpression.replaceExplicitReceiverIfNecessary(dispatchRece
     ) {
         replaceExplicitReceiver(dispatchReceiver)
     }
+}
+
+fun FirScope.toResolvedSymbolOrigin(): FirResolvedSymbolOrigin? = when (this) {
+    is FirDefaultStarImportingScope, is FirDefaultSimpleImportingScope -> FirResolvedSymbolOrigin.DefaultImport
+    is FirAbstractStarImportingScope -> FirResolvedSymbolOrigin.StarImport
+    is FirPackageMemberScope -> FirResolvedSymbolOrigin.Package
+    is FirAbstractSimpleImportingScope -> FirResolvedSymbolOrigin.ExplicitImport
+    else -> null
 }

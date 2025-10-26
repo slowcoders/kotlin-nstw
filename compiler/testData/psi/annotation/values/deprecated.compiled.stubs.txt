@@ -2,9 +2,14 @@ Qualified.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/Qualified, fqName=Qualified, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=Qualified, superNames=[]]
+    CLASS[classId=/Qualified, fqName=Qualified, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=Qualified, superNames=[]]
       MODIFIER_LIST[public final]
         ANNOTATION_ENTRY[hasValueArguments=false, shortName=Deprecated]
+          valueArguments: [
+            message -> "Deprecated"
+            replaceWith -> Value(classId=kotlin/ReplaceWith, argumentsMapping={expression="NewClass", imports=["foo.bar.baz.NewClass"]})
+            level -> DeprecationLevel.HIDDEN
+          ]
           CONSTRUCTOR_CALLEE
             TYPE_REFERENCE
               USER_TYPE
@@ -21,9 +26,14 @@ Simple.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/Simple, fqName=Simple, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=Simple, superNames=[]]
+    CLASS[classId=/Simple, fqName=Simple, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=Simple, superNames=[]]
       MODIFIER_LIST[public final]
         ANNOTATION_ENTRY[hasValueArguments=false, shortName=Deprecated]
+          valueArguments: [
+            message -> "Deprecated"
+            replaceWith -> Value(classId=kotlin/ReplaceWith, argumentsMapping={expression="NewClass", imports=["foo.bar.baz.NewClass"]})
+            level -> DeprecationLevel.HIDDEN
+          ]
           CONSTRUCTOR_CALLEE
             TYPE_REFERENCE
               USER_TYPE

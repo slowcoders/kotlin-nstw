@@ -145,7 +145,7 @@ public abstract interface annotation class kotlin/Metadata : java/lang/annotatio
 	public abstract fun xs ()Ljava/lang/String;
 }
 
-public abstract interface annotation class kotlin/MustUseReturnValue : java/lang/annotation/Annotation {
+public abstract interface annotation class kotlin/MustUseReturnValues : java/lang/annotation/Annotation {
 }
 
 public class kotlin/NoWhenBranchMatchedException : java/lang/RuntimeException {
@@ -3275,7 +3275,7 @@ public final class kotlin/io/ByteStreamsKt {
 	public static synthetic fun copyTo$default (Ljava/io/InputStream;Ljava/io/OutputStream;IILjava/lang/Object;)J
 	public static final fun iterator (Ljava/io/BufferedInputStream;)Lkotlin/collections/ByteIterator;
 	public static final fun readBytes (Ljava/io/InputStream;)[B
-	public static final fun readBytes (Ljava/io/InputStream;I)[B
+	public static final synthetic fun readBytes (Ljava/io/InputStream;I)[B
 	public static synthetic fun readBytes$default (Ljava/io/InputStream;IILjava/lang/Object;)[B
 }
 
@@ -6494,11 +6494,17 @@ public final class kotlin/uuid/Uuid$Companion {
 	public final fun fromLongs (JJ)Lkotlin/uuid/Uuid;
 	public final fun fromUByteArray-GBYM_sE ([B)Lkotlin/uuid/Uuid;
 	public final fun fromULongs-eb3DHEI (JJ)Lkotlin/uuid/Uuid;
+	public final fun generateV4 ()Lkotlin/uuid/Uuid;
+	public final fun generateV7 ()Lkotlin/uuid/Uuid;
+	public final fun generateV7NonMonotonicAt (Lkotlin/time/Instant;)Lkotlin/uuid/Uuid;
 	public final fun getLEXICAL_ORDER ()Ljava/util/Comparator;
 	public final fun getNIL ()Lkotlin/uuid/Uuid;
 	public final fun parse (Ljava/lang/String;)Lkotlin/uuid/Uuid;
 	public final fun parseHex (Ljava/lang/String;)Lkotlin/uuid/Uuid;
 	public final fun parseHexDash (Ljava/lang/String;)Lkotlin/uuid/Uuid;
+	public final fun parseHexDashOrNull (Ljava/lang/String;)Lkotlin/uuid/Uuid;
+	public final fun parseHexOrNull (Ljava/lang/String;)Lkotlin/uuid/Uuid;
+	public final fun parseOrNull (Ljava/lang/String;)Lkotlin/uuid/Uuid;
 	public final fun random ()Lkotlin/uuid/Uuid;
 }
 

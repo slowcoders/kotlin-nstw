@@ -12,11 +12,12 @@ import org.gradle.api.Named
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.attributes.HasAttributes
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.InternalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.KOTLIN_OPTIONS_DEPRECATION_MESSAGE
 import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.tooling.core.HasMutableExtras
 import java.util.Locale.getDefault
@@ -111,16 +112,12 @@ interface KotlinCompilation<UNUSED : KotlinAnyOptionsDeprecated> : Named,
     val compilationName: String
 
     /**
-     * All [KotlinSourceSets](KotlinSourceSet) used by this compilation.
-     *
-     * Additional Kotlin source sets that can be included either via [source] or [associateWith] methods.
+     * Directly added [KotlinSourceSets](KotlinSourceSet) that are used by this compilation. I.e., doesn't contain shared source sets.
      */
     val kotlinSourceSets: Set<KotlinSourceSet>
 
     /**
      * All [KotlinSourceSets](KotlinSourceSet) used by this compilation.
-     *
-     * Additional Kotlin source sets can be included either via [source] or [associateWith] methods.
      */
     val allKotlinSourceSets: Set<KotlinSourceSet>
 
@@ -299,50 +296,6 @@ interface KotlinCompilation<UNUSED : KotlinAnyOptionsDeprecated> : Named,
     }
 
     /**
-     * Will add a [KotlinSourceSet] directly into this compilation.
-     * This method is deprecated and is soon to be removed.
-     *
-     * After this method is removed, there will be exactly one SourceSet associated with a given Kotlin compilation.
-     *
-     * To include other sources in the compilation, build a hierarchy of Source Sets instead.
-     * See: [KotlinSourceSet.dependsOn] or [KotlinTargetHierarchyDsl].
-     * This approach is most applicable if
-     * - The sources can be shared for multiple compilations
-     * - The sources shall be analyzed in a different context than [defaultSourceSet]
-     * - The project uses multiplatform and sources shall provide expects
-     *
-     * Alternatively, when just including source files from another directory,
-     * the [SourceDirectorySet] from the [defaultSourceSet] can be used.
-     * This approach is most applicable if
-     *  - sources are not intended to be shared across multiple compilations
-     *  - sources shall be analyzed in the same context as other sources in the [defaultSourceSet]
-     *
-     * Example 1: Create a new 'utils' source set and make it available to the 'main' compilation:
-     * ```kotlin
-     * kotlin {
-     *     val compilation = target.compilations.getByName("main")
-     *     val utilsSourceSet = sourceSets.create("utils")
-     *     compilation.defaultSourceSet.dependsOn(utilsSourceSet)
-     * }
-     * ```
-     *
-     * Example 2: Add 'src/utils/kotlin' to the main SourceSet
-     * ```kotlin
-     * kotlin {
-     *     val compilation = target.compilations.getByName("main")
-     *     compilation.defaultSourceSet.kotlin.srcDir("src/utils/kotlin")
-     * }
-     * ```
-     * Further details:
-     * https://kotl.in/compilation-source-deprecation
-     */
-    @Deprecated(
-        "Scheduled for removal with Kotlin 2.3. Please see the migration guide: https://kotl.in/compilation-source-deprecation",
-        level = DeprecationLevel.ERROR,
-    )
-    fun source(sourceSet: KotlinSourceSet)
-
-    /**
      * Associates the current KotlinCompilation with another KotlinCompilation.
      *
      * After this compilation will:
@@ -356,9 +309,8 @@ interface KotlinCompilation<UNUSED : KotlinAnyOptionsDeprecated> : Named,
      * @suppress
      */
     @Deprecated(
-        "Use 'associatedCompilations' instead",
-        ReplaceWith("associatedCompilations.toList(). Scheduled for removal in Kotlin 2.3."),
-        level = DeprecationLevel.ERROR
+        "Used in IDEA Import",
+        level = DeprecationLevel.HIDDEN
     )
     val associateWith: List<KotlinCompilation<*>> get() = associatedCompilations.toList()
 
@@ -394,6 +346,48 @@ interface KotlinCompilation<UNUSED : KotlinAnyOptionsDeprecated> : Named,
      */
     val disambiguatedName
         get() = target.disambiguationClassifier + name.replaceFirstChar { it.titlecase(getDefault()) }
+
+    @Deprecated(
+        "Declaring dependencies on Compilation level is deprecated, please declare on related source set",
+        ReplaceWith("defaultSourceSet.dependencies"),
+        level = DeprecationLevel.WARNING
+    )
+    override fun dependencies(configure: KotlinDependencyHandler.() -> Unit)
+
+    @Deprecated(
+        "Declaring dependencies on Compilation level is deprecated, please declare on related source set",
+        ReplaceWith("defaultSourceSet.dependencies"),
+        level = DeprecationLevel.WARNING
+    )
+    override fun dependencies(configure: Action<KotlinDependencyHandler>)
+
+    @Deprecated(
+        "Accessing apiConfigurationName on Compilation level is deprecated, please use default source set instead",
+        ReplaceWith("defaultSourceSet.apiConfigurationName"),
+        level = DeprecationLevel.WARNING
+    )
+    override val apiConfigurationName: String
+
+    @Deprecated(
+        "Accessing implementationConfigurationName on Compilation level is deprecated, please use default source set instead",
+        ReplaceWith("defaultSourceSet.implementationConfigurationName"),
+        level = DeprecationLevel.WARNING
+    )
+    override val implementationConfigurationName: String
+
+    @Deprecated(
+        "Accessing compileOnlyConfigurationName on Compilation level is deprecated, please use default source set instead",
+        ReplaceWith("defaultSourceSet.compileOnlyConfigurationName"),
+        level = DeprecationLevel.WARNING
+    )
+    override val compileOnlyConfigurationName: String
+
+    @Deprecated(
+        "Accessing runtimeOnlyConfigurationName on Compilation level is deprecated, please use default source set instead",
+        ReplaceWith("defaultSourceSet.runtimeOnlyConfigurationName"),
+        level = DeprecationLevel.WARNING
+    )
+    override val runtimeOnlyConfigurationName: String
 }
 
 /**
@@ -411,15 +405,6 @@ interface KotlinCompilationToRunnableFiles<T : KotlinAnyOptionsDeprecated> : Kot
  */
 @Suppress("Deprecation_ERROR")
 typealias DeprecatedKotlinCompilationToRunnableFiles<T> = KotlinCompilationToRunnableFiles<T>
-
-/**
- * @suppress
- */
-@Deprecated("Scheduled for removal with Kotlin 2.3.", level = DeprecationLevel.ERROR)
-@Suppress("EXTENSION_SHADOWED_BY_MEMBER", "DEPRECATION_ERROR", "TYPEALIAS_EXPANSION_DEPRECATION_ERROR") // kept for compatibility
-val <T : KotlinCommonOptionsDeprecated> KotlinCompilation<T>.runtimeDependencyConfigurationName: String?
-    get() = (this as? KotlinCompilationToRunnableFiles<T>)?.runtimeDependencyConfigurationName
-
 /**
  * @suppress
  */

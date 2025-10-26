@@ -11,9 +11,10 @@ import org.jetbrains.kotlin.backend.konan.*
 import org.jetbrains.kotlin.backend.konan.cgen.*
 import org.jetbrains.kotlin.backend.konan.descriptors.synthesizedName
 import org.jetbrains.kotlin.backend.konan.ir.*
-import org.jetbrains.kotlin.backend.konan.llvm.IntrinsicType
-import org.jetbrains.kotlin.backend.konan.llvm.tryGetIntrinsicType
+import org.jetbrains.kotlin.backend.konan.IntrinsicType
+import org.jetbrains.kotlin.backend.konan.ir.tryGetIntrinsicType
 import org.jetbrains.kotlin.backend.konan.serialization.isFromCInteropLibrary
+import org.jetbrains.kotlin.config.nativeBinaryOptions.CCallMode
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
@@ -51,6 +52,21 @@ internal class InteropLowering(val context: Context, val fileLowerState: FileLow
     override fun lower(irBody: IrBody, container: IrDeclaration) {
         InteropLoweringPart1(context, fileLowerState).lower(irBody, container)
         InteropLoweringPart2(context, fileLowerState).lower(irBody, container)
+    }
+
+    companion object {
+        /**
+         * InteropLowering uses this character to designate name placeholders in generated C stubs,
+         * so that InteropBridgesNameInventor replaces the placeholders with real names.
+         *
+         * So, ideally, this character should never be found in valid C code.
+         * Otherwise, something that is not a placeholder can be parsed as one (see e.g. KT-81538).
+         *
+         * It seems that the only reliable choice then is to use the null character.
+         * Which is not great because it is not normally displayed, making potential problems
+         * harder to diagnose.
+         */
+        const val NAME_PLACEHOLDER_QUOTE = '\u0000'
     }
 }
 
@@ -128,7 +144,10 @@ private abstract class BaseInteropIrTransformer(
                 addKotlin(declaration)
             }
 
-            override fun getUniqueCName(prefix: String) = "\$$prefix${nameCounter.getNext()}\$"
+            override fun getUniqueCName(prefix: String): String {
+                val quote = InteropLowering.NAME_PLACEHOLDER_QUOTE
+                return "$quote$prefix${nameCounter.getNext()}$quote"
+            }
 
             override fun getUniqueKotlinFunctionReferenceClassName(prefix: String) =
                     fileLowerState.getFunctionReferenceImplUniqueName(prefix)
@@ -309,7 +328,7 @@ private class InteropTransformerPart1(
     }
 
     private companion object {
-        private val OVERRIDING_INITIALIZER_BY_CONSTRUCTOR by IrDeclarationOriginImpl
+        private val OVERRIDING_INITIALIZER_BY_CONSTRUCTOR by IrDeclarationOriginImpl.Regular
     }
 
     private fun IrConstructor.overridesConstructor(other: IrConstructor): Boolean {
@@ -809,14 +828,43 @@ private class InteropTransformerPart2(
         return initializer.shallowCopy()
     }
 
-    private fun generateCCall(expression: IrCall): IrExpression {
+    private fun generateCCall(expression: IrCall, direct: Boolean): IrExpression {
         val function = expression.symbol.owner
 
         val exceptionMode = ForeignExceptionMode.byValue(
                 function.konanLibrary?.manifestProperties?.getProperty(ForeignExceptionMode.manifestKey)
         )
-        return builder.generateExpressionWithStubs(expression) { generateCCall(expression, builder, isInvoke = false, exceptionMode) }
+        return builder.generateExpressionWithStubs(expression) {
+            generateCCall(
+                    expression,
+                    builder,
+                    isInvoke = false,
+                    exceptionMode,
+                    direct = direct
+            )
+        }
     }
+
+    private fun tryGenerateIndirectCCall(expression: IrCall): IrExpression? =
+            if (expression.symbol.owner.hasAnnotation(RuntimeNames.cCall)) {
+                generateCCall(expression, direct = false)
+            } else {
+                null
+            }
+
+    private fun tryGenerateDirectCCall(expression: IrCall): IrExpression? =
+            if (expression.symbol.owner.hasAnnotation(RuntimeNames.cCallDirect)) {
+                generateCCall(expression, direct = true)
+            } else {
+                null
+            }
+
+    private fun generateCFunctionCallOrGlobalAccess(expression: IrCall): IrExpression = when (context.config.cCallMode) {
+        CCallMode.Indirect -> tryGenerateIndirectCCall(expression)
+        CCallMode.IndirectOrDirect -> tryGenerateIndirectCCall(expression) ?: tryGenerateDirectCCall(expression)
+        CCallMode.DirectOrIndirect -> tryGenerateDirectCCall(expression) ?: tryGenerateIndirectCCall(expression)
+        CCallMode.Direct -> tryGenerateDirectCCall(expression)
+    } ?: error(renderCompilerError(expression, "the call is incompatible with cCallMode=${context.config.cCallMode}"))
 
     private fun lowerObjCInitBy(expression: IrCall): IrExpression {
         val argument = expression.arguments[1]!!
@@ -917,8 +965,8 @@ private class InteropTransformerPart2(
             }
         }
 
-        if (function.annotations.hasAnnotation(RuntimeNames.cCall)) {
-            return generateCCall(expression)
+        if (function.isCFunctionOrGlobalAccessor()) {
+            return generateCFunctionCallOrGlobalAccess(expression)
         }
 
         val failCompilation = { msg: String -> error(irFile, expression, msg) }
@@ -947,7 +995,7 @@ private class InteropTransformerPart2(
                     }
                 }
                 IntrinsicType.INTEROP_FUNPTR_INVOKE -> {
-                    builder.generateExpressionWithStubs { generateCCall(expression, builder, isInvoke = true) }
+                    builder.generateExpressionWithStubs { generateCCall(expression, builder, isInvoke = true, direct = false) }
                 }
                 IntrinsicType.INTEROP_SIGN_EXTEND, IntrinsicType.INTEROP_NARROW -> {
 

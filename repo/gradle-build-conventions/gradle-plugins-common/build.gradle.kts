@@ -10,7 +10,7 @@ plugins {
 kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalBuildToolsApi::class)
     compilerVersion = libs.versions.kotlin.`for`.gradle.plugins.compilation
-    jvmToolchain(11)
+    jvmToolchain(17)
 
     compilerOptions {
         freeCompilerArgs.add("-Xsuppress-version-warnings")
@@ -62,6 +62,10 @@ dependencies {
     testImplementation(project(":gradle-plugins-documentation"))
     testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.junit.jupiter.engine)
+
+    constraints {
+        api(libs.apache.commons.lang)
+    }
 }
 
 tasks.withType<Test>().configureEach {

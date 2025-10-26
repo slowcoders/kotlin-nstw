@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlinx.dataframe.plugin.extensions
 
-import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.diagnostics.*
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticRenderers.TO_STRING
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
@@ -13,66 +12,88 @@ import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationCheckers
-import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirPropertyChecker
-import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirSimpleFunctionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.ExpressionCheckers
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirFunctionCallChecker
-import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirPropertyAccessExpressionChecker
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
-import org.jetbrains.kotlin.fir.declarations.FirProperty
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticsContainer
+import org.jetbrains.kotlin.diagnostics.reportOn
+import org.jetbrains.kotlin.fir.analysis.checkers.context.findClosest
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirPropertyChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirRegularClassChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirPropertyAccessExpressionChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
+import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
+import org.jetbrains.kotlin.fir.declarations.FirProperty
+import org.jetbrains.kotlin.fir.declarations.FirRegularClass
+import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
+import org.jetbrains.kotlin.fir.declarations.utils.isInline
+import org.jetbrains.kotlin.fir.declarations.utils.isLocal
+import org.jetbrains.kotlin.fir.declarations.utils.isNonLocal
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.FirPropertyAccessExpression
+import org.jetbrains.kotlin.fir.expressions.toResolvedCallableReference
+import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
+import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.references.toResolvedCallableSymbol
+import org.jetbrains.kotlin.fir.references.toResolvedNamedFunctionSymbol
+import org.jetbrains.kotlin.fir.references.toResolvedPropertySymbol
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
+import org.jetbrains.kotlin.fir.resolve.toRegularClassSymbol
 import org.jetbrains.kotlin.fir.resolve.toSymbol
+import org.jetbrains.kotlin.fir.scopes.processAllProperties
+import org.jetbrains.kotlin.fir.symbols.impl.FirAnonymousFunctionSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirPropertyAccessorSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirScriptSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlinx.dataframe.plugin.DataFramePlugin
 import org.jetbrains.kotlinx.dataframe.plugin.extensions.FirDataFrameErrors.CAST_ERROR
 import org.jetbrains.kotlinx.dataframe.plugin.extensions.FirDataFrameErrors.CAST_TARGET_WARNING
+import org.jetbrains.kotlinx.dataframe.plugin.extensions.FirDataFrameErrors.DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_INLINE
+import org.jetbrains.kotlinx.dataframe.plugin.extensions.FirDataFrameErrors.DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_PROPERTY_ACCESSOR
+import org.jetbrains.kotlinx.dataframe.plugin.extensions.FirDataFrameErrors.DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_PROPERTY_RETURN_TYPE
+import org.jetbrains.kotlinx.dataframe.plugin.extensions.FirDataFrameErrors.DATA_SCHEMA_DECLARATION_VISIBILITY
 import org.jetbrains.kotlinx.dataframe.plugin.extensions.FirDataFrameErrors.ERROR
-import org.jetbrains.kotlinx.dataframe.plugin.impl.PluginDataFrameSchema
-import org.jetbrains.kotlinx.dataframe.plugin.impl.SimpleColumnGroup
+import org.jetbrains.kotlinx.dataframe.plugin.extensions.FirDataFrameErrors.DATAFRAME_EXTENSION_PROPERTY_SHADOWED
 import org.jetbrains.kotlinx.dataframe.plugin.impl.SimpleDataColumn
-import org.jetbrains.kotlinx.dataframe.plugin.impl.SimpleFrameColumn
 import org.jetbrains.kotlinx.dataframe.plugin.impl.api.flatten
 import org.jetbrains.kotlinx.dataframe.plugin.pluginDataFrameSchema
+import org.jetbrains.kotlinx.dataframe.plugin.utils.ALLOWED_DECLARATION_VISIBILITY
 import org.jetbrains.kotlinx.dataframe.plugin.utils.Names
-import org.jetbrains.kotlinx.dataframe.plugin.utils.isDataFrame
-import org.jetbrains.kotlinx.dataframe.plugin.utils.isDataRow
-import org.jetbrains.kotlinx.dataframe.plugin.utils.isGroupBy
 
 class ExpressionAnalysisAdditionalChecker(
     session: FirSession,
     isTest: Boolean,
-    dumpSchemas: Boolean,
 ) : FirAdditionalCheckersExtension(session) {
     override val expressionCheckers: ExpressionCheckers = object : ExpressionCheckers() {
         override val functionCallCheckers: Set<FirFunctionCallChecker> = setOfNotNull(
-            Checker(isTest), FunctionCallSchemaReporter.takeIf { dumpSchemas }
+            Checker(isTest),
+            DataFrameFunctionCallTransformationContextChecker,
         )
-        override val propertyAccessExpressionCheckers: Set<FirPropertyAccessExpressionChecker> = setOfNotNull(
-            PropertyAccessSchemaReporter.takeIf { dumpSchemas }
-        )
+        override val propertyAccessExpressionCheckers: Set<FirPropertyAccessExpressionChecker> = setOf(ShadowedExtensionPropertyChecker)
     }
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
-        override val propertyCheckers: Set<FirPropertyChecker> = setOfNotNull(PropertySchemaReporter.takeIf { dumpSchemas })
-        override val simpleFunctionCheckers: Set<FirSimpleFunctionChecker> =
-            setOfNotNull(FunctionDeclarationSchemaReporter.takeIf { dumpSchemas })
+        override val regularClassCheckers: Set<FirRegularClassChecker> = setOf(DataSchemaDeclarationChecker)
+        override val propertyCheckers: Set<FirPropertyChecker> = setOf(DataFramePropertyChecker)
     }
 }
 
 object FirDataFrameErrors : KtDiagnosticsContainer() {
     val ERROR by error1<KtElement, String>(SourceElementPositioningStrategies.DEFAULT)
-    val CAST_ERROR by error1<KtElement, String>(SourceElementPositioningStrategies.CALL_ELEMENT_WITH_DOT)
+    val CAST_ERROR by error1<KtElement, String>(SourceElementPositioningStrategies.REFERENCED_NAME_BY_QUALIFIED)
     val CAST_TARGET_WARNING by warning1<KtElement, String>(SourceElementPositioningStrategies.CALL_ELEMENT_WITH_DOT)
+    val DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_INLINE by warning1<KtElement, String>(SourceElementPositioningStrategies.REFERENCED_NAME_BY_QUALIFIED)
+    val DATA_SCHEMA_DECLARATION_VISIBILITY by error1<KtElement, String>(SourceElementPositioningStrategies.VISIBILITY_MODIFIER)
+    val DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_PROPERTY_ACCESSOR by error1<KtElement, String>(SourceElementPositioningStrategies.REFERENCED_NAME_BY_QUALIFIED)
+    val DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_PROPERTY_RETURN_TYPE by error1<KtElement, String>(SourceElementPositioningStrategies.DECLARATION_NAME)
+    val DATAFRAME_EXTENSION_PROPERTY_SHADOWED by warning1<KtElement, String>(SourceElementPositioningStrategies.DECLARATION_NAME)
 
     override fun getRendererFactory(): BaseDiagnosticRendererFactory = DataFrameDiagnosticMessages
 }
@@ -82,6 +103,11 @@ object DataFrameDiagnosticMessages : BaseDiagnosticRendererFactory() {
         map.put(ERROR, "{0}", TO_STRING)
         map.put(CAST_ERROR, "{0}", TO_STRING)
         map.put(CAST_TARGET_WARNING, "{0}", TO_STRING)
+        map.put(DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_INLINE, "{0}", TO_STRING)
+        map.put(DATA_SCHEMA_DECLARATION_VISIBILITY, "{0}", TO_STRING)
+        map.put(DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_PROPERTY_ACCESSOR, "{0}", TO_STRING)
+        map.put(DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_PROPERTY_RETURN_TYPE, "{0}", TO_STRING)
+        map.put(DATAFRAME_EXTENSION_PROPERTY_SHADOWED, "{0}", TO_STRING)
     }
 }
 
@@ -91,6 +117,13 @@ private class Checker(
     companion object {
         val CAST_ID = CallableId(FqName.fromSegments(listOf("org", "jetbrains", "kotlinx", "dataframe", "api")), Name.identifier("cast"))
         val CHECK = ClassId(FqName("org.jetbrains.kotlinx.dataframe.annotations"), Name.identifier("Check"))
+        val VALID_CAST_TARGET_PREDICATE = LookupPredicate.create {
+            annotated(
+                Names.DATA_SCHEMA_CLASS_ID.asSingleFqName()
+            ) or annotated(
+                Names.DATA_SCHEMA_SOURCE_CLASS_ID.asSingleFqName()
+            )
+        }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
@@ -123,7 +156,7 @@ private class Checker(
         val targetProjection = expression.typeArguments.getOrNull(0) as? FirTypeProjectionWithVariance ?: return
         val targetType = targetProjection.typeRef.coneType as? ConeClassLikeType ?: return
         val targetSymbol = targetType.toSymbol(session)
-        if (targetSymbol != null && !targetSymbol.hasAnnotation(Names.DATA_SCHEMA_CLASS_ID, session)) {
+        if (targetSymbol != null && !session.predicateBasedProvider.matches(VALID_CAST_TARGET_PREDICATE, targetSymbol)) {
             val text = "Annotate ${targetType.renderReadable()} with @DataSchema to use generated properties"
             reporter.reportOn(expression.source, CAST_TARGET_WARNING, text, context)
         }
@@ -132,6 +165,7 @@ private class Checker(
             val sourceType = coneType.fullyExpandedType(session).typeArguments.getOrNull(0)?.type as? ConeClassLikeType
                 ?: return
             val source = pluginDataFrameSchema(sourceType)
+            if (source.columns().isEmpty()) return
             val target = pluginDataFrameSchema(targetType)
             val sourceColumns = source.flatten(includeFrames = true)
             val targetColumns = target.flatten(includeFrames = true)
@@ -166,117 +200,85 @@ private class Checker(
     }
 }
 
-private data object PropertySchemaReporter : FirPropertyChecker(mppKind = MppCheckerKind.Common) {
+internal object DataSchemaDeclarationChecker : FirRegularClassChecker(mppKind = MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    override fun check(declaration: FirProperty) {
-        context.sessionContext {
-            declaration.returnTypeRef.coneType.let { type ->
-                reportSchema(reporter, declaration.source, SchemaInfoDiagnostics.PROPERTY_SCHEMA, type, context)
-            }
+    override fun check(declaration: FirRegularClass) {
+        val annotated = declaration.hasAnnotation(Names.DATA_SCHEMA_CLASS_ID, context.session) ||
+                declaration.hasAnnotation(Names.DATA_SCHEMA_SOURCE_CLASS_ID, context.session)
+        if (annotated && declaration.effectiveVisibility !in ALLOWED_DECLARATION_VISIBILITY) {
+            val visibilityOptions = ALLOWED_DECLARATION_VISIBILITY.joinToString(", ")
+            reporter.reportOn(
+                declaration.source,
+                DATA_SCHEMA_DECLARATION_VISIBILITY,
+                "To allow plugin-generated declarations to refer to this declaration, it must be declared as either of [$visibilityOptions]"
+            )
         }
     }
 }
 
-private data object FunctionCallSchemaReporter : FirFunctionCallChecker(mppKind = MppCheckerKind.Common) {
+private data object DataFrameFunctionCallTransformationContextChecker : FirFunctionCallChecker(mppKind = MppCheckerKind.Common) {
     context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(expression: FirFunctionCall) {
-        if (expression.calleeReference.name in setOf(Name.identifier("let"), Name.identifier("run"))) return
-        val initializer = expression.resolvedType
-        context.sessionContext {
-            reportSchema(reporter, expression.source, SchemaInfoDiagnostics.FUNCTION_CALL_SCHEMA, initializer, context)
-        }
-    }
-}
-
-private data object PropertyAccessSchemaReporter : FirPropertyAccessExpressionChecker(mppKind = MppCheckerKind.Common) {
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    override fun check(expression: FirPropertyAccessExpression) {
-        val initializer = expression.resolvedType
-        context.sessionContext {
-            reportSchema(reporter, expression.source, SchemaInfoDiagnostics.PROPERTY_ACCESS_SCHEMA, initializer, context)
-        }
-    }
-}
-
-private data object FunctionDeclarationSchemaReporter : FirSimpleFunctionChecker(mppKind = MppCheckerKind.Common) {
-    context(context: CheckerContext, reporter: DiagnosticReporter)
-    override fun check(declaration: FirSimpleFunction) {
-        val type = declaration.returnTypeRef.coneType
-        context.sessionContext {
-            reportSchema(reporter, declaration.source, SchemaInfoDiagnostics.FUNCTION_SCHEMA, type, context)
-        }
-    }
-}
-
-private fun SessionContext.reportSchema(
-    reporter: DiagnosticReporter,
-    source: KtSourceElement?,
-    factory: KtDiagnosticFactory1<String>,
-    type: ConeKotlinType,
-    context: CheckerContext,
-) {
-    val expandedType = type.fullyExpandedType(session)
-    var schema: PluginDataFrameSchema? = null
-    when {
-        expandedType.isDataFrame(session) -> {
-            schema = expandedType.typeArguments.getOrNull(0)?.let {
-                pluginDataFrameSchema(it)
+        expression.toResolvedCallableReference()?.toResolvedNamedFunctionSymbol()?.let { symbol ->
+            val shouldRefine = FunctionCallTransformer.shouldRefine(expression.annotations, symbol, context.session)
+            if (shouldRefine && context.containingDeclarations.any { it is FirNamedFunctionSymbol && it.isInline }) {
+                reporter.reportOn(
+                    expression.source,
+                    DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_INLINE,
+                    "DataFrame compiler plugin is not yet supported in inline functions"
+                )
             }
-        }
 
-        expandedType.isDataRow(session) -> {
-            schema = expandedType.typeArguments.getOrNull(0)?.let {
-                pluginDataFrameSchema(it)
-            }
-        }
-
-        expandedType.isGroupBy(session) -> {
-            val keys = expandedType.typeArguments.getOrNull(0)
-            val grouped = expandedType.typeArguments.getOrNull(1)
-            if (keys != null && grouped != null) {
-                val keysSchema = pluginDataFrameSchema(keys)
-                val groupedSchema = pluginDataFrameSchema(grouped)
-                schema = PluginDataFrameSchema(
-                    listOf(
-                        SimpleColumnGroup("keys", keysSchema.columns()),
-                        SimpleFrameColumn("groups", groupedSchema.columns())
-                    )
+            if (shouldRefine && context.containingDeclarations.lastOrNull() is FirPropertyAccessorSymbol) {
+                reporter.reportOn(
+                    expression.source,
+                    DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_PROPERTY_ACCESSOR,
+                    "DataFrame compiler plugin is not yet supported in property accessors bodies. Use property with initializer or a function instead"
                 )
             }
         }
     }
-    if (schema != null && source != null) {
-        reporter.reportOn(source, factory, "\n" + schema.toString(), context)
-    }
 }
 
-private object SchemaInfoDiagnostics : KtDiagnosticsContainer() {
-    val PROPERTY_SCHEMA by info1(SourceElementPositioningStrategies.DECLARATION_NAME)
-    val FUNCTION_SCHEMA by info1(SourceElementPositioningStrategies.DECLARATION_SIGNATURE)
-    val FUNCTION_CALL_SCHEMA by info1(SourceElementPositioningStrategies.REFERENCED_NAME_BY_QUALIFIED)
-    val PROPERTY_ACCESS_SCHEMA by info1(SourceElementPositioningStrategies.REFERENCED_NAME_BY_QUALIFIED)
-
-    override fun getRendererFactory(): BaseDiagnosticRendererFactory = SchemaRenderers
-
-    private object SchemaRenderers : BaseDiagnosticRendererFactory() {
-        override val MAP: KtDiagnosticFactoryToRendererMap by KtDiagnosticFactoryToRendererMap("DataFrame Schemas") {
-            it.put(PROPERTY_SCHEMA, "{0}", TO_STRING)
-            it.put(FUNCTION_SCHEMA, "{0}", TO_STRING)
-            it.put(FUNCTION_CALL_SCHEMA, "{0}", TO_STRING)
-            it.put(PROPERTY_ACCESS_SCHEMA, "{0}", TO_STRING)
+private data object DataFramePropertyChecker : FirPropertyChecker(mppKind = MppCheckerKind.Common) {
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    override fun check(declaration: FirProperty) {
+        val typeArgument =
+            (declaration.symbol.resolvedReturnType.typeArguments.getOrNull(0) as? ConeClassLikeType)?.toRegularClassSymbol() ?: return
+        val origin = typeArgument.origin
+        if (context.findClosest<FirScriptSymbol>() != null) return
+        if (declaration.isNonLocal && typeArgument.isLocal && origin.isDataFrame) {
+            reporter.reportOn(
+                declaration.source,
+                DATAFRAME_PLUGIN_NOT_YET_SUPPORTED_IN_PROPERTY_RETURN_TYPE,
+                "Local types produced by the DataFrame compiler plugin are not yet supported in property return types. Convert this property to a function or cast it to a DataSchema type."
+            )
         }
     }
+}
 
-    private fun info1(positioningStrategy: AbstractSourceElementPositioningStrategy): DiagnosticFactory1DelegateProvider<String> {
-        return DiagnosticFactory1DelegateProvider(
-            Severity.INFO,
-            positioningStrategy,
-            KtElement::class,
-            container = this,
-        )
+object ShadowedExtensionPropertyChecker : FirPropertyAccessExpressionChecker(mppKind = MppCheckerKind.Common) {
+    context(context: CheckerContext, reporter: DiagnosticReporter)
+    override fun check(expression: FirPropertyAccessExpression) {
+        val property = expression.toResolvedCallableReference()?.toResolvedPropertySymbol() ?: return
+        if (property.isLocal && !property.origin.isDataFrame) {
+            val schema = context.findClosest<FirAnonymousFunctionSymbol>()
+                ?.resolvedReceiverType?.typeArguments?.getOrNull(0)
+                ?.type?.toRegularClassSymbol()
+                ?: return
+            if (schema.isLocal && schema.origin.isDataFrame || schema.hasAnnotation(Names.DATA_SCHEMA_CLASS_ID, context.session)) {
+                schema.unsubstitutedScope().processAllProperties {
+                    if (property.name == it.name) {
+                        reporter.reportOn(
+                            expression.source,
+                            DATAFRAME_EXTENSION_PROPERTY_SHADOWED,
+                            "Extension property with implicit receiver is shadowed by a property with the same name."
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
-fun CheckerContext.sessionContext(f: SessionContext.() -> Unit) {
-    SessionContext(session).f()
-}
+internal val FirDeclarationOrigin.isDataFrame get() = this is FirDeclarationOrigin.Plugin && this.key == DataFramePlugin

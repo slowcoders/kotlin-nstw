@@ -283,6 +283,12 @@ public class FirOutOfContentRootLazyDeclarationResolveTestGenerated extends Abst
   }
 
   @Test
+  @TestMetadata("delegatedConstructorCallWithFalseTypeParameterRecursion.kt")
+  public void testDelegatedConstructorCallWithFalseTypeParameterRecursion() {
+    runTest("analysis/low-level-api-fir/testData/lazyResolve/delegatedConstructorCallWithFalseTypeParameterRecursion.kt");
+  }
+
+  @Test
   @TestMetadata("delegatedField.kt")
   public void testDelegatedField() {
     runTest("analysis/low-level-api-fir/testData/lazyResolve/delegatedField.kt");
@@ -472,12 +478,6 @@ public class FirOutOfContentRootLazyDeclarationResolveTestGenerated extends Abst
   @TestMetadata("initWithAnnotation.kt")
   public void testInitWithAnnotation() {
     runTest("analysis/low-level-api-fir/testData/lazyResolve/initWithAnnotation.kt");
-  }
-
-  @Test
-  @TestMetadata("jvmBuiltinsInHierarchy.kt")
-  public void testJvmBuiltinsInHierarchy() {
-    runTest("analysis/low-level-api-fir/testData/lazyResolve/jvmBuiltinsInHierarchy.kt");
   }
 
   @Test
@@ -1251,6 +1251,40 @@ public class FirOutOfContentRootLazyDeclarationResolveTestGenerated extends Abst
   }
 
   @Nested
+  @TestMetadata("analysis/low-level-api-fir/testData/lazyResolve/collectionLiterals")
+  @TestDataPath("$PROJECT_ROOT")
+  public class CollectionLiterals {
+    @Test
+    public void testAllFilesPresentInCollectionLiterals() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("analysis/low-level-api-fir/testData/lazyResolve/collectionLiterals"), Pattern.compile("^(.+)\\.(kt)$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("collectionLiteralInDifferentFile.kt")
+    public void testCollectionLiteralInDifferentFile() {
+      runTest("analysis/low-level-api-fir/testData/lazyResolve/collectionLiterals/collectionLiteralInDifferentFile.kt");
+    }
+
+    @Test
+    @TestMetadata("collectionLiteralInDifferentModule.kt")
+    public void testCollectionLiteralInDifferentModule() {
+      runTest("analysis/low-level-api-fir/testData/lazyResolve/collectionLiterals/collectionLiteralInDifferentModule.kt");
+    }
+
+    @Test
+    @TestMetadata("simple.kt")
+    public void testSimple() {
+      runTest("analysis/low-level-api-fir/testData/lazyResolve/collectionLiterals/simple.kt");
+    }
+
+    @Test
+    @TestMetadata("simpleWithExplicitReturnType.kt")
+    public void testSimpleWithExplicitReturnType() {
+      runTest("analysis/low-level-api-fir/testData/lazyResolve/collectionLiterals/simpleWithExplicitReturnType.kt");
+    }
+  }
+
+  @Nested
   @TestMetadata("analysis/low-level-api-fir/testData/lazyResolve/errors")
   @TestDataPath("$PROJECT_ROOT")
   public class Errors {
@@ -1697,12 +1731,6 @@ public class FirOutOfContentRootLazyDeclarationResolveTestGenerated extends Abst
     @TestMetadata("integerLiteralCall.kt")
     public void testIntegerLiteralCall() {
       runTest("analysis/low-level-api-fir/testData/lazyResolve/noRuntime/integerLiteralCall.kt");
-    }
-
-    @Test
-    @TestMetadata("jvmBuiltinAnnotation.kt")
-    public void testJvmBuiltinAnnotation() {
-      runTest("analysis/low-level-api-fir/testData/lazyResolve/noRuntime/jvmBuiltinAnnotation.kt");
     }
 
     @Test

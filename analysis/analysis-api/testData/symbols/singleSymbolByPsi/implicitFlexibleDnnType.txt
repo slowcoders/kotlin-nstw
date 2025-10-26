@@ -17,7 +17,7 @@ KaKotlinPropertySymbol:
     receiverParameter: null
     returnType: KaFlexibleType:
       annotations: []
-      type: ft<java/util/function/Function<kotlin/String!, ft<T & Any, T?>>, java/util/function/Function<kotlin/String!, ft<T & Any, T?>>?>
+      type: java/util/function/Function<kotlin/String!, ft<T & Any, T?>>!
     visibility: PRIVATE
     getDispatchReceiver(): KaUsualClassType:
       annotations: []
@@ -31,6 +31,7 @@ KaKotlinPropertySymbol:
     getContainingJvmClassName: KotlinClass
     getContainingModule: KaSourceModule "Sources of main"
     deprecationStatus: null
+    importableFqName: null
   callableId: /KotlinClass.propertyWithFlexibleDnnImplicitType
   compilerVisibility: Public
   contextParameters: []
@@ -53,7 +54,7 @@ KaKotlinPropertySymbol:
     receiverParameter: null
     returnType: KaFlexibleType:
       annotations: []
-      type: ft<java/util/function/Function<kotlin/String!, ft<T & Any, T?>>, java/util/function/Function<kotlin/String!, ft<T & Any, T?>>?>
+      type: java/util/function/Function<kotlin/String!, ft<T & Any, T?>>!
     valueParameters: []
     visibility: PUBLIC
     getDispatchReceiver(): KaUsualClassType:
@@ -68,6 +69,7 @@ KaKotlinPropertySymbol:
     getContainingJvmClassName: KotlinClass
     getContainingModule: KaSourceModule "Sources of main"
     deprecationStatus: null
+    importableFqName: null
   hasBackingField: true
   hasGetter: true
   hasSetter: false
@@ -90,7 +92,7 @@ KaKotlinPropertySymbol:
   receiverParameter: null
   returnType: KaFlexibleType:
     annotations: []
-    type: ft<java/util/function/Function<kotlin/String!, ft<T & Any, T?>>, java/util/function/Function<kotlin/String!, ft<T & Any, T?>>?>
+    type: java/util/function/Function<kotlin/String!, ft<T & Any, T?>>!
   setter: null
   typeParameters: []
   visibility: PUBLIC
@@ -111,3 +113,4 @@ KaKotlinPropertySymbol:
   javaSetterName: null
   setterDeprecationStatus: null
   isInline: false
+  importableFqName: null

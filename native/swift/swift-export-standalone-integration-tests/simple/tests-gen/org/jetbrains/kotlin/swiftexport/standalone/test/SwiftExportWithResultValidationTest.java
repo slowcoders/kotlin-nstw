@@ -56,6 +56,12 @@ public class SwiftExportWithResultValidationTest extends AbstractSwiftExportWith
   }
 
   @Test
+  @TestMetadata("empty")
+  public void testEmpty() {
+    runTest("native/swift/swift-export-standalone-integration-tests/simple/testData/generation/empty/");
+  }
+
+  @Test
   @TestMetadata("enums")
   public void testEnums() {
     runTest("native/swift/swift-export-standalone-integration-tests/simple/testData/generation/enums/");
@@ -221,6 +227,12 @@ public class SwiftExportWithResultValidationTest extends AbstractSwiftExportWith
   @TestMetadata("unsupportedDeclarationsReporting")
   public void testUnsupportedDeclarationsReporting() {
     runTest("native/swift/swift-export-standalone-integration-tests/simple/testData/generation/unsupportedDeclarationsReporting/");
+  }
+
+  @Test
+  @TestMetadata("vararg")
+  public void testVararg() {
+    runTest("native/swift/swift-export-standalone-integration-tests/simple/testData/generation/vararg/");
   }
 
   @Test

@@ -11,7 +11,6 @@ import org.jetbrains.kotlin.konan.test.blackbox.asLibraryDependency
 import org.jetbrains.kotlin.konan.test.blackbox.buildDir
 import org.jetbrains.kotlin.konan.test.blackbox.cinteropToLibrary
 import org.jetbrains.kotlin.konan.test.blackbox.compileToLibrary
-import org.jetbrains.kotlin.konan.test.firIdentical
 import org.jetbrains.kotlin.konan.test.blackbox.muteCInteropTestIfNecessary
 import org.jetbrains.kotlin.konan.test.blackbox.muteTestIfNecessary
 import org.jetbrains.kotlin.konan.test.blackbox.support.*
@@ -20,7 +19,6 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilat
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationResult.Companion.assertSuccess
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestRunChecks
 import org.jetbrains.kotlin.konan.test.blackbox.support.settings.KotlinNativeClassLoader
-import org.jetbrains.kotlin.konan.test.blackbox.support.settings.PipelineType
 import org.jetbrains.kotlin.konan.test.blackbox.support.settings.Timeouts
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.getAbsoluteFile
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.dumpIrSignatures
@@ -43,10 +41,8 @@ abstract class AbstractNativeKlibDumpSignaturesTest : AbstractNativeSimpleTest()
 
         val testPathNoExtension = testDataFile.canonicalPath.substringBeforeLast(".")
 
-        val firSpecificExt = if (testRunSettings.get<PipelineType>() == PipelineType.K2 && !firIdentical(testDataFile)) ".fir" else ""
-
         KotlinIrSignatureVersion.CURRENTLY_SUPPORTED_VERSIONS.forEach { signatureVersion ->
-            val expectedContents = File("$testPathNoExtension$firSpecificExt.$suffix.v${signatureVersion.number}.txt")
+            val expectedContents = File("$testPathNoExtension.$suffix.v${signatureVersion.number}.txt")
             assertSignaturesMatchExpected(library, expectedContents, signatureVersion)
         }
     }
@@ -104,7 +100,7 @@ abstract class AbstractNativeKlibDumpSignaturesTest : AbstractNativeSimpleTest()
                 "-Xklib-relative-path-base=${sourceFile.parent}",
                 // Test only scenario with enabled preserialization IR-Inliner, since signatures must not be changed after inlining,
                 // modulo synthetic accessors
-                "-XXLanguage:+IrInlinerBeforeKlibSerialization",
+                "-Xklib-ir-inliner=full",
             ),
             nominalPackageName = PackageName.EMPTY,
             checks = TestRunChecks.Default(testRunSettings.get<Timeouts>().executionTimeout),
@@ -120,7 +116,6 @@ abstract class AbstractNativeKlibDumpSignaturesTest : AbstractNativeSimpleTest()
         muteCInteropTestIfNecessary(defFile, targets.testTarget)
 
         return cinteropToLibrary(
-            targets = targets,
             defFile = defFile,
             outputDir = buildDir,
             freeCompilerArgs = TestCompilerArgs.EMPTY

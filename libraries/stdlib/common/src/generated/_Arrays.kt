@@ -5,6 +5,7 @@
 
 @file:kotlin.jvm.JvmMultifileClass
 @file:kotlin.jvm.JvmName("ArraysKt")
+@file:Suppress("REDUNDANT_CALL_OF_CONVERSION_METHOD")
 
 package kotlin.collections
 
@@ -1467,6 +1468,8 @@ public inline fun CharArray.firstOrNull(predicate: (Char) -> Boolean): Char? {
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun <T> Array<out T>.getOrElse(index: Int, defaultValue: (Int) -> T): T {
@@ -1478,6 +1481,8 @@ public inline fun <T> Array<out T>.getOrElse(index: Int, defaultValue: (Int) -> 
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun ByteArray.getOrElse(index: Int, defaultValue: (Int) -> Byte): Byte {
@@ -1489,6 +1494,8 @@ public inline fun ByteArray.getOrElse(index: Int, defaultValue: (Int) -> Byte): 
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun ShortArray.getOrElse(index: Int, defaultValue: (Int) -> Short): Short {
@@ -1500,6 +1507,8 @@ public inline fun ShortArray.getOrElse(index: Int, defaultValue: (Int) -> Short)
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun IntArray.getOrElse(index: Int, defaultValue: (Int) -> Int): Int {
@@ -1511,6 +1520,8 @@ public inline fun IntArray.getOrElse(index: Int, defaultValue: (Int) -> Int): In
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun LongArray.getOrElse(index: Int, defaultValue: (Int) -> Long): Long {
@@ -1522,6 +1533,8 @@ public inline fun LongArray.getOrElse(index: Int, defaultValue: (Int) -> Long): 
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun FloatArray.getOrElse(index: Int, defaultValue: (Int) -> Float): Float {
@@ -1533,6 +1546,8 @@ public inline fun FloatArray.getOrElse(index: Int, defaultValue: (Int) -> Float)
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun DoubleArray.getOrElse(index: Int, defaultValue: (Int) -> Double): Double {
@@ -1544,6 +1559,8 @@ public inline fun DoubleArray.getOrElse(index: Int, defaultValue: (Int) -> Doubl
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun BooleanArray.getOrElse(index: Int, defaultValue: (Int) -> Boolean): Boolean {
@@ -1555,6 +1572,8 @@ public inline fun BooleanArray.getOrElse(index: Int, defaultValue: (Int) -> Bool
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this array.
+ * 
+ * @sample samples.collections.Arrays.Usage.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun CharArray.getOrElse(index: Int, defaultValue: (Int) -> Char): Char {
@@ -6295,6 +6314,8 @@ public fun CharArray.shuffle(random: Random): Unit {
  * 
  * The sort is _stable_. It means that elements for which [selector] returned equal values preserve their order
  * relative to each other after sorting.
+ * 
+ * @sample samples.collections.Collections.Sorting.sortBy
  */
 public inline fun <T, R : Comparable<R>> Array<out T>.sortBy(crossinline selector: (T) -> R?): Unit {
     if (size > 1) sortWith(compareBy(selector))
@@ -6305,6 +6326,8 @@ public inline fun <T, R : Comparable<R>> Array<out T>.sortBy(crossinline selecto
  * 
  * The sort is _stable_. It means that elements for which [selector] returned equal values preserve their order
  * relative to each other after sorting.
+ * 
+ * @sample samples.collections.Collections.Sorting.sortByDescending
  */
 public inline fun <T, R : Comparable<R>> Array<out T>.sortByDescending(crossinline selector: (T) -> R?): Unit {
     if (size > 1) sortWith(compareByDescending(selector))

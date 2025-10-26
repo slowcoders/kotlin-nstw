@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.arguments.dsl.defaultTrue
 import org.jetbrains.kotlin.arguments.dsl.types.*
 import org.jetbrains.kotlin.cli.common.arguments.*
 import org.jetbrains.kotlin.config.LanguageFeature
-import org.jetbrains.kotlin.config.LanguageVersion
 
 val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.commonCompilerArguments) {
     compilerArgument {
@@ -327,6 +326,18 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
         )
     }
 
+    compilerArgument {
+        name = "XXdump-model"
+        compilerName = "dumpArgumentsDir"
+        description = "Dump compilation model to specified directory for use in modularized tests.".asReleaseDependent()
+        valueDescription = "<dir>".asReleaseDependent()
+        valueType = StringType.defaultNull
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v1_7_0,
+        )
+    }
+
 
     compilerArgument {
         name = "Xmetadata-version"
@@ -520,21 +531,6 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
             introducedVersion = KotlinReleaseVersion.v1_3_40,
         )
     }
-
-
-    compilerArgument {
-        name = "Xuse-k2"
-        description =
-            "Compile using the experimental K2 compiler pipeline. No compatibility guarantees are provided yet.".asReleaseDependent()
-        valueType = BooleanType.defaultFalse
-
-        lifecycle(
-            introducedVersion = KotlinReleaseVersion.v1_7_0,
-            deprecatedVersion = KotlinReleaseVersion.v1_9_0,
-            removedVersion = KotlinReleaseVersion.v2_2_0,
-        )
-    }
-
 
     compilerArgument {
         name = "Xuse-fir-experimental-checkers"
@@ -898,7 +894,6 @@ Kotlin reports a warning every time you use one of them. You can use this flag t
         )
     }
 
-
     compilerArgument {
         name = "Xfragment-dependency"
         compilerName = "fragmentDependencies"
@@ -915,6 +910,21 @@ The argument should be used only if the new compilation scheme is enabled with -
         )
     }
 
+    compilerArgument {
+        name = "Xfragment-friend-dependency"
+        compilerName = "fragmentFriendDependencies"
+        valueDescription = "<fragment name>:<path>".asReleaseDependent()
+        description = """Declare common klib friend dependencies for the specific fragment.
+This argument can be specified for any HMPP module except the platform leaf module: it takes dependencies from the platform specific friend module arguments.
+The argument should be used only if the new compilation scheme is enabled with -Xseparate-kmp-compilation
+""".asReleaseDependent()
+        valueType = StringArrayType.defaultNull
+        delimiter = KotlinCompilerArgument.Delimiter.None
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_3_0,
+        )
+    }
 
     compilerArgument {
         name = "Xseparate-kmp-compilation"
@@ -979,6 +989,19 @@ The argument should be used only if the new compilation scheme is enabled with -
         )
     }
 
+    compilerArgument {
+        name = "Xlocal-type-aliases"
+        description = "Enable experimental language support for local type aliases.".asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        additionalAnnotations(
+            Enables(LanguageFeature.LocalTypeAliases)
+        )
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_3_0,
+        )
+    }
 
     compilerArgument {
         name = "Xsuppress-warning"
@@ -1140,6 +1163,50 @@ default: 'first-only-warn' in language version 2.2+, 'first-only' in version 2.1
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v2_3_0
+        )
+    }
+
+    compilerArgument {
+        name = "XXLanguage"
+        description = """Enables/disables specified language feature.
+Warning: this flag is not intended for production use. If you want to configure the language behaviour use the
+-language-version or corresponding experimental feature flags.
+        """.trimIndent().asReleaseDependent()
+        valueDescription = "[+-]LanguageFeatureName".asReleaseDependent()
+        compilerName = "manuallyConfiguredFeatures"
+        valueType = StringArrayType.defaultNull
+        delimiter = KotlinCompilerArgument.Delimiter.None
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v1_0_0
+        )
+    }
+
+    compilerArgument {
+        name = "Xheader-mode"
+        description = """
+                Enable header compilation mode.
+                In this mode, the compiler produces class files that only contain the 'skeleton' of the classes to be
+                compiled but the method bodies of all the implementations are empty.  This is used to speed up parallel compilation
+                build systems where header libraries can be used to replace downstream dependencies for which we only need to
+                see the type names and method signatures required to compile a given translation unit. Inline functions are still kept
+                with bodies.
+                """.trimIndent().asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_3_20
+        )
+    }
+
+    compilerArgument {
+        name = "Xdont-sort-source-files"
+        description = """
+            Disable automatic sorting of source files.
+        """.trimIndent().asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_3_20
         )
     }
 }

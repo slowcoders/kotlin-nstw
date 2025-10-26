@@ -22,7 +22,7 @@ class SirEnumBuilder {
     val attributes: MutableList<SirAttribute> = mutableListOf()
     lateinit var name: String
     val declarations: MutableList<SirDeclaration> = mutableListOf()
-    val cases: MutableList<SirEnumCase> = mutableListOf()
+    val protocols: MutableList<SirProtocol> = mutableListOf()
 
     fun build(): SirEnum {
         return SirEnumImpl(
@@ -32,7 +32,7 @@ class SirEnumBuilder {
             attributes,
             name,
             declarations,
-            cases,
+            protocols,
         )
     }
 
@@ -58,6 +58,6 @@ inline fun buildEnumCopy(original: SirEnum, init: SirEnumBuilder.() -> Unit): Si
     copyBuilder.attributes.addAll(original.attributes)
     copyBuilder.name = original.name
     copyBuilder.declarations.addAll(original.declarations)
-    copyBuilder.cases.addAll(original.cases)
+    copyBuilder.protocols.addAll(original.protocols)
     return copyBuilder.apply(init).build()
 }

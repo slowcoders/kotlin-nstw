@@ -1,4 +1,6 @@
 FILE[kind=Facade[packageFqName=<root>, facadeFqName=FunctionsWithFunctionReceiversKt]]
+  facadeFqName: FunctionsWithFunctionReceiversKt
+  partSimpleName: "FunctionsWithFunctionReceiversKt"
   PACKAGE_DIRECTIVE
   IMPORT_LIST
   FUN[fqName=foo, hasBody=false, hasNoExpressionBody=true, hasTypeParameterListBeforeFunctionName=false, isExtension=true, isTopLevel=true, mayHaveContract=false, name=foo]
@@ -205,4 +207,4 @@ FILE[kind=Facade[packageFqName=<root>, facadeFqName=FunctionsWithFunctionReceive
     TYPE_PARAMETER_LIST
       TYPE_PARAMETER[fqName=null, name=T]
     VALUE_PARAMETER_LIST
-  CLASS[classId=/C, fqName=C, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=C, superNames=[]]
+  CLASS[classId=/C, fqName=C, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=C, superNames=[]]

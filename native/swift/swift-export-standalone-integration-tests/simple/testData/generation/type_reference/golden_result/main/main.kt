@@ -1,5 +1,4 @@
 @file:kotlin.Suppress("DEPRECATION_ERROR")
-@file:kotlin.native.internal.objc.BindClassToObjCName(ignored.ENUM::class, "22ExportedKotlinPackages7ignoredO4mainE4ENUMC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(namespace.deeper.Class_with_package::class, "22ExportedKotlinPackages9namespaceO6deeperO4mainE18Class_with_packageC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(namespace.deeper.Class_with_package.INNER_CLASS::class, "22ExportedKotlinPackages9namespaceO6deeperO4mainE18Class_with_packageC11INNER_CLASSC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(namespace.deeper.Class_with_package.INNER_OBJECT::class, "22ExportedKotlinPackages9namespaceO6deeperO4mainE18Class_with_packageC12INNER_OBJECTC")
@@ -569,22 +568,9 @@ public fun __root___var_object_wp_set__TypesOfArguments__ExportedKotlinPackages_
     var_object_wp = __newValue
 }
 
-@ExportedBridge("ignored_ENUM_A_get")
-public fun ignored_ENUM_A_get(): kotlin.native.internal.NativePtr {
+@ExportedBridge("ignored_ENUM_A")
+public fun ignored_ENUM_A(): kotlin.native.internal.NativePtr {
     val _result = ignored.ENUM.A
-    return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
-}
-
-@ExportedBridge("ignored_ENUM_entries_get")
-public fun ignored_ENUM_entries_get(): kotlin.native.internal.NativePtr {
-    val _result = ignored.ENUM.entries
-    return _result.objcPtr()
-}
-
-@ExportedBridge("ignored_ENUM_valueOf__TypesOfArguments__Swift_String__")
-public fun ignored_ENUM_valueOf__TypesOfArguments__Swift_String__(value: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr {
-    val __value = interpretObjCPointer<kotlin.String>(value)
-    val _result = ignored.ENUM.valueOf(__value)
     return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
 }
 

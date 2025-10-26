@@ -1,6 +1,6 @@
 // RUN_PIPELINE_TILL: FRONTEND
 // WITH_STDLIB
-// LANGUAGE: +ContextParameters
+// LANGUAGE: +ContextParameters +NameBasedDestructuring +DeprecateNameMismatchInShortDestructuringWithParentheses +EnableNameBasedDestructuringShortForm
 
 <!UNSUPPORTED!>context(_: String)<!>
 class C {
@@ -99,10 +99,14 @@ fun test(collection : Array<Pair<Int,Int>>) {
 
     for (<!UNSUPPORTED!>context(a: String)<!> item: Int in 1..10) { }
 
-    for (<!UNSUPPORTED!>context(a: String)<!> (b, c) in collection) { }
+    for (<!UNSUPPORTED!>context(a: String)<!> (<!UNRESOLVED_REFERENCE!>b<!>, <!UNRESOLVED_REFERENCE!>c<!>) in collection) { }
+    for (<!UNSUPPORTED!>context(a: String)<!> [b, c] in collection) { }
 
     <!UNSUPPORTED!>context(a: String)<!>
-    val (_, b) = Pair(1, 2)
+    val (<!NAME_BASED_DESTRUCTURING_UNDERSCORE_WITHOUT_RENAMING!>_<!>, <!UNRESOLVED_REFERENCE!>b<!>) = Pair(1, 2)
+
+    <!UNSUPPORTED!>context(a: String)<!>
+    val [_, b2] = Pair(1, 2)
 
     fun local(<!UNSUPPORTED!>context(a: A)<!> f: Int = 1) { }
 }
@@ -113,11 +117,18 @@ fun runWithA(block: context(String) () -> Unit) {
 }
 
 fun localFunctionsContextParametersWithoutType() {
-    val t2 = context(<!CONTEXT_PARAMETER_WITHOUT_NAME, UNRESOLVED_REFERENCE!>a<!>) fun () { }
-    runWithA(context(<!CONTEXT_PARAMETER_WITHOUT_NAME, UNRESOLVED_REFERENCE!>a<!>) fun () { })
+    val t2 = context(<!UNRESOLVED_REFERENCE!>a<!>)<!SYNTAX!><!> fun () { }
+    runWithA(context(<!UNRESOLVED_REFERENCE!>a<!>)<!SYNTAX!><!> <!TOO_MANY_ARGUMENTS!>fun () { }<!>)
 
-    context(<!CONTEXT_PARAMETER_WITHOUT_NAME, UNRESOLVED_REFERENCE!>a<!>)
+    context(<!UNRESOLVED_REFERENCE!>a<!>)
     fun contextReceiverSyntax() {}
+}
+
+fun localFunctionsContextParametersDisambiguation(a: Int) {
+    // `context` is a call with missing lambda argument (that's why inapplicable)
+    // `localFun` is a declaration that's not related to the context call
+    <!NONE_APPLICABLE!>context<!>(a)
+    fun localFun() {}
 }
 
 /* GENERATED_FIR_TAGS: annotationDeclaration, anonymousFunction, classDeclaration, crossinline, destructuringDeclaration,

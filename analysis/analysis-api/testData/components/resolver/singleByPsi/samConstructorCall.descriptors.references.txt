@@ -1,6 +1,12 @@
 KtNameReferenceExpression(8,18): 'Comparator'
   KtSimpleNameReference:
-    (in java.util) <T> Comparator(function: (T!, T!) -> kotlin.Int): java.util.Comparator<T>
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in java.util) <T> Comparator(function: (T!, T!) -> kotlin.Int): java.util.Comparator<T>
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

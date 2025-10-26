@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments
 import org.jetbrains.kotlin.cli.common.arguments.cliArgument
 import org.jetbrains.kotlin.cli.js.K2JSCompiler
+import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.klib.KlibCompilerChangeScenario
 import org.jetbrains.kotlin.klib.KlibCompilerEdition
 import org.jetbrains.kotlin.klib.KlibCompilerInvocationTestUtils
@@ -17,10 +18,13 @@ import org.jetbrains.kotlin.klib.KlibCompilerInvocationTestUtils.Dependencies
 import org.jetbrains.kotlin.klib.KlibCompilerInvocationTestUtils.Dependency
 import org.jetbrains.kotlin.klib.KlibCompilerInvocationTestUtils.MAIN_MODULE_NAME
 import org.jetbrains.kotlin.klib.PartialLinkageTestStructureExtractor
+import org.jetbrains.kotlin.platform.wasm.WasmTarget
 import org.jetbrains.kotlin.test.TargetBackend
+import org.jetbrains.kotlin.test.services.configuration.WasmEnvironmentConfigurator
 import org.jetbrains.kotlin.wasm.test.AbstractWasmPartialLinkageTestCase.CompilerType
 import org.jetbrains.kotlin.wasm.test.tools.WasmVM
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assumptions
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
@@ -50,7 +54,10 @@ abstract class AbstractWasmPartialLinkageTestCase(private val compilerType: Comp
         )
 
         KlibCompilerInvocationTestUtils.runTest(
-            testStructure = WasmPartialLinkageTestStructureExtractor(buildDir).extractTestStructure(File(testDir).absoluteFile),
+            testStructure = WasmPartialLinkageTestStructureExtractor(buildDir)
+                .extractTestStructure(
+                    ForTestCompileRuntime.transformTestDataPath(testDir)
+                ),
             testConfiguration = configuration,
             artifactBuilder = WasmCompilerInvocationTestArtifactBuilder(configuration),
             binaryRunner = WasmCompilerInvocationTestBinaryRunner,
@@ -63,12 +70,12 @@ internal class WasmCompilerInvocationTestConfiguration(
     override val buildDir: File,
     val compilerType: CompilerType,
 ) : KlibCompilerInvocationTestUtils.TestConfiguration {
-    override val stdlibFile: File get() = File("libraries/stdlib/build/classes/kotlin/wasmJs/main").absoluteFile
+    override val stdlibFile: File get() = File(WasmEnvironmentConfigurator.stdlibPath(WasmTarget.JS)).absoluteFile
     override val targetBackend get() = TargetBackend.WASM
 
 
     override fun onIgnoredTest() {
-        /* Do nothing specific. JUnit 3 does not support programmatic tests muting. */
+        Assumptions.abort<Unit>()
     }
 }
 

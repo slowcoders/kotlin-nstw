@@ -98,6 +98,7 @@ open class PsiRawFirBuilder(
         return this.toKtPsiSourceElement(actualKind)
     }
 
+    @Suppress("DEPRECATION") // KT-78356
     override val PsiElement.elementType: IElementType
         get() {
             val stubBasedElement = this as? StubBasedPsiElementBase<*>
@@ -311,10 +312,6 @@ open class PsiRawFirBuilder(
                 this@toFirOrErrorType?.extractAnnotationsTo(this)
             }
 
-        // Here we accept lambda as a receiver to prevent expression calculation in stub mode
-        private fun (() -> KtExpression?).toFirExpression(errorReason: String, sourceWhenInvalidExpression: KtElement): FirExpression =
-            this().toFirExpression(errorReason, sourceWhenInvalidExpression = sourceWhenInvalidExpression)
-
         private fun KtElement?.toFirExpression(
             errorReason: String,
             sourceWhenInvalidExpression: KtElement,
@@ -472,7 +469,7 @@ open class PsiRawFirBuilder(
             // No block body -> expression body and no contract
             !hasBlockBody() -> {
                 val block = buildOrLazyBlock {
-                    val result = { bodyExpression }.toFirExpression("Function has no body (but should)", this)
+                    val result = bodyExpression.toFirExpression("Function has no body (but should)", this)
                     FirSingleExpressionBlock(result.toReturn(baseSource = result.source))
                 }
 
@@ -520,7 +517,7 @@ open class PsiRawFirBuilder(
                 }
 
                 else -> {
-                    { expression }.toFirExpression("Argument is absent", sourceWhenInvalidExpression = this.asElement())
+                    expression.toFirExpression("Argument is absent", sourceWhenInvalidExpression = this.asElement())
                 }
             }
 
@@ -755,7 +752,7 @@ open class PsiRawFirBuilder(
                         }
                     } else {
                         buildOrLazyExpression(null) {
-                            { this@toFirValueParameter.defaultValue }.toFirExpression(
+                            this@toFirValueParameter.defaultValue.toFirExpression(
                                 "Should have default value",
                                 sourceWhenInvalidExpression = this@toFirValueParameter
                             )
@@ -1039,8 +1036,7 @@ open class PsiRawFirBuilder(
                 returnTypeRef = type
                 withContainerSymbol(symbol) {
                     initializer = buildOrLazyExpression(delegateSource) {
-                        { entry.delegateExpression }
-                            .toFirExpression("Should have delegate", sourceWhenInvalidExpression = entry)
+                        entry.delegateExpression.toFirExpression("Should have delegate", sourceWhenInvalidExpression = entry)
                     }
                 }
 
@@ -1763,12 +1759,7 @@ open class PsiRawFirBuilder(
                     val firTypeParameters = classOrObject.convertTypeParameters(classSymbol)
 
                     withCapturedTypeParameters(
-                        // Transferring phantom type parameters to objects is cursed as they are
-                        // accessible by qualifier `MyObject`, which is an expression and must have
-                        // some single type.
-                        // Letting their types contain no type arguments while the class itself
-                        // expects some sounds fragile.
-                        status = status.isInner || isLocal && !classKind.isObject,
+                        status = status.isInner || isLocal,
                         declarationSource = sourceElement,
                         currentFirTypeParameters = firTypeParameters,
                     ) {
@@ -2031,7 +2022,7 @@ open class PsiRawFirBuilder(
                         }
                     }
                 } else {
-                    FirSimpleFunctionBuilder().apply {
+                    FirNamedFunctionBuilder().apply {
                         receiverParameter = receiverTypeCalculator?.let { createReceiverParameter(it, baseModuleData, functionSymbol) }
                         name = function.nameAsSafeName
                         labelName = context.getLastLabel(function)?.name ?: runIf(!name.isSpecial) { name.identifier }
@@ -2083,7 +2074,7 @@ open class PsiRawFirBuilder(
                         this.body = body
                         val contractDescription = outerContractDescription ?: innerContractDescription
                         contractDescription?.let {
-                            if (this is FirSimpleFunctionBuilder) {
+                            if (this is FirNamedFunctionBuilder) {
                                 this.contractDescription = it
                             } else if (this is FirAnonymousFunctionBuilder) {
                                 this.contractDescription = it
@@ -2563,6 +2554,7 @@ open class PsiRawFirBuilder(
             // 2. `(suspend @A () -> Int)?` is a nullable suspend function type, but the modifier list is on the child KtNullableType
             //
             // `getModifierList()` only returns the first one, so we have to get all modifier list children.
+            @Suppress("DEPRECATION") // KT-78356
             fun KtElementImplStub<*>.getAllModifierLists(): Array<out KtDeclarationModifierList> =
                 getStubOrPsiChildren(KtStubElementTypes.MODIFIER_LIST, KtStubElementTypes.MODIFIER_LIST.arrayFactory)
 
@@ -3607,13 +3599,14 @@ open class PsiRawFirBuilder(
         }
 
         override fun visitCollectionLiteralExpression(expression: KtCollectionLiteralExpression, data: FirElement?): FirElement {
-            return buildArrayLiteral {
-                source = expression.toFirSourceElement()
-                argumentList = buildArgumentList {
-                    for (innerExpression in expression.getInnerExpressions()) {
-                        arguments += innerExpression.toFirExpression("Incorrect collection literal argument")
-                    }
+            val arguments = buildArgumentList {
+                for (innerExpression in expression.getInnerExpressions()) {
+                    arguments += innerExpression.toFirExpression("Incorrect collection literal argument")
                 }
+            }
+            return buildCollectionLiteral {
+                source = expression.toFirSourceElement()
+                argumentList = arguments
             }
         }
 
@@ -3679,8 +3672,8 @@ private val snippetDeclarationVisitor: FirVisitorVoid = object : FirVisitorVoid(
         }
     }
 
-    override fun visitSimpleFunction(simpleFunction: FirSimpleFunction) {
-        simpleFunction.isReplSnippetDeclaration = true
+    override fun visitNamedFunction(namedFunction: FirNamedFunction) {
+        namedFunction.isReplSnippetDeclaration = true
     }
 
     override fun visitPropertyAccessor(propertyAccessor: FirPropertyAccessor) {

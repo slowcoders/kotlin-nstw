@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.fir.analysis.checkers.declaration
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.config.AnalysisFlags
 import org.jetbrains.kotlin.config.ReturnValueCheckerMode
+import org.jetbrains.kotlin.contracts.description.LogicOperationKind
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirSession
@@ -30,9 +31,9 @@ import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.hasError
 import org.jetbrains.kotlin.fir.types.isMarkedNullable
 import org.jetbrains.kotlin.fir.types.resolvedType
-import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.resolve.ReturnValueStatus
 
@@ -50,9 +51,6 @@ object FirReturnValueOverrideChecker : FirCallableDeclarationChecker(MppCheckerK
         val overriddenSymbols = symbol.directOverriddenSymbolsSafe()
         val ignorableBaseSymbol = overriddenSymbols.find {
             it.resolvedStatus.returnValueStatus == ReturnValueStatus.ExplicitlyIgnorable
-                        // FIXME (KT-79923): Checking annotation is required only for tests to pass with bootstrap (old metadata) stdlib
-                        // Should be deleted after re-bootstrapping stdlib again
-                    || context.session.mustUseReturnValueStatusComponent.hasIgnorableLikeAnnotation(it.resolvedAnnotationClassIds)
         } ?: return
 
         // Report error if an overridden symbol has @IgnorableReturnValue but the current declaration doesn't
@@ -68,8 +66,12 @@ object FirReturnValueOverrideChecker : FirCallableDeclarationChecker(MppCheckerK
 }
 
 object FirReturnValueAnnotationsChecker : FirBasicDeclarationChecker(MppCheckerKind.Common) {
+    private val oldMustUse = ClassId(StandardClassIds.BASE_KOTLIN_PACKAGE, Name.identifier("MustUseReturnValue"))
+
     private fun FirAnnotation.isMustUseReturnValue(session: FirSession): Boolean =
-        toAnnotationClassId(session) == StandardClassIds.Annotations.MustUseReturnValue
+        toAnnotationClassId(session) == StandardClassIds.Annotations.MustUseReturnValues
+
+    private fun FirAnnotation.isOldMustUse(session: FirSession): Boolean = toAnnotationClassId(session) == oldMustUse
 
     private fun FirAnnotation.isIgnorableValue(session: FirSession): Boolean =
         toAnnotationClassId(session) == StandardClassIds.Annotations.IgnorableReturnValue
@@ -80,7 +82,7 @@ object FirReturnValueAnnotationsChecker : FirBasicDeclarationChecker(MppCheckerK
 
         val session = context.session
         declaration.annotations.forEach { annotation ->
-            if (annotation.isMustUseReturnValue(session) || annotation.isIgnorableValue(session)) {
+            if (annotation.isMustUseReturnValue(session) || annotation.isIgnorableValue(session) || annotation.isOldMustUse(session)) {
                 reporter.reportOn(
                     annotation.source,
                     FirErrors.IGNORABILITY_ANNOTATIONS_WITH_CHECKER_DISABLED
@@ -104,23 +106,22 @@ object FirUnusedReturnValueChecker : FirUnusedCheckerBase() {
     ): Boolean {
         if (!hasSideEffects) return false // Do not report anything FirUnusedExpressionChecker already reported
 
-        // Ignore Unit or Nothing
         if (expression.resolvedType.isIgnorable()) return false
 
         val calleeReference = expression.toReference(context.session)
         val resolvedReference = calleeReference?.resolved
 
         val resolvedSymbol = resolvedReference?.toResolvedCallableSymbol()?.originalOrSelf()
-
         if (resolvedSymbol != null && !resolvedSymbol.isSubjectToCheck()) return false
-
         if (resolvedSymbol?.isExcluded(context.session) == true) return false
 
         // Special case for `x[y] = z` assigment:
         if ((expression is FirFunctionCall) && expression.origin == FirFunctionCallOrigin.Operator && resolvedSymbol?.name?.asString() == "set") return false
 
-        val functionName = resolvedSymbol?.name
+        // Special case for `condition() || throw/return` or `condition() && throw/return`:
+        if (expression is FirBooleanOperatorExpression && expression.rightOperand.resolvedType.isIgnorable()) return false
 
+        val functionName = resolvedSymbol?.name
         reporter.reportOn(
             expression.source,
             FirErrors.RETURN_VALUE_NOT_USED,
@@ -171,47 +172,9 @@ private fun ConeKotlinType.isIgnorable(): Boolean {
 private fun FirCallableSymbol<*>.isExcluded(session: FirSession): Boolean = session.mustUseReturnValueStatusComponent.hasIgnorableLikeAnnotation(resolvedAnnotationClassIds)
 
 private fun FirCallableSymbol<*>.isSubjectToCheck(): Boolean {
-    // TODO KT-71195 : FunctionN seems to be a synthetic class, even recompiling stdlib in FULL mode
-    //  does not make it checked. Need to investigate another approach.
-    if (this.callableId?.packageName?.asString() == "kotlin") return this.origin !is FirDeclarationOrigin.Enhancement
-    callableId?.ifTypealiasedJvmCollection { return it }
-
-
     // TBD: Do we want to report them unconditionally? Or only in FULL mode?
     // If latter, metadata flag should be added for them too.
     if (this is FirEnumEntrySymbol) return true
 
     return resolvedStatus.returnValueStatus == ReturnValueStatus.MustUse
-}
-
-private inline fun CallableId.ifTypealiasedJvmCollection(nonIgnorableCollectionMethod: (Boolean) -> Unit) {
-    val packageName = packageName.asString()
-    if (packageName != "kotlin.collections" && packageName != "java.util") return
-    val className = className?.asString() ?: return
-    if (className !in setOf( // libraries/stdlib/jvm/src/kotlin/collections/TypeAliases.kt
-            "ArrayList",
-            "HashSet",
-            "LinkedHashSet",
-            "HashMap",
-            "LinkedHashMap",
-        )
-    ) return
-    nonIgnorableCollectionMethod(
-        callableName.asString() !in setOf(
-            "add",
-            "addAll",
-            "remove",
-            "removeAt",
-            "removeAll",
-            "removeIf",
-            "set",
-            "put",
-            "putIfAbsent",
-            "merge",
-            "compute",
-            "computeIfAbsent",
-            "retainAll",
-            "removeLast"
-        )
-    )
 }

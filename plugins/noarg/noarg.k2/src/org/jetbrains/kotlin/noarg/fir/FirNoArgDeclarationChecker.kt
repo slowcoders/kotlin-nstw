@@ -14,7 +14,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirRegularClassChe
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.constructors
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
-import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.resolve.getSuperClassSymbolOrAny
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 
@@ -31,7 +30,9 @@ object FirNoArgDeclarationChecker : FirRegularClassChecker(MppCheckerKind.Common
             declaration.isLocal -> reporter.reportOn(source, KtErrorsNoArg.NOARG_ON_LOCAL_CLASS_ERROR)
         }
 
-        val superClassSymbol = declaration.symbol.getSuperClassSymbolOrAny(context.session)
+        if (declaration.constructors(context.session).any { it.isNoArgConstructor() }) return
+
+        val superClassSymbol = declaration.symbol.getSuperClassSymbolOrAny(context.session) ?: return
         if (superClassSymbol.constructors(context.session).none { it.isNoArgConstructor() } && !matcher.isAnnotated(superClassSymbol)) {
             reporter.reportOn(source, KtErrorsNoArg.NO_NOARG_CONSTRUCTOR_IN_SUPERCLASS)
         }

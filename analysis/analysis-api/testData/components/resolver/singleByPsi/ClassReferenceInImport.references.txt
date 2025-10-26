@@ -1,3 +1,6 @@
 KtNameReferenceExpression(74,75): 'A'
   KtSimpleNameReference:
-    (in testPackage.testOtherPackage) class A
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in testPackage.testOtherPackage) class A

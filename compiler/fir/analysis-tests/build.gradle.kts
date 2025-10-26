@@ -10,6 +10,7 @@ plugins {
     id("share-foreign-java-nullability-annotations")
     id("java-test-fixtures")
     id("project-tests-convention")
+    id("test-inputs-check")
 }
 
 dependencies {
@@ -28,6 +29,8 @@ dependencies {
     testFixturesApi(project(":compiler:fir:fir-serialization"))
     testFixturesApi(project(":compiler:fir:entrypoint"))
     testFixturesApi(project(":compiler:frontend"))
+    testFixturesImplementation(testFixtures(project(":generators:test-generator")))
+    testFixturesImplementation(testFixtures(project(":compiler:tests-spec")))
 
     testFixturesApi(platform(libs.junit.bom))
     testFixturesApi(libs.junit.jupiter.api)
@@ -51,10 +54,7 @@ dependencies {
 
 sourceSets {
     "main" { none() }
-    "test" {
-        projectDefault()
-        generatedTestDir()
-    }
+    "test" { projectDefault() }
     "testFixtures" { projectDefault() }
 }
 
@@ -68,13 +68,30 @@ projectTests {
             JdkMajorVersion.JDK_21_0
         )
     ) {
-        dependsOn(":dist")
-        workingDir = rootDir
         useJUnitPlatform()
         useJsIrBoxTests(version = version, buildDir = layout.buildDirectory)
     }
 
+    testGenerator("org.jetbrains.kotlin.test.TestGeneratorForFirAnalysisTestsKt", generateTestsInBuildDirectory = true)
+
+    testData(project(":compiler:fir:analysis-tests").isolated, "testData")
+    testData(project(":compiler").isolated, "testData/diagnostics")
+    testData(project(":compiler").isolated, "testData/loadJava")
+    testData(project(":compiler:tests-spec").isolated, "testData/diagnostics")
+
     withJvmStdlibAndReflect()
+    withScriptRuntime()
+    withMockJdkAnnotationsJar()
+    withMockJDKModifiedRuntime()
+    withTestJar()
+    withScriptingPlugin()
+    withMockJdkRuntime()
+    withStdlibCommon()
+    withAnnotations()
+    withThirdPartyJsr305()
+    withThirdPartyAnnotations()
+    withThirdPartyJava8Annotations()
+    withThirdPartyJava9Annotations()
 }
 
 testsJar()

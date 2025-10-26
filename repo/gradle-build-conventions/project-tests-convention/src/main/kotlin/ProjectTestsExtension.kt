@@ -3,11 +3,13 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.api.attributes.Attribute
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -15,11 +17,17 @@ import org.gradle.api.project.IsolatedProject
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.Test
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.project
+import org.gradle.kotlin.dsl.register
+import org.jetbrains.kotlin.build.project.tests.CollectTestDataTask
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.plugin.attributes.KlibPackaging
 import java.io.File
 
 abstract class ProjectTestsExtension(val project: Project) {
@@ -57,6 +65,26 @@ abstract class ProjectTestsExtension(val project: Project) {
     val testJsRuntimeForTests: Configuration = project.configurations.create("testJsRuntimeForTests") {
         isTransitive = false
     }
+    val stdlibWasmJsRuntimeForTests: Configuration = project.configurations.create("stdlibWasmJsRuntimeForTests") {
+        isTransitive = false
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        attributes.attribute(KlibPackaging.ATTRIBUTE, project.objects.named(KlibPackaging.NON_PACKED))
+    }
+    val stdlibWasmWasiRuntimeForTests: Configuration = project.configurations.create("stdlibWasmWasiRuntimeForTests") {
+        isTransitive = false
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        attributes.attribute(KlibPackaging.ATTRIBUTE, project.objects.named(KlibPackaging.NON_PACKED))
+    }
+    val testWasmJsRuntimeForTests: Configuration = project.configurations.create("testWasmJsRuntimeForTests") {
+        isTransitive = false
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        attributes.attribute(KlibPackaging.ATTRIBUTE, project.objects.named(KlibPackaging.NON_PACKED))
+    }
+    val testWasmWasiRuntimeForTests: Configuration = project.configurations.create("testWasmWasiRuntimeForTests") {
+        isTransitive = false
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        attributes.attribute(KlibPackaging.ATTRIBUTE, project.objects.named(KlibPackaging.NON_PACKED))
+    }
 
     private val noOp = project.kotlinBuildProperties.isInJpsBuildIdeaSync
     private fun add(configuration: Configuration, dependency: DependencyHandler.() -> ProjectDependency) {
@@ -93,6 +121,13 @@ abstract class ProjectTestsExtension(val project: Project) {
 
     fun withTestJsRuntime() {
         add(testJsRuntimeForTests) { project(":kotlin-test", "jsRuntimeElements") }
+    }
+
+    fun withWasmRuntime() {
+        add(stdlibWasmJsRuntimeForTests) { project(":kotlin-stdlib", "wasmJsRuntimeElements") }
+        add(stdlibWasmWasiRuntimeForTests) { project(":kotlin-stdlib", "wasmWasiRuntimeElements") }
+        add(testWasmJsRuntimeForTests) { project(":kotlin-test", "wasmJsRuntimeElements") }
+        add(testWasmWasiRuntimeForTests) { project(":kotlin-test", "wasmWasiRuntimeElements") }
     }
 
     fun withScriptingPlugin() {
@@ -147,14 +182,14 @@ abstract class ProjectTestsExtension(val project: Project) {
     // -------------------- testData configuration --------------------
 
     internal abstract val testDataFiles: ListProperty<Directory>
-    internal val testDataMap: MutableMap<String, String> = mutableMapOf<String, String>()
+    internal val testDataMap: MutableMap<String, String> = mutableMapOf()
 
     fun testData(isolatedProject: IsolatedProject, relativePath: String) {
         val testDataDirectory = isolatedProject.projectDirectory.dir(relativePath)
         testDataFiles.add(testDataDirectory)
         testDataMap.put(
-            testDataDirectory.asFile.relativeTo(project.rootDir).path.replace("\\", "/"),
-            testDataDirectory.asFile.canonicalPath.replace("\\", "/")
+            testDataDirectory.asFile.relativeTo(project.rootDir).path.toSystemIndependentPath(),
+            testDataDirectory.asFile.canonicalPath.toSystemIndependentPath()
         )
     }
 
@@ -201,7 +236,7 @@ abstract class ProjectTestsExtension(val project: Project) {
             return project.tasks.register(taskName)
         }
         if (jUnitMode == JUnitMode.JUnit5 && parallel != null) {
-            project.logger.error("JUnit5 tests are parallel by default and its configured with `junit-platform.properties`, please remove `parallel=$parallel` argument")
+            throw GradleException("JUnit5 tests are parallel by default and its configured with `junit-platform.properties`, please remove `parallel=$parallel` argument")
         }
         return project.createGeneralTestTask(
             taskName,
@@ -220,12 +255,70 @@ abstract class ProjectTestsExtension(val project: Project) {
         }
     }
 
+    /**
+     * [doNotSetFixturesSourceSetDependency] exits only for a migration period and used in projects which are not migrated to `testFixtures` yet.
+     * Please don't use set it to `true` for new generator tasks.
+     */
     fun testGenerator(
         fqName: String,
         taskName: String = "generateTests",
-        sourceSet: SourceSet? = null,
+        doNotSetFixturesSourceSetDependency: Boolean = false,
+        generateTestsInBuildDirectory: Boolean = false,
         configure: JavaExec.() -> Unit = {}
     ) {
-        project.generator(taskName, fqName, sourceSet, configure)
+        val fixturesSourceSet = if (doNotSetFixturesSourceSetDependency) {
+            null
+        } else {
+            project.sourceSets.named("testFixtures").get()
+        }
+        val generationPath = when (generateTestsInBuildDirectory) {
+            false -> project.layout.projectDirectory.dir("tests-gen")
+            true -> project.layout.buildDirectory.dir("tests-gen").get().also {
+                project.sourceSets.named(SourceSet.TEST_SOURCE_SET_NAME) {
+                    generatedDir(project, it)
+                }
+            }
+        }
+        val generatorTask = project.generator(taskName, fqName, fixturesSourceSet) {
+            this.args = buildList {
+                add(generationPath.asFile.absolutePath)
+                if (generateTestsInBuildDirectory) {
+                    add("allowGenerationOnTeamCity")
+                }
+            }
+            if (generateTestsInBuildDirectory) {
+                this.outputs.dir(generationPath).withPropertyName("generatedTests")
+                doFirst {
+                    // We need to delete previously generated tests to handle
+                    // the case when the generated runner was removed from the generation
+                    generationPath.asFile.deleteRecursively()
+                }
+            }
+            configure()
+        }
+        if (generateTestsInBuildDirectory) {
+            configureCollectTestDataTask(generatorTask)
+        }
     }
+
+    private fun configureCollectTestDataTask(generatorTask: TaskProvider<out Task>) {
+        val collectTestDataTask = project.tasks.register<CollectTestDataTask>("collectTestData") {
+            projectName.set(project.name)
+            rootDirPath.set(project.rootDir.absolutePath)
+            targetFile.set(project.layout.buildDirectory.file("testDataInfo/testDataFilesList.txt"))
+            testDataFiles.set(this@ProjectTestsExtension.testDataFiles)
+        }
+        generatorTask.configure {
+            inputs.file(collectTestDataTask.map { it.targetFile })
+                .withPropertyName("testDataFilesList")
+                .withPathSensitivity(PathSensitivity.RELATIVE)
+        }
+        project.tasks.named("compileTestKotlin") {
+            inputs.dir(generatorTask.map { it.outputs.files.singleFile })
+                .withPropertyName("generatedTestSources")
+                .withPathSensitivity(PathSensitivity.RELATIVE)
+        }
+    }
+
+    private fun String.toSystemIndependentPath(): String = replace('\\', '/')
 }

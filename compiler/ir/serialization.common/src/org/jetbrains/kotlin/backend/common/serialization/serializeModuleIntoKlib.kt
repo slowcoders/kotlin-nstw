@@ -119,8 +119,8 @@ fun <Dependency : KotlinLibrary, SourceFile> serializeModuleIntoKlib(
             *platformKlibCheckers.toTypedArray(),
         )
 
-        if (!configuration.languageVersionSettings.supportsFeature(LanguageFeature.IrInlinerBeforeKlibSerialization)) {
-            // With IrInlinerBeforeKlibSerialization feature, this check happens after the first phase of KLIB inlining.
+        if (!configuration.languageVersionSettings.supportsFeature(LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization)) {
+            // With IrIntraModuleInlinerBeforeKlibSerialization feature, this check happens after the first phase of KLIB inlining.
             // Without it, the check should happen here instead.
             it.runIrLevelCheckers(
                 irDiagnosticReporter,
@@ -187,7 +187,11 @@ fun <Dependency : KotlinLibrary, SourceFile> serializeModuleIntoKlib(
 
     return SerializerOutput(
         serializedMetadata = serializedMetadata,
-        serializedIr = if (serializedIr == null) null else SerializedIrModule(compiledKotlinFiles.mapNotNull { it.irData }),
+        serializedIr = if (serializedIr == null) null
+        else SerializedIrModule(
+            compiledKotlinFiles.mapNotNull { it.irData },
+            serializedIr.fileWithPreparedInlinableFunctions,
+        ),
         neededLibraries = dependencies,
     )
 }

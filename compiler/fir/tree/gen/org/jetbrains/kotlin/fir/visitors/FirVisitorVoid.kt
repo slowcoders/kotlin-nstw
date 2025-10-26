@@ -363,12 +363,12 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
         visitElement(integerLiteralOperatorCall)
     }
 
-    final override fun visitArrayLiteral(arrayLiteral: FirArrayLiteral, data: Nothing?) {
-        visitArrayLiteral(arrayLiteral)
+    final override fun visitCollectionLiteral(collectionLiteral: FirCollectionLiteral, data: Nothing?) {
+        visitCollectionLiteral(collectionLiteral)
     }
 
-    open fun visitArrayLiteral(arrayLiteral: FirArrayLiteral) {
-        visitElement(arrayLiteral)
+    open fun visitCollectionLiteral(collectionLiteral: FirCollectionLiteral) {
+        visitElement(collectionLiteral)
     }
 
     final override fun visitCheckNotNullCall(checkNotNullCall: FirCheckNotNullCall, data: Nothing?) {
@@ -515,12 +515,12 @@ abstract class FirVisitorVoid : FirVisitor<Unit, Nothing?>() {
         visitElement(outerClassTypeParameterRef)
     }
 
-    final override fun visitSimpleFunction(simpleFunction: FirSimpleFunction, data: Nothing?) {
-        visitSimpleFunction(simpleFunction)
+    final override fun visitNamedFunction(namedFunction: FirNamedFunction, data: Nothing?) {
+        visitNamedFunction(namedFunction)
     }
 
-    open fun visitSimpleFunction(simpleFunction: FirSimpleFunction) {
-        visitElement(simpleFunction)
+    open fun visitNamedFunction(namedFunction: FirNamedFunction) {
+        visitElement(namedFunction)
     }
 
     final override fun visitContractDescriptionOwner(contractDescriptionOwner: FirContractDescriptionOwner, data: Nothing?) {

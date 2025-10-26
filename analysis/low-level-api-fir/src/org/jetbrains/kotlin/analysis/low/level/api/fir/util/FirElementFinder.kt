@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.fir.builder.PsiRawFirBuilder
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.visitors.FirVisitorVoid
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.ClassIdBasedLocality
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.psi.*
@@ -105,6 +106,7 @@ internal class FirElementFinder : FirSessionComponent {
             expectedDeclarationAcceptor: (FirDeclaration) -> Boolean,
         ): FirDesignation? {
             if (containerClassId != null) {
+                @OptIn(ClassIdBasedLocality::class)
                 requireWithAttachment(!containerClassId.isLocal, { "ClassId should not be local" }) {
                     withEntry("classId", containerClassId) { it.asString() }
                 }
@@ -346,7 +348,7 @@ private sealed class FirFileStructureNode(val element: FirDeclaration) {
         fun mappingName(declaration: FirDeclaration): Name = when (declaration) {
             is FirScript -> declaration.name
             is FirRegularClass -> declaration.name
-            is FirSimpleFunction -> declaration.name
+            is FirNamedFunction -> declaration.name
             is FirVariable -> declaration.name
             is FirConstructor -> SpecialNames.INIT
             is FirAnonymousInitializer -> SpecialNames.ANONYMOUS

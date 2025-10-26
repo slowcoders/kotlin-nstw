@@ -1,3 +1,6 @@
 KtNameReferenceExpression(45,49): 'Ann0'
   KtSimpleNameReference:
-    (in Ann0) constructor()
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in Ann0) constructor()

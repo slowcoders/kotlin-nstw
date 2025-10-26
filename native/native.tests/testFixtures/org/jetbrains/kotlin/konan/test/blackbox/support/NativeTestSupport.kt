@@ -233,7 +233,6 @@ object NativeTestSupport {
         output += computeForcedNoopTestRunner(enforcedProperties)
         output += computeSharedExecutionTestRunner(enforcedProperties)
         // Parse annotations of current class, since there's no way to put annotations to upper-level enclosing class
-        output += computePipelineType(enforcedProperties, testClass.get())
         output += computeUsedPartialLinkageConfig(enclosingTestClass)
         output += computeCompilerOutputInterceptor(enforcedProperties)
         output += computeBinaryLibraryKind(enforcedProperties)
@@ -292,8 +291,18 @@ object NativeTestSupport {
             enforcedProperties, { it.split(",") }, emptyList()
         ).let(::ExplicitBinaryOptions)
 
-    private fun computeAllocator(enforcedProperties: EnforcedProperties): Allocator =
-        ClassLevelProperty.ALLOCATOR.readValue(enforcedProperties, Allocator.values(), default = Allocator.UNSPECIFIED)
+    private fun computeAllocator(enforcedProperties: EnforcedProperties): Allocator {
+        val paged = ClassLevelProperty.PAGED_ALLOCATOR.readValue(
+            enforcedProperties,
+            transform = String::toBooleanStrictOrNull,
+            default = null
+        )?.let { if (it) Allocator.PAGED else Allocator.NOT_PAGED }
+        val legacy = ClassLevelProperty.ALLOCATOR.readValue(enforcedProperties, Allocator.values(), default = Allocator.UNSPECIFIED)
+        if (paged != null && legacy != Allocator.UNSPECIFIED) {
+            fail { "Both `pagedAllocator` and `alloc` can't be specified at the same time" }
+        }
+        return paged ?: legacy
+    }
 
     private fun computeNativeTargets(enforcedProperties: EnforcedProperties, hostManager: HostManager): KotlinNativeTargets {
         val hostTarget = HostManager.host
@@ -562,18 +571,6 @@ object NativeTestSupport {
             testBinariesDir = testBinariesDir,
             lazySharedBinariesDir = { testBinariesDir.resolve(SHARED_MODULES_DIR_NAME).ensureExistsAndIsEmptyDirectory() },
             lazyGivenBinariesDir = { testBinariesDir.resolve(GIVEN_MODULES_DIR_NAME).ensureExistsAndIsEmptyDirectory() }
-        )
-    }
-
-    private fun computePipelineType(enforcedProperties: EnforcedProperties, testClass: Class<*>): PipelineType {
-        val pipelineTypeFromPipelineAnnotation = if (testClass.annotations.any { it is ClassicPipeline })
-            PipelineType.K1
-        else PipelineType.K2
-
-        return ClassLevelProperty.PIPELINE_TYPE.readValue(
-            enforcedProperties,
-            PipelineType.entries.toTypedArray(),
-            default = pipelineTypeFromPipelineAnnotation
         )
     }
 

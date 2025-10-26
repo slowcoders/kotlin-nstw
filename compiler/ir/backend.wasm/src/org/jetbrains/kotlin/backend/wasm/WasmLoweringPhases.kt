@@ -6,7 +6,7 @@
 package org.jetbrains.kotlin.backend.wasm
 
 import org.jetbrains.kotlin.backend.common.LoweringContext
-import org.jetbrains.kotlin.backend.common.ir.Symbols
+import org.jetbrains.kotlin.backend.common.ir.PreSerializationSymbols
 import org.jetbrains.kotlin.backend.common.lower.*
 import org.jetbrains.kotlin.backend.common.lower.coroutines.AddContinuationToNonLocalSuspendFunctionsLowering
 import org.jetbrains.kotlin.backend.common.lower.inline.LocalClassesInInlineLambdasLowering
@@ -59,7 +59,7 @@ private val validateIrAfterInliningAllFunctionsPhase = makeIrModulePhase(
                 // No inline function call sites should remain at this stage.
                 val inlineFunction = inlineFunctionUseSite.symbol.owner
                 // it's fine to have typeOf<T>, it would be ignored by inliner and handled on the second stage of compilation
-                if (Symbols.isTypeOfIntrinsic(inlineFunction.symbol)) return@check true
+                if (PreSerializationSymbols.isTypeOfIntrinsic(inlineFunction.symbol)) return@check true
                 return@check inlineFunction.body == null
             }
         )
@@ -288,13 +288,18 @@ private val callableReferencePhase = makeIrModulePhase(
     name = "WasmCallableReferenceLowering",
 )
 
+private val inventNamesForLocalFunctionsPhase = makeIrModulePhase<WasmBackendContext>(
+    { KlibInventNamesForLocalFunctions() },
+    name = "InventNamesForLocalFunctions",
+)
+
 private val singleAbstractMethodPhase = makeIrModulePhase(
     ::JsSingleAbstractMethodLowering,
     name = "SingleAbstractMethod",
 )
 
 private val localDelegatedPropertiesLoweringPhase = makeIrModulePhase<WasmBackendContext>(
-    { LocalDelegatedPropertiesLowering() },
+    ::LocalDelegatedPropertiesLowering,
     name = "LocalDelegatedPropertiesLowering",
 )
 
@@ -595,7 +600,7 @@ fun wasmLoweringsOfTheFirstPhase(
 
 fun getWasmLowerings(
     configuration: CompilerConfiguration,
-    isIncremental: Boolean,
+    disableCrossFileOptimisations: Boolean,
 ): List<NamedCompilerPhase<WasmBackendContext, IrModuleFragment, IrModuleFragment>> {
     val isDebugFriendlyCompilation = configuration.getBoolean(WasmConfigurationKeys.WASM_FORCE_DEBUG_FRIENDLY_COMPILATION)
 
@@ -648,6 +653,7 @@ fun getWasmLowerings(
 
         singleAbstractMethodPhase,
         localDelegatedPropertiesLoweringPhase,
+        inventNamesForLocalFunctionsPhase,
         localDeclarationsLoweringPhase,
         localDeclarationExtractionPhase,
         staticCallableReferenceLoweringPhase,
@@ -689,7 +695,7 @@ fun getWasmLowerings(
         // This doesn't work with IC as of now for accessors within inline functions because
         //  there is no special case for Wasm in the computation of inline function transitive
         //  hashes the same way it's being done with the calculation of symbol hashes.
-        propertyAccessorInlinerLoweringPhase.takeIf { !isIncremental && !isDebugFriendlyCompilation },
+        propertyAccessorInlinerLoweringPhase.takeIf { !disableCrossFileOptimisations && !isDebugFriendlyCompilation },
 
         stringConcatenationLowering,
 
@@ -720,7 +726,7 @@ fun getWasmLowerings(
         autoboxingTransformerPhase,
 
         objectUsageLoweringPhase,
-        purifyObjectInstanceGettersLoweringPhase.takeIf { !isIncremental && !isDebugFriendlyCompilation },
+        purifyObjectInstanceGettersLoweringPhase.takeIf { !disableCrossFileOptimisations && !isDebugFriendlyCompilation },
 
         fieldInitializersLowering,
 
@@ -735,7 +741,7 @@ fun getWasmLowerings(
         staticMembersLoweringPhase,
 
         // This is applied for non-IC mode, which is a better optimization than inlineUnitInstanceGettersLowering
-        inlineObjectsWithPureInitializationLoweringPhase.takeIf { !isIncremental && !isDebugFriendlyCompilation },
+        inlineObjectsWithPureInitializationLoweringPhase.takeIf { !disableCrossFileOptimisations && !isDebugFriendlyCompilation },
 
         whenBranchOptimiserLoweringPhase,
         validateIrAfterLowering,

@@ -19,10 +19,10 @@ import java.util.regex.Pattern;
 @SuppressWarnings("all")
 @TestMetadata("compiler/testData/klib/syntheticAccessors")
 @TestDataPath("$PROJECT_ROOT")
-public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxWithInlinedFunInKlibTest {
+public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsSyntheticAccessorsTest {
   @Test
   public void testAllFilesPresentInSyntheticAccessors() {
-    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors"), Pattern.compile("^(.+)\\.kt$"), null, true);
   }
 
   @Nested
@@ -31,7 +31,7 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
   public class OuterThis {
     @Test
     public void testAllFilesPresentInOuterThis() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/outerThis"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/outerThis"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Nested
@@ -40,7 +40,7 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class CrossFileLeak {
       @Test
       public void testAllFilesPresentInCrossFileLeak() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/outerThis/crossFileLeak"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/outerThis/crossFileLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -116,7 +116,7 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class CrossModuleLeak {
       @Test
       public void testAllFilesPresentInCrossModuleLeak() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/outerThis/crossModuleLeak"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/outerThis/crossModuleLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -192,7 +192,7 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class SingleFile {
       @Test
       public void testAllFilesPresentInSingleFile() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/outerThis/singleFile"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/outerThis/singleFile"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -205,6 +205,12 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       @TestMetadata("leakingCompanionPrivateVarThroughNestedClass.kt")
       public void testLeakingCompanionPrivateVarThroughNestedClass() {
         runTest("compiler/testData/klib/syntheticAccessors/outerThis/singleFile/leakingCompanionPrivateVarThroughNestedClass.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingInnerClassPrivateConstructor.kt")
+      public void testLeakingInnerClassPrivateConstructor() {
+        runTest("compiler/testData/klib/syntheticAccessors/outerThis/singleFile/leakingInnerClassPrivateConstructor.kt");
       }
 
       @Test
@@ -269,7 +275,7 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
   public class PrivateMember {
     @Test
     public void testAllFilesPresentInPrivateMember() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/privateMember"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/privateMember"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Nested
@@ -278,7 +284,13 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class CrossFilePrivateLeak {
       @Test
       public void testAllFilesPresentInCrossFilePrivateLeak() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("leakingCapturedTypeParameter.kt")
+      public void testLeakingCapturedTypeParameter() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/leakingCapturedTypeParameter.kt");
       }
 
       @Test
@@ -321,6 +333,24 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       @TestMetadata("leakingLateinitIsInitializedFromInternalInline.kt")
       public void testLeakingLateinitIsInitializedFromInternalInline() {
         runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/leakingLateinitIsInitializedFromInternalInline.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClass.kt")
+      public void testLeakingPrivateConstructorInInnerClass() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/leakingPrivateConstructorInInnerClass.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClassThroughReference.kt")
+      public void testLeakingPrivateConstructorInInnerClassThroughReference() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/leakingPrivateConstructorInInnerClassThroughReference.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClassWithTypeParameter.kt")
+      public void testLeakingPrivateConstructorInInnerClassWithTypeParameter() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/leakingPrivateConstructorInInnerClassWithTypeParameter.kt");
       }
 
       @Test
@@ -624,6 +654,24 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
+      @TestMetadata("usePrivateMethodFromInternalInlineFakeOverride.kt")
+      public void testUsePrivateMethodFromInternalInlineFakeOverride() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/usePrivateMethodFromInternalInlineFakeOverride.kt");
+      }
+
+      @Test
+      @TestMetadata("usePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors.kt")
+      public void testUsePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/usePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors.kt");
+      }
+
+      @Test
+      @TestMetadata("usePrivateMethodFromInternalInlineGenericFakeOverride.kt")
+      public void testUsePrivateMethodFromInternalInlineGenericFakeOverride() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/usePrivateMethodFromInternalInlineGenericFakeOverride.kt");
+      }
+
+      @Test
       @TestMetadata("usePrivateVarFromLocalClassInsideInternalInlineFun.kt")
       public void testUsePrivateVarFromLocalClassInsideInternalInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossFilePrivateLeak/usePrivateVarFromLocalClassInsideInternalInlineFun.kt");
@@ -636,7 +684,13 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class CrossModulePrivateLeak {
       @Test
       public void testAllFilesPresentInCrossModulePrivateLeak() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("leakingCapturedTypeParameter.kt")
+      public void testLeakingCapturedTypeParameter() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/leakingCapturedTypeParameter.kt");
       }
 
       @Test
@@ -679,6 +733,24 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       @TestMetadata("leakingLateinitIsInitializedFromInternalInline.kt")
       public void testLeakingLateinitIsInitializedFromInternalInline() {
         runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/leakingLateinitIsInitializedFromInternalInline.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClass.kt")
+      public void testLeakingPrivateConstructorInInnerClass() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/leakingPrivateConstructorInInnerClass.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClassThroughReference.kt")
+      public void testLeakingPrivateConstructorInInnerClassThroughReference() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/leakingPrivateConstructorInInnerClassThroughReference.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClassWithTypeParameter.kt")
+      public void testLeakingPrivateConstructorInInnerClassWithTypeParameter() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/leakingPrivateConstructorInInnerClassWithTypeParameter.kt");
       }
 
       @Test
@@ -992,6 +1064,24 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       public void testUsePrivateConstValFromInternalInline() {
         runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/usePrivateConstValFromInternalInline.kt");
       }
+
+      @Test
+      @TestMetadata("usePrivateMethodFromInternalInlineFakeOverride.kt")
+      public void testUsePrivateMethodFromInternalInlineFakeOverride() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/usePrivateMethodFromInternalInlineFakeOverride.kt");
+      }
+
+      @Test
+      @TestMetadata("usePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors.kt")
+      public void testUsePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/usePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors.kt");
+      }
+
+      @Test
+      @TestMetadata("usePrivateMethodFromInternalInlineGenericFakeOverride.kt")
+      public void testUsePrivateMethodFromInternalInlineGenericFakeOverride() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/crossModulePrivateLeak/usePrivateMethodFromInternalInlineGenericFakeOverride.kt");
+      }
     }
 
     @Nested
@@ -1000,7 +1090,31 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class SingleFile {
       @Test
       public void testAllFilesPresentInSingleFile() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/privateMember/singleFile"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/privateMember/singleFile"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("leakingCapturedTypeParameter.kt")
+      public void testLeakingCapturedTypeParameter() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/singleFile/leakingCapturedTypeParameter.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClass.kt")
+      public void testLeakingPrivateConstructorInInnerClass() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/singleFile/leakingPrivateConstructorInInnerClass.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClassThroughReference.kt")
+      public void testLeakingPrivateConstructorInInnerClassThroughReference() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/singleFile/leakingPrivateConstructorInInnerClassThroughReference.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateConstructorInInnerClassWithTypeParameter.kt")
+      public void testLeakingPrivateConstructorInInnerClassWithTypeParameter() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/singleFile/leakingPrivateConstructorInInnerClassWithTypeParameter.kt");
       }
 
       @Test
@@ -1154,6 +1268,12 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
+      @TestMetadata("usePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors.kt")
+      public void testUsePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors() {
+        runTest("compiler/testData/klib/syntheticAccessors/privateMember/singleFile/usePrivateMethodFromInternalInlineFakeOverrideInChainOfInheritors.kt");
+      }
+
+      @Test
       @TestMetadata("usePrivateMethodFromInternalInlineGenericFakeOverride.kt")
       public void testUsePrivateMethodFromInternalInlineGenericFakeOverride() {
         runTest("compiler/testData/klib/syntheticAccessors/privateMember/singleFile/usePrivateMethodFromInternalInlineGenericFakeOverride.kt");
@@ -1239,7 +1359,7 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
   public class TopLevelPrivate {
     @Test
     public void testAllFilesPresentInTopLevelPrivate() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/topLevelPrivate"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/topLevelPrivate"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Nested
@@ -1248,7 +1368,13 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class CrossFilePrivateLeak {
       @Test
       public void testAllFilesPresentInCrossFilePrivateLeak() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("contextSensitiveResolutionCallArgumentPosition.kt")
+      public void testContextSensitiveResolutionCallArgumentPosition() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/contextSensitiveResolutionCallArgumentPosition.kt");
       }
 
       @Test
@@ -1270,12 +1396,6 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
-      @TestMetadata("contextSensitiveResolutionСallArgumentPosition.kt")
-      public void testContextSensitiveResolutionСallArgumentPosition() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/contextSensitiveResolutionСallArgumentPosition.kt");
-      }
-
-      @Test
       @TestMetadata("leakingLateinitIsInitializedFromInternalInline.kt")
       public void testLeakingLateinitIsInitializedFromInternalInline() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingLateinitIsInitializedFromInternalInline.kt");
@@ -1294,12 +1414,6 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
-      @TestMetadata("leakingPrivateExtensionValThroughReferenceInPublicInlineFun.kt")
-      public void testLeakingPrivateExtensionValThroughReferenceInPublicInlineFun() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateExtensionValThroughReferenceInPublicInlineFun.kt");
-      }
-
-      @Test
       @TestMetadata("leakingPrivateExtensionVarThroughInlineFun.kt")
       public void testLeakingPrivateExtensionVarThroughInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateExtensionVarThroughInlineFun.kt");
@@ -1312,12 +1426,6 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
-      @TestMetadata("leakingPrivateExtensionVarThroughReferenceInInternalInlineFun.kt")
-      public void testLeakingPrivateExtensionVarThroughReferenceInInternalInlineFun() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateExtensionVarThroughReferenceInInternalInlineFun.kt");
-      }
-
-      @Test
       @TestMetadata("leakingPrivateFunThroughReferenceInInternalInlineFun.kt")
       public void testLeakingPrivateFunThroughReferenceInInternalInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateFunThroughReferenceInInternalInlineFun.kt");
@@ -1327,6 +1435,12 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       @TestMetadata("leakingPrivateFunThroughReferenceInPublicInlineFun.kt")
       public void testLeakingPrivateFunThroughReferenceInPublicInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateFunThroughReferenceInPublicInlineFun.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateFunWithContextParameterThroughInternalInline.kt")
+      public void testLeakingPrivateFunWithContextParameterThroughInternalInline() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateFunWithContextParameterThroughInternalInline.kt");
       }
 
       @Test
@@ -1420,6 +1534,24 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
+      @TestMetadata("leakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation.kt")
+      public void testLeakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateValThroughReferenceInPublicInlineFun.kt")
+      public void testLeakingPrivateValThroughReferenceInPublicInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateValThroughReferenceInPublicInlineFun.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateVarThroughReferenceInInternalInlineFun.kt")
+      public void testLeakingPrivateVarThroughReferenceInInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingPrivateVarThroughReferenceInInternalInlineFun.kt");
+      }
+
+      @Test
       @TestMetadata("leakingTopLevelPrivateSetterThroughPrivateInlineFunChain.kt")
       public void testLeakingTopLevelPrivateSetterThroughPrivateInlineFunChain() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/leakingTopLevelPrivateSetterThroughPrivateInlineFunChain.kt");
@@ -1456,9 +1588,27 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
+      @TestMetadata("syntheticAccessorDefaultValuesWithAnnotation.kt")
+      public void testSyntheticAccessorDefaultValuesWithAnnotation() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/syntheticAccessorDefaultValuesWithAnnotation.kt");
+      }
+
+      @Test
       @TestMetadata("syntheticAccessorTypeParameters.kt")
       public void testSyntheticAccessorTypeParameters() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/syntheticAccessorTypeParameters.kt");
+      }
+
+      @Test
+      @TestMetadata("useInfixPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseInfixPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/useInfixPrivateTopLevelFunThroughInternalInlineFun.kt");
+      }
+
+      @Test
+      @TestMetadata("useInfixTailrecPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseInfixTailrecPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/useInfixTailrecPrivateTopLevelFunThroughInternalInlineFun.kt");
       }
 
       @Test
@@ -1520,6 +1670,12 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       public void testUsePrivateTopLevelFunWithVarargThroughInternalInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/usePrivateTopLevelFunWithVarargThroughInternalInlineFun.kt");
       }
+
+      @Test
+      @TestMetadata("useTailrecPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseTailrecPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossFilePrivateLeak/useTailrecPrivateTopLevelFunThroughInternalInlineFun.kt");
+      }
     }
 
     @Nested
@@ -1528,7 +1684,13 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class CrossModulePrivateLeak {
       @Test
       public void testAllFilesPresentInCrossModulePrivateLeak() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("contextSensitiveResolutionCallArgumentPosition.kt")
+      public void testContextSensitiveResolutionCallArgumentPosition() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/contextSensitiveResolutionCallArgumentPosition.kt");
       }
 
       @Test
@@ -1550,12 +1712,6 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
-      @TestMetadata("contextSensitiveResolutionСallArgumentPosition.kt")
-      public void testContextSensitiveResolutionСallArgumentPosition() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/contextSensitiveResolutionСallArgumentPosition.kt");
-      }
-
-      @Test
       @TestMetadata("leakingLateinitIsInitializedFromInternalInline.kt")
       public void testLeakingLateinitIsInitializedFromInternalInline() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingLateinitIsInitializedFromInternalInline.kt");
@@ -1574,12 +1730,6 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
-      @TestMetadata("leakingPrivateExtensionValThroughReferenceInPublicInlineFun.kt")
-      public void testLeakingPrivateExtensionValThroughReferenceInPublicInlineFun() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateExtensionValThroughReferenceInPublicInlineFun.kt");
-      }
-
-      @Test
       @TestMetadata("leakingPrivateExtensionVarThroughInlineFun.kt")
       public void testLeakingPrivateExtensionVarThroughInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateExtensionVarThroughInlineFun.kt");
@@ -1592,12 +1742,6 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
-      @TestMetadata("leakingPrivateExtensionVarThroughReferenceInInternalInlineFun.kt")
-      public void testLeakingPrivateExtensionVarThroughReferenceInInternalInlineFun() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateExtensionVarThroughReferenceInInternalInlineFun.kt");
-      }
-
-      @Test
       @TestMetadata("leakingPrivateFunThroughReferenceInInternalInlineFun.kt")
       public void testLeakingPrivateFunThroughReferenceInInternalInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateFunThroughReferenceInInternalInlineFun.kt");
@@ -1607,6 +1751,12 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       @TestMetadata("leakingPrivateFunThroughReferenceInPublicInlineFun.kt")
       public void testLeakingPrivateFunThroughReferenceInPublicInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateFunThroughReferenceInPublicInlineFun.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateFunWithContextParameterThroughInternalInline.kt")
+      public void testLeakingPrivateFunWithContextParameterThroughInternalInline() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateFunWithContextParameterThroughInternalInline.kt");
       }
 
       @Test
@@ -1700,6 +1850,24 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
+      @TestMetadata("leakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation.kt")
+      public void testLeakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateValThroughReferenceInPublicInlineFun.kt")
+      public void testLeakingPrivateValThroughReferenceInPublicInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateValThroughReferenceInPublicInlineFun.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateVarThroughReferenceInInternalInlineFun.kt")
+      public void testLeakingPrivateVarThroughReferenceInInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingPrivateVarThroughReferenceInInternalInlineFun.kt");
+      }
+
+      @Test
       @TestMetadata("leakingTopLevelPrivateSetterThroughPrivateInlineFunChain.kt")
       public void testLeakingTopLevelPrivateSetterThroughPrivateInlineFunChain() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/leakingTopLevelPrivateSetterThroughPrivateInlineFunChain.kt");
@@ -1748,9 +1916,27 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
+      @TestMetadata("syntheticAccessorDefaultValuesWithAnnotation.kt")
+      public void testSyntheticAccessorDefaultValuesWithAnnotation() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/syntheticAccessorDefaultValuesWithAnnotation.kt");
+      }
+
+      @Test
       @TestMetadata("syntheticAccessorTypeParameters.kt")
       public void testSyntheticAccessorTypeParameters() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/syntheticAccessorTypeParameters.kt");
+      }
+
+      @Test
+      @TestMetadata("useInfixPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseInfixPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/useInfixPrivateTopLevelFunThroughInternalInlineFun.kt");
+      }
+
+      @Test
+      @TestMetadata("useInfixTailrecPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseInfixTailrecPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/useInfixTailrecPrivateTopLevelFunThroughInternalInlineFun.kt");
       }
 
       @Test
@@ -1812,6 +1998,12 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       public void testUsePrivateTopLevelFunWithVarargThroughInternalInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/usePrivateTopLevelFunWithVarargThroughInternalInlineFun.kt");
       }
+
+      @Test
+      @TestMetadata("useTailrecPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseTailrecPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/crossModulePrivateLeak/useTailrecPrivateTopLevelFunThroughInternalInlineFun.kt");
+      }
     }
 
     @Nested
@@ -1820,7 +2012,13 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
     public class SingleFile {
       @Test
       public void testAllFilesPresentInSingleFile() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("contextSensitiveResolutionCallArgumentPosition.kt")
+      public void testContextSensitiveResolutionCallArgumentPosition() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/contextSensitiveResolutionCallArgumentPosition.kt");
       }
 
       @Test
@@ -1842,27 +2040,9 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
-      @TestMetadata("contextSensitiveResolutionСallArgumentPosition.kt")
-      public void testContextSensitiveResolutionСallArgumentPosition() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/contextSensitiveResolutionСallArgumentPosition.kt");
-      }
-
-      @Test
       @TestMetadata("effectivelyPrivateInlineFun.kt")
       public void testEffectivelyPrivateInlineFun() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/effectivelyPrivateInlineFun.kt");
-      }
-
-      @Test
-      @TestMetadata("leakingPrivateExtensionValThroughReferenceInPublicInlineFun.kt")
-      public void testLeakingPrivateExtensionValThroughReferenceInPublicInlineFun() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/leakingPrivateExtensionValThroughReferenceInPublicInlineFun.kt");
-      }
-
-      @Test
-      @TestMetadata("leakingPrivateExtensionVarThroughReferenceInInternalInlineFun.kt")
-      public void testLeakingPrivateExtensionVarThroughReferenceInInternalInlineFun() {
-        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/leakingPrivateExtensionVarThroughReferenceInInternalInlineFun.kt");
       }
 
       @Test
@@ -1878,9 +2058,33 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
+      @TestMetadata("leakingPrivateFunWithContextParameterThroughInternalInline.kt")
+      public void testLeakingPrivateFunWithContextParameterThroughInternalInline() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/leakingPrivateFunWithContextParameterThroughInternalInline.kt");
+      }
+
+      @Test
       @TestMetadata("leakingPrivateTopLevelLateinitVar.kt")
       public void testLeakingPrivateTopLevelLateinitVar() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/leakingPrivateTopLevelLateinitVar.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation.kt")
+      public void testLeakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/leakingPrivateValThroughLocalObjectInInternalInlineFunWithAnnotation.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateValThroughReferenceInPublicInlineFun.kt")
+      public void testLeakingPrivateValThroughReferenceInPublicInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/leakingPrivateValThroughReferenceInPublicInlineFun.kt");
+      }
+
+      @Test
+      @TestMetadata("leakingPrivateVarThroughReferenceInInternalInlineFun.kt")
+      public void testLeakingPrivateVarThroughReferenceInInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/leakingPrivateVarThroughReferenceInInternalInlineFun.kt");
       }
 
       @Test
@@ -1890,9 +2094,27 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       }
 
       @Test
+      @TestMetadata("syntheticAccessorDefaultValuesWithAnnotation.kt")
+      public void testSyntheticAccessorDefaultValuesWithAnnotation() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/syntheticAccessorDefaultValuesWithAnnotation.kt");
+      }
+
+      @Test
       @TestMetadata("syntheticAccessorTypeParameters.kt")
       public void testSyntheticAccessorTypeParameters() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/syntheticAccessorTypeParameters.kt");
+      }
+
+      @Test
+      @TestMetadata("useInfixPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseInfixPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/useInfixPrivateTopLevelFunThroughInternalInlineFun.kt");
+      }
+
+      @Test
+      @TestMetadata("useInfixTailrecPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseInfixTailrecPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/useInfixTailrecPrivateTopLevelFunThroughInternalInlineFun.kt");
       }
 
       @Test
@@ -2031,6 +2253,12 @@ public class WasmJsSynthAccBoxTestGenerated extends AbstractFirWasmJsCodegenBoxW
       @TestMetadata("usePrivateTopLevelVarFromInternalInlineVar.kt")
       public void testUsePrivateTopLevelVarFromInternalInlineVar() {
         runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/usePrivateTopLevelVarFromInternalInlineVar.kt");
+      }
+
+      @Test
+      @TestMetadata("useTailrecPrivateTopLevelFunThroughInternalInlineFun.kt")
+      public void testUseTailrecPrivateTopLevelFunThroughInternalInlineFun() {
+        runTest("compiler/testData/klib/syntheticAccessors/topLevelPrivate/singleFile/useTailrecPrivateTopLevelFunThroughInternalInlineFun.kt");
       }
     }
   }

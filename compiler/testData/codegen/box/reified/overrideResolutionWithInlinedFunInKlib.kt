@@ -1,12 +1,12 @@
 // ISSUE: KT-78321
 // IGNORE_BACKEND: JS_IR, JS_IR_ES6
 // ^^^ Wrong box result: C C make make
-// IGNORE_BACKEND: WASM
+// IGNORE_BACKEND: WASM_JS, WASM_WASI
 // ^^^ Wrong box result: C C make make
 
-// LANGUAGE: +IrInlinerBeforeKlibSerialization
+// LANGUAGE: +IrIntraModuleInlinerBeforeKlibSerialization +IrCrossModuleInlinerBeforeKlibSerialization
 // after fixing everything here and in overrideResolution.kt,
-//   please delete this test and delete `LANGUAGE: -IrInlinerBeforeKlibSerialization` from `overrideResolutionWithInlinedFunInKlib.kt`
+//   please delete this test and delete `LANGUAGE: -IrIntraModuleInlinerBeforeKlibSerialization -IrCrossModuleInlinerBeforeKlibSerialization` from `overrideResolutionWithInlinedFunInKlib.kt`
 
 // IGNORE_BACKEND_K2: NATIVE
 // ^^^ Test failed with: C C make make

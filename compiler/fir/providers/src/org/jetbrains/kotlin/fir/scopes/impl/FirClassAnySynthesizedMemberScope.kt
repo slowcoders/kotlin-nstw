@@ -19,9 +19,9 @@ import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
-import org.jetbrains.kotlin.fir.declarations.builder.FirSimpleFunctionBuilder
-import org.jetbrains.kotlin.fir.declarations.builder.buildSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
+import org.jetbrains.kotlin.fir.declarations.builder.FirNamedFunctionBuilder
+import org.jetbrains.kotlin.fir.declarations.builder.buildNamedFunction
 import org.jetbrains.kotlin.fir.declarations.builder.buildValueParameter
 import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.isEquals
@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.fir.types.impl.FirImplicitNullableAnyTypeRef
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitStringTypeRef
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.resolve.ReturnValueStatus
 import org.jetbrains.kotlin.util.OperatorNameConventions
 import org.jetbrains.kotlin.utils.addToStdlib.shouldNotBeCalled
 
@@ -142,8 +143,8 @@ class FirClassAnySynthesizedMemberScope(
             else -> shouldNotBeCalled()
         }.symbol
 
-    private fun generateEqualsFunction(): FirSimpleFunction =
-        buildSimpleFunction {
+    private fun generateEqualsFunction(): FirNamedFunction =
+        buildNamedFunction {
             generateSyntheticFunction(OperatorNameConventions.EQUALS, isOperator = true)
             returnTypeRef = FirImplicitBooleanTypeRef(source)
             this.valueParameters.add(
@@ -153,7 +154,7 @@ class FirClassAnySynthesizedMemberScope(
                     moduleData = baseModuleData
                     this.returnTypeRef = FirImplicitNullableAnyTypeRef(null)
                     this.symbol = FirValueParameterSymbol()
-                    containingDeclarationSymbol = this@buildSimpleFunction.symbol
+                    containingDeclarationSymbol = this@buildNamedFunction.symbol
                     isCrossinline = false
                     isNoinline = false
                     isVararg = false
@@ -161,19 +162,19 @@ class FirClassAnySynthesizedMemberScope(
             )
         }
 
-    private fun generateHashCodeFunction(): FirSimpleFunction =
-        buildSimpleFunction {
+    private fun generateHashCodeFunction(): FirNamedFunction =
+        buildNamedFunction {
             generateSyntheticFunction(OperatorNameConventions.HASH_CODE)
             returnTypeRef = FirImplicitIntTypeRef(source)
         }
 
-    private fun generateToStringFunction(): FirSimpleFunction =
-        buildSimpleFunction {
+    private fun generateToStringFunction(): FirNamedFunction =
+        buildNamedFunction {
             generateSyntheticFunction(OperatorNameConventions.TO_STRING)
             returnTypeRef = FirImplicitStringTypeRef(source)
         }
 
-    private fun FirSimpleFunctionBuilder.generateSyntheticFunction(
+    private fun FirNamedFunctionBuilder.generateSyntheticFunction(
         name: Name,
         isOperator: Boolean = false,
     ) {
@@ -183,6 +184,7 @@ class FirClassAnySynthesizedMemberScope(
         this.name = name
         status = FirResolvedDeclarationStatusImpl(Visibilities.Public, Modality.OPEN, EffectiveVisibility.Public).apply {
             this.isOperator = isOperator
+            this.returnValueStatus = ReturnValueStatus.MustUse // kotlin.Any is compiled in FULL mode, so overrides of Any functions have to be must-use
         }
         symbol = FirNamedFunctionSymbol(CallableId(lookupTag.classId, name))
         dispatchReceiverType = this@FirClassAnySynthesizedMemberScope.dispatchReceiverType

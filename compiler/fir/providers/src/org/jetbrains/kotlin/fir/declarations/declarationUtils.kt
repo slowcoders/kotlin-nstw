@@ -207,20 +207,20 @@ fun FirClassSymbol<*>.collectEnumEntries(session: FirSession): List<FirEnumEntry
 
 context(holder: SessionHolder)
 fun FirEnumEntrySymbol.getComplementarySymbols(): List<FirEnumEntrySymbol>? = resolvedReturnType
-    .toRegularClassSymbol(holder.session)
+    .toRegularClassSymbol()
     ?.collectEnumEntries(holder.session)
     ?.filter { it != this }
 
 context(holder: SessionHolder)
 fun FirRegularClassSymbol.getComplementarySymbols(): List<FirRegularClassSymbol>? {
     val superTypes = getSuperTypes(holder.session)
-        .mapNotNullTo(mutableSetOf()) { it.toRegularClassSymbol(holder.session) }
+        .mapNotNullTo(mutableSetOf()) { it.toRegularClassSymbol() }
 
     return superTypes.flatMap { superType ->
         if (!superType.isSealed) return@flatMap emptyList()
 
         superType.fir.getSealedClassInheritors(holder.session)
-            .mapNotNull { it.toSymbol(holder.session) as? FirRegularClassSymbol }
+            .mapNotNull { it.toSymbol() as? FirRegularClassSymbol }
             .filter { it != this@getComplementarySymbols && it !in superTypes }
     }
 }
@@ -237,6 +237,22 @@ tailrec fun FirClassLikeSymbol<*>.fullyExpandedClass(useSiteSession: FirSession)
         is FirTypeAliasSymbol -> resolvedExpandedTypeRef.coneTypeSafe<ConeClassLikeType>()
             ?.toSymbol(useSiteSession)?.fullyExpandedClass(useSiteSession)
     }
+}
+
+/**
+ * Returns the FirClassLikeDeclaration that the
+ * sequence of FirTypeAlias'es points to starting
+ * with `this`. Or null if something goes wrong or we have anonymous object symbol.
+ */
+context(sessionHolder: SessionHolder)
+fun FirClassLikeSymbol<*>.fullyExpandedClass(): FirRegularClassSymbol? {
+    return fullyExpandedClass(useSiteSession = sessionHolder.session)
+}
+
+@Deprecated("Use parameterless overload", replaceWith = ReplaceWith("fullyExpandedClass()"))
+context(sessionHolder: SessionHolder)
+fun FirClassLikeSymbol<*>.fullyExpandedClass(@Suppress("unused") s: FirSession): FirRegularClassSymbol? {
+    return fullyExpandedClass()
 }
 
 fun FirBasedSymbol<*>.isAnnotationConstructor(session: FirSession): Boolean {

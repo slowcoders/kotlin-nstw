@@ -15,10 +15,10 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.LLFirSession
 import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.llFirSession
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.checkTypeRefIsResolved
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.errorWithFirSpecificEntries
+import org.jetbrains.kotlin.analysis.low.level.api.fir.util.checkAnalysisReadiness
 import org.jetbrains.kotlin.fir.FirElementWithResolveState
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.*
-import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.java.declarations.FirJavaClass
 import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.fir.resolve.providers.firProvider
@@ -156,7 +156,7 @@ private class LLFirSuperTypeTargetResolver(
         crossinline superTypeUpdater: (List<FirTypeRef>) -> Unit,
     ) {
         // To avoid redundant work, because a publication won't be executed
-        if (declaration.resolvePhase >= resolverPhase) return
+        if (checkAnalysisReadiness(declaration, containingDeclarations, resolverPhase)) return
 
         declaration.lazyResolveToPhase(resolverPhase.previous)
 

@@ -261,18 +261,19 @@ object CheckContextArguments : ResolutionStage() {
                     .groupBy(
                         keySelector = { it.boundSymbol.containingDeclarationIfParameter() },
                         valueTransform = { it.computeExpression() })
-                    .values
+                    .values.map { it.filterNot(FirExpression::isInaccessibleFromStaticNestedClass) }
                     .reversed()
             } else {
                 // Old logic from context receivers where extension receivers are in a separate group from context receivers.
                 // TODO(KT-72994) Remove when context receivers are removed
                 context.bodyResolveContext.towerDataContext.towerDataElements.asReversed().mapNotNull { towerDataElement ->
-                    towerDataElement.implicitReceiver?.receiverExpression?.let(::listOf)
+                    towerDataElement.implicitReceiver?.receiverExpression?.takeUnless(FirExpression::isInaccessibleFromStaticNestedClass)?.let(::listOf)
                         ?: towerDataElement.implicitContextGroup?.map { it.computeExpression() }
                 }
             }
 
         val resultingContextArguments = mutableListOf<ConeResolutionAtom>()
+        var errorReported = false
 
         for (symbol in contextSymbols) {
             val expectedType = substitutor.substituteOrSelf(symbol.resolvedReturnType)
@@ -280,7 +281,7 @@ object CheckContextArguments : ResolutionStage() {
             when (potentialContextArguments.size) {
                 0 -> {
                     sink.reportDiagnostic(NoContextArgument(symbol))
-                    return null
+                    errorReported = true
                 }
                 1 -> {
                     val matchingReceiver = potentialContextArguments.single()
@@ -289,12 +290,12 @@ object CheckContextArguments : ResolutionStage() {
                 }
                 else -> {
                     sink.reportDiagnostic(AmbiguousContextArgument(symbol))
-                    return null
+                    errorReported = true
                 }
             }
         }
 
-        return resultingContextArguments
+        return resultingContextArguments.takeUnless { errorReported }
     }
 
     private fun Candidate.findClosestMatchingContextArguments(
@@ -320,7 +321,7 @@ object CheckContextArguments : ResolutionStage() {
         val newArgumentPrefix = mutableListOf<ConeResolutionAtom>()
         repeat(count) { index ->
             val newValue =
-                resultingContextArguments?.get(index) ?: ConeResolutionAtom.createRawAtom(
+                resultingContextArguments?.get(index)?.copyImplicitValueExpression() ?: ConeResolutionAtom.createRawAtom(
                     buildErrorExpression(
                         source = callInfo.callSite.source,
                         // `mapContextArgumentsOrNull` should report a diagnostic to the sink
@@ -339,6 +340,21 @@ object CheckContextArguments : ResolutionStage() {
 
         @OptIn(Candidate.UpdatingCandidateInvariants::class)
         replaceArgumentPrefix(newArgumentPrefix)
+    }
+
+    /**
+     * In `invoke` convention calls, context arguments become normal arguments.
+     *
+     * Unlike context arguments, normal argument **expressions** must be unique because we will build a
+     * `Map<FirExpression, FirValueParameter>` later, and if argument expressions are reused, the map will have too few entries.
+     * However, expressions for accessing implicit values like context parameters and implicit receivers are created
+     * per implicit value, and therefore, we can get duplicates if one value matches multiple context parameters.
+     *
+     * The solution is to build copies of the expressions here.
+     */
+    private fun ConeResolutionAtom.copyImplicitValueExpression(): ConeResolutionAtom {
+        if (this !is ConeSimpleLeafResolutionAtom) return this
+        return ConeResolutionAtom.createRawAtom(expression.copyImplicitValueExpression())
     }
 }
 
@@ -559,7 +575,7 @@ private object CheckDslScopeViolation {
             is ConeDefinitelyNotNullType -> collectDslMarkerAnnotations(originalType.original)
             is ConeIntersectionType -> originalType.intersectedTypes.forEach { collectDslMarkerAnnotations(it) }
             is ConeClassLikeType -> {
-                val classDeclaration = originalType.toSymbol(context.session) ?: return
+                val classDeclaration = originalType.toSymbol() ?: return
                 collectDslMarkerAnnotations(classDeclaration.resolvedAnnotationsWithClassIds)
                 when (classDeclaration) {
                     is FirClassSymbol -> {
@@ -582,7 +598,7 @@ private object CheckDslScopeViolation {
     private fun MutableSet<ClassId>.collectDslMarkerAnnotations(annotations: Collection<FirAnnotation>) {
         for (annotation in annotations) {
             val annotationClass =
-                annotation.annotationTypeRef.coneType.fullyExpandedType().toClassSymbol(context.session)
+                annotation.annotationTypeRef.coneType.fullyExpandedType().toClassSymbol()
                     ?: continue
             if (annotationClass.hasAnnotation(StandardClassIds.Annotations.DslMarker, context.session)) {
                 add(annotationClass.classId)
@@ -629,7 +645,7 @@ private object CheckReceiverShadowedByContextParameter {
         } else {
             originalCallableSymbol.resolvedReceiverType
         }
-        return receiverType?.upperBoundIfFlexible()?.fullyExpandedType()?.toClassSymbol(context.session)?.constructStarProjectedType()
+        return receiverType?.upperBoundIfFlexible()?.fullyExpandedType()?.toClassSymbol()?.constructStarProjectedType()
             ?: receiverType
     }
 }
@@ -846,7 +862,7 @@ internal object CheckVisibility : ResolutionStage() {
         val declaration = candidate.symbol.fir as? FirMemberDeclaration ?: return
 
         if (declaration is FirConstructor) {
-            val classSymbol = declaration.returnTypeRef.coneType.classLikeLookupTagIfAny?.toSymbol(context.session)
+            val classSymbol = declaration.returnTypeRef.coneType.classLikeLookupTagIfAny?.toSymbol()
             if (classSymbol is FirRegularClassSymbol && classSymbol.fir.classKind.isSingleton) {
                 sink.yieldDiagnostic(HiddenCandidate)
             }
@@ -868,7 +884,7 @@ internal object CheckLowPriorityInOverloadResolution : ResolutionStage() {
     context(sink: CheckerSink, context: ResolutionContext)
     override suspend fun check(candidate: Candidate) {
         val annotations = when (val fir = candidate.symbol.fir) {
-            is FirSimpleFunction -> fir.annotations
+            is FirNamedFunction -> fir.annotations
             is FirProperty -> fir.annotations
             is FirConstructor -> fir.annotations
             else -> return
@@ -904,7 +920,7 @@ internal object CheckIncompatibleTypeVariableUpperBounds : ResolutionStage() {
                     InferredEmptyIntersectionDiagnostic(
                         upperTypes as List<ConeKotlinType>,
                         emptyIntersectionTypeInfo.casingTypes.toList() as List<ConeKotlinType>,
-                        variableWithConstraints.typeVariable as ConeTypeVariable,
+                        variableWithConstraints.typeVariable.asCone(),
                         emptyIntersectionTypeInfo.kind,
                         isError = context.session.languageVersionSettings.supportsFeature(
                             LanguageFeature.ForbidInferringTypeVariablesIntoEmptyIntersection
@@ -1118,6 +1134,6 @@ internal object CheckLambdaAgainstTypeVariableContradiction : ResolutionStage() 
     private fun ConeLambdaWithTypeVariableAsExpectedTypeAtom.hasFunctionTypeConstraint(csBuilder: NewConstraintSystemImpl): Boolean {
         val typeConstructor = expectedType.typeConstructor(context.typeContext)
         val variableWithConstraints = csBuilder.currentStorage().notFixedTypeVariables[typeConstructor] ?: return false
-        return variableWithConstraints.constraints.any { (it.type as ConeKotlinType).isSomeFunctionType(context.session) }
+        return variableWithConstraints.constraints.any { it.type.asCone().isSomeFunctionType(context.session) }
     }
 }

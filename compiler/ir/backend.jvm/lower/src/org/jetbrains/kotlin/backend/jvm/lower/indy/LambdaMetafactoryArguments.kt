@@ -7,7 +7,10 @@ package org.jetbrains.kotlin.backend.jvm.lower.indy
 
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
 import org.jetbrains.kotlin.backend.jvm.JvmLoweredDeclarationOrigin
-import org.jetbrains.kotlin.backend.jvm.ir.*
+import org.jetbrains.kotlin.backend.jvm.ir.findSuperDeclaration
+import org.jetbrains.kotlin.backend.jvm.ir.getJvmAnnotationRetention
+import org.jetbrains.kotlin.backend.jvm.ir.getSingleAbstractMethod
+import org.jetbrains.kotlin.backend.jvm.ir.isCompiledToJvmDefault
 import org.jetbrains.kotlin.backend.jvm.needsMfvcFlattening
 import org.jetbrains.kotlin.builtins.functions.BuiltInFunctionArity
 import org.jetbrains.kotlin.config.LanguageFeature
@@ -67,6 +70,7 @@ internal sealed class MetafactoryArgumentsResult {
 internal class LambdaMetafactoryArguments(
     val samMethod: IrSimpleFunction,
     val fakeInstanceMethod: IrSimpleFunction,
+    // TODO change after KT-78719
     val implMethodReference: IrFunctionReference,
     val extraOverriddenMethods: List<IrSimpleFunction>,
     val shouldBeSerializable: Boolean,
@@ -231,17 +235,12 @@ internal class LambdaMetafactoryArgumentsBuilder(
     private fun IrClass.requiresDelegationToDefaultImpls(): Boolean {
         val functionsAndAccessors = functions + properties.mapNotNull { it.getter } + properties.mapNotNull { it.setter }
         for (irMemberFun in functionsAndAccessors) {
-            if (irMemberFun.modality == Modality.ABSTRACT)
+            if (irMemberFun.modality == Modality.ABSTRACT || irMemberFun.isMethodOfAny())
                 continue
-            val irImplFun =
-                if (irMemberFun.isFakeOverride)
-                    irMemberFun.findInterfaceImplementation(context.config.jvmDefaultMode)
-                        ?: continue
-                else
-                    irMemberFun
+            val irImplFun = irMemberFun.resolveFakeOverride() ?: irMemberFun
             if (irImplFun.origin == IrDeclarationOrigin.IR_EXTERNAL_JAVA_DECLARATION_STUB)
                 continue
-            if (!irImplFun.isCompiledToJvmDefault(context.config.jvmDefaultMode))
+            if (irImplFun.hasInterfaceParent() && !irImplFun.isCompiledToJvmDefault(context.config.jvmDefaultMode))
                 return true
         }
         return false

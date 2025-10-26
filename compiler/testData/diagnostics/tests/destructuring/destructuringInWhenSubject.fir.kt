@@ -1,20 +1,21 @@
+// LATEST_LV_DIFFERENCE
 // RUN_PIPELINE_TILL: FRONTEND
 data class Foo(val name: String)
 
 fun main() {
     val foo = Foo("John")
-    when (<!ILLEGAL_DECLARATION_IN_WHEN_SUBJECT!>val (x) = foo<!>) {
-        <!USELESS_IS_CHECK!>is String<!> -> bar("1")
-        <!USELESS_IS_CHECK!>is Foo<!> -> bar("2")
-        else -> bar(<!UNRESOLVED_REFERENCE!>x<!>)
+    when (<!ILLEGAL_DECLARATION_IN_WHEN_SUBJECT!>val (name) = foo<!>) {
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is String<!> -> bar("1")
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is Foo<!> -> bar("2")
+        else -> bar(<!UNRESOLVED_REFERENCE!>name<!>)
     }
 }
 
 fun main2() {
     val foo = Foo("John")
-    when (<!ILLEGAL_DECLARATION_IN_WHEN_SUBJECT!>val (x) = foo<!>) {
-        <!USELESS_IS_CHECK!>is String<!> -> bar("1")
-        <!USELESS_IS_CHECK!>is Foo<!> -> bar("2")
+    when (<!ILLEGAL_DECLARATION_IN_WHEN_SUBJECT!>val (name) = foo<!>) {
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is String<!> -> bar("1")
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is Foo<!> -> bar("2")
     }
 }
 

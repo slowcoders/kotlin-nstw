@@ -15,16 +15,13 @@ import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.inference.TemporaryInferenceSessionHook
 import org.jetbrains.kotlin.fir.resolve.transformers.FirSyntheticCallGenerator
-import org.jetbrains.kotlin.fir.resolve.transformers.FirWhenExhaustivenessTransformer
+import org.jetbrains.kotlin.fir.resolve.transformers.FirWhenExhaustivenessComputer
 import org.jetbrains.kotlin.fir.types.*
-import org.jetbrains.kotlin.fir.visitors.transformSingle
 
 class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyResolveTransformerDispatcher) :
     FirPartialBodyResolveTransformer(transformer) {
 
     private val syntheticCallGenerator: FirSyntheticCallGenerator get() = components.syntheticCallGenerator
-    private val whenExhaustivenessTransformer = FirWhenExhaustivenessTransformer(components)
-
 
     // ------------------------------- Loops -------------------------------
 
@@ -62,7 +59,6 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
         return context.withWhenExpression(whenExpression, session) with@{
             @Suppress("NAME_SHADOWING")
             var whenExpression = whenExpression.transformSubjectVariable(transformer, ResolutionMode.ContextIndependent)
-            val subjectType = whenExpression.subjectVariable?.initializer?.resolvedType?.fullyExpandedType()
             var completionNeeded = false
             when {
                 whenExpression.branches.isEmpty() -> {
@@ -93,7 +89,8 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
                     completionNeeded = true
                 }
             }
-            whenExpression = whenExpression.transformSingle(whenExhaustivenessTransformer, null)
+            val exhaustivenessStatus = FirWhenExhaustivenessComputer.computeExhaustivenessStatus(whenExpression, session, context.file)
+            whenExpression.replaceExhaustivenessStatus(exhaustivenessStatus)
 
             // This is necessary to perform outside the place where the synthetic call is created because
             // exhaustiveness is not yet computed there, but at the same time to compute it properly
@@ -282,12 +279,12 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
             if (result.resolvedType.let { it !is ConeTypeVariableType && it.isNullableType() }) {
                 val rhsResolvedType = result.rhs.resolvedType
                 // This part of the code is a kind of workaround, and it probably will be resolved by KT-55692
-                if (!rhsResolvedType.isNullableType()) {
+                if (!rhsResolvedType.refinedTypeForDataFlowOrSelf.isNullableType()) {
                     // It's definitely not a flexible with nullable bound
                     // Sometimes return type for special call for elvis operator might be nullable,
                     // but result is not nullable if the right type is not nullable
                     result.replaceConeTypeOrNull(result.resolvedType.makeConeTypeDefinitelyNotNullOrNotNull(session.typeContext))
-                } else if (rhsResolvedType is ConeFlexibleType && !rhsResolvedType.lowerBound.isNullableType()) {
+                } else if (isFlexibleWithNotNullable(rhsResolvedType.refinedTypeForDataFlowOrSelf)) {
                     result.replaceConeTypeOrNull(result.resultType.makeConeFlexibleTypeWithNotNullableLowerBound(session.typeContext))
                 }
             }
@@ -296,6 +293,9 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
         dataFlowAnalyzer.exitElvis(elvisExpression, isLhsNotNull, data.forceFullCompletion)
         return result
     }
+
+    private fun ConeInferenceContext.isFlexibleWithNotNullable(rhsResolvedType: ConeKotlinType): Boolean =
+        rhsResolvedType is ConeFlexibleType && !rhsResolvedType.lowerBound.isNullableType()
 
     private fun computeResolutionModeForElvisLHS(
         data: ResolutionMode,
@@ -337,7 +337,7 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
                         this@makeConeFlexibleTypeWithNotNullableLowerBound
                     } else {
                         ConeFlexibleType(
-                            lowerBound.makeConeTypeDefinitelyNotNullOrNotNull(typeContext) as ConeRigidType,
+                            lowerBound.makeConeTypeDefinitelyNotNullOrNotNull(typeContext),
                             upperBound,
                             isTrivial = false,
                         )
@@ -346,8 +346,8 @@ class FirControlFlowStatementsResolveTransformer(transformer: FirAbstractBodyRes
                 is ConeIntersectionType -> ConeIntersectionType(
                     intersectedTypes.map { it.makeConeFlexibleTypeWithNotNullableLowerBound(typeContext) }
                 )
-                is ConeSimpleKotlinType -> ConeFlexibleType(
-                    makeConeTypeDefinitelyNotNullOrNotNull(typeContext) as ConeRigidType,
+                is ConeRigidType -> ConeFlexibleType(
+                    makeConeTypeDefinitelyNotNullOrNotNull(typeContext),
                     this@makeConeFlexibleTypeWithNotNullableLowerBound,
                     isTrivial = false,
                 )

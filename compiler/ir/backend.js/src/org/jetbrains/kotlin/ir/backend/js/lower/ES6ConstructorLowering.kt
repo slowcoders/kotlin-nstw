@@ -30,12 +30,12 @@ import org.jetbrains.kotlin.utils.addToStdlib.assignFrom
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import org.jetbrains.kotlin.utils.addToStdlib.runUnless
 
-val ES6_CONSTRUCTOR_REPLACEMENT by IrDeclarationOriginImpl
-val ES6_SYNTHETIC_EXPORT_CONSTRUCTOR by IrDeclarationOriginImpl
-val ES6_PRIMARY_CONSTRUCTOR_REPLACEMENT by IrDeclarationOriginImpl
-val ES6_INIT_FUNCTION by IrDeclarationOriginImpl
+val ES6_CONSTRUCTOR_REPLACEMENT by IrDeclarationOriginImpl.Regular
+val ES6_SYNTHETIC_EXPORT_CONSTRUCTOR by IrDeclarationOriginImpl.Regular
+val ES6_PRIMARY_CONSTRUCTOR_REPLACEMENT by IrDeclarationOriginImpl.Regular
+val ES6_INIT_FUNCTION by IrDeclarationOriginImpl.Regular
 val ES6_DELEGATING_CONSTRUCTOR_REPLACEMENT by IrStatementOriginImpl
-val ES6_DELEGATING_CONSTRUCTOR_CALL_REPLACEMENT by IrDeclarationOriginImpl
+val ES6_DELEGATING_CONSTRUCTOR_CALL_REPLACEMENT by IrDeclarationOriginImpl.Regular
 
 val IrDeclaration.isEs6ConstructorReplacement: Boolean
     get() = origin == ES6_CONSTRUCTOR_REPLACEMENT || origin == ES6_PRIMARY_CONSTRUCTOR_REPLACEMENT
@@ -161,7 +161,7 @@ class ES6ConstructorLowering(val context: JsIrBackendContext) : DeclarationTrans
                     context.irFactory.createBlockBody(it.startOffset, it.endOffset) {
                         val selfReplacedConstructorCall = JsIrBuilder.buildCall(factoryFunction.symbol)
                             .setFactoryFunctionArguments(
-                                JsIrBuilder.buildCall(context.intrinsics.jsNewTarget),
+                                JsIrBuilder.buildCall(context.symbols.jsNewTarget),
                                 parameters.map { parameter -> JsIrBuilder.buildGetValue(parameter.symbol) } + context.getVoid(),
                             )
                         statements.add(JsIrBuilder.buildReturn(symbol, selfReplacedConstructorCall, returnType))
@@ -320,7 +320,7 @@ class ES6ConstructorLowering(val context: JsIrBackendContext) : DeclarationTrans
 
                 val newThisValue = when {
                     constructor.isEffectivelyExternal() ->
-                        JsIrBuilder.buildCall(context.intrinsics.jsCreateExternalThisSymbol)
+                        JsIrBuilder.buildCall(context.symbols.jsCreateExternalThisSymbol)
                             .apply {
                                 originalConstructor = constructor
                                 arguments[0] = getCurrentConstructorReference(constructorReplacement)
@@ -329,7 +329,7 @@ class ES6ConstructorLowering(val context: JsIrBackendContext) : DeclarationTrans
                                 arguments[3] = boxParameterGetter
                             }
                     constructor.parentAsClass.symbol == context.irBuiltIns.anyClass ->
-                        JsIrBuilder.buildCall(context.intrinsics.jsCreateThisSymbol)
+                        JsIrBuilder.buildCall(context.symbols.jsCreateThisSymbol)
                             .apply {
                                 arguments[0] = getCurrentConstructorReference(constructorReplacement)
                                 arguments[1] = boxParameterGetter
@@ -369,7 +369,7 @@ class ES6ConstructorLowering(val context: JsIrBackendContext) : DeclarationTrans
     }
 
     private fun IrDeclaration.excludeFromExport() {
-        val jsExportIgnoreClass = context.intrinsics.jsExportIgnoreAnnotationSymbol.owner
+        val jsExportIgnoreClass = context.symbols.jsExportIgnoreAnnotationSymbol.owner
         val jsExportIgnoreCtor = jsExportIgnoreClass.primaryConstructor ?: return
         annotations = annotations memoryOptimizedPlus JsIrBuilder.buildConstructorCall(jsExportIgnoreCtor.symbol)
     }

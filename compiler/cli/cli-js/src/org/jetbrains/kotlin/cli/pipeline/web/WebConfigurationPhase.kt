@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.cli.pipeline.web
 
-import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.text.StringUtil
 import org.jetbrains.kotlin.backend.common.linkage.partial.setupPartialLinkageConfig
 import org.jetbrains.kotlin.cli.common.allowKotlinPackage
@@ -35,7 +35,6 @@ import org.jetbrains.kotlin.js.config.*
 import org.jetbrains.kotlin.metadata.deserialization.BinaryVersion
 import org.jetbrains.kotlin.metadata.deserialization.MetadataVersion
 import org.jetbrains.kotlin.platform.wasm.WasmTarget
-import org.jetbrains.kotlin.serialization.js.ModuleKind
 import org.jetbrains.kotlin.wasm.config.WasmConfigurationKeys
 import java.io.File
 import java.io.IOException
@@ -60,7 +59,7 @@ object CommonWebConfigurationUpdater : ConfigurationUpdater<K2JSCompilerArgument
     ) {
         val (arguments, services, rootDisposable, _, _) = input
         setupPlatformSpecificArgumentsAndServices(configuration, arguments, services)
-        initializeCommonConfiguration(configuration, arguments)
+        initializeCommonConfiguration(configuration, arguments, rootDisposable)
         configuration.jsIncrementalCompilationEnabled = incrementalCompilationIsEnabledForJs(arguments)
 
         val messageCollector = configuration.messageCollector
@@ -80,14 +79,9 @@ object CommonWebConfigurationUpdater : ConfigurationUpdater<K2JSCompilerArgument
         configuration.wasmCompilation = arguments.wasm
         configuration.produceKlibFile = arguments.irProduceKlibFile
         configuration.produceKlibDir = arguments.irProduceKlibDir
-        configuration.granularity = arguments.granularity
-        configuration.tsCompilationStrategy = arguments.dtsStrategy
         arguments.main?.let { configuration.callMainMode = it }
         configuration.dce = arguments.irDce
 
-        val zipAccessor = DisposableZipFileSystemAccessor(64)
-        Disposer.register(rootDisposable, zipAccessor)
-        configuration.zipFileSystemAccessor = zipAccessor
         configuration.perModuleOutputName = arguments.irPerModuleOutputName
         configuration.icCacheDirectory = arguments.cacheDirectory
         configuration.icCacheReadOnly = arguments.icCacheReadonly
@@ -222,8 +216,8 @@ object CommonWebConfigurationUpdater : ConfigurationUpdater<K2JSCompilerArgument
         )
     }
 
-    internal fun initializeCommonConfiguration(configuration: CompilerConfiguration, arguments: K2JSCompilerArguments) {
-        configuration.setupCommonKlibArguments(arguments, canBeMetadataKlibCompilation = false)
+    internal fun initializeCommonConfiguration(configuration: CompilerConfiguration, arguments: K2JSCompilerArguments, rootDisposable: Disposable) {
+        configuration.setupCommonKlibArguments(arguments, canBeMetadataKlibCompilation = false, rootDisposable = rootDisposable)
 
         val libraries: List<String> = configureLibraries(arguments.libraries) + listOfNotNull(arguments.includes)
         val friendLibraries: List<String> = configureLibraries(arguments.friendModules)

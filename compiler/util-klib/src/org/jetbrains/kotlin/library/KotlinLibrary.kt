@@ -93,32 +93,32 @@ interface BaseKotlinLibrary {
     val manifestProperties: Properties
 }
 
-interface MetadataLibrary {
-    val moduleHeaderData: ByteArray
-    fun packageMetadataParts(fqName: String): Set<String>
-    fun packageMetadata(fqName: String, partName: String): ByteArray
-}
-
 interface IrLibrary {
-    val hasIr: Boolean
-    val hasFileEntriesTable: Boolean
-    fun irDeclaration(index: Int, fileIndex: Int): ByteArray
-    fun irInlineDeclaration(index: Int, fileIndex: Int): ByteArray
-    fun type(index: Int, fileIndex: Int): ByteArray
-    fun signature(index: Int, fileIndex: Int): ByteArray
-    fun string(index: Int, fileIndex: Int): ByteArray
-    fun body(index: Int, fileIndex: Int): ByteArray
-    fun debugInfo(index: Int, fileIndex: Int): ByteArray?
-    fun fileEntry(index: Int, fileIndex: Int): ByteArray?
-    fun file(index: Int): ByteArray
-    fun fileCount(): Int
+    val hasMainIr: Boolean
+    val mainIr: IrDirectory
 
-    fun types(fileIndex: Int): ByteArray
-    fun signatures(fileIndex: Int): ByteArray
-    fun strings(fileIndex: Int): ByteArray
-    fun declarations(fileIndex: Int): ByteArray
-    fun bodies(fileIndex: Int): ByteArray
-    fun fileEntries(fileIndex: Int): ByteArray?
+    // This directory, if present, stores prepared copies of inlinable functions, see KT-75794.
+    val hasInlinableFunsIr: Boolean
+    val inlinableFunsIr: IrDirectory
+
+    interface IrDirectory {
+        fun irDeclaration(index: Int, fileIndex: Int): ByteArray
+        fun type(index: Int, fileIndex: Int): ByteArray
+        fun signature(index: Int, fileIndex: Int): ByteArray
+        fun string(index: Int, fileIndex: Int): ByteArray
+        fun body(index: Int, fileIndex: Int): ByteArray
+        fun debugInfo(index: Int, fileIndex: Int): ByteArray?
+        fun fileEntry(index: Int, fileIndex: Int): ByteArray?
+        fun file(index: Int): ByteArray
+        fun fileCount(): Int
+
+        fun types(fileIndex: Int): ByteArray
+        fun signatures(fileIndex: Int): ByteArray
+        fun strings(fileIndex: Int): ByteArray
+        fun declarations(fileIndex: Int): ByteArray
+        fun bodies(fileIndex: Int): ByteArray
+        fun fileEntries(fileIndex: Int): ByteArray?
+    }
 }
 
 /** Whether [this] is a Kotlin/Native stdlib. */
@@ -161,7 +161,7 @@ fun BaseKotlinLibrary.unresolvedDependencies(lenient: Boolean = false): List<Unr
 val BaseKotlinLibrary.hasDependencies: Boolean
     get() = !manifestProperties.getProperty(KLIB_PROPERTY_DEPENDS).isNullOrBlank()
 
-interface KotlinLibrary : BaseKotlinLibrary, MetadataLibrary, IrLibrary
+interface KotlinLibrary : Klib, BaseKotlinLibrary, IrLibrary
 
 val BaseKotlinLibrary.interopFlag: String?
     get() = manifestProperties.getProperty(KLIB_PROPERTY_INTEROP)
@@ -208,4 +208,4 @@ val KotlinLibrary.metadataVersion: MetadataVersion?
     }
 
 val KotlinLibrary.hasAbi: Boolean
-    get() = hasIr || irProviderName != null
+    get() = hasMainIr || irProviderName != null

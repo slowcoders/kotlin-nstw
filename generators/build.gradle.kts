@@ -43,11 +43,14 @@ dependencies {
 
     builtinsApi("org.jetbrains.kotlin:kotlin-stdlib:$bootstrapKotlinVersion") { isTransitive = false }
     evaluateApi(project(":core:deserialization"))
+    evaluateApi(commonDependency("org.jetbrains.kotlin:kotlin-reflect"))
     wasmApi(project(":wasm:wasm.ir"))
     wasmApi(kotlinStdlib())
     interpreterApi(project(":compiler:ir.tree"))
+    interpreterApi(commonDependency("org.jetbrains.kotlin:kotlin-reflect"))
     protobufApi(kotlinStdlib())
     protobufCompareApi(testFixtures(project(":kotlin-build-common")))
+    protobufCompareApi(testFixtures(project(":compiler:tests-common")))
     nativeInteropRuntimeApi(kotlinStdlib())
 
     testApi(builtinsSourceSet.output)
@@ -101,10 +104,6 @@ projectTests {
 
 val generateCompilerArgumentsCopy by generator("org.jetbrains.kotlin.generators.arguments.GenerateCompilerArgumentsCopyKt")
 
-val generateTests by generator("org.jetbrains.kotlin.generators.tests.GenerateTestsKt") {
-    dependsOn(":generators:analysis-api-generator:generateFrontendApiTests")
-}
-
 val generateProtoBuf by generator("org.jetbrains.kotlin.generators.protobuf.GenerateProtoBufKt", protobufSourceSet)
 val generateProtoBufCompare by generator("org.jetbrains.kotlin.generators.protobuf.GenerateProtoBufCompare", protobufCompareSourceSet)
 
@@ -114,6 +113,9 @@ val generateGradleCompilerTypes by generator("org.jetbrains.kotlin.generators.ar
 val generateGradleOptions by generator("org.jetbrains.kotlin.generators.arguments.GenerateGradleOptionsKt") {
     dependsOn(generateGradleCompilerTypes)
     description = "Generate Gradle plugin compiler options"
+}
+val generateUnsupportedGradleLanguageVersionsMetadata by generator("org.jetbrains.kotlin.generators.arguments.GenerateUnsupportedGradleLanguageVersionsMetadataKt") {
+    description = "Generate Gradle plugin unsupported Kotlin language versions lifecycle metadata"
 }
 val generateKeywordStrings by generator("org.jetbrains.kotlin.generators.frontend.GenerateKeywordStrings")
 

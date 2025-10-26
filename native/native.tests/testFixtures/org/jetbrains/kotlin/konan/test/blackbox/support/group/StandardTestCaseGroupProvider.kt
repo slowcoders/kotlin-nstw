@@ -211,7 +211,7 @@ internal class StandardTestCaseGroupProvider : TestCaseGroupProvider {
                 it.files.any { it.location.extension == "def" && !it.text.defFileContentsIsSupportedOn(settings.get<KotlinNativeTargets>().testTarget) }
             }) return null
 
-        val freeCompilerArgs = parseFreeCompilerArgs(registeredDirectives, location)
+        val freeCompilerArgs = parseFreeCompilerArgs(registeredDirectives, location, settings)
         val expectedTimeoutFailure = parseExpectedTimeoutFailure(registeredDirectives, location)
 
         val testKind = parseTestKind(registeredDirectives, location) ?: settings.get<TestKind>()
@@ -221,7 +221,7 @@ internal class StandardTestCaseGroupProvider : TestCaseGroupProvider {
             fixPackageNames(testModules.values, nominalPackageName, testDataFile)
         }
 
-        val lldbSpec = if (testKind == TestKind.STANDALONE_LLDB) parseLLDBSpec(testDataFile, registeredDirectives, settings) else null
+        val lldbSpec = if (testKind == TestKind.STANDALONE_LLDB) parseLLDBSpec(testDataFile) else null
 
         val outputMatcher = lldbSpec?.let {
             OutputMatcher(Output.STDOUT) { output -> lldbSpec.checkLLDBOutput(output, settings.get()) }

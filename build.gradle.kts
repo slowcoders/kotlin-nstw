@@ -17,7 +17,8 @@ buildscript {
      * Affected Libraries:
      * └── org.apache.commons
      *     ├── commons-compress:* → 1.27.1
-     *     └── commons-io:* → 2.18.0
+     *     ├── commons-io:* → 2.18.0
+     *     └── commons-lang3:* → 3.18.0
      *
      * Mitigated Vulnerabilities:
      * 1. Commons Compress
@@ -28,6 +29,9 @@ buildscript {
      * 2. Commons IO
      *    - CVE-2024-26308: Security vulnerability
      *    - CVE-2023-42503: Input processing risk
+     *
+     * 3. Commons Lang
+     *    - CVE-2025-48924: Uncontrolled Recursion vulnerability
      */
     configurations.all {
         resolutionStrategy.eachDependency {
@@ -39,6 +43,10 @@ buildscript {
             if (requested.group == "commons-io" && requested.name == "commons-io") {
                 useVersion(libs.versions.commons.io.get())
                 because("CVE-2024-26308, CVE-2023-42503")
+            }
+            if (requested.group == "org.apache.commons" && requested.name == "commons-lang3") {
+                useVersion(libs.versions.commons.lang.get())
+                because("CVE-2025-48924")
             }
         }
     }
@@ -114,11 +122,12 @@ rootProject.apply {
 IdeVersionConfigurator.setCurrentIde(project)
 
 if (!project.hasProperty("versions.kotlin-native")) {
-    // BEWARE! Bumping this version doesn't take an immediate effect on TeamCity: KTI-1107
-    extra["versions.kotlin-native"] = if (kotlinBuildProperties.isKotlinNativeEnabled) {
+    extra["versions.kotlin-native"] = if (kotlinBuildProperties.isTeamcityBuild) {
+        kotlinVersion
+    } else if (kotlinBuildProperties.isKotlinNativeEnabled) {
         kotlinBuildProperties.defaultSnapshotVersion
     } else {
-        "2.2.20-dev-8371"
+        "2.3.20-dev-670"
     }
 }
 
@@ -135,7 +144,9 @@ val irCompilerModules = arrayOf(
     ":compiler:ir.interpreter",
     ":compiler:ir.inline",
     ":compiler:ir.validation",
-    ":wasm:wasm.ir"
+    ":wasm:wasm.ir",
+    ":js:typescript-export-model",
+    ":js:typescript-printer",
 ).also { extra["irCompilerModules"] = it }
 
 val irCompilerModulesForIDE = arrayOf(
@@ -258,7 +269,6 @@ val fe10CompilerModules = arrayOf(
     ":compiler:backend.js",
     ":compiler:backend.wasm",
     ":kotlin-util-klib-metadata",
-    ":compiler:backend-common",
     ":compiler:backend",
     ":compiler:plugin-api",
     ":compiler:javac-wrapper",
@@ -663,6 +673,8 @@ allprojects {
         maven("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies") {
             content {
                 includeGroupByRegex("org\\.jetbrains\\.intellij\\.deps(\\..+)?")
+                includeGroupByRegex("com.intellij.platform.*")
+                includeGroupByRegex("org.jetbrains.jps.*")
                 includeVersion("org.jetbrains.jps", "jps-javac-extension", "7")
                 includeVersion("com.google.protobuf", "protobuf-parent", "3.24.4-jb.2")
                 includeVersion("com.google.protobuf", "protobuf-java", "3.24.4-jb.2")
@@ -727,10 +739,6 @@ gradle.taskGraph.whenReady {
 
 val dist = tasks.register("dist") {
     dependsOn(":kotlin-compiler:dist")
-}
-
-val syncMutedTests = tasks.register("syncMutedTests") {
-    dependsOn(":compiler:tests-mutes:tc-integration:run")
 }
 
 tasks.register("createIdeaHomeForTests") {
@@ -829,24 +837,28 @@ tasks {
     }
 
     register("jsFirCompilerTest") {
-        dependsOn(":js:js.tests:jsFirTest")
+        // TODO(KTI-2710): Drop this task when we reconfigure TeamCity to run `jsCompilerTest`
+        dependsOn(":js:js.tests:jsTest")
+    }
+
+    register("jsCompilerTest") {
+        dependsOn(":js:js.tests:jsTest")
     }
 
     register("jsIrCompilerTest") {
-        dependsOn(":js:js.tests:jsIrTest")
+        // TODO(KTI-2710): Drop this task when we stop invoking it on TeamCity
     }
 
     register("wasmCompilerTest") {
-        dependsOn(":wasm:wasm.tests:testK1")
-        dependsOn(":wasm:wasm.tests:diagnosticTest")
+        // KTI-2670: TODO: don't invoke this obsolete task in KTI
+    }
+
+    register("wasmFirCompilerTest") {
+        dependsOn(":wasm:wasm.tests:test")
         // Windows WABT release requires Visual C++ Redistributable
         if (!kotlinBuildProperties.isTeamcityBuild || !org.gradle.internal.os.OperatingSystem.current().isWindows) {
             dependsOn(":wasm:wasm.ir:test")
         }
-    }
-
-    register("wasmFirCompilerTest") {
-        dependsOn(":wasm:wasm.tests:testFir")
     }
 
     // These tests run Native compiler and will be run in many different compilation modes that the compiler supports:
@@ -861,7 +873,7 @@ tasks {
         dependsOn(":native:native.tests:cli-tests:check")
         dependsOn(":native:native.tests:codegen-box:check")
         dependsOn(":native:native.tests:driver:check")
-        dependsOn(":native:native.tests:gc-fuzzing-tests:check")
+        dependsOn(":native:native.tests:gc-fuzzing-tests:engine:check")
         dependsOn(":native:native.tests:stress:check")
         dependsOn(":native:native.tests:klib-compatibility:check")
         dependsOn(":native:native.tests:litmus-tests:check")
@@ -871,6 +883,7 @@ tasks {
     // technically or semantically depend on Xcode SDK.
     register("nativeAppleSpecificTests") {
         dependsOn(":native:objcexport-header-generator:check")
+        dependsOn(":native:swift:swift-export-embeddable:testCoroutinesITWithEmbeddable")
         dependsOn(":native:swift:swift-export-embeddable:testExternalITWithEmbeddable")
         dependsOn(":native:swift:swift-export-embeddable:testSimpleITWithEmbeddable")
         dependsOn(":native:swift:swift-export-standalone:check")
@@ -956,6 +969,8 @@ tasks {
         dependsOn("compilerPluginTest")
         dependsOn(":kotlin-daemon-tests:test")
         dependsOn(":compiler:arguments:test")
+        dependsOn(":compiler:fir:modularized-tests:modelDumpTest")
+        dependsOn(":compiler:multiplatform-parsing:jvmTest")
     }
 
     register("miscTest") {
@@ -1004,6 +1019,7 @@ tasks {
         dependsOn(":compiler:build-tools:kotlin-build-tools-api:check")
         dependsOn(":compiler:build-tools:kotlin-build-tools-api-tests:check")
         dependsOn(":tools:ide-plugin-dependencies-validator:test")
+        dependsOn(":tools:stats-analyser:test")
     }
 
     register("examplesTest") {

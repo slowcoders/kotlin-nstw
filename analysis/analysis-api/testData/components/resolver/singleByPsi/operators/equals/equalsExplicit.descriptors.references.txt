@@ -1,6 +1,12 @@
 KtNameReferenceExpression(62,68): 'equals'
   KtSimpleNameReference:
-    (in kotlin.Any) open operator fun equals(other: kotlin.Any?): kotlin.Boolean
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in kotlin.Any) open operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

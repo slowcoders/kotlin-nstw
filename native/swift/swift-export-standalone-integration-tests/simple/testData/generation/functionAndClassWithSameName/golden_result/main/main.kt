@@ -3,7 +3,6 @@
 @file:kotlin.native.internal.objc.BindClassToObjCName(test.factory.Outer::class, "22ExportedKotlinPackages4testO7factoryO4mainE5OuterC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(test.factory.Outer.Nested::class, "22ExportedKotlinPackages4testO7factoryO4mainE5OuterC6NestedC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(ClassWithFactoryWithoutParameters::class, "4main33ClassWithFactoryWithoutParametersC")
-@file:kotlin.native.internal.objc.BindClassToObjCName(EnumWithFactory::class, "4main15EnumWithFactoryC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(ObjectWithFactory::class, "4main17ObjectWithFactoryC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(UtcOffset::class, "4main9UtcOffsetC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(InterfaceWithFactory::class, "_InterfaceWithFactory")
@@ -19,22 +18,9 @@ public fun ClassWithFactoryWithoutParameters_value_get(self: kotlin.native.inter
     return _result
 }
 
-@ExportedBridge("EnumWithFactory_ONE_get")
-public fun EnumWithFactory_ONE_get(): kotlin.native.internal.NativePtr {
+@ExportedBridge("EnumWithFactory_ONE")
+public fun EnumWithFactory_ONE(): kotlin.native.internal.NativePtr {
     val _result = EnumWithFactory.ONE
-    return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
-}
-
-@ExportedBridge("EnumWithFactory_entries_get")
-public fun EnumWithFactory_entries_get(): kotlin.native.internal.NativePtr {
-    val _result = EnumWithFactory.entries
-    return _result.objcPtr()
-}
-
-@ExportedBridge("EnumWithFactory_valueOf__TypesOfArguments__Swift_String__")
-public fun EnumWithFactory_valueOf__TypesOfArguments__Swift_String__(value: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr {
-    val __value = interpretObjCPointer<kotlin.String>(value)
-    val _result = EnumWithFactory.valueOf(__value)
     return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
 }
 

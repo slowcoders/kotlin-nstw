@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirReceiverParameterSymbol
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitTypeRefImplWithoutSource
 import org.jetbrains.kotlin.fir.visitors.transformSingle
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.resolve.ContractsDslNames
 
 abstract class FirAbstractContractResolveTransformerDispatcher(
     session: FirSession,
@@ -77,15 +78,15 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
 
     protected open inner class FirDeclarationsContractResolveTransformer :
         FirDeclarationsResolveTransformer(this@FirAbstractContractResolveTransformerDispatcher) {
-        override fun transformSimpleFunction(
-            simpleFunction: FirSimpleFunction,
+        override fun transformNamedFunction(
+            namedFunction: FirNamedFunction,
             data: ResolutionMode
-        ): FirSimpleFunction {
-            if (!simpleFunction.hasContractToResolve) return simpleFunction
+        ): FirNamedFunction {
+            if (!namedFunction.hasContractToResolve) return namedFunction
 
-            return context.withSimpleFunction(simpleFunction, session) {
-                context.forFunctionBody(simpleFunction, components) {
-                    transformContractDescriptionOwner(simpleFunction)
+            return context.withNamedFunction(namedFunction, session) {
+                context.forFunctionBody(namedFunction, components) {
+                    transformContractDescriptionOwner(namedFunction)
                 }
             }
         }
@@ -107,7 +108,7 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
                 return property
             }
             if (property is FirSyntheticProperty) {
-                transformSimpleFunction(property.getter.delegate, data)
+                transformNamedFunction(property.getter.delegate, data)
                 return property
             }
             context.withProperty(property) {
@@ -175,7 +176,7 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
             // We generate a FirContractCallBlock according to a heuristic, which can have false positives,
             // such as user-defined functions called "contract". In this case, we restore the contract call block
             // to a normal call.
-            if (resolvedContractCall.toResolvedCallableSymbol()?.callableId != FirContractsDslNames.CONTRACT) {
+            if (resolvedContractCall.toResolvedCallableSymbol()?.callableId != ContractsDslNames.CONTRACT) {
                 if (hasBodyContract) {
                     owner.body!!.replaceFirstStatement<FirContractCallBlock> { contractDescription.contractCall }
                 }

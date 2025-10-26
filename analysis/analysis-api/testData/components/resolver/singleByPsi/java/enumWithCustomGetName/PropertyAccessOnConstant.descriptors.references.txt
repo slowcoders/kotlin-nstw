@@ -1,6 +1,12 @@
 KtNameReferenceExpression(54,58): 'name'
   KtSimpleNameReference:
-    (in kotlin.Enum) val name: kotlin.String
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in kotlin.Enum) val name: kotlin.String
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

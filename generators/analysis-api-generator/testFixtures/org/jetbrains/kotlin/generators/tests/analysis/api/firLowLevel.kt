@@ -15,8 +15,8 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.resolve.*
 import org.jetbrains.kotlin.analysis.low.level.api.fir.resolve.extensions.AbstractResolveExtensionDisposalAfterModificationEventTest
 import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.*
 import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.AbstractCombinedPackageDelegationSymbolProviderTest
-import org.jetbrains.kotlin.generators.TestGroup
-import org.jetbrains.kotlin.generators.TestGroupSuite
+import org.jetbrains.kotlin.generators.dsl.TestGroup
+import org.jetbrains.kotlin.generators.dsl.TestGroupSuite
 import org.jetbrains.kotlin.generators.util.TestGeneratorUtil
 import org.jetbrains.kotlin.generators.util.TestGeneratorUtil.KT_OR_KTS
 import org.jetbrains.kotlin.generators.util.TestGeneratorUtil.canFreezeIDE
@@ -361,7 +361,7 @@ internal fun TestGroupSuite.generateFirLowLevelApiTests() {
         "compiler/fir/analysis-tests/testData",
     ) {
         fun TestGroup.TestClass.modelInit() {
-            model("resolve", pattern = TestGeneratorUtil.KT_WITHOUT_DOTS_IN_NAME.canFreezeIDE)
+            model("resolve", pattern = TestGeneratorUtil.KT_WITHOUT_DOTS_IN_NAME.canFreezeIDE, excludeDirs = listOf("headerMode"))
             model("resolveWithStdlib", pattern = TestGeneratorUtil.KT_WITHOUT_DOTS_IN_NAME.canFreezeIDE)
         }
 

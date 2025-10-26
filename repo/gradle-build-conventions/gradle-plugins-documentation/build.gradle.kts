@@ -9,7 +9,7 @@ plugins {
 kotlin {
     @OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalBuildToolsApi::class)
     compilerVersion = libs.versions.kotlin.`for`.gradle.plugins.compilation
-    jvmToolchain(11)
+    jvmToolchain(17)
 
     compilerOptions {
         allWarningsAsErrors.set(true)
@@ -34,6 +34,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-build-gradle-plugin:${kotlinBuildProperties.buildGradlePluginVersion}")
     implementation(libs.dokka.gradlePlugin)
     implementation(libs.downloadTask.gradlePlugin)
+
+    constraints {
+        api(libs.apache.commons.lang)
+    }
 }
 
 /**

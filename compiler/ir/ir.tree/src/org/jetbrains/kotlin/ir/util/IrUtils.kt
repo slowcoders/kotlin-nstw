@@ -19,7 +19,6 @@ import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.declarations.*
 import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.declarations.*
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.Companion.UNDERSCORE_PARAMETER
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.expressions.impl.*
 import org.jetbrains.kotlin.ir.overrides.FakeOverrideBuilderStrategy
@@ -34,7 +33,6 @@ import org.jetbrains.kotlin.ir.visitors.IrVisitor
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.util.OperatorNameConventions
-import org.jetbrains.kotlin.util.anonymousContextParameterName
 import org.jetbrains.kotlin.utils.*
 import org.jetbrains.kotlin.utils.addToStdlib.assignFrom
 import java.io.StringWriter
@@ -945,12 +943,13 @@ fun IrFunction.copyValueParametersToStatic(
     source: IrFunction,
     origin: IrDeclarationOrigin,
     dispatchReceiverType: IrType? = source.dispatchReceiverParameter?.type,
+    customTypeParameterMapping: Map<IrTypeParameter, IrTypeParameter>? = null,
 ) {
     val target = this
     assert(target.parameters.isEmpty())
 
     val parameterMapping = mutableMapOf<IrValueParameterSymbol, IrValueParameterSymbol>()
-    val typeParameterMapping = source.typeParameters.zip(target.typeParameters).toMap()
+    val typeParameterMapping = customTypeParameterMapping ?: source.typeParameters.zip(target.typeParameters).toMap()
     target.parameters += source.parameters.map { param ->
         val name = when (param.kind) {
             IrParameterKind.DispatchReceiver -> Name.identifier("\$this")
@@ -970,7 +969,8 @@ fun IrFunction.copyValueParametersToStatic(
 
         val remappedType = type.remapTypeParameters(
             (param.parent as IrTypeParametersContainer).classIfConstructor,
-            target.classIfConstructor
+            target.classIfConstructor,
+            typeParameterMapping
         )
         param.copyTo(
             target,
@@ -1460,24 +1460,51 @@ inline fun <reified Symbol : IrSymbol> IrSymbol.unexpectedSymbolKind(): Nothing 
     throw IllegalArgumentException("Unexpected kind of ${Symbol::class.java.typeName}: $this")
 }
 
+inline fun <reified T> convertTo(value: Any): T {
+    val result: Number = when (value) {
+        is Number -> value
+        is Char -> value.code
+        is UByte -> value.toLong()
+        is UShort -> value.toLong()
+        is UInt -> value.toLong()
+        is ULong -> value.toLong()
+        else -> throw IllegalArgumentException("Cannot convert ${value::class.simpleName}")
+    }
+
+    return when (T::class) {
+        Long::class -> result.toLong() as T
+        Int::class -> result.toInt() as T
+        Short::class -> result.toShort() as T
+        Byte::class -> result.toByte() as T
+        Char::class -> result.toInt().toChar() as T
+        ULong::class -> result.toLong().toULong() as T
+        UInt::class -> result.toInt().toUInt() as T
+        UShort::class -> result.toShort().toUShort() as T
+        UByte::class -> result.toByte().toUByte() as T
+        Float::class -> result.toFloat() as T
+        Double::class -> result.toDouble() as T
+        else -> throw IllegalArgumentException("Unsupported target type: ${T::class.simpleName}")
+    }
+}
+
 private fun Any?.toIrConstOrNull(irType: IrType, startOffset: Int = SYNTHETIC_OFFSET, endOffset: Int = SYNTHETIC_OFFSET): IrConst? {
     if (this == null) return IrConstImpl.constNull(startOffset, endOffset, irType)
 
     val constType = irType.makeNotNull().removeAnnotations()
     return when (irType.getPrimitiveType()) {
         PrimitiveType.BOOLEAN -> IrConstImpl.boolean(startOffset, endOffset, constType, this as Boolean)
-        PrimitiveType.CHAR -> IrConstImpl.char(startOffset, endOffset, constType, this as Char)
-        PrimitiveType.BYTE -> IrConstImpl.byte(startOffset, endOffset, constType, (this as Number).toByte())
-        PrimitiveType.SHORT -> IrConstImpl.short(startOffset, endOffset, constType, (this as Number).toShort())
-        PrimitiveType.INT -> IrConstImpl.int(startOffset, endOffset, constType, (this as Number).toInt())
-        PrimitiveType.FLOAT -> IrConstImpl.float(startOffset, endOffset, constType, (this as Number).toFloat())
-        PrimitiveType.LONG -> IrConstImpl.long(startOffset, endOffset, constType, (this as Number).toLong())
-        PrimitiveType.DOUBLE -> IrConstImpl.double(startOffset, endOffset, constType, (this as Number).toDouble())
+        PrimitiveType.CHAR -> IrConstImpl.char(startOffset, endOffset, constType, convertTo(this))
+        PrimitiveType.BYTE -> IrConstImpl.byte(startOffset, endOffset, constType, convertTo(this))
+        PrimitiveType.SHORT -> IrConstImpl.short(startOffset, endOffset, constType, convertTo(this))
+        PrimitiveType.INT -> IrConstImpl.int(startOffset, endOffset, constType, convertTo(this))
+        PrimitiveType.FLOAT -> IrConstImpl.float(startOffset, endOffset, constType, convertTo(this))
+        PrimitiveType.LONG -> IrConstImpl.long(startOffset, endOffset, constType, convertTo(this))
+        PrimitiveType.DOUBLE -> IrConstImpl.double(startOffset, endOffset, constType, convertTo(this))
         null -> when (constType.getUnsignedType()) {
-            UnsignedType.UBYTE -> IrConstImpl.byte(startOffset, endOffset, constType, (this as Number).toByte())
-            UnsignedType.USHORT -> IrConstImpl.short(startOffset, endOffset, constType, (this as Number).toShort())
-            UnsignedType.UINT -> IrConstImpl.int(startOffset, endOffset, constType, (this as Number).toInt())
-            UnsignedType.ULONG -> IrConstImpl.long(startOffset, endOffset, constType, (this as Number).toLong())
+            UnsignedType.UBYTE -> IrConstImpl.byte(startOffset, endOffset, constType, convertTo(this))
+            UnsignedType.USHORT -> IrConstImpl.short(startOffset, endOffset, constType, convertTo(this))
+            UnsignedType.UINT -> IrConstImpl.int(startOffset, endOffset, constType, convertTo(this))
+            UnsignedType.ULONG -> IrConstImpl.long(startOffset, endOffset, constType, convertTo(this))
             null -> when {
                 constType.isString() -> IrConstImpl.string(startOffset, endOffset, constType, this as String)
                 else -> null
@@ -1634,13 +1661,4 @@ val IrSimpleFunction.isTrivialGetter: Boolean
         return (receiver as? IrGetValue)?.symbol?.owner === this.dispatchReceiverParameter
     }
 
-
-fun IrFunction.anonymousContextParameterName(parameter: IrValueParameter, invalidChars: Set<Char>): String? {
-    if (parameter.kind != IrParameterKind.Context || parameter.origin != UNDERSCORE_PARAMETER) return null
-    val allUnnamedContextParameters = parameters.filter { it.kind == IrParameterKind.Context && it.origin == UNDERSCORE_PARAMETER }
-    return parameter.anonymousContextParameterName(
-        allUnnamedContextParameters,
-        invalidChars
-    ) { t -> t.type.erasedUpperBound.name.asString() }
-}
 

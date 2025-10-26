@@ -41,6 +41,7 @@ public class KtParameter extends KtNamedDeclarationStub<KotlinParameterStub> imp
 
     @Override
     @Nullable
+    @SuppressWarnings("deprecation") // KT-78356
     public KtTypeReference getTypeReference() {
         return getStubOrPsiChild(KtStubBasedElementTypes.TYPE_REFERENCE);
     }
@@ -72,14 +73,9 @@ public class KtParameter extends KtNamedDeclarationStub<KotlinParameterStub> imp
 
     @Nullable
     public KtExpression getDefaultValue() {
-        KotlinParameterStub stub = getStub();
+        KotlinParameterStub stub = getGreenStub();
         if (stub != null) {
             if (!stub.getHasDefaultValue()) {
-                return null;
-            }
-
-            if (getContainingKtFile().isCompiled()) {
-                //don't load ast
                 return null;
             }
         }

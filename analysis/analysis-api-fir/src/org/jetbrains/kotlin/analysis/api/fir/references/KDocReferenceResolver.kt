@@ -9,21 +9,27 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.components.KaScopeContext
 import org.jetbrains.kotlin.analysis.api.components.KaScopeKind
-import org.jetbrains.kotlin.analysis.api.fir.references.KDocReferenceResolver.canBeReferencedAsExtensionOn
+import org.jetbrains.kotlin.analysis.api.fir.KaFirSession
 import org.jetbrains.kotlin.analysis.api.fir.references.KDocReferenceResolver.getTypeQualifiedExtensions
+import org.jetbrains.kotlin.analysis.api.fir.symbols.KaFirTypeParameterSymbol
+import org.jetbrains.kotlin.analysis.api.fir.types.KaFirType
 import org.jetbrains.kotlin.analysis.api.scopes.KaScope
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KaDeclarationContainerSymbol
 import org.jetbrains.kotlin.analysis.api.types.KaType
-import org.jetbrains.kotlin.analysis.api.types.KaTypeParameterType
+import org.jetbrains.kotlin.analysis.api.types.symbol
 import org.jetbrains.kotlin.analysis.utils.printer.parentOfType
 import org.jetbrains.kotlin.analysis.utils.printer.parentsOfType
+import org.jetbrains.kotlin.fir.resolve.calls.overloads.ConeSimpleConstraintSystemImpl
+import org.jetbrains.kotlin.fir.resolve.inference.inferenceComponents
+import org.jetbrains.kotlin.fir.symbols.ConeTypeParameterLookupTag
 import org.jetbrains.kotlin.load.java.possibleGetMethodNames
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.utils.addIfNotNull
 import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
 import kotlin.reflect.KClass
@@ -363,9 +369,9 @@ internal object KDocReferenceResolver {
         if (!possibleExtensionsLayers.any() || !possibleReceiversLayers.any()) return emptyList()
 
         return possibleReceiversLayers.first().flatMap { receiverClassSymbol ->
-            val receiverType = buildClassType(receiverClassSymbol)
+            val receiverType = receiverClassSymbol.defaultType
             possibleExtensionsLayers.map { extensionSymbolsLayer ->
-                extensionSymbolsLayer.filter { canBeReferencedAsExtensionOn(it, receiverType) }
+                extensionSymbolsLayer.filter { it.canBeCalledAsExtensionOn(receiverType) }
                     .map { it.toResolveResult(receiverClassReference = receiverClassSymbol) }
             }.firstOrNull {
                 it.isNotEmpty()
@@ -392,49 +398,6 @@ internal object KDocReferenceResolver {
         }.mapNotNull {
             it.filterIsInstance<KaClassLikeSymbol>().ifEmpty { null }
         }
-
-
-    /**
-     * Returns true if we consider that [this] extension function prefixed with [actualReceiverType] in
-     * a KDoc reference should be considered as legal and resolved, and false otherwise.
-     *
-     * This is **not** an actual type check, it is just an opinionated approximation.
-     * The main guideline was K1 KDoc resolve.
-     *
-     * This check might change in the future, as the Dokka team advances with KDoc rules.
-     */
-    private fun KaSession.canBeReferencedAsExtensionOn(symbol: KaCallableSymbol, actualReceiverType: KaType): Boolean {
-        val extensionReceiverType = symbol.receiverParameter?.returnType ?: return false
-        return isPossiblySuperTypeOf(extensionReceiverType, actualReceiverType)
-    }
-
-    /**
-     * Same constraints as in [canBeReferencedAsExtensionOn].
-     *
-     * For a similar function in the `intellij` repository, see `isPossiblySubTypeOf`.
-     */
-    private fun KaSession.isPossiblySuperTypeOf(type: KaType, actualReceiverType: KaType): Boolean {
-        // Type parameters cannot act as receiver types in KDoc
-        if (actualReceiverType is KaTypeParameterType) return false
-
-        if (type is KaTypeParameterType) {
-            return type.symbol.upperBounds.all { isPossiblySuperTypeOf(it, actualReceiverType) }
-        }
-
-        val receiverExpanded = actualReceiverType.expandedSymbol
-        val expectedExpanded = type.expandedSymbol
-
-        // if the underlying classes are equal, we consider the check successful
-        // despite the possibility of different type bounds
-        if (
-            receiverExpanded != null &&
-            receiverExpanded == expectedExpanded
-        ) {
-            return true
-        }
-
-        return actualReceiverType.isSubtypeOf(type)
-    }
 
     private fun KaSession.getNonImportedSymbolsByFullyQualifiedName(fqName: FqName): Collection<KaSymbol> = buildSet {
         generateNameInterpretations(fqName).forEach { interpretation ->

@@ -5,22 +5,24 @@
 
 package org.jetbrains.kotlin.generators.model
 
+import org.jetbrains.kotlin.generators.MethodGenerator
+import org.jetbrains.kotlin.generators.impl.RunTestMethodGenerator
 import org.jetbrains.kotlin.test.TargetBackend
 
+/**
+ * Decorator method, which wraps the delegating of the actual test method with `KotlinTestUtils.runTest` call.
+ * This is needed only for legacy tests on JUnit3/4 for handling suppressions with `wrapWithMuteInDatabase` infra.
+ * This method is not generated in JUnit5 mode even if it's added to the class model.
+ */
 class RunTestMethodModel(
-    val targetBackend: TargetBackend,
+    val targetBackend: TargetBackend?,
     val testMethodName: String,
     val testRunnerMethodName: String,
-    val additionalRunnerArguments: List<String> = emptyList(),
-    val withTransformer: Boolean = false
-) : MethodModel {
-    object Kind : MethodModel.Kind()
-
-    override val kind: MethodModel.Kind
-        get() = Kind
-
-    override val name = METHOD_NAME
+) : MethodModel<RunTestMethodModel>() {
+    override val generator: MethodGenerator<RunTestMethodModel> get() = RunTestMethodGenerator
+    override val name = MethodGenerator.DEFAULT_RUN_TEST_METHOD_NAME
     override val dataString: String? = null
+    override val isTestMethod: Boolean get() = false
 
     override val tags: List<String>
         get() = emptyList()
@@ -30,10 +32,6 @@ class RunTestMethodModel(
     }
 
     fun isWithTargetBackend(): Boolean {
-        return !(targetBackend == TargetBackend.ANY && additionalRunnerArguments.isEmpty() && testRunnerMethodName == METHOD_NAME)
-    }
-
-    companion object {
-        const val METHOD_NAME = "runTest"
+        return !(targetBackend == null && testRunnerMethodName == MethodGenerator.DEFAULT_RUN_TEST_METHOD_NAME)
     }
 }

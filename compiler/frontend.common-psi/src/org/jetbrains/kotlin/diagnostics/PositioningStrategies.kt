@@ -1036,6 +1036,7 @@ object PositioningStrategies {
         }
     }
 
+    @JvmField
     val SPREAD_OPERATOR: PositioningStrategy<PsiElement> = object : PositioningStrategy<PsiElement>() {
         override fun mark(element: PsiElement): List<TextRange> {
             return super.mark((element as? KtValueArgument)?.getSpreadElement()?.node?.psi ?: element)
@@ -1067,18 +1068,17 @@ object PositioningStrategies {
     val REIFIED_MODIFIER: PositioningStrategy<KtModifierListOwner> =
         ModifierSetBasedPositioningStrategy(KtTokens.REIFIED_KEYWORD)
 
-    val PROPERTY_INITIALIZER: PositioningStrategy<KtNamedDeclaration> = object : PositioningStrategy<KtNamedDeclaration>() {
-        override fun mark(element: KtNamedDeclaration): List<TextRange> {
-            return markElement(
-                when (element) {
-                    is KtProperty -> element.initializer ?: element
-                    // Type reference is used as a target for loop variable type mismatches
-                    is KtParameter -> element.defaultValue ?: element.typeReference ?: element
-                    is KtDestructuringDeclarationEntry -> element.initializer ?: element.typeReference ?: element
-                    else -> element
-                }
-            )
-        }
+    val VARIABLE_INITIALIZER: PositioningStrategy<KtElement> = object : PositioningStrategy<KtElement>() {
+        override fun mark(element: KtElement): List<TextRange> = markElement(
+            when (element) {
+                is KtProperty -> element.equalsToken ?: element.initializer ?: element
+                // Type reference is used as a target for loop variable type mismatches
+                is KtParameter -> element.equalsToken ?: element.defaultValue ?: element.typeReference ?: element
+                is KtDestructuringDeclarationEntry -> element.equalsToken ?: element.initializer ?: element.typeReference ?: element
+                is KtBackingField -> element.equalsToken ?: element.initializer ?: element
+                else -> element
+            }
+        )
     }
 
     val WHOLE_ELEMENT: PositioningStrategy<KtElement> = object : PositioningStrategy<KtElement>() {}

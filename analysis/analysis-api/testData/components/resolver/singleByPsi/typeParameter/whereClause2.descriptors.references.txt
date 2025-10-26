@@ -1,6 +1,12 @@
 KtNameReferenceExpression(76,78): 'To'
   KtSimpleNameReference:
-    (in <local>: copyNotNull) To
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in <local>: copyNotNull) To
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

@@ -7,14 +7,16 @@ annotations.kt:
           REFERENCE_EXPRESSION[referencedName=e]
         REFERENCE_EXPRESSION[referencedName=f]
     IMPORT_LIST
-    CLASS[classId=d/e/f/a, fqName=d.e.f.a, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=a, superNames=[]]
+    CLASS[classId=d/e/f/a, fqName=d.e.f.a, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=a, superNames=[]]
       MODIFIER_LIST[annotation]
-    CLASS[classId=d/e/f/b, fqName=d.e.f.b, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=b, superNames=[]]
+    CLASS[classId=d/e/f/b, fqName=d.e.f.b, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=b, superNames=[]]
       MODIFIER_LIST[annotation]
 
 
 topLevelMembersAnnotated.kt:
   FILE[kind=Facade[packageFqName=a.b.c.topLevelMembersAnnotated, facadeFqName=a.b.c.topLevelMembersAnnotated.TopLevelMembersAnnotatedKt]]
+    facadeFqName: a.b.c.topLevelMembersAnnotated.TopLevelMembersAnnotatedKt
+    partSimpleName: "TopLevelMembersAnnotatedKt"
     PACKAGE_DIRECTIVE
       DOT_QUALIFIED_EXPRESSION
         DOT_QUALIFIED_EXPRESSION
@@ -78,4 +80,4 @@ topLevelMembersAnnotated.kt:
       TYPE_REFERENCE
         USER_TYPE
           REFERENCE_EXPRESSION[referencedName=Int]
-    CLASS[classId=a/b/c/topLevelMembersAnnotated/C, fqName=a.b.c.topLevelMembersAnnotated.C, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=C, superNames=[]]
+    CLASS[classId=a/b/c/topLevelMembersAnnotated/C, fqName=a.b.c.topLevelMembersAnnotated.C, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=C, superNames=[]]

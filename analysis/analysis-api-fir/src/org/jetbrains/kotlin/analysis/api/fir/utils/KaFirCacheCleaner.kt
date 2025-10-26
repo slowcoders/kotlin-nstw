@@ -5,16 +5,20 @@
 
 package org.jetbrains.kotlin.analysis.api.fir.utils
 
+import com.intellij.openapi.components.serviceOrNull
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.registry.Registry
+import org.jetbrains.kotlin.analysis.api.KaImplementationDetail
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.platform.KaCachedService
 import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.LLFirSessionInvalidationService
 import org.jetbrains.kotlin.analysis.low.level.api.fir.statistics.LLStatisticsService
 import org.jetbrains.kotlin.analysis.low.level.api.fir.statistics.domains.LLAnalysisSessionStatistics
+import org.jetbrains.kotlin.analysis.low.level.api.fir.util.LLFlightRecorder
 import org.jetbrains.kotlin.utils.exceptions.rethrowIntellijPlatformExceptionIfNeeded
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -24,7 +28,8 @@ import kotlin.system.measureTimeMillis
 /**
  * A facility that cleans up all low-level resolution caches per request.
  */
-internal interface KaFirCacheCleaner {
+@KaImplementationDetail
+interface KaFirCacheCleaner {
     /**
      * This method must be called before the [KaSession] is obtained (to be used later in an [analyze] block).
      * If the method is called, [exitAnalysis] must also be called from the same thread right after the block finishes executing, or
@@ -45,13 +50,24 @@ internal interface KaFirCacheCleaner {
      * Consequent calls to [scheduleCleanup] are permitted (and ignored if a cleanup is already scheduled).
      */
     fun scheduleCleanup()
+
+    @KaImplementationDetail
+    companion object {
+        fun getInstance(project: Project): KaFirCacheCleaner {
+            if (!Registry.`is`("kotlin.analysis.lowMemoryCacheCleanup", true)) {
+                return KaFirNoOpCacheCleaner
+            }
+
+            return project.serviceOrNull<KaFirCacheCleaner>() ?: KaFirNoOpCacheCleaner
+        }
+    }
 }
 
 /**
  * An empty implementation of a cache cleaner – no additional cleanup is performed.
  * Can be used as a drop-in substitution for [KaFirStopWorldCacheCleaner] if forceful cache cleanup is disabled.
  */
-internal object KaFirNoOpCacheCleaner : KaFirCacheCleaner {
+private object KaFirNoOpCacheCleaner : KaFirCacheCleaner {
     override fun enterAnalysis() {}
     override fun exitAnalysis() {}
     override fun scheduleCleanup() {}
@@ -65,7 +81,7 @@ internal object KaFirNoOpCacheCleaner : KaFirCacheCleaner {
  * Once a cleanup is requested, the class also prevents all new analysis blocks from running until it's complete (see the [cleanupLatch]).
  * If there is no ongoing analysis, though, caches can be cleaned up immediately.
  */
-internal class KaFirStopWorldCacheCleaner(private val project: Project) : KaFirCacheCleaner {
+private class KaFirStopWorldCacheCleaner(private val project: Project) : KaFirCacheCleaner {
     private companion object {
         private val LOG = logger<KaFirStopWorldCacheCleaner>()
 
@@ -277,6 +293,7 @@ internal class KaFirStopWorldCacheCleaner(private val project: Project) : KaFirC
                 }
             } else if (existingLatch == null) {
                 LOG.trace { "K2 cache cleanup scheduled from ${Thread.currentThread()}, $analyzerCount analyses left" }
+                LLFlightRecorder.stopWorldSessionInvalidationScheduled()
                 cleanupScheduleMs = System.currentTimeMillis()
                 cleanupLatch = CountDownLatch(1)
             }
@@ -292,6 +309,10 @@ internal class KaFirStopWorldCacheCleaner(private val project: Project) : KaFirC
      */
     private fun performCleanup() {
         try {
+            // `performCleanup` might be called from the low-memory watcher's thread even after project disposal. Cleaning the caches of a
+            // disposed project is unnecessary, so we skip invalidation. This also avoids potential exceptions and undefined behavior.
+            if (project.isDisposed) return
+
             analysisSessionStatistics?.lowMemoryCacheCleanupInvocationCounter?.add(1)
 
             val cleanupMs = measureTimeMillis {
@@ -303,6 +324,8 @@ internal class KaFirStopWorldCacheCleaner(private val project: Project) : KaFirC
 
             val totalMs = System.currentTimeMillis() - cleanupScheduleMs
             LOG.trace { "K2 cache cleanup complete from ${Thread.currentThread()} in $cleanupMs ms ($totalMs ms after the request)" }
+
+            LLFlightRecorder.stopWorldSessionInvalidationComplete()
         } catch (e: Throwable) {
             rethrowIntellijPlatformExceptionIfNeeded(e)
 

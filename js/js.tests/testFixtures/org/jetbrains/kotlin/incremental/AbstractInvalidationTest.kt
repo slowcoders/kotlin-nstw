@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.cli.common.disposeRootInWriteAction
 import org.jetbrains.kotlin.cli.common.localfs.KotlinLocalFileSystem
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.codegen.*
+import org.jetbrains.kotlin.codegen.forTestCompile.ForTestCompileRuntime
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.ir.backend.js.ic.DirtyFileState
 import org.jetbrains.kotlin.ir.backend.js.ic.KotlinLibraryFile
@@ -23,16 +24,18 @@ import org.jetbrains.kotlin.ir.backend.js.transformers.irToJs.safeModuleName
 import org.jetbrains.kotlin.js.config.*
 import org.jetbrains.kotlin.js.test.utils.MODULE_EMULATION_FILE
 import org.jetbrains.kotlin.js.test.utils.wrapWithModuleEmulationMarkers
+import org.jetbrains.kotlin.klib.KlibCompilerInvocationTestUtils
 import org.jetbrains.kotlin.konan.file.ZipFileSystemCacheableAccessor
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.multiplatform.isCommonSource
-import org.jetbrains.kotlin.serialization.js.ModuleKind
+import org.jetbrains.kotlin.test.InTextDirectivesUtils
 import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.builders.LanguageVersionSettingsBuilder
 import org.jetbrains.kotlin.test.util.JUnit4Assertions
 import org.jetbrains.kotlin.test.utils.TestDisposable
 import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assumptions
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -104,11 +107,20 @@ abstract class AbstractInvalidationTest(
         jsDir: File,
     ): AbstractProjectStepsExecutor
 
+    protected abstract fun testConfiguration(buildDir: File): KlibCompilerInvocationTestUtils.TestConfiguration
+
     protected fun runTest(@TestDataFile testPath: String) {
-        val testDirectory = File(testPath)
+        val testDirectory = ForTestCompileRuntime.transformTestDataPath(testPath)
         val testName = testDirectory.name
         val projectInfoFile = getProjectInfoFile(testDirectory)
         val projectInfo = parseProjectInfo(testName, projectInfoFile)
+        Assumptions.assumeTrue(
+            InTextDirectivesUtils.isCompatibleTarget(
+                /* targetBackend = */ targetBackend,
+                /* backends = */ projectInfo.targetBackends.toList(),
+                /* doNotTarget = */ emptyList()
+            )
+        )
 
         if (isIgnoredTest(projectInfo)) {
             return
@@ -126,6 +138,11 @@ abstract class AbstractInvalidationTest(
         val buildDir = File(workingDir, "build").also { it.invalidateDir() }
         val jsDir = File(workingDir, "js").also { it.invalidateDir() }
 
+        testConfiguration(buildDir).run {
+            if (isIgnoredTest(projectInfo)) {
+                return onIgnoredTest()
+            }
+        }
         initializeWorkingDir(projectInfo, testDirectory, sourceDir, buildDir)
 
         createProjectStepsExecutor(projectInfo, modulesInfos, testDirectory, sourceDir, buildDir, jsDir).execute()
@@ -171,7 +188,7 @@ abstract class AbstractInvalidationTest(
         includedLibrary?.let { copy.includes = includedLibrary }
 
         zipAccessor.reset()
-        copy.put(JSConfigurationKeys.ZIP_FILE_SYSTEM_ACCESSOR, zipAccessor)
+        copy.put(KlibConfigurationKeys.ZIP_FILE_SYSTEM_ACCESSOR, zipAccessor)
         return copy
     }
 

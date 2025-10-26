@@ -1,10 +1,13 @@
 // TARGET_BACKEND: WASM
 // WITH_STDLIB
-import kotlin.test.*
+// WASM_FAILS_IN_SINGLE_MODULE_MODE
+
+fun assertTrue(x: Boolean): Unit = check(x)
+fun assertNull(x: Any?): Unit = check(x === null)
 
 fun jsRepresentation(x: JsAny): String = js("(typeof x) + ':' + String(x)")
 
-@Suppress("INCOMPATIBLE_TYPES")
+@Suppress("INCOMPATIBLE_TYPES", "IMPOSSIBLE_IS_CHECK_ERROR")
 fun castToKotlinString(jsAny: JsAny?): String? =
     if (jsAny is String) jsAny as String else null
 

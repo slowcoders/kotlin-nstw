@@ -28,16 +28,16 @@ import org.jetbrains.kotlin.utils.addToStdlib.assignFrom
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import org.jetbrains.kotlin.utils.memoryOptimizedPlus
 
-private val SUSPEND_FUNCTION_AS_GENERATOR by IrDeclarationOriginImpl
+private val SUSPEND_FUNCTION_AS_GENERATOR by IrDeclarationOriginImpl.Regular
 
 /**
  * Transforms suspend function into a GeneratorCoroutineImpl instance and ES2015 generator.
  */
 class JsSuspendFunctionWithGeneratorsLowering(private val context: JsIrBackendContext) : DeclarationTransformer {
     private val getContinuationSymbol = context.symbols.getContinuation
-    private val jsYieldFunctionSymbol = context.intrinsics.jsYieldFunctionSymbol
-    private val suspendOrReturnFunctionSymbol = context.intrinsics.suspendOrReturnFunctionSymbol
-    private val coroutineSuspendedGetterSymbol = context.symbols.coroutineSymbols.coroutineSuspendedGetter
+    private val jsYieldFunctionSymbol = context.symbols.jsYieldFunctionSymbol
+    private val suspendOrReturnFunctionSymbol = context.symbols.suspendOrReturnFunctionSymbol
+    private val coroutineSuspendedGetterSymbol = context.symbols.coroutineSuspendedGetter
 
     override fun transformFlat(declaration: IrDeclaration): List<IrDeclaration>? {
         if (declaration is IrSimpleFunction && declaration.isSuspend) {
@@ -64,7 +64,13 @@ class JsSuspendFunctionWithGeneratorsLowering(private val context: JsIrBackendCo
 
     private fun IrSimpleFunction.addJsGeneratorAnnotation() {
         annotations = annotations memoryOptimizedPlus JsIrBuilder.buildConstructorCall(
-            context.intrinsics.jsGeneratorAnnotationSymbol.owner.primaryConstructor!!.symbol
+            context.symbols.jsGeneratorAnnotationSymbol.owner.primaryConstructor!!.symbol
+        )
+    }
+
+    private fun IrSimpleFunction.addJsExportIgnoreAnnotation() {
+        annotations = annotations memoryOptimizedPlus JsIrBuilder.buildConstructorCall(
+            context.symbols.jsExportIgnoreAnnotationSymbol.owner.primaryConstructor!!.symbol
         )
     }
 
@@ -91,6 +97,7 @@ class JsSuspendFunctionWithGeneratorsLowering(private val context: JsIrBackendCo
             function.isExternal,
         ).apply {
             copyValueAndTypeParametersFrom(function)
+            parameters.forEach { it.defaultValue = null }
             parent = function.parent
             annotations = function.annotations
             body = functionBody.apply {
@@ -117,6 +124,7 @@ class JsSuspendFunctionWithGeneratorsLowering(private val context: JsIrBackendCo
                 })
             }
             addJsGeneratorAnnotation()
+            addJsExportIgnoreAnnotation()
         }
 
         function.body = context.createIrBuilder(function.symbol).irBlockBody {

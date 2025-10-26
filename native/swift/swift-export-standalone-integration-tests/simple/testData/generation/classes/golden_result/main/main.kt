@@ -19,8 +19,7 @@
 @file:kotlin.native.internal.objc.BindClassToObjCName(DATA_CLASS::class, "4main10DATA_CLASSC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(DATA_CLASS_WITH_MANY_FIELDS::class, "4main27DATA_CLASS_WITH_MANY_FIELDSC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(DATA_CLASS_WITH_REF::class, "4main19DATA_CLASS_WITH_REFC")
-@file:kotlin.native.internal.objc.BindClassToObjCName(ENUM::class, "4main4ENUMC")
-@file:kotlin.native.internal.objc.BindClassToObjCName(ENUM.INSIDE_ENUM::class, "4main4ENUMC11INSIDE_ENUMC")
+@file:kotlin.native.internal.objc.BindClassToObjCName(ENUM.INSIDE_ENUM::class, "4main4ENUMO11INSIDE_ENUMC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(Foo::class, "4main3FooC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(Foo.Companion::class, "4main3FooC9CompanionC")
 @file:kotlin.native.internal.objc.BindClassToObjCName(Foo.INSIDE_CLASS::class, "4main3FooC12INSIDE_CLASSC")
@@ -197,20 +196,20 @@ public fun DATA_CLASS_toString(self: kotlin.native.internal.NativePtr): kotlin.n
     return _result.objcPtr()
 }
 
-@ExportedBridge("ENUM_A_get")
-public fun ENUM_A_get(): kotlin.native.internal.NativePtr {
+@ExportedBridge("ENUM_A")
+public fun ENUM_A(): kotlin.native.internal.NativePtr {
     val _result = ENUM.A
     return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
 }
 
-@ExportedBridge("ENUM_B_get")
-public fun ENUM_B_get(): kotlin.native.internal.NativePtr {
+@ExportedBridge("ENUM_B")
+public fun ENUM_B(): kotlin.native.internal.NativePtr {
     val _result = ENUM.B
     return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
 }
 
-@ExportedBridge("ENUM_C_get")
-public fun ENUM_C_get(): kotlin.native.internal.NativePtr {
+@ExportedBridge("ENUM_C")
+public fun ENUM_C(): kotlin.native.internal.NativePtr {
     val _result = ENUM.C
     return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
 }
@@ -225,19 +224,6 @@ public fun ENUM_INSIDE_ENUM_init_allocate(): kotlin.native.internal.NativePtr {
 public fun ENUM_INSIDE_ENUM_init_initialize__TypesOfArguments__Swift_UnsafeMutableRawPointer__(__kt: kotlin.native.internal.NativePtr): Unit {
     val ____kt = kotlin.native.internal.ref.dereferenceExternalRCRef(__kt)!!
     kotlin.native.internal.initInstance(____kt, ENUM.INSIDE_ENUM())
-}
-
-@ExportedBridge("ENUM_entries_get")
-public fun ENUM_entries_get(): kotlin.native.internal.NativePtr {
-    val _result = ENUM.entries
-    return _result.objcPtr()
-}
-
-@ExportedBridge("ENUM_valueOf__TypesOfArguments__Swift_String__")
-public fun ENUM_valueOf__TypesOfArguments__Swift_String__(value: kotlin.native.internal.NativePtr): kotlin.native.internal.NativePtr {
-    val __value = interpretObjCPointer<kotlin.String>(value)
-    val _result = ENUM.valueOf(__value)
-    return kotlin.native.internal.ref.createRetainedExternalRCRef(_result)
 }
 
 @ExportedBridge("Foo_Companion_get")

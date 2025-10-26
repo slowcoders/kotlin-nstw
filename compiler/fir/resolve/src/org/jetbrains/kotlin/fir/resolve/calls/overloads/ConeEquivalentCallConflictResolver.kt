@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.fir.containingClassLookupTag
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirProperty
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirVariable
 import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.Candidate
@@ -99,16 +99,24 @@ class ConeEquivalentCallConflictResolver(private val session: FirSession) : Cone
             argumentMappingIsEqual: (() -> Boolean)?
         ): Boolean {
             if (first.symbol.callableId != second.symbol.callableId) return false
+
             // Emulate behavior from K1 where declarations from the same source module are never equivalent.
             // We expect REDECLARATION or CONFLICTING_OVERLOADS to be reported in those cases.
             // See a.containingDeclaration == b.containingDeclaration check in
             // org.jetbrains.kotlin.resolve.DescriptorEquivalenceForOverrides.areCallableDescriptorsEquivalent.
+            //
             // We can't rely on the fact that library declarations will have different moduleData, e.g. in Native metadata compilation,
             // multiple stdlib declarations with the same moduleData can be present, see KT-61461.
+            //
             // The same situation occurs in the Analysis API: A "fallback dependencies" module can provide declarations from multiple
             // conflicting versions of a library such as the stdlib (see `KaLibraryFallbackDependenciesModule`). Conflicting library
             // declarations from fallback dependencies may thus share `moduleData` in the same way.
+            //
+            // Furthermore, the call resolver also has to filter out duplicate `emptyArray()` candidates coming from the *same* stdlib, as
+            // the function is defined both as a builtin in `kotlin.kotlin_builtins` and a regular top-level function in
+            // `ArrayIntrinsicsKt.class`. See KT-78882.
             if (first.moduleData == second.moduleData && first.moduleData.session.kind == FirSession.Kind.Source) return false
+
             if (first is FirVariable != second is FirVariable) {
                 return false
             }
@@ -124,7 +132,7 @@ class ConeEquivalentCallConflictResolver(private val session: FirSession) : Cone
                             overrideChecker.isOverriddenProperty(second, first, ignoreVisibility = true)
                 }
 
-                first is FirSimpleFunction && second is FirSimpleFunction -> {
+                first is FirNamedFunction && second is FirNamedFunction -> {
                     overrideChecker.isOverriddenFunction(first, second, ignoreVisibility = true) &&
                             overrideChecker.isOverriddenFunction(second, first, ignoreVisibility = true)
                 }

@@ -169,7 +169,11 @@ internal class DebugInfo(override val generationState: NativeGenerationState) : 
             subroutineType(llvmTargetData, this@subroutineType.types)
 
     fun subroutineType(llvmTargetData: LLVMTargetDataRef, types: List<IrType>): DISubroutineTypeRef = memScoped {
-        DICreateSubroutineType(builder, allocArrayOf(types.map { it.diType(llvmTargetData) }), types.size)!!
+        val diTypes = types.withIndex().map { (idx, type) ->
+            if (idx == 0 && type.isVoidAsReturnType()) null
+            else type.diType(llvmTargetData)
+        }
+        DICreateSubroutineType(builder, allocArrayOf(diTypes), types.size)!!
     }
 
     fun IrFileEntry.diFileScope() = files.getOrPut(this.name) {

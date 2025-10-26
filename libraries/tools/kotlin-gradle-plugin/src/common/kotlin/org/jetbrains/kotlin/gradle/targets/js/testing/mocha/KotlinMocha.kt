@@ -41,7 +41,10 @@ class KotlinMocha internal constructor(
 ) :
     KotlinJsTestFramework {
 
-    @Deprecated("Manually creating instances of this class is deprecated. Scheduled for removal in Kotlin 2.4.")
+    @Deprecated(
+        "Manually creating instances of this class is deprecated. Scheduled for removal in Kotlin 2.4.",
+        level = DeprecationLevel.ERROR
+    )
     constructor(
         compilation: KotlinJsIrCompilation,
         basePath: String,
@@ -164,7 +167,11 @@ class KotlinMocha internal constructor(
         return value?.let { listOf(cli, it) } ?: emptyList()
     }
 
-    @Deprecated(message = CREATE_TEST_EXEC_SPEC_DEPRECATION_MSG)
+    @Deprecated(
+        CREATE_TEST_EXEC_SPEC_DEPRECATION_MSG,
+        ReplaceWith("createTestExecutionSpec(task, launchOpts, nodeJsArgs, debug)"),
+        DeprecationLevel.ERROR
+    )
     override fun createTestExecutionSpec(
         task: KotlinJsTest,
         forkOptions: ProcessForkOptions,

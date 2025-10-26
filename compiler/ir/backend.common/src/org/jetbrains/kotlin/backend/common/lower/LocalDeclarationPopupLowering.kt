@@ -9,12 +9,16 @@ import org.jetbrains.kotlin.backend.common.*
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.IrBody
+import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.IrRichFunctionReference
 import org.jetbrains.kotlin.ir.expressions.IrStatementContainer
 import org.jetbrains.kotlin.ir.expressions.impl.IrCompositeImpl
 import org.jetbrains.kotlin.ir.transformStatement
 import org.jetbrains.kotlin.ir.util.addChild
 import org.jetbrains.kotlin.ir.util.isOriginallyLocalDeclaration
+import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.util.setDeclarationsParent
+import org.jetbrains.kotlin.ir.util.transformInPlace
 
 /**
  * Moves local declarations into nearest declaration container.
@@ -35,9 +39,21 @@ open class LocalDeclarationPopupLowering(
 
         irBody.transform(object : IrElementTransformerVoidWithContext() {
             override fun visitLocalDelegatedProperty(declaration: IrLocalDelegatedProperty): IrStatement {
+                // Note: This code is not accessible in KLIB-based backends now because `LocalDeclarationPopupLowering` runs
+                // after `LocalDelegatedPropertiesLowering`, which reshapes `IrLocalDelegatedProperty`s to simpler declarations.
+                // While it is still used in Kotlin/JVM.
                 declaration.getter.transformStatement(this)
                 declaration.setter?.transformStatement(this)
-                return declaration.delegate.transformStatement(this)
+
+                val delegate = declaration.delegate
+                requireNotNull(delegate) { "Local delegated property ${declaration.render()} has no delegate" }
+                return delegate.transformStatement(this)
+            }
+
+            override fun visitRichFunctionReference(expression: IrRichFunctionReference): IrExpression {
+                expression.boundValues.transformInPlace(this, null)
+                expression.invokeFunction.transformChildrenVoid()
+                return expression
             }
 
             override fun visitClassNew(declaration: IrClass): IrStatement = visitClassOrFunction(declaration)

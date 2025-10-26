@@ -281,7 +281,10 @@ fun CompilerConfiguration.setupFromArguments(arguments: K2NativeCompilerArgument
     })
     putIfNotNull(ALLOCATION_MODE, when (arguments.allocator) {
         null -> null
-        "std" -> AllocationMode.STD
+        "std" -> {
+            report(STRONG_WARNING, "Std allocator is deprecated in Kotlin/Native compiler and will be removed in the future. Please consider using -Xbinary=pagedAllocator=false compiler flag instead.")
+            AllocationMode.STD
+        }
         "mimalloc" -> {
             report(ERROR, "Usage of mimalloc in Kotlin/Native compiler is deprecated. Please remove -Xallocator=mimalloc compiler flag.")
             AllocationMode.CUSTOM
@@ -304,15 +307,6 @@ fun CompilerConfiguration.setupFromArguments(arguments: K2NativeCompilerArgument
             report(ERROR, "Unsupported worker exception handling mode ${arguments.workerExceptionHandling}")
         }
     }
-    put(LAZY_IR_FOR_CACHES, when (arguments.lazyIrForCaches) {
-        null -> false
-        "enable" -> true
-        "disable" -> false
-        else -> {
-            report(ERROR, "Expected 'enable' or 'disable' for lazy IR usage for cached libraries")
-            false
-        }
-    })
 
     arguments.externalDependencies?.let { put(EXTERNAL_DEPENDENCIES, it) }
     putIfNotNull(LLVM_VARIANT, when (val variant = arguments.llvmVariant) {
@@ -364,15 +358,16 @@ internal fun CompilerConfiguration.setupCommonOptionsForCaches(konanConfig: Kona
     setupPartialLinkageConfig(konanConfig.partialLinkageConfig)
     putIfNotNull(EXTERNAL_DEPENDENCIES, konanConfig.externalDependenciesFile?.absolutePath)
     put(PROPERTY_LAZY_INITIALIZATION, konanConfig.propertyLazyInitialization)
+    put(BinaryOptions.genericSafeCasts, konanConfig.genericSafeCasts)
     put(BinaryOptions.stripDebugInfoFromNativeLibs, !konanConfig.useDebugInfoInNativeLibs)
     put(ALLOCATION_MODE, konanConfig.allocationMode)
     put(BinaryOptions.gc, konanConfig.gc)
     put(BinaryOptions.gcSchedulerType, konanConfig.gcSchedulerType)
     put(BinaryOptions.runtimeAssertionsMode, konanConfig.runtimeAssertsMode)
-    put(LAZY_IR_FOR_CACHES, konanConfig.lazyIrForCaches)
     put(CommonConfigurationKeys.PARALLEL_BACKEND_THREADS, konanConfig.threadsCount)
     putIfNotNull(KONAN_DATA_DIR, konanConfig.distribution.localKonanDir.absolutePath)
     putIfNotNull(BinaryOptions.minidumpLocation, konanConfig.minidumpLocation)
+    putIfNotNull(BinaryOptions.macabi, konanConfig.macabi)
 }
 
 private fun Array<String>?.toNonNullList() = this?.asList().orEmpty()

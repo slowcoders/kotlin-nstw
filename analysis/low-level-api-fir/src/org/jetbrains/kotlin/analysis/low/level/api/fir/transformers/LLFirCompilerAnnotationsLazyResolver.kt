@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.api.throwUnexpectedFirEle
 import org.jetbrains.kotlin.analysis.low.level.api.fir.lazy.resolve.FirLazyBodiesCalculator
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.checkDeprecationProviderIsResolved
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.expressionGuard
+import org.jetbrains.kotlin.analysis.low.level.api.fir.util.checkAnalysisReadiness
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
 import org.jetbrains.kotlin.fir.FirElementWithResolveState
 import org.jetbrains.kotlin.fir.declarations.*
@@ -80,7 +81,7 @@ private class LLFirCompilerRequiredAnnotationsTargetResolver(
     inner class LLFirCompilerRequiredAnnotationsComputationSession : CompilerRequiredAnnotationsComputationSession() {
         override fun resolveAnnotationSymbol(symbol: FirRegularClassSymbol, scopeSession: ScopeSession) {
             val regularClass = symbol.fir
-            if (regularClass.resolvePhase >= resolverPhase) return
+            if (checkAnalysisReadiness(regularClass, containingDeclarations, resolverPhase)) return
 
             symbol.lazyResolveToPhase(resolverPhase.previous)
             val designation = regularClass.collectDesignation().asResolveTarget()
@@ -149,7 +150,7 @@ private class LLFirCompilerRequiredAnnotationsTargetResolver(
 
     @Deprecated("Should never be called directly, only for override purposes, please use withRegularClass", level = DeprecationLevel.ERROR)
     override fun withContainingRegularClass(firClass: FirRegularClass, action: () -> Unit) {
-        transformer.annotationTransformer.withRegularClass(firClass, action)
+        transformer.annotationTransformer.withClass(firClass, action)
     }
 
     override fun doResolveWithoutLock(target: FirElementWithResolveState): Boolean {
@@ -188,7 +189,7 @@ private class LLFirCompilerRequiredAnnotationsTargetResolver(
         val annotationTransformer = transformer.annotationTransformer
         when (target) {
             is FirFile -> annotationTransformer.resolveFile(target) {}
-            is FirRegularClass -> annotationTransformer.resolveRegularClass(target) {}
+            is FirRegularClass -> annotationTransformer.resolveClass(target) {}
             is FirScript -> annotationTransformer.resolveScript(target) {}
             else -> target.transformSingle(annotationTransformer, null)
         }

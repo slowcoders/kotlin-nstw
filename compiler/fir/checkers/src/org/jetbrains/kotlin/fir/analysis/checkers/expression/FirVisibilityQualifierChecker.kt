@@ -64,7 +64,7 @@ object FirVisibilityQualifierChecker : FirResolvedQualifierChecker(MppCheckerKin
         // Validate standalone references to companion objects are visible. Qualified use is validated
         // by call resolution cone diagnostics in coneDiagnosticToFirDiagnostic.
         if (isStandalone) {
-            val invisibleCompanion = expression.symbol?.fullyExpandedClass(context.session)?.toInvisibleCompanion()
+            val invisibleCompanion = expression.symbol?.fullyExpandedClass()?.toInvisibleCompanion()
             if (invisibleCompanion != null) {
                 if (expression !is FirErrorResolvedQualifier || expression.diagnostic !is ConeVisibilityError) {
                     @OptIn(DirectDeclarationsAccess::class, SymbolInternals::class)
@@ -78,12 +78,12 @@ object FirVisibilityQualifierChecker : FirResolvedQualifierChecker(MppCheckerKin
         }
 
         if (symbol is FirTypeAliasSymbol) {
-            symbol.resolvedExpandedTypeRef.coneType.toClassLikeSymbol(context.session)?.let {
+            symbol.resolvedExpandedTypeRef.coneType.toClassLikeSymbol()?.let {
                 checkClassLikeSymbol(it, expression, isStandalone)
             }
         }
 
-        symbol.getOwnerLookupTag()?.toSymbol(context.session)?.let {
+        symbol.getOwnerLookupTag()?.toSymbol()?.let {
             checkClassLikeSymbol(it, expression, isStandalone = false)
         }
     }

@@ -1,6 +1,12 @@
 KtNameReferenceExpression(121,123): 'a1'
   KtSimpleNameReference:
-    a1: A
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      a1: A
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

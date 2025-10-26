@@ -51,7 +51,7 @@ fun deserializeClassToSymbol(
     nameResolver: NameResolver,
     session: FirSession,
     moduleData: FirModuleData,
-    defaultAnnotationDeserializer: AbstractAnnotationDeserializer?,
+    defaultAnnotationDeserializer: AnnotationDeserializer?,
     flexibleTypeFactory: FirTypeDeserializer.FlexibleTypeFactory,
     scopeProvider: FirScopeProvider,
     serializerExtensionProtocol: SerializerExtensionProtocol,
@@ -298,7 +298,7 @@ fun FirRegularClassBuilder.addCloneForArrayIfNeeded(classId: ClassId, dispatchRe
             isMarkedNullable = false
         )
     }
-    declarations += buildSimpleFunction {
+    declarations += buildNamedFunction {
         moduleData = this@addCloneForArrayIfNeeded.moduleData
         origin = FirDeclarationOrigin.Library
         resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES

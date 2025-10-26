@@ -1,6 +1,12 @@
 KtNameReferenceExpression(61,62): 'f'
   KtSimpleNameReference:
-    (in A) val f: () -> kotlin.Unit
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in A) val f: () -> kotlin.Unit
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

@@ -1,3 +1,4 @@
+// LATEST_LV_DIFFERENCE
 // RUN_PIPELINE_TILL: BACKEND
 // ISSUE: KT-76766
 
@@ -17,13 +18,13 @@ import FinalJavaClass
 import JavaChild
 
 open class KotlinClass
-fun test1(a: DefaultJavaClass) = <!USELESS_IS_CHECK!>a is KotlinClass<!>
+fun test1(a: DefaultJavaClass) = <!IMPOSSIBLE_IS_CHECK_WARNING!>a is KotlinClass<!>
 
-fun test2(a: FinalJavaClass) = <!USELESS_IS_CHECK!>a is KotlinClass<!>
+fun test2(a: FinalJavaClass) = <!IMPOSSIBLE_IS_CHECK_WARNING!>a is KotlinClass<!>
 
-fun test3(a: KotlinClass) = <!USELESS_IS_CHECK!>a is DefaultJavaClass<!>
+fun test3(a: KotlinClass) = <!IMPOSSIBLE_IS_CHECK_WARNING!>a is DefaultJavaClass<!>
 
-fun test4(a: KotlinClass) = <!USELESS_IS_CHECK!>a is FinalJavaClass<!>
+fun test4(a: KotlinClass) = <!IMPOSSIBLE_IS_CHECK_WARNING!>a is FinalJavaClass<!>
 
 open class KotlinChild: DefaultJavaClass()
 

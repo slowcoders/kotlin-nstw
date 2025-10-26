@@ -14,8 +14,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
-import org.jetbrains.kotlin.gradle.plugin.diagnostics.KotlinToolingDiagnostics.KotlinCompilationSourceDeprecation
-import org.jetbrains.kotlin.gradle.plugin.diagnostics.kotlinToolingDiagnosticsCollector
 import org.jetbrains.kotlin.gradle.plugin.mpp.HierarchyAttributeContainer
 import org.jetbrains.kotlin.gradle.plugin.mpp.InternalKotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.internal
@@ -92,12 +90,6 @@ internal class KotlinCompilationImpl(
     override val kotlinSourceSets: ObservableSet<KotlinSourceSet>
         get() = sourceSets.kotlinSourceSets
 
-    @Suppress("OVERRIDE_DEPRECATION")
-    override fun source(sourceSet: KotlinSourceSet) {
-        project.kotlinToolingDiagnosticsCollector.report(project, KotlinCompilationSourceDeprecation(Throwable()))
-        sourceSets.source(sourceSet)
-    }
-
     override fun defaultSourceSet(configure: KotlinSourceSet.() -> Unit) {
         defaultSourceSet.configure()
     }
@@ -108,15 +100,35 @@ internal class KotlinCompilationImpl(
 
     //region Dependency Configuration Management
 
+    @Deprecated(
+        "Accessing apiConfigurationName on Compilation level is deprecated, please use default source set instead",
+        replaceWith = ReplaceWith("defaultSourceSet.apiConfigurationName"),
+        level = DeprecationLevel.WARNING
+    )
     override val apiConfigurationName: String
         get() = configurations.apiConfiguration.name
 
+    @Deprecated(
+        "Accessing implementationConfigurationName on Compilation level is deprecated, please use default source set instead",
+        replaceWith = ReplaceWith("defaultSourceSet.implementationConfigurationName"),
+        level = DeprecationLevel.WARNING
+    )
     override val implementationConfigurationName: String
         get() = configurations.implementationConfiguration.name
 
+    @Deprecated(
+        "Accessing compileOnlyConfigurationName on Compilation level is deprecated, please use default source set instead",
+        replaceWith = ReplaceWith("defaultSourceSet.compileOnlyConfigurationName"),
+        level = DeprecationLevel.WARNING
+    )
     override val compileOnlyConfigurationName: String
         get() = configurations.compileOnlyConfiguration.name
 
+    @Deprecated(
+        "Accessing runtimeOnlyConfigurationName on Compilation level is deprecated, please use default source set instead",
+        replaceWith = ReplaceWith("defaultSourceSet.runtimeOnlyConfigurationName"),
+        level = DeprecationLevel.WARNING
+    )
     override val runtimeOnlyConfigurationName: String
         get() = configurations.runtimeOnlyConfiguration.name
 
@@ -130,10 +142,20 @@ internal class KotlinCompilationImpl(
 
     override var runtimeDependencyFiles: FileCollection? = configurations.runtimeDependencyConfiguration
 
+    @Deprecated(
+        "Declaring dependencies on Compilation level is deprecated, please declare on related source set",
+        replaceWith = ReplaceWith("defaultSourceSet.dependencies"),
+        level = DeprecationLevel.WARNING
+    )
     override fun dependencies(configure: KotlinDependencyHandler.() -> Unit) {
         HasKotlinDependencies(project, configurations).dependencies(configure)
     }
 
+    @Deprecated(
+        "Declaring dependencies on Compilation level is deprecated, please declare on related source set",
+        replaceWith = ReplaceWith("defaultSourceSet.dependencies"),
+        level = DeprecationLevel.WARNING
+    )
     override fun dependencies(configure: Action<KotlinDependencyHandler>) {
         HasKotlinDependencies(project, configurations).dependencies(configure)
     }

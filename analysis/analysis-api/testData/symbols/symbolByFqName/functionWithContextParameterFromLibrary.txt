@@ -14,7 +14,7 @@ KaNamedFunctionSymbol:
       isVal: true
       location: LOCAL
       modality: FINAL
-      name: <unused var>
+      name: a
       origin: LIBRARY
       receiverParameter: null
       returnType: KaUsualClassType:
@@ -26,6 +26,7 @@ KaNamedFunctionSymbol:
       getContainingJvmClassName: one.LibraryKt
       getContainingModule: KaLibraryModule "Library library"
       deprecationStatus: null
+      importableFqName: null
     KaContextParameterSymbol:
       annotations: []
       callableId: null
@@ -37,7 +38,7 @@ KaNamedFunctionSymbol:
       isVal: true
       location: LOCAL
       modality: FINAL
-      name: <unused var>
+      name: b
       origin: LIBRARY
       receiverParameter: null
       returnType: KaUsualClassType:
@@ -49,16 +50,17 @@ KaNamedFunctionSymbol:
       getContainingJvmClassName: one.LibraryKt
       getContainingModule: KaLibraryModule "Library library"
       deprecationStatus: null
+      importableFqName: null
   ]
   contextReceivers: [
     KaContextReceiver:
-      label: <unused var>
+      label: a
       type: KaUsualClassType:
         annotations: []
         typeArguments: []
         type: kotlin/Int
     KaContextReceiver:
-      label: <unused var>
+      label: b
       type: KaUsualClassType:
         annotations: []
         typeArguments: []
@@ -95,3 +97,5 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: one.foo

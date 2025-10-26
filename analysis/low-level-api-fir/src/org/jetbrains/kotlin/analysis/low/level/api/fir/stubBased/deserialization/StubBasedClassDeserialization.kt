@@ -6,21 +6,16 @@
 package org.jetbrains.kotlin.analysis.low.level.api.fir.stubBased.deserialization
 
 import com.intellij.extapi.psi.StubBasedPsiElementBase
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.util.Key
-import com.intellij.psi.impl.source.tree.FileElement
 import com.intellij.psi.stubs.Stub
-import com.intellij.psi.stubs.StubTreeLoader
-import com.intellij.psi.util.PsiUtilCore
+import com.intellij.psi.stubs.StubElement
 import org.jetbrains.kotlin.KtRealPsiSourceElement
-import org.jetbrains.kotlin.analysis.decompiler.stub.file.ClsClassFinder
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.FirRegularClassBuilder
 import org.jetbrains.kotlin.fir.declarations.builder.buildOuterClassTypeParameterRef
 import org.jetbrains.kotlin.fir.declarations.builder.buildRegularClass
-import org.jetbrains.kotlin.fir.declarations.builder.buildSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.builder.buildNamedFunction
 import org.jetbrains.kotlin.fir.declarations.comparators.FirMemberDeclarationComparator
 import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusWithLazyEffectiveVisibility
@@ -46,16 +41,12 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.stubs.KotlinClassOrObjectStub
-import org.jetbrains.kotlin.psi.stubs.KotlinClassStub
 import org.jetbrains.kotlin.psi.stubs.elements.KotlinValueClassRepresentation
 import org.jetbrains.kotlin.psi.stubs.impl.KotlinClassStubImpl
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
-import org.jetbrains.kotlin.utils.exceptions.buildErrorWithAttachment
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 import org.jetbrains.kotlin.utils.exceptions.requireWithAttachment
 import org.jetbrains.kotlin.utils.exceptions.withPsiEntry
-import java.lang.ref.WeakReference
 
 internal val KtModifierListOwner.visibility: Visibility
     get() = with(modifierList) {
@@ -69,68 +60,39 @@ internal val KtModifierListOwner.visibility: Visibility
     }
 
 internal val KtDeclaration.modality: Modality
-    get() {
-        return when {
-            hasModifier(KtTokens.SEALED_KEYWORD) -> Modality.SEALED
-            hasModifier(KtTokens.ABSTRACT_KEYWORD) || this is KtClass && isInterface() -> Modality.ABSTRACT
-            hasModifier(KtTokens.OPEN_KEYWORD) -> Modality.OPEN
-            else -> Modality.FINAL
-        }
+    get() = when {
+        hasModifier(KtTokens.SEALED_KEYWORD) -> Modality.SEALED
+        hasModifier(KtTokens.ABSTRACT_KEYWORD) || this is KtClass && isInterface() -> Modality.ABSTRACT
+        hasModifier(KtTokens.OPEN_KEYWORD) -> Modality.OPEN
+        else -> Modality.FINAL
     }
 
-private val STUBS_KEY = Key.create<WeakReference<List<Stub>?>>("STUBS")
-internal fun <S, T> loadStubByElement(ktElement: T): S? where T : StubBasedPsiElementBase<*>, T : KtElement {
-    ktElement.greenStub?.let {
-        @Suppress("UNCHECKED_CAST")
-        return it as S
-    }
+/**
+ * Gets or calculates stub for [this] element and casts it to [S].
+ *
+ * [S] has to be a real stub implementation class. For instance, for [KtNamedFunction] it has to be [org.jetbrains.kotlin.psi.stubs.impl.KotlinFunctionStubImpl].
+ *
+ * @return compiled stub
+ */
+internal inline val <T, reified S> T.compiledStub: S where T : StubBasedPsiElementBase<in S>, T : KtElement, S : StubElement<*>
+    get() = (this.greenStub ?: calculateStub()) as S
 
-    val ktFile = ktElement.containingKtFile
+private fun <S, T> T.calculateStub(): Stub where T : StubBasedPsiElementBase<in S>, T : KtElement, S : StubElement<*> {
+    val ktFile = containingKtFile
     requireWithAttachment(ktFile.isCompiled, { "Expected compiled file" }) {
         withPsiEntry("ktFile", ktFile)
     }
 
-    val virtualFile = PsiUtilCore.getVirtualFile(ktFile) ?: return null
-    var stubList = ktFile.getUserData(STUBS_KEY)?.get()
-    if (stubList == null) {
-        val stubTree = ClsClassFinder.allowMultifileClassPart {
-            StubTreeLoader.getInstance().readOrBuild(ktElement.project, virtualFile, null)
+    // `let` is used to hold the stub tree reference on the stack
+    return ktFile.calcStubTree().let {
+        val stub = greenStub
+        requireWithAttachment(stub != null, { "Stub should be not null" }) {
+            withPsiEntry("file", containingFile)
+            withPsiEntry("element", this@calculateStub)
         }
 
-        stubList = stubTree?.plainList ?: emptyList()
-        ktFile.putUserDataIfAbsent(STUBS_KEY, WeakReference(stubList))
+        stub
     }
-
-    val nodeList = (ktFile.node as FileElement).stubbedSpine.spineNodes
-    if (stubList.size != nodeList.size) {
-        val exception = buildErrorWithAttachment("Compiled stubs are inconsistent with decompiled stubs") {
-            withPsiEntry("ktFile", ktFile)
-
-            withEntry("stubListSize", stubList.size.toString())
-            withEntry("stubList") {
-                stubList.forEachIndexed { index, stub ->
-                    this.print("$index ")
-                    this.println(stub.stubType?.toString() ?: stub::class.simpleName)
-                }
-            }
-
-            withEntry("nodeListSize", nodeList.size.toString())
-            withEntry("nodeList") {
-                nodeList.forEachIndexed { index, node ->
-                    this.print("$index ")
-                    this.println(node.elementType.toString())
-                }
-            }
-        }
-
-        Logger.getInstance("#org.jetbrains.kotlin.analysis.low.level.api.fir.stubBased.deserialization.StubBasedFirDeserializer")
-            .error(exception)
-
-        return null
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    return stubList[nodeList.indexOf(ktElement.node)] as S
 }
 
 internal fun deserializeClassToSymbol(
@@ -296,17 +258,19 @@ internal fun deserializeClassToSymbol(
 
         contextParameters.addAll(memberDeserializer.createContextReceiversForClass(classOrObject, symbol))
     }.apply {
-        val classStub = classOrObject.stub as? KotlinClassStub
-            ?: (loadStubByElement<KotlinClassOrObjectStub<KtClassOrObject>?, KtClassOrObject>(classOrObject) as? KotlinClassStub)
+        if (classOrObject is KtClass) {
+            val classStub: KotlinClassStubImpl = classOrObject.compiledStub
+            if (isInlineOrValue) {
+                valueClassRepresentation = classStub.deserializeValueClassRepresentation(this)
+            }
 
-        if (classOrObject is KtClass && isInlineOrValue) {
-            val stub = classStub as? KotlinClassStubImpl
-            valueClassRepresentation = stub?.deserializeValueClassRepresentation(this)
+            val clsStubCompiledToJvmDefaultImplementation = classStub.isClsStubCompiledToJvmDefaultImplementation
+            if (clsStubCompiledToJvmDefaultImplementation) {
+                symbol.fir.isNewPlaceForBodyGeneration = true
+            }
         }
 
-        replaceAnnotations(
-            context.annotationDeserializer.loadAnnotations(classOrObject)
-        )
+        replaceAnnotations(context.annotationDeserializer.loadAnnotations(classOrObject))
 
         sourceElement = containerSource
 
@@ -317,11 +281,6 @@ internal fun deserializeClassToSymbol(
             parentProperty = null,
             session
         )
-
-        val clsStubCompiledToJvmDefaultImplementation = classStub?.isClsStubCompiledToJvmDefaultImplementation
-        if (clsStubCompiledToJvmDefaultImplementation == true) {
-            symbol.fir.isNewPlaceForBodyGeneration = clsStubCompiledToJvmDefaultImplementation
-        }
     }
 }
 
@@ -370,7 +329,7 @@ private fun FirRegularClassBuilder.addCloneForEnumIfNeeded(classOrObject: KtClas
     val anyLookupId = StandardClassIds.Any.toLookupTag()
     val cloneCallableId = StandardClassIds.Callables.clone
 
-    declarations += buildSimpleFunction {
+    declarations += buildNamedFunction {
         moduleData = this@addCloneForEnumIfNeeded.moduleData
         origin = this@addCloneForEnumIfNeeded.origin
         source = this@addCloneForEnumIfNeeded.source

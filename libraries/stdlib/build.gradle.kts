@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.mpp.GenerateProjectStructureMetadata
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinUsages
-import org.jetbrains.kotlin.gradle.targets.js.d8.D8Plugin
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinTargetWithNodeJsDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinWasmTargetDsl
@@ -21,7 +20,6 @@ import plugins.configureDefaultPublishing
 import plugins.configureKotlinPomAttributes
 import plugins.publishing.configureMultiModuleMavenPublishing
 import plugins.publishing.copyAttributes
-import java.nio.file.Files
 import kotlin.io.path.copyTo
 
 plugins {
@@ -61,11 +59,6 @@ fun KotlinCommonCompilerOptions.mainCompilationOptions() {
 
 fun KotlinCommonCompilerOptions.addReturnValueCheckerInfo() {
     freeCompilerArgs.add("-Xreturn-value-checker=full")
-}
-
-fun KotlinCommonCompilerOptions.allowReturnValueCheckerButNotReport() {
-    freeCompilerArgs.add("-Xreturn-value-checker=check")
-    freeCompilerArgs.add("-Xwarning-level=RETURN_VALUE_NOT_USED:disabled")
 }
 
 val jvmBuiltinsRelativeDir = "libraries/stdlib/jvm/builtins"
@@ -132,6 +125,11 @@ kotlin {
 
             val main by getting {
                 compileTaskProvider.configure {
+                    // use os.arch as an input property of the compilation task
+                    // to avoid resuing compilation results from the build cache
+                    // produced on the other CPU architecture due to KT-53258
+                    inputs.property("os.arch", providers.systemProperty("os.arch"))
+
                     this as UsesKotlinJavaToolchain
                     kotlinJavaToolchain.toolchain.use(getToolchainLauncherFor(JdkMajorVersion.JDK_11_0))
                     compilerOptions {
@@ -257,6 +255,7 @@ kotlin {
                 listOf(
                     "-Xallow-kotlin-package",
                     "-Xexpect-actual-classes",
+                    "-Xklib-ir-inliner=intra-module",
                 )
             )
         }
@@ -271,7 +270,7 @@ kotlin {
                             diagnosticNamesArg,
                         )
                     )
-                    compilerOptions.allowReturnValueCheckerButNotReport()
+                    compilerOptions.addReturnValueCheckerInfo()
                 }
             }
         }
@@ -284,6 +283,7 @@ kotlin {
                 listOfNotNull(
                     "-Xallow-kotlin-package",
                     "-Xexpect-actual-classes",
+                    "-Xklib-ir-inliner=intra-module",
                     "-source-map=false",
                     "-source-map-embed-sources=",
                     diagnosticNamesArg
@@ -294,7 +294,7 @@ kotlin {
             val main by getting {
                 compileTaskProvider.configure {
                     compilerOptions.mainCompilationOptions()
-                    compilerOptions.allowReturnValueCheckerButNotReport()
+                    compilerOptions.addReturnValueCheckerInfo()
                     compilerOptions.freeCompilerArgs.add("-Xir-module-name=$KOTLIN_WASM_STDLIB_NAME")
                 }
             }
@@ -327,6 +327,9 @@ kotlin {
                     "-nostdlib",
                 )
             )
+        }
+        nativeTarget.compilations["main"].compileTaskProvider.configure {
+            compilerOptions.addReturnValueCheckerInfo()
         }
     }
 

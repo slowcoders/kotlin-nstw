@@ -1,6 +1,12 @@
 KtNameReferenceExpression(77,81): 'Fake'
   KtSimpleNameReference:
-    Nothing (Unresolved reference)
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

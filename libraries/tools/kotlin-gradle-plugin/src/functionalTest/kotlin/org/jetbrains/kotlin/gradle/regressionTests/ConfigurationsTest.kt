@@ -174,14 +174,6 @@ class ConfigurationsTest : MultiplatformExtensionTest() {
         val targetSpecificConfigurationsToCheck = listOf(
             "ApiElements",
             "RuntimeElements",
-
-            "MainApiDependenciesMetadata",
-            "MainCompileOnlyDependenciesMetadata",
-            "MainImplementationDependenciesMetadata",
-
-            "TestApiDependenciesMetadata",
-            "TestCompileOnlyDependenciesMetadata",
-            "TestImplementationDependenciesMetadata",
         )
 
         // WASM
@@ -195,23 +187,6 @@ class ConfigurationsTest : MultiplatformExtensionTest() {
             "All WASM configurations should not contain KotlinJsCompilerAttribute"
         )
 
-        val commonSourceSetsConfigurationsToCheck = listOf(
-            "ApiDependenciesMetadata",
-            "CompileOnlyDependenciesMetadata",
-            "ImplementationDependenciesMetadata",
-        )
-
-        // commonMain
-        val actualCommonMainConfigurations = commonSourceSetsConfigurationsToCheck
-            .map { project.configurations.getByName("commonMain$it") }
-            .filter { it.attributes.contains(KotlinJsCompilerAttribute.jsCompilerAttribute) }
-
-        assertEquals(
-            emptyList(),
-            actualCommonMainConfigurations,
-            "commonMain configurations should not contain KotlinJsCompilerAttribute"
-        )
-
     }
 
     @Test
@@ -220,6 +195,7 @@ class ConfigurationsTest : MultiplatformExtensionTest() {
             kotlin {
                 js()
                 targets.withType<KotlinJsIrTarget> {
+                    @Suppress("DEPRECATION")
                     compilations.getByName("main").dependencies {
                         api("test:compilation-dependency")
                     }
@@ -253,6 +229,7 @@ class ConfigurationsTest : MultiplatformExtensionTest() {
                 jvm()
                 js()
                 linuxX64("linux")
+                @Suppress("DEPRECATION")
                 androidTarget()
             }
         }
@@ -307,7 +284,7 @@ class ConfigurationsTest : MultiplatformExtensionTest() {
     }
 
     class TestDisambiguationAttributePropagation {
-        private val disambiguationAttribute = org.gradle.api.attributes.Attribute.of("disambiguationAttribute", String::class.java)
+        private val disambiguationAttribute = Attribute.of("disambiguationAttribute", String::class.java)
 
         private val mppProject
             get() = buildProjectWithMPP {
@@ -704,5 +681,12 @@ class ConfigurationsTest : MultiplatformExtensionTest() {
             project.plugins.apply("java-library")
         }
         assertEquals("Compile classpath for 'main'.", project.configurations.getByName("compileClasspath").description)
+    }
+
+    @Test
+    fun `kotlinBouncyCastleConfiguration not created when not needed`() {
+        kotlin.jvm()
+        project.evaluate()
+        assertTrue { project.configurations.none { it.name == "kotlinBouncyCastleConfiguration" } }
     }
 }

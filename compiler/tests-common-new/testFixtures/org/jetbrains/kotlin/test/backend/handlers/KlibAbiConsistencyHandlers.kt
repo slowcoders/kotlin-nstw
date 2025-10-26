@@ -35,11 +35,28 @@ private val TestServices.abiDumpBeforeInlining: File
 
 private fun shouldCheckAbiConsistency(module: TestModule): Boolean =
     KlibAbiConsistencyDirectives.CHECK_SAME_ABI_AFTER_INLINING in module.directives &&
-            module.languageVersionSettings.supportsFeature(LanguageFeature.IrInlinerBeforeKlibSerialization)
+            module.languageVersionSettings.supportsFeature(LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization)
 
 private class SyntheticAccessors : AbiReadingFilter {
-    override fun isDeclarationExcluded(declaration: AbiDeclaration): Boolean =
-        declaration is AbiFunction && declaration.qualifiedName.relativeName.simpleName.value.startsWith("access$")
+    override fun isDeclarationExcluded(declaration: AbiDeclaration): Boolean {
+        if (declaration !is AbiFunction) return false
+
+        return declaration.qualifiedName.relativeName.simpleName.value.startsWith("access$") || declaration.isSyntheticConstructor
+    }
+
+    private val AbiFunction.isSyntheticConstructor: Boolean
+        get() {
+            if (!isConstructor) return false
+            val markerParameterType = valueParameters.lastOrNull()?.type as? AbiType.Simple ?: return false
+            val markerParameterClassReference =
+                markerParameterType.classifierReference as? AbiClassifierReference.ClassReference ?: return false
+
+            val syntheticConstructorMarkerName = AbiQualifiedName(
+                packageName = AbiCompoundName("kotlin.internal"),
+                relativeName = AbiCompoundName("SyntheticConstructorMarker")
+            )
+            return markerParameterClassReference.className == syntheticConstructorMarkerName
+        }
 }
 
 abstract class AbstractKlibAbiDumpBeforeInliningSavingHandler(
@@ -81,11 +98,11 @@ class FirJsKlibAbiDumpBeforeInliningSavingHandler(testServices: TestServices) :
     AbstractKlibAbiDumpBeforeInliningSavingHandler(testServices) {
     override fun serializeModule(module: TestModule, inputArtifact: IrBackendInput): BinaryArtifacts.KLib {
         require(inputArtifact is Fir2IrCliBasedOutputArtifact<*>) {
-            "FirKlibSerializerCliWebFacade expects Fir2IrCliBasedWebOutputArtifact as input"
+            "FirJsKlibAbiDumpBeforeInliningSavingHandler expects Fir2IrCliBasedWebOutputArtifact as input"
         }
         val cliArtifact = inputArtifact.cliArtifact
         require(cliArtifact is JsFir2IrPipelineArtifact) {
-            "FirKlibSerializerCliWebFacade expects JsFir2IrPipelineArtifact as input"
+            "FirJsKlibAbiDumpBeforeInliningSavingHandler expects JsFir2IrPipelineArtifact as input"
         }
 
         val tmpConfiguration = cliArtifact.configuration.copy()

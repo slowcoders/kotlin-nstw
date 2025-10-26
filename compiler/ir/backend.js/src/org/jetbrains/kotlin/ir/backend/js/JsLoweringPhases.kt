@@ -6,7 +6,7 @@
 package org.jetbrains.kotlin.ir.backend.js
 
 import org.jetbrains.kotlin.backend.common.LoweringContext
-import org.jetbrains.kotlin.backend.common.ir.Symbols
+import org.jetbrains.kotlin.backend.common.ir.PreSerializationSymbols
 import org.jetbrains.kotlin.backend.common.lower.*
 import org.jetbrains.kotlin.backend.common.lower.coroutines.AddContinuationToLocalSuspendFunctionsLowering
 import org.jetbrains.kotlin.backend.common.lower.coroutines.AddContinuationToNonLocalSuspendFunctionsLowering
@@ -16,10 +16,7 @@ import org.jetbrains.kotlin.backend.common.phaser.*
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.config.languageVersionSettings
 import org.jetbrains.kotlin.config.phaser.NamedCompilerPhase
-import org.jetbrains.kotlin.diagnostics.impl.deduplicating
-import org.jetbrains.kotlin.ir.KtDiagnosticReporterWithImplicitIrBasedContext
 import org.jetbrains.kotlin.ir.backend.js.checkers.JsKlibErrors
 import org.jetbrains.kotlin.ir.backend.js.lower.*
 import org.jetbrains.kotlin.ir.backend.js.lower.calls.CallsLowering
@@ -61,7 +58,7 @@ private val validateIrAfterInliningAllFunctions = makeIrModulePhase(
                 // No inline function call sites should remain at this stage.
                 val inlineFunction = inlineFunctionUseSite.symbol.owner
                 // it's fine to have typeOf<T>, it would be ignored by inliner and handled on the second stage of compilation
-                if (Symbols.isTypeOfIntrinsic(inlineFunction.symbol)) return@check true
+                if (PreSerializationSymbols.isTypeOfIntrinsic(inlineFunction.symbol)) return@check true
                 return@check inlineFunction.body == null
             }
         )
@@ -89,11 +86,6 @@ private val removeImplicitExportsFromCollections = makeIrModulePhase(
     name = "RemoveImplicitExportsFromCollections",
 )
 
-private val preventExportOfSyntheticDeclarationsLowering = makeIrModulePhase(
-    ::ExcludeSyntheticDeclarationsFromExportLowering,
-    name = "ExcludeSyntheticDeclarationsFromExportLowering",
-)
-
 private val jsStaticLowering = makeIrModulePhase(
     ::JsStaticLowering,
     name = "JsStaticLowering",
@@ -112,6 +104,11 @@ private val collectClassIdentifiersLowering = makeIrModulePhase(
 private val inventNamesForLocalClassesPhase = makeIrModulePhase(
     ::JsInventNamesForLocalClasses,
     name = "InventNamesForLocalClasses",
+)
+
+private val inventNamesForLocalFunctionsPhase = makeIrModulePhase(
+    { _: JsIrBackendContext -> KlibInventNamesForLocalFunctions(suggestUniqueNames = false) },
+    name = "InventNamesForLocalFunctions",
 )
 
 private val annotationInstantiationLowering = makeIrModulePhase(
@@ -145,19 +142,14 @@ private val stripTypeAliasDeclarationsPhase = makeIrModulePhase<JsIrBackendConte
 )
 
 private val jsCodeOutliningPhaseOnSecondStage = makeIrModulePhase(
-    { context: JsIrBackendContext -> JsCodeOutliningLowering(context, context.intrinsics, context.dynamicType) },
+    { context: JsIrBackendContext -> JsCodeOutliningLowering(context) },
     name = "JsCodeOutliningLoweringOnSecondStage",
 )
 
 private val jsCodeOutliningPhaseOnFirstStage = makeIrModulePhase(
     { context: JsPreSerializationLoweringContext ->
-        val irDiagnosticReporter = KtDiagnosticReporterWithImplicitIrBasedContext(
-            context.diagnosticReporter.deduplicating(),
-            context.configuration.languageVersionSettings
-        )
-
-        JsCodeOutliningLowering(context, context.intrinsics, context.dynamicType) { jsCall, valueDeclaration, container ->
-            irDiagnosticReporter.at(jsCall, container)
+        JsCodeOutliningLowering(context) { jsCall, valueDeclaration, container ->
+            context.diagnosticReporter.at(jsCall, container)
                 .report(JsKlibErrors.JS_CODE_CAPTURES_INLINABLE_FUNCTION, valueDeclaration)
         }
     },
@@ -386,12 +378,12 @@ private val booleanPropertyInExternalLowering = makeIrModulePhase(
 )
 
 private val localDelegatedPropertiesLoweringPhase = makeIrModulePhase<JsIrBackendContext>(
-    { LocalDelegatedPropertiesLowering() },
+    ::LocalDelegatedPropertiesLowering,
     name = "LocalDelegatedPropertiesLowering",
 )
 
 private val localDeclarationsLoweringPhase = makeIrModulePhase(
-    { context -> LocalDeclarationsLowering(context, suggestUniqueNames = false) },
+    ::LocalDeclarationsLowering,
     name = "LocalDeclarationsLowering",
     prerequisite = setOf(sharedVariablesLoweringPhase, localDelegatedPropertiesLoweringPhase)
 )
@@ -446,6 +438,35 @@ private val addContinuationToFunctionCallsLoweringPhase = makeIrModulePhase(
         addContinuationToLocalSuspendFunctionsLoweringPhase,
         addContinuationToNonLocalSuspendFunctionsLoweringPhase,
     )
+)
+
+private val prepareSuspendFunctionsForExportLowering = makeIrModulePhase(
+    ::PrepareSuspendFunctionsForExportLowering,
+    name = "PrepareSuspendFunctionsForExportLowering",
+)
+
+private val replaceExportedSuspendFunctionCallsWithItsBridge = makeIrModulePhase(
+    ::ReplaceExportedSuspendFunctionsCallsWithTheirBridgeCall,
+    name = "ReplaceExportedSuspendFunctionsCallsWithTheirBridgeCall",
+    prerequisite = setOf(prepareSuspendFunctionsForExportLowering)
+)
+
+private val ignoreOriginalSuspendFunctionsThatWereExportedLowering = makeIrModulePhase(
+    ::IgnoreOriginalSuspendFunctionsThatWereExportedLowering,
+    name = "IgnoreOriginalSuspendFunctionsThatWereExportedLowering",
+    prerequisite = setOf(prepareSuspendFunctionsForExportLowering, replaceExportedSuspendFunctionCallsWithItsBridge)
+)
+
+private val implicitlyExportedDeclarationsMarkingLowering = makeIrModulePhase(
+    ::ImplicitlyExportedDeclarationsMarkingLowering,
+    name = "ImplicitlyExportedDeclarationsMarkingLowering",
+    prerequisite = setOf(prepareSuspendFunctionsForExportLowering, prepareCollectionsToExportLowering)
+)
+
+private val preventExportOfSyntheticDeclarationsLowering = makeIrModulePhase(
+    ::ExcludeSyntheticDeclarationsFromExportLowering,
+    name = "ExcludeSyntheticDeclarationsFromExportLowering",
+    prerequisite = setOf(implicitlyExportedDeclarationsMarkingLowering)
 )
 
 private val privateMembersLoweringPhase = makeIrModulePhase(
@@ -686,11 +707,6 @@ private val escapedIdentifiersLowering = makeIrModulePhase(
     name = "EscapedIdentifiersLowering",
 )
 
-private val implicitlyExportedDeclarationsMarkingLowering = makeIrModulePhase(
-    ::ImplicitlyExportedDeclarationsMarkingLowering,
-    name = "ImplicitlyExportedDeclarationsMarkingLowering",
-)
-
 private val cleanupLoweringPhase = makeIrModulePhase<JsIrBackendContext>(
     { CleanupLowering() },
     name = "CleanupLowering",
@@ -723,7 +739,7 @@ fun jsLoweringsOfTheFirstPhase(
     if (languageVersionSettings.supportsFeature(LanguageFeature.IrRichCallableReferencesInKlibs)) {
         this += upgradeCallableReferences
     }
-    if (languageVersionSettings.supportsFeature(LanguageFeature.IrInlinerBeforeKlibSerialization)) {
+    if (languageVersionSettings.supportsFeature(LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization)) {
         this += jsCodeOutliningPhaseOnFirstStage
     }
     this += loweringsOfTheFirstPhase(JsManglerIr, languageVersionSettings)
@@ -754,7 +770,11 @@ fun getJsLowerings(
     copyInlineFunctionBodyLoweringPhase,
     removeInlineDeclarationsWithReifiedTypeParametersLoweringPhase,
     replaceSuspendIntrinsicLowering,
+    prepareSuspendFunctionsForExportLowering,
+    replaceExportedSuspendFunctionCallsWithItsBridge,
+    ignoreOriginalSuspendFunctionsThatWereExportedLowering,
     prepareCollectionsToExportLowering,
+    implicitlyExportedDeclarationsMarkingLowering,
     preventExportOfSyntheticDeclarationsLowering,
     jsStaticLowering,
     inventNamesForLocalClassesPhase,
@@ -771,6 +791,7 @@ fun getJsLowerings(
     enumClassConstructorLoweringPhase,
     enumClassConstructorBodyLoweringPhase,
     localDelegatedPropertiesLoweringPhase,
+    inventNamesForLocalFunctionsPhase,
     localDeclarationsLoweringPhase,
     localDeclarationExtractionPhase,
     innerClassesLoweringPhase,
@@ -840,7 +861,6 @@ fun getJsLowerings(
     es6ConstructorUsageLowering,
     callsLoweringPhase,
     escapedIdentifiersLowering,
-    implicitlyExportedDeclarationsMarkingLowering,
     removeImplicitExportsFromCollections,
     mainFunctionCallWrapperLowering,
     cleanupLoweringPhase,

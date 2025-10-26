@@ -56,8 +56,8 @@ sealed class FirExtensionShadowedByMemberChecker(kind: MppCheckerKind) : FirCall
         }
 
         val receiverSymbol = declaration.receiverParameter?.typeRef?.coneType
-            ?.toClassLikeSymbol(context.session)
-            ?.fullyExpandedClass(context.session)
+            ?.toClassLikeSymbol()
+            ?.fullyExpandedClass()
             ?: return
         val scope = receiverSymbol.unsubstitutedScope()
 
@@ -66,7 +66,7 @@ sealed class FirExtensionShadowedByMemberChecker(kind: MppCheckerKind) : FirCall
                 condition = { it.isVisible() && !it.isExtension },
                 processMembers = { scope.processPropertiesByName(declaration.name, it) },
             )
-            is FirSimpleFunction -> findFirstSymbolByCondition<FirNamedFunctionSymbol>(
+            is FirNamedFunction -> findFirstSymbolByCondition<FirNamedFunctionSymbol>(
                 condition = { it.isVisible() && it.shadows(declaration.symbol) },
                 processMembers = { scope.processFunctionsByName(declaration.name, it) },
             )
@@ -82,7 +82,7 @@ sealed class FirExtensionShadowedByMemberChecker(kind: MppCheckerKind) : FirCall
             }
         }
 
-        if (declaration !is FirSimpleFunction) {
+        if (declaration !is FirNamedFunction) {
             return
         }
 
@@ -92,8 +92,8 @@ sealed class FirExtensionShadowedByMemberChecker(kind: MppCheckerKind) : FirCall
                     return@findFirstNotNullSymbol null
                 }
 
-                val returnTypeScope = property.resolvedReturnType.toClassLikeSymbol(context.session)
-                    ?.fullyExpandedClass(context.session)
+                val returnTypeScope = property.resolvedReturnType.toClassLikeSymbol()
+                    ?.fullyExpandedClass()
                     ?.unsubstitutedScope()
                     ?: return@findFirstNotNullSymbol null
 
@@ -158,7 +158,6 @@ sealed class FirExtensionShadowedByMemberChecker(kind: MppCheckerKind) : FirCall
     private fun FirFunctionSymbol<*>.shadows(extension: FirFunctionSymbol<*>): Boolean {
         if (isExtension) return false
 
-        if (extension.contextParameterSymbols.size != contextParameterSymbols.size) return false
         if (extension.valueParameterSymbols.size != valueParameterSymbols.size) return false
         if (extension.varargParameterPosition != varargParameterPosition) return false
         if (extension.isOperator && !isOperator) return false
@@ -177,10 +176,7 @@ sealed class FirExtensionShadowedByMemberChecker(kind: MppCheckerKind) : FirCall
         }
 
         val helper = context.session.declarationOverloadabilityHelper
-        val memberSignature = helper.createSignature(this)
-        val extensionSignature = helper.createSignatureForPossiblyShadowedExtension(extension)
-
-        return helper.isEquallyOrMoreSpecific(extensionSignature, memberSignature)
+        return helper.isExtensionShadowedByMember(extension, this)
     }
 
     private val FirFunctionSymbol<*>.varargParameterPosition: Int

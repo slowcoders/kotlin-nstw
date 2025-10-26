@@ -15,9 +15,7 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.quoteIfNeeded
-import org.jetbrains.kotlin.psi.stubs.KotlinFileStub
 import org.jetbrains.kotlin.psi.stubs.KotlinFileStubKind
-import org.jetbrains.kotlin.psi.stubs.StubUtils
 import org.jetbrains.kotlin.psi.stubs.impl.*
 import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
@@ -28,7 +26,7 @@ private const val FLEXIBLE_TYPE_COMMENT = "/* platform type */"
 private const val DECOMPILED_CONTRACT_STUB = "contract { /* compiled contract */ }"
 
 @OptIn(IntellijInternalApi::class, KtImplementationDetail::class)
-internal fun buildDecompiledText(fileStub: KotlinFileStub): String = PrettyPrinter(indentSize = 4).apply {
+internal fun buildDecompiledText(fileStub: KotlinFileStubImpl): String = PrettyPrinter(indentSize = 4).apply {
     (fileStub.kind as? KotlinFileStubKind.Invalid)?.errorMessage?.let {
         return it
     }
@@ -440,13 +438,6 @@ internal fun buildDecompiledText(fileStub: KotlinFileStub): String = PrettyPrint
                 append(" $DECOMPILED_CODE_COMMENT")
             }
 
-            property.stub?.hasBackingField?.let {
-                append(' ')
-                append(StubUtils.HAS_BACKING_FIELD_COMMENT_PREFIX)
-                append(it.toString())
-                append(" */")
-            }
-
             withIndent {
                 printCollectionIfNotEmpty(property.accessors, prefix = "\n", separator = "\n") {
                     it.accept(explicitThis)
@@ -515,7 +506,11 @@ internal fun buildDecompiledText(fileStub: KotlinFileStub): String = PrettyPrint
         }
 
         override fun visitContextReceiverList(contextReceiverList: KtContextReceiverList) {
-            printCollection(contextReceiverList.contextReceivers(), prefix = "context(", postfix = ")") {
+            val contextElements = contextReceiverList.contextParameters().ifEmpty {
+                contextReceiverList.contextReceivers()
+            }
+
+            printCollection(contextElements, prefix = "context(", postfix = ")") {
                 it.accept(explicitThis)
             }
         }

@@ -1,3 +1,6 @@
 KtNameReferenceExpression(33,34): 'a'
   KtSimpleNameReference:
-    a: (() -> kotlin.Unit)?
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      a: (() -> kotlin.Unit)?

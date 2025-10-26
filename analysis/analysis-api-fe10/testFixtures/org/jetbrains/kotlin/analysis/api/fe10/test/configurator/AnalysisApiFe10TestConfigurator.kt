@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.analysis.api.fe10.test.configurator
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.analysis.api.impl.base.test.configurators.AnalysisApiBaseTestServiceRegistrar
-import org.jetbrains.kotlin.analysis.api.impl.base.test.configurators.AnalysisApiDecompiledCodeTestServiceRegistrar
 import org.jetbrains.kotlin.analysis.api.impl.base.test.configurators.AnalysisApiIdeModeTestServiceRegistrar
 import org.jetbrains.kotlin.analysis.api.standalone.base.projectStructure.AnalysisApiServiceRegistrar
 import org.jetbrains.kotlin.analysis.test.framework.projectStructure.*
@@ -21,6 +20,7 @@ import org.jetbrains.kotlin.analysis.test.framework.test.configurators.AnalysisA
 import org.jetbrains.kotlin.analysis.test.framework.test.configurators.FrontendKind
 import org.jetbrains.kotlin.resolve.lazy.JvmResolveUtil
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
+import org.jetbrains.kotlin.test.services.CompilationStage
 import org.jetbrains.kotlin.test.services.TestModuleStructure
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.compilerConfigurationProvider
@@ -46,7 +46,6 @@ object AnalysisApiFe10TestConfigurator : AnalysisApiTestConfigurator() {
     override val serviceRegistrars: List<AnalysisApiServiceRegistrar<TestServices>> = listOf(
         AnalysisApiBaseTestServiceRegistrar,
         AnalysisApiIdeModeTestServiceRegistrar,
-        AnalysisApiDecompiledCodeTestServiceRegistrar,
         AnalysisApiFe10TestServiceRegistrar,
     )
 
@@ -61,7 +60,7 @@ object AnalysisApiFe10TestConfigurator : AnalysisApiTestConfigurator() {
     override fun prepareFilesInModule(ktTestModule: KtTestModule, testServices: TestServices) {
         val testModule = ktTestModule.testModule
         val compilerConfigurationProvider = testServices.compilerConfigurationProvider
-        val compilerConfiguration = compilerConfigurationProvider.getCompilerConfiguration(testModule)
+        val compilerConfiguration = compilerConfigurationProvider.getCompilerConfiguration(testModule, CompilationStage.FIRST)
         val project = compilerConfigurationProvider.getProject(testModule)
         val packageProviderFactory = compilerConfigurationProvider.getPackagePartProviderFactory(testModule)
 

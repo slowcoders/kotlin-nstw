@@ -489,6 +489,8 @@ public func setExtensionVarOnNullableRef(
 }
 extension main.INTERFACE where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
+extension main.INTERFACE {
+}
 extension KotlinRuntimeSupport._KotlinExistential: main.INTERFACE where Wrapped : main._INTERFACE {
 }
 extension ExportedKotlinPackages.namespace.deeper {
@@ -622,31 +624,56 @@ extension ExportedKotlinPackages.namespace.deeper {
     }
 }
 extension ExportedKotlinPackages.ignored {
-    public final class ENUM: KotlinRuntime.KotlinBase, Swift.CaseIterable {
-        public static var A: ExportedKotlinPackages.ignored.ENUM {
+    public enum ENUM: KotlinRuntimeSupport._KotlinBridgeable, Swift.CaseIterable, Swift.LosslessStringConvertible, Swift.RawRepresentable {
+        case A
+        public var description: Swift.String {
             get {
-                return ExportedKotlinPackages.ignored.ENUM.__createClassWrapper(externalRCRef: ignored_ENUM_A_get())
+                switch self {
+                case .A: "A"
+                default: fatalError()
+                }
             }
         }
-        public static var allCases: [ExportedKotlinPackages.ignored.ENUM] {
+        public var rawValue: Swift.Int32 {
             get {
-                return ignored_ENUM_entries_get() as! Swift.Array<ExportedKotlinPackages.ignored.ENUM>
+                switch self {
+                case .A: 0
+                default: fatalError()
+                }
             }
         }
-        package override init(
-            __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?,
+        public init?(
+            _ description: Swift.String
+        ) {
+            switch description {
+            case "A": self = .A
+            default: return nil
+            }
+        }
+        public init?(
+            rawValue: Swift.Int32
+        ) {
+            guard 0..<1 ~= rawValue else { return nil }
+            self = ENUM.allCases[Int(rawValue)]
+        }
+        public init(
+            __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer!,
             options: KotlinRuntime.KotlinBaseConstructionOptions
         ) {
-            super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
+            switch __externalRCRefUnsafe {
+            case ignored_ENUM_A(): self = .A
+            default: fatalError()
+            }
         }
-        public static func valueOf(
-            value: Swift.String
-        ) -> ExportedKotlinPackages.ignored.ENUM {
-            return ExportedKotlinPackages.ignored.ENUM.__createClassWrapper(externalRCRef: ignored_ENUM_valueOf__TypesOfArguments__Swift_String__(value))
+        public func __externalRCRef() -> Swift.UnsafeMutableRawPointer! {
+            return switch self {
+            case .A: ignored_ENUM_A()
+            default: fatalError()
+            }
         }
     }
     public static func produce_ENUM() -> ExportedKotlinPackages.ignored.ENUM {
-        return ExportedKotlinPackages.ignored.ENUM.__createClassWrapper(externalRCRef: ignored_produce_ENUM())
+        return ExportedKotlinPackages.ignored.ENUM(__externalRCRefUnsafe: ignored_produce_ENUM(), options: .asBestFittingWrapper)
     }
     public static func produce_VALUE_CLASS() -> Swift.Never {
         fatalError()

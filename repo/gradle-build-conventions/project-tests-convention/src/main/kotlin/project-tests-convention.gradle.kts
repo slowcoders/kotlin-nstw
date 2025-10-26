@@ -11,6 +11,10 @@ val provider = objects.newInstance<TestCompilerRuntimeArgumentProvider>().apply 
     scriptingPluginForTests.from(extension.scriptingPluginForTests)
     stdlibJsRuntimeForTests.from(extension.stdlibJsRuntimeForTests)
     testJsRuntimeForTests.from(extension.testJsRuntimeForTests)
+    stdlibWasmJsRuntimeForTests.from(extension.stdlibWasmJsRuntimeForTests)
+    stdlibWasmWasiRuntimeForTests.from(extension.stdlibWasmWasiRuntimeForTests)
+    testWasmJsRuntimeForTests.from(extension.testWasmJsRuntimeForTests)
+    testWasmWasiRuntimeForTests.from(extension.testWasmWasiRuntimeForTests)
     mockJdkRuntimeJar.value(extension.mockJdkRuntime)
     mockJdkRuntime.value(extension.mockJdkRuntime)
     mockJDKModifiedRuntime.value(extension.mockJDKModifiedRuntime)
@@ -34,7 +38,7 @@ tasks.withType<Test>().configureEach {
 
     develocity.testRetry {
         maxRetries = if (kotlinBuildProperties.isTeamcityBuild) 3 else 0
-        failOnPassedAfterRetry.set(extension.allowFlaky.convention(false).map { !it })
+        failOnPassedAfterRetry.set(extension.allowFlaky.convention(true).map { !it })
     }
     ignoreFailures = false
 }

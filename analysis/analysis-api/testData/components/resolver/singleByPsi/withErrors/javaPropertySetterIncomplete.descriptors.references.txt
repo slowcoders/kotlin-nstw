@@ -1,6 +1,12 @@
 KtNameReferenceExpression(144,147): 'foo'
   KtSimpleNameReference:
-    (in JavaClass) var JavaClass.foo: kotlin.Int
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in JavaClass) var JavaClass.foo: kotlin.Int
+
   SyntheticPropertyAccessorReference:
-    (in JavaClass) open fun setFoo(v: kotlin.Int)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in JavaClass) open fun setFoo(v: kotlin.Int)

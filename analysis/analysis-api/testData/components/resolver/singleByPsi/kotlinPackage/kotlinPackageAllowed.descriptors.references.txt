@@ -1,6 +1,12 @@
 KtNameReferenceExpression(75,78): 'bar'
   KtSimpleNameReference:
-    (in kotlin.pckg) fun bar()
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in kotlin.pckg) fun bar()
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

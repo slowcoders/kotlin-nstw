@@ -13,11 +13,13 @@ repositories {
     mavenLocal()
 }
 
+val composeCompilerPlugin by configurations.creating
+
 dependencies {
     testApi(intellijCore())
 
     testRuntimeOnly(libs.xerces)
-    testRuntimeOnly(commonDependency("commons-lang:commons-lang"))
+    testRuntimeOnly(commonDependency("org.apache.commons:commons-lang3"))
 
     testImplementation(libs.junit4)
     testCompileOnly(kotlinTest("junit"))
@@ -31,6 +33,8 @@ dependencies {
     testApi(project(":compiler:fir:dump"))
 
     testRuntimeOnly(project(":compiler:fir:plugin-utils"))
+
+    composeCompilerPlugin(project(":plugins:compose-compiler-plugin:compiler-hosted")) { isTransitive = false }
 
     val asyncProfilerClasspath = project.findProperty("fir.bench.async.profiler.classpath") as? String
     if (asyncProfilerClasspath != null) {
@@ -46,17 +50,32 @@ sourceSets {
 optInToK1Deprecation()
 
 projectTests {
+    val modelDumpAndReadTest = "org.jetbrains.kotlin.fir.ModelDumpAndReadTest"
+
     testTask(minHeapSizeMb = 8192, maxHeapSizeMb = 8192, reservedCodeCacheSizeMb = 512, jUnitMode = JUnitMode.JUnit4) {
-        dependsOn(":dist")
+        dependsOn(":dist", ":plugins:compose-compiler-plugin:compiler-hosted:jar")
         systemProperties(project.properties.filterKeys { it.startsWith("fir.") })
         workingDir = rootDir
+        val composePluginClasspath = composeCompilerPlugin.asPath
 
+        filter {
+            excludeTestsMatching(modelDumpAndReadTest)
+        }
         run {
+            systemProperty("fir.bench.compose.plugin.classpath", composePluginClasspath)
             val argsExt = project.findProperty("fir.modularized.jvm.args") as? String
             if (argsExt != null) {
                 val paramRegex = "([^\"]\\S*|\".+?\")\\s*".toRegex()
                 jvmArgs(paramRegex.findAll(argsExt).map { it.groupValues[1] }.toList())
             }
+        }
+    }
+
+    testTask("modelDumpTest", jUnitMode = JUnitMode.JUnit4, skipInLocalBuild = false) {
+        dependsOn(":dist")
+        workingDir = rootDir
+        filter {
+            includeTestsMatching(modelDumpAndReadTest)
         }
     }
 }

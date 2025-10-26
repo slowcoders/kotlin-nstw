@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.fir.analysis.checkers.declaration
 
+import org.jetbrains.kotlin.KtRealSourceElementKind
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
@@ -12,7 +13,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirPropertyAccessor
-import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyAccessor
 import org.jetbrains.kotlin.fir.declarations.utils.hasExplicitBackingField
 import org.jetbrains.kotlin.fir.declarations.utils.isLateInit
 import org.jetbrains.kotlin.fir.types.*
@@ -55,23 +55,20 @@ object FirPropertyFieldTypeChecker : FirPropertyChecker(MppCheckerKind.Common) {
             reporter.reportOn(backingField.source, FirErrors.BACKING_FIELD_FOR_DELEGATED_PROPERTY)
         }
 
-        if (backingField.returnTypeRef.coneType == declaration.returnTypeRef.coneType) {
-            reporter.reportOn(backingField.source, FirErrors.REDUNDANT_EXPLICIT_BACKING_FIELD)
-            return
-        }
-
-        if (!backingField.isSubtypeOf(declaration, typeCheckerContext)) {
-            reporter.reportOn(declaration.source, FirErrors.INCONSISTENT_BACKING_FIELD_TYPE)
-        }
-
         // There's already `BACKING_FIELD_FOR_DELEGATED_PROPERTY`
         if (declaration.delegate == null) {
             if (declaration.getter.isExplicit) {
                 reporter.reportOn(declaration.getter?.source, FirErrors.PROPERTY_WITH_EXPLICIT_FIELD_AND_ACCESSORS)
             }
         }
+
+        if (backingField.returnTypeRef.coneType == declaration.returnTypeRef.coneType) {
+            reporter.reportOn(backingField.source, FirErrors.REDUNDANT_EXPLICIT_BACKING_FIELD)
+        } else if (!backingField.isSubtypeOf(declaration, typeCheckerContext)) {
+            reporter.reportOn(declaration.source, FirErrors.INCONSISTENT_BACKING_FIELD_TYPE)
+        }
     }
 
     private val FirPropertyAccessor?.isExplicit
-        get() = this != null && this !is FirDefaultPropertyAccessor
+        get() = this != null && this.source?.kind is KtRealSourceElementKind
 }

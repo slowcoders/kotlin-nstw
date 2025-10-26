@@ -7,12 +7,10 @@ package org.jetbrains.kotlin.gradle.targets.native.internal
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.*
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.artifacts.maybeCreateKlibPackingTask
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
-import org.jetbrains.kotlin.gradle.plugin.KotlinNativeTargetConfigurator.NativeArtifactFormat
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle.Stage.AfterFinaliseDsl
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
@@ -24,8 +22,6 @@ import org.jetbrains.kotlin.gradle.targets.KotlinTargetSideEffect
 import org.jetbrains.kotlin.gradle.targets.native.internal.CInteropKlibLibraryElements.cinteropKlibLibraryElements
 import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
 import org.jetbrains.kotlin.gradle.utils.*
-import org.jetbrains.kotlin.gradle.utils.createConsumable
-import org.jetbrains.kotlin.gradle.utils.findConsumable
 
 internal fun createCInteropApiElementsKlibArtifact(
     compilation: KotlinNativeCompilation,
@@ -50,8 +46,8 @@ internal fun Project.locateOrCreateCInteropDependencyConfiguration(
 ): Configuration {
     configurations.findResolvable(compilation.cInteropDependencyConfigurationName)?.let { return it }
 
-    val compileOnlyConfiguration = configurations.getByName(compilation.compileOnlyConfigurationName)
-    val implementationConfiguration = configurations.getByName(compilation.implementationConfigurationName)
+    val compileOnlyConfiguration = configurations.getByName(compilation.legacyCompileOnlyConfigurationName)
+    val implementationConfiguration = configurations.getByName(compilation.legacyImplementationConfigurationName)
 
     return configurations.createResolvable(compilation.cInteropDependencyConfigurationName).apply {
         extendsFrom(compileOnlyConfiguration, implementationConfiguration)
@@ -100,7 +96,6 @@ internal fun Project.locateOrCreateCInteropApiElementsConfiguration(target: Kotl
             attributes.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, cinteropKlibLibraryElements())
             attributes.attribute(Usage.USAGE_ATTRIBUTE, objects.named(KotlinUsages.KOTLIN_CINTEROP))
             attributes.attribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
-            attributes.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, NativeArtifactFormat.KLIB)
 
             /* Expose api dependencies */
             target.compilations.findByName(MAIN_COMPILATION_NAME)?.let { compilation ->

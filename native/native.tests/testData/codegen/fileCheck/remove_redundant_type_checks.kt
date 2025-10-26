@@ -6,7 +6,11 @@ class A(val s: String, val x: Int, val y: Int) {
     fun sum(z: Int) = x + y + z
 }
 
-class B(val o: Any)
+class B(val o: Any) {
+    var a: A? = null
+}
+
+class C(val o: Any?)
 
 // CHECK-LABEL: define i32 @"kfun:#test1(kotlin.Any){}kotlin.Int
 fun test1(o: Any): Int {
@@ -807,10 +811,84 @@ fun test37(x: Int, b: B): Int {
 // CHECK-LABEL: epilogue:
 }
 
+fun returnsNothing(): Nothing = error("")
+inline fun inlineReturnsNothing(block: () -> String): Nothing = error(block())
+
+// CHECK-LABEL: define i32 @"kfun:#test38(kotlin.Any){}kotlin.Int
+fun test38(a: Any): Int {
+// CHECK-DEBUG: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT: {{call|call zeroext}} i1 @IsSubclassFast
+    if (a is A) {
+        println("a is A")
+    } else returnsNothing()
+// CHECK-DEBUG-NOT: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT-NOT: {{call|call zeroext}} i1 @IsSubclassFast
+// CHECK-DEBUG: call i32 @"kfun:A#<get-x>(){}kotlin.Int
+// CHECK-OPT: getelementptr inbounds %"kclassbody:A#internal
+    return a.x
+}
+
+// CHECK-LABEL: define i32 @"kfun:#test39(kotlin.Any){}kotlin.Int
+fun test39(a: Any): Int {
+// CHECK-DEBUG: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT: {{call|call zeroext}} i1 @IsSubclassFast
+    if (a is A) {
+        println("a is A")
+    } else inlineReturnsNothing { "a is not A" }
+// CHECK-DEBUG-NOT: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT-NOT: {{call|call zeroext}} i1 @IsSubclassFast
+// CHECK-DEBUG: call i32 @"kfun:A#<get-x>(){}kotlin.Int
+// CHECK-OPT: getelementptr inbounds %"kclassbody:A#internal
+    return a.x
+}
+
+// CHECK-LABEL: define internal void @"kfun:Test40.$init_global#internal"()
+// CHECK-DEBUG-NOT: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT-NOT: {{call|call zeroext}} i1 @IsSubclassFast
+// CHECK-LABEL: epilogue:
+object Test40 {
+    val z = test39(A("zzz", 42, 117)) // To deny possibility of placing into static data.
+}
+
+// CHECK-LABEL: define i32 @"kfun:#test41(B?;kotlin.Any){}kotlin.Int
+fun test41(b: B?, o: Any): Int {
+    return when {
+        b?.a != null -> 42
+        b != null
+// CHECK-DEBUG: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT: {{call|call zeroext}} i1 @IsSubclassFast
+                && o is A -> {
+// CHECK-DEBUG-NOT: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT-NOT: {{call|call zeroext}} i1 @IsSubclassFast
+// CHECK-DEBUG: call i32 @"kfun:A#<get-x>(){}kotlin.Int
+// CHECK-OPT: getelementptr inbounds %"kclassbody:A#internal
+            o.x
+        }
+        else -> 117
+    }
+}
+
+// CHECK-LABEL: define i32 @"kfun:#test42(C?;kotlin.Any){}kotlin.Int
+fun test42(c: C?, o: Any): Int {
+    return when {
+// CHECK-DEBUG: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT: {{call|call zeroext}} i1 @IsSubclassFast
+        c?.o is A -> {
+// CHECK-DEBUG-NOT: {{call|call zeroext}} i1 @IsSubtype
+// CHECK-OPT-NOT: {{call|call zeroext}} i1 @IsSubclassFast
+// CHECK-DEBUG: call i32 @"kfun:A#<get-x>(){}kotlin.Int
+// CHECK-OPT: getelementptr inbounds %"kclassbody:A#internal
+            c.o.x
+        }
+        else -> 117
+    }
+}
+
 // CHECK-LABEL: define ptr @"kfun:#box(){}kotlin.String"
 fun box(): String {
     val a = A("zzz", 42, 117)
     val b = B(a)
+    val c = C(a)
     println(test1(a))
     println(test2(a))
     println(test3(a))
@@ -848,5 +926,11 @@ fun box(): String {
     println(test35(b))
     println(test36(b, 1))
     println(test37(1, b))
+    println(test38(a))
+    println(test39(a))
+    println(Test40)
+    println(Test40.z)
+    println(test41(b, b))
+    println(test42(c, b))
     return "OK"
 }

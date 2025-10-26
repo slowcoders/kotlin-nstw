@@ -5,10 +5,7 @@
 
 package org.jetbrains.kotlin.cli.js
 
-import com.intellij.openapi.Disposable
 import com.intellij.util.ExceptionUtil
-import org.jetbrains.kotlin.backend.js.JsGenerationGranularity
-import org.jetbrains.kotlin.backend.js.TsCompilationStrategy
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments
 import org.jetbrains.kotlin.cli.common.arguments.K2JsArgumentConstants
@@ -18,16 +15,11 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity.LOGGING
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.common.messages.MessageUtil
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.config.moduleName
 import org.jetbrains.kotlin.diagnostics.impl.BaseDiagnosticsCollector
-import org.jetbrains.kotlin.js.config.EcmaVersion
-import org.jetbrains.kotlin.js.config.SourceMapNamesPolicy
-import org.jetbrains.kotlin.js.config.SourceMapSourceEmbedding
-import org.jetbrains.kotlin.js.config.wasmCompilation
-import org.jetbrains.kotlin.konan.file.ZipFileSystemAccessor
-import org.jetbrains.kotlin.konan.file.ZipFileSystemCacheableAccessor
+import org.jetbrains.kotlin.js.config.*
 import org.jetbrains.kotlin.library.loader.KlibPlatformChecker
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.serialization.js.ModuleKind
 import org.jetbrains.kotlin.utils.join
 import org.jetbrains.kotlin.wasm.config.wasmTarget
 import java.io.File
@@ -59,16 +51,6 @@ val K2JSCompilerArguments.dtsStrategy: TsCompilationStrategy
         this.irPerFile -> TsCompilationStrategy.EACH_FILE
         else -> TsCompilationStrategy.MERGED
     }
-
-internal class DisposableZipFileSystemAccessor private constructor(
-    private val zipAccessor: ZipFileSystemCacheableAccessor,
-) : Disposable, ZipFileSystemAccessor by zipAccessor {
-    constructor(cacheLimit: Int) : this(ZipFileSystemCacheableAccessor(cacheLimit))
-
-    override fun dispose() {
-        zipAccessor.reset()
-    }
-}
 
 internal val sourceMapContentEmbeddingMap: Map<String, SourceMapSourceEmbedding> = mapOf(
     K2JsArgumentConstants.SOURCE_MAP_SOURCE_CONTENT_ALWAYS to SourceMapSourceEmbedding.ALWAYS,
@@ -171,3 +153,14 @@ internal fun reportCollectedDiagnostics(
 
 internal val CompilerConfiguration.platformChecker: KlibPlatformChecker
     get() = if (wasmCompilation) KlibPlatformChecker.Wasm(wasmTarget.alias) else KlibPlatformChecker.JS
+
+internal fun initializeFinalArtifactConfiguration(configuration: CompilerConfiguration, arguments: K2JSCompilerArguments) {
+    configuration.artifactConfiguration = WebArtifactConfiguration(
+        moduleKind = configuration.moduleKind ?: return,
+        moduleName = configuration.moduleName ?: return,
+        outputDirectory = configuration.outputDir ?: return,
+        outputName = configuration.outputName ?: return,
+        granularity = arguments.granularity,
+        tsCompilationStrategy = arguments.dtsStrategy,
+    )
+}

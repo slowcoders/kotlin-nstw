@@ -3,7 +3,7 @@
 
 class A {
     val a: Number
-        private field = 1
+        <!WRONG_MODIFIER_TARGET!>private<!> field = 1
 
     val b: Number
         <!WRONG_MODIFIER_TARGET!>internal<!> field = 2
@@ -29,5 +29,5 @@ fun test() {
     val dA = A().d <!UNRESOLVED_REFERENCE!>+<!> 40
 }
 
-/* GENERATED_FIR_TAGS: additiveExpression, classDeclaration, functionDeclaration, integerLiteral, localProperty,
-propertyDeclaration */
+/* GENERATED_FIR_TAGS: additiveExpression, classDeclaration, explicitBackingField, functionDeclaration, integerLiteral,
+localProperty, propertyDeclaration, smartcast */

@@ -1,6 +1,12 @@
 KtNameReferenceExpression(122,128): 'Server'
   KtSimpleNameReference:
-    (in Server) companion object
-  
+    isImplicitReferenceToCompanion: true
+    usesContextSensitiveResolution: false
+    symbols:
+      (in Server) companion object
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

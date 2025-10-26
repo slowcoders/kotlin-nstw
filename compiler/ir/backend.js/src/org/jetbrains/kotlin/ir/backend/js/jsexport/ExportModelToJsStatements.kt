@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.ir.util.companionObject
 import org.jetbrains.kotlin.ir.util.irError
 import org.jetbrains.kotlin.ir.util.isObject
 import org.jetbrains.kotlin.js.backend.ast.*
+import org.jetbrains.kotlin.js.common.makeValidES5Identifier
 import org.jetbrains.kotlin.utils.filterIsInstanceAnd
 
 class ExportModelToJsStatements(
@@ -84,7 +85,13 @@ class ExportModelToJsStatements(
                     namespace != null ->
                         listOf(jsAssignment(jsElementAccess(declaration.name, namespace), JsNameRef(name)).makeStmt())
 
-                    esModules -> listOf(JsExport(name.makeRef(), alias = JsName(declaration.name, false)))
+                    esModules -> {
+                        if (declaration.attributes.contains(ExportedAttribute.DefaultExport)) {
+                            listOf(JsExport(JsExport.Subject.Default(name.makeRef())))
+                        } else {
+                            listOf(JsExport(name.makeRef(), alias = JsName(declaration.name, false)))
+                        }
+                    }
                     else -> emptyList()
                 }
             }
@@ -94,7 +101,13 @@ class ExportModelToJsStatements(
                 when (namespace) {
                     null -> {
                         val property = declaration.generateTopLevelGetters()
-                        listOf(JsVars(property), JsExport(property.name.makeRef(), JsName(declaration.name, false)))
+                        val exportStatement = if (declaration.attributes.contains(ExportedAttribute.DefaultExport)) {
+                            JsExport(JsExport.Subject.Default(property.name.makeRef()))
+                        } else {
+                            JsExport(property.name.makeRef(), JsName(declaration.name, false))
+                        }
+
+                        listOf(JsVars(property), exportStatement)
                     }
                     else -> {
                         val getter = declaration.irGetter?.let { staticContext.getNameForStaticDeclaration(it) }
@@ -126,7 +139,7 @@ class ExportModelToJsStatements(
                             declaration.name,
                             isStatic = parentClass?.isObject != true,
                             irGetter = declaration.irGetter,
-                        ),
+                        ).apply { attributes.addAll(declaration.attributes) },
                         namespace,
                         esModules,
                         parentClass
@@ -169,7 +182,13 @@ class ExportModelToJsStatements(
                 }
                 val klassExport = when {
                     namespace != null -> jsAssignment(newNameSpace, name.makeRef()).makeStmt()
-                    esModules -> JsExport(name.makeRef(), alias = JsName(declaration.name, false))
+                    esModules -> {
+                        if (declaration.attributes.contains(ExportedAttribute.DefaultExport)) {
+                            JsExport(JsExport.Subject.Default(name.makeRef()))
+                        } else {
+                            JsExport(name.makeRef(), JsName(declaration.name, false))
+                        }
+                    }
                     else -> null
                 }
 
@@ -188,7 +207,7 @@ class ExportModelToJsStatements(
     }
 
     private fun ExportedProperty.generateTopLevelGetters(): JsVars.JsVar {
-        val sanitizedName = sanitizeName(name)
+        val sanitizedName = makeValidES5Identifier(name)
         val getter = irGetter?.let { staticContext.getNameForStaticDeclaration(it) }
         val setter = irSetter?.let { staticContext.getNameForStaticDeclaration(it) }
 
@@ -260,7 +279,7 @@ class ExportModelToJsStatements(
         return when (classRef) {
             is JsNameRef -> classRef.name!! to null
             else -> {
-                val stableName = JsName(sanitizeName(name), true)
+                val stableName = JsName(makeValidES5Identifier(name), true)
                 stableName to JsVars(JsVars.JsVar(stableName, classRef))
             }
         }

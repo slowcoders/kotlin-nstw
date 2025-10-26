@@ -21,8 +21,9 @@ import org.gradle.process.ExecOperations
 import org.gradle.work.NormalizeLineEndings
 import org.jetbrains.kotlin.build.report.metrics.BuildMetricsReporter
 import org.jetbrains.kotlin.build.report.metrics.BuildMetricsReporterImpl
-import org.jetbrains.kotlin.build.report.metrics.GradleBuildPerformanceMetric
-import org.jetbrains.kotlin.build.report.metrics.GradleBuildTime
+import org.jetbrains.kotlin.build.report.metrics.BuildPerformanceMetric
+import org.jetbrains.kotlin.build.report.metrics.BUNDLE_SIZE
+import org.jetbrains.kotlin.build.report.metrics.BuildTimeMetric
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.report.UsesBuildMetricsService
 import org.jetbrains.kotlin.gradle.targets.js.NpmVersions
@@ -39,6 +40,20 @@ import org.jetbrains.kotlin.gradle.utils.processes.ExecAsyncHandle
 import java.io.File
 import javax.inject.Inject
 
+/**
+ * Generates webpack configuration, then runs webpack.
+ *
+ * The configuration is created from the options set in
+ * [org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig].
+ *
+ * The task either bundles the browser application
+ * or hosts the browser application using the webpack dev server.
+ *
+ * For more information about how Kotlin JS and Wasm use Webpack, see
+ * https://kotl.in/js-project-setup/webpack-bundling
+ *
+ * @see org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+ */
 @CacheableTask
 abstract class KotlinWebpack
 @Inject
@@ -50,14 +65,17 @@ internal constructor(
     private val execOps: ExecOperations,
 ) : DefaultTask(), RequiresNpmDependencies, WebpackRulesDsl, UsesBuildMetricsService {
 
-    @Deprecated("Extending this class is deprecated. Scheduled for removal in Kotlin 2.4.")
-    @Suppress("DEPRECATION")
+    @Deprecated(
+        "Extending this class is deprecated. Scheduled for removal in Kotlin 2.4.",
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("UNUSED_PARAMETER", "UNREACHABLE_CODE")
     constructor(
         compilation: KotlinJsIrCompilation,
     ) : this(
-        compilation = compilation,
-        objects = compilation.project.objects,
-        execOps = compilation.project.getExecOperations(),
+        compilation = throw UnsupportedOperationException(),
+        objects = throw UnsupportedOperationException(),
+        execOps = throw UnsupportedOperationException(),
     )
 
     @get:Internal
@@ -75,12 +93,13 @@ internal constructor(
     @Deprecated(
         "ExecHandleFactory is an internal Gradle API and must be removed to support Gradle 9.0. Please remove usages of this property. Scheduled for removal in Kotlin 2.4.",
         ReplaceWith("TODO(\"ExecHandleFactory is an internal Gradle API and must be removed to support Gradle 9.0. Please remove usages of this property.\")"),
+        level = DeprecationLevel.ERROR
     )
     @Suppress("unused")
     open val execHandleFactory: Nothing
         get() = injected
 
-    private val metrics: Property<BuildMetricsReporter<GradleBuildTime, GradleBuildPerformanceMetric>> = project.objects
+    private val metrics: Property<BuildMetricsReporter<BuildTimeMetric, BuildPerformanceMetric>> = project.objects
         .property(BuildMetricsReporterImpl())
 
     @Suppress("unused")
@@ -253,6 +272,17 @@ internal constructor(
     @Internal
     var generateConfigOnly: Boolean = false
 
+    /**
+     * Temporary value holder used to capture specific information
+     * set by users in
+     * [org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBrowserDsl.commonWebpackConfig].
+     *
+     * Specifically created to handle changes to
+     * [org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig.outputFileName]
+     * to support a request from Compose (KT-79921).
+     *
+     * KT-77145 Workaround because [KotlinWebpackConfig] doesn't use Provider API.
+     */
     private val fakeWebpackConfig: KotlinWebpackConfig = KotlinWebpackConfig(
         rules = project.objects.webpackRulesContainer()
     )
@@ -261,13 +291,6 @@ internal constructor(
         body.execute(fakeWebpackConfig)
         fakeWebpackConfig.let {
             it.outputFileName?.let { mainOutputFileName.set(it) }
-            it.devtool?.let { devtool = it }
-            it.output?.let {
-                output.library = it.library
-                output.libraryTarget = it.libraryTarget
-                output.globalObject = it.globalObject
-                output.clean = it.clean
-            }
         }
         webpackConfigAppliers.add(body)
     }
@@ -293,6 +316,7 @@ internal constructor(
         outputFileName = mainOutputFileName.get(),
         configDirectory = configDirectory,
         rules = rules,
+        watchOptions = watchOptions,
         devServer = devServerProperty.orNull,
         devtool = devtool,
         sourceMaps = sourceMaps,
@@ -368,7 +392,7 @@ internal constructor(
                 .map { it.length() }
                 .sum()
                 .let {
-                    buildMetrics.addMetric(GradleBuildPerformanceMetric.BUNDLE_SIZE, it)
+                    buildMetrics.addMetric(BUNDLE_SIZE, it)
                 }
 
             buildMetricsService.orNull?.also { it.addTask(path, this.javaClass, buildMetrics) }

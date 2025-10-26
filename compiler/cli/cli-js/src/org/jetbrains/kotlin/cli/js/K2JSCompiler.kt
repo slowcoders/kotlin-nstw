@@ -6,11 +6,9 @@
 package org.jetbrains.kotlin.cli.js
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.util.Disposer
 import org.jetbrains.kotlin.analyzer.CompilationErrorException
 import org.jetbrains.kotlin.backend.common.LoadedKlibs
 import org.jetbrains.kotlin.cli.common.CLICompiler
-import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.common.ExitCode.*
 import org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments
@@ -30,6 +28,7 @@ import org.jetbrains.kotlin.cli.pipeline.web.WebCliPipeline
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.Services
+import org.jetbrains.kotlin.config.perfManager
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporterFactory
 import org.jetbrains.kotlin.ir.backend.js.*
 import org.jetbrains.kotlin.ir.backend.js.ic.IncrementalCacheGuard
@@ -73,7 +72,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         paths: KotlinPaths?,
     ): ExitCode {
         val messageCollector = configuration.getNotNull(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY)
-        val performanceManager = configuration[CLIConfigurationKeys.PERF_MANAGER]
+        val performanceManager = configuration.perfManager
 
         val outputDirPath = arguments.outputDir
         val outputName = arguments.moduleName
@@ -118,13 +117,9 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         val pluginLoadResult = loadPlugins(paths, arguments, configuration, rootDisposable)
         if (pluginLoadResult != OK) return pluginLoadResult
 
-        CommonWebConfigurationUpdater.initializeCommonConfiguration(compilerImpl.configuration, arguments)
+        CommonWebConfigurationUpdater.initializeCommonConfiguration(compilerImpl.configuration, arguments, rootDisposable)
 
         val targetEnvironment = compilerImpl.tryInitializeCompiler(rootDisposable) ?: return COMPILATION_ERROR
-
-        val zipAccessor = DisposableZipFileSystemAccessor(64)
-        Disposer.register(rootDisposable, zipAccessor)
-        targetEnvironment.configuration.put(JSConfigurationKeys.ZIP_FILE_SYSTEM_ACCESSOR, zipAccessor)
 
         val sourcesFiles = targetEnvironment.getSourceFiles()
 
@@ -159,8 +154,8 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         // TODO: Handle non-empty main call arguments
         val mainCallArguments = if (K2JsArgumentConstants.NO_CALL == arguments.main) null else emptyList<String>()
 
-        messageCollector.report(INFO, "Produce executable: $outputDirPath")
-        messageCollector.report(INFO, "Cache directory: $cacheDirectory")
+        messageCollector.report(LOGGING, "Produce executable: $outputDirPath")
+        messageCollector.report(LOGGING, "Cache directory: $cacheDirectory")
 
         if (cacheDirectory != null) {
             val icCacheReadOnly = arguments.wasm && arguments.icCacheReadonly
@@ -231,7 +226,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         arguments: K2JSCompilerArguments,
         outputKlibPath: String,
     ): ModulesStructure {
-        val performanceManager = environmentForJS.configuration.get(CLIConfigurationKeys.PERF_MANAGER)
+        val performanceManager = environmentForJS.configuration.perfManager
         @OptIn(PotentiallyIncorrectPhaseTimeMeasurement::class)
         performanceManager?.notifyCurrentPhaseFinishedIfNeeded()
         lateinit var sourceModule: ModulesStructure

@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.plugins.PluginCliParser
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.config.nativeBinaryOptions.BinaryOptions
-import org.jetbrains.kotlin.ir.validation.checkers.IrValidationError
+import org.jetbrains.kotlin.ir.validation.IrValidationException
 import org.jetbrains.kotlin.konan.KonanPendingCompilationError
 import org.jetbrains.kotlin.metadata.deserialization.BinaryVersion
 import org.jetbrains.kotlin.metadata.deserialization.MetadataVersion
@@ -73,7 +73,7 @@ class K2Native : CLICompiler<K2NativeCompilerArguments>() {
         try {
             runKonanDriver(configuration, environment, rootDisposable)
         } catch (e: Throwable) {
-            if (e is KonanCompilationException || e is CompilationErrorException || e is IrValidationError)
+            if (e is KonanCompilationException || e is CompilationErrorException || e is IrValidationException)
                 return ExitCode.COMPILATION_ERROR
 
             if (e is KonanPendingCompilationError) {
@@ -106,7 +106,7 @@ class K2Native : CLICompiler<K2NativeCompilerArguments>() {
         configuration.phaseConfig = createPhaseConfig(arguments)
 
         // Values for keys for non-nullable arguments below must be also copied during 1st stage preparation within `KonanDriver.splitOntoTwoStages()`
-        configuration.setupCommonKlibArguments(arguments, canBeMetadataKlibCompilation = true)
+        configuration.setupCommonKlibArguments(arguments, canBeMetadataKlibCompilation = true, rootDisposable)
 
         return environment
     }
@@ -123,7 +123,7 @@ class K2Native : CLICompiler<K2NativeCompilerArguments>() {
                 override fun spawn(configuration: CompilerConfiguration) {
                     val spawnedArguments = K2NativeCompilerArguments()
                     parseCommandLineArguments(emptyList(), spawnedArguments)
-                    val spawnedPerfManager = PerformanceManagerImpl.createAndEnableChildIfNeeded(perfManager)
+                    val spawnedPerfManager = PerformanceManagerImpl.createChildIfNeeded(perfManager, start = true)
                     configuration.perfManager = spawnedPerfManager
                     val spawnedEnvironment = KotlinCoreEnvironment.createForProduction(
                         rootDisposable, configuration, EnvironmentConfigFiles.NATIVE_CONFIG_FILES
@@ -140,7 +140,7 @@ class K2Native : CLICompiler<K2NativeCompilerArguments>() {
                     parseCommandLineArguments(arguments, spawnedArguments)
                     val spawnedConfiguration = CompilerConfiguration()
 
-                    val spawnedPerfManager = PerformanceManagerImpl.createAndEnableChildIfNeeded(perfManager)
+                    val spawnedPerfManager = PerformanceManagerImpl.createChildIfNeeded(perfManager, start = true)
                     spawnedConfiguration.messageCollector = configuration.getNotNull(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY)
                     spawnedConfiguration.perfManager = spawnedPerfManager
                     spawnedConfiguration.setupCommonArguments(spawnedArguments, this@K2Native::createMetadataVersion)

@@ -10,6 +10,7 @@ dependencies {
     implementation(libs.dataframeCsv)
     implementation(libs.dataframeCore)
     implementation(libs.dataframeJson)
+    implementation(libs.apache.commons.compress)
     implicitDependencies(libs.dataframeCsv) {
         because("workaround for KTIJ-30065, remove after its resolution")
     }
@@ -18,5 +19,8 @@ dependencies {
     }
     implicitDependencies(libs.dataframeJson) {
         because("workaround for KTIJ-30065, remove after its resolution")
+    }
+    constraints {
+        api(libs.apache.commons.lang)
     }
 }

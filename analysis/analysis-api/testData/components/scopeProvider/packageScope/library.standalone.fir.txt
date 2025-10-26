@@ -35,6 +35,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaSourceModule "Sources of main"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.fooApi3
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -73,6 +75,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaSourceModule "Sources of main"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.internalFooApi3
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -111,6 +115,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaSourceModule "Sources of main"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.privateFooApi3
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -160,6 +166,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.ExtensionKt
     getContainingModule: KaSourceModule "Sources of main"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -172,6 +179,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaSourceModule "Sources of main"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.barApi3
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -221,6 +230,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.ExtensionKt
     getContainingModule: KaSourceModule "Sources of main"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -233,6 +243,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaSourceModule "Sources of main"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.internalBarApi3
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -282,6 +294,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.ExtensionKt
     getContainingModule: KaSourceModule "Sources of main"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -294,6 +307,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaSourceModule "Sources of main"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.privateBarApi3
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -332,6 +347,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.fooApi2
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -370,6 +387,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.internalFooApi2
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -408,6 +427,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.privateFooApi2
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -457,6 +478,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.C1Kt
     getContainingModule: KaLibraryModule "Library library"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -469,6 +491,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.barApi2
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -518,6 +542,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.C1Kt
     getContainingModule: KaLibraryModule "Library library"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -530,6 +555,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.internalBarApi2
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -579,6 +606,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.C1Kt
     getContainingModule: KaLibraryModule "Library library"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -591,6 +619,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.privateBarApi2
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -629,6 +659,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.fooApi1
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -667,6 +699,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.internalFooApi1
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -705,6 +739,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.privateFooApi1
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -754,6 +790,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.IKt
     getContainingModule: KaLibraryModule "Library library"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -766,6 +803,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.barApi1
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -815,6 +854,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.IKt
     getContainingModule: KaLibraryModule "Library library"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -827,6 +867,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.internalBarApi1
 
 KaNamedFunctionSymbol:
   annotations: []
@@ -876,6 +918,7 @@ KaNamedFunctionSymbol:
     getContainingJvmClassName: library.api.IKt
     getContainingModule: KaLibraryModule "Library library"
     deprecationStatus: null
+    importableFqName: null
   returnType: KaUsualClassType:
     annotations: []
     typeArguments: []
@@ -888,6 +931,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaLibraryModule "Library library"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: library.api.privateBarApi1
 
 KaNamedClassSymbol:
   annotations: []
@@ -919,6 +964,7 @@ KaNamedClassSymbol:
   getContainingModule: KaSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.FakeI
 
 KaNamedClassSymbol:
   annotations: []
@@ -950,6 +996,7 @@ KaNamedClassSymbol:
   getContainingModule: KaSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.InternalFakeI
 
 KaNamedClassSymbol:
   annotations: []
@@ -981,6 +1028,7 @@ KaNamedClassSymbol:
   getContainingModule: KaSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.PrivateFakeI
 
 KaNamedClassSymbol:
   annotations: []
@@ -1012,6 +1060,7 @@ KaNamedClassSymbol:
   getContainingModule: KaLibraryModule "Library library"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.PrivateI
 
 KaNamedClassSymbol:
   annotations: []
@@ -1043,6 +1092,7 @@ KaNamedClassSymbol:
   getContainingModule: KaLibraryModule "Library library"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.InternalI
 
 KaNamedClassSymbol:
   annotations: []
@@ -1074,6 +1124,7 @@ KaNamedClassSymbol:
   getContainingModule: KaLibraryModule "Library library"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.I
 
 KaNamedClassSymbol:
   annotations: []
@@ -1105,6 +1156,7 @@ KaNamedClassSymbol:
   getContainingModule: KaLibraryModule "Library library"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.C1
 
 KaNamedClassSymbol:
   annotations: []
@@ -1136,6 +1188,7 @@ KaNamedClassSymbol:
   getContainingModule: KaLibraryModule "Library library"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.InternalC1
 
 KaNamedClassSymbol:
   annotations: []
@@ -1167,3 +1220,4 @@ KaNamedClassSymbol:
   getContainingModule: KaLibraryModule "Library library"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: library.api.PrivateC1

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2021 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2025 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -266,9 +266,9 @@ object SourceElementPositioningStrategies {
         PositioningStrategies.RETURN_WITH_LABEL
     )
 
-    val PROPERTY_INITIALIZER = SourceElementPositioningStrategy(
-        LightTreePositioningStrategies.LAST_CHILD,
-        PositioningStrategies.PROPERTY_INITIALIZER
+    val VARIABLE_INITIALIZER = SourceElementPositioningStrategy(
+        LightTreePositioningStrategies.VARIABLE_INITIALIZER,
+        PositioningStrategies.VARIABLE_INITIALIZER
     )
 
     val WHOLE_ELEMENT = SourceElementPositioningStrategy(

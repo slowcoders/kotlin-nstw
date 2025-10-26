@@ -1,14 +1,15 @@
+// LATEST_LV_DIFFERENCE
 // RUN_PIPELINE_TILL: BACKEND
 // ISSUE: KT-76766
 
 fun test(e: Exception) {
-    if (<!USELESS_IS_CHECK!>e is Error<!>) {
+    if (<!IMPOSSIBLE_IS_CHECK_WARNING!>e is Error<!>) {
         throw e
     }
-    if (<!USELESS_IS_CHECK!>e is AssertionError<!>) {
+    if (<!IMPOSSIBLE_IS_CHECK_WARNING!>e is AssertionError<!>) {
         throw e
     }
-    if (<!USELESS_IS_CHECK!>e is NotImplementedError<!>) {
+    if (<!IMPOSSIBLE_IS_CHECK_WARNING!>e is NotImplementedError<!>) {
         throw e
     }
 }

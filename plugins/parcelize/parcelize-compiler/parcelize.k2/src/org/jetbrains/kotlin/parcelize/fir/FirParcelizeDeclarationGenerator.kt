@@ -9,12 +9,12 @@ import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
 import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
-import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
+import org.jetbrains.kotlin.fir.extensions.predicate.DeclarationPredicate
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
 import org.jetbrains.kotlin.fir.plugin.SimpleFunctionBuildingContext
 import org.jetbrains.kotlin.fir.plugin.createConeType
@@ -44,17 +44,11 @@ class FirParcelizeDeclarationGenerator(
         private val parcelizeMethodsNames = setOf(DESCRIBE_CONTENTS_NAME, WRITE_TO_PARCEL_NAME)
     }
 
-    private val predicate = LookupPredicate.create { annotated(annotations) }
-
-    private val matchedClasses by lazy {
-        session.predicateBasedProvider.getSymbolsByPredicate(predicate)
-            .filterIsInstance<FirRegularClassSymbol>()
-    }
+    private val predicate = DeclarationPredicate.create { annotated(annotations) }
 
     override fun generateFunctions(callableId: CallableId, context: MemberGenerationContext?): List<FirNamedFunctionSymbol> {
-        val owner = context?.owner ?: return emptyList()
-        if (!checkParcelizeClassSymbols(owner, session) { it in matchedClasses }) return emptyList()
-        require(owner is FirRegularClassSymbol)
+        val owner = context?.owner as? FirRegularClassSymbol ?: return emptyList()
+        if (!checkParcelizeClassSymbols(owner, session) { session.predicateBasedProvider.matches(predicate, it) }) return emptyList()
         val function = when (callableId.callableName) {
             DESCRIBE_CONTENTS_NAME -> {
                 val hasDescribeContentImplementation = owner.hasDescribeContentsImplementation() ||
@@ -103,7 +97,7 @@ class FirParcelizeDeclarationGenerator(
         name: Name,
         returnType: ConeKotlinType,
         crossinline init: SimpleFunctionBuildingContext.() -> Unit = {}
-    ): FirSimpleFunction {
+    ): FirNamedFunction {
         return createMemberFunction(owner, key, name, returnType) {
             modality = if (owner.modality == Modality.FINAL) Modality.FINAL else Modality.OPEN
             init()

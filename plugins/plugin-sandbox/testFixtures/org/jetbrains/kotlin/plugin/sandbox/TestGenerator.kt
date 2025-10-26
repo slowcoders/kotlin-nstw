@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.plugin.sandbox
 
-import org.jetbrains.kotlin.generators.generateTestGroupSuiteWithJUnit5
+import org.jetbrains.kotlin.generators.dsl.junit5.generateTestGroupSuiteWithJUnit5
 import org.jetbrains.kotlin.test.utils.CUSTOM_TEST_DATA_EXTENSION_PATTERN
 
 fun main() {
@@ -23,11 +23,11 @@ fun main() {
                 model("box", excludedPattern = CUSTOM_TEST_DATA_EXTENSION_PATTERN)
             }
 
-            testClass<AbstractFirJsLightTreePluginBlackBoxCodegenTest> {
+            testClass<AbstractJsLightTreePluginBlackBoxCodegenTest> {
                 model("box", excludedPattern = CUSTOM_TEST_DATA_EXTENSION_PATTERN)
             }
 
-            testClass<AbstractFirJsLightTreePluginBlackBoxCodegenWithSeparateKmpCompilationTest> {
+            testClass<AbstractJsLightTreePluginBlackBoxCodegenWithSeparateKmpCompilationTest> {
                 model("box", excludedPattern = CUSTOM_TEST_DATA_EXTENSION_PATTERN)
             }
 
@@ -35,7 +35,7 @@ fun main() {
                 model("firLoadK2Compiled")
             }
 
-            testClass<AbstractFirLoadK2CompiledWithPluginJsKotlinTest> {
+            testClass<AbstractLoadCompiledWithPluginJsKotlinTest> {
                 model("firLoadK2Compiled")
             }
 

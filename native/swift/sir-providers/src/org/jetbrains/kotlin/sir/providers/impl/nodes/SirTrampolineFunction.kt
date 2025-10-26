@@ -41,12 +41,20 @@ public class SirTrampolineFunction(
 
     override val errorType: SirType get() = source.errorType
 
+    override val isAsync: Boolean get() = source.isAsync
+
     override val bridges: List<SirBridge> = emptyList()
 
     override var body: SirFunctionBody?
         get() = SirFunctionBody(
             listOf(
-                "${"try ".takeIf { source.errorType != SirType.never } ?: ""}${source.swiftFqName}(${this.allParameters.joinToString { it.forward ?: error("unreachable") }})"
+                "${
+                    "try ".takeIf { source.errorType != SirType.never } ?: ""
+                }${
+                    "await ".takeIf { source.isAsync } ?: ""
+                }${source.swiftFqName}(${
+                    this.allParameters.joinToString { it.forward ?: error("unreachable") }
+                })"
             )
         ).takeUnless { attributes.any { it is SirAttribute.Available && it.isUnusable } }
         set(_) = Unit

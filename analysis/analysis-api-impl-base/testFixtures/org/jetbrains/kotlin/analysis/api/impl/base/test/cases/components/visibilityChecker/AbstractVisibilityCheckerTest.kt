@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.visibilityChecker
 
 import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.allDeclarationsRecursively
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.impl.KaDeclarationRendererForDebug
 import org.jetbrains.kotlin.analysis.api.symbols.KaDeclarationSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaFileSymbol
@@ -19,7 +20,6 @@ import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedDeclaration
-import org.jetbrains.kotlin.psi.psiUtil.findDescendantOfType
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
 
@@ -83,9 +83,18 @@ abstract class AbstractVisibilityCheckerTest : AbstractAnalysisApiBasedTest() {
     }
 
     private fun findUseSiteElement(contextFile: KtFile, provider: ExpressionMarkerProvider): KtExpression {
-        return provider.getBottommostElementOfTypeAtCaretOrNull<KtExpression>(contextFile)
-            ?: contextFile.findDescendantOfType<KtNamedDeclaration> { it.name?.lowercase() == USE_SITE_ELEMENT_NAME }
-            ?: error("Cannot find use-site element to check visibility at.")
+        val byCaret = provider.getBottommostElementOfTypeAtCaretOrNull<KtExpression>(contextFile)
+        if (byCaret != null) return byCaret
+
+        val byName = contextFile.allDeclarationsRecursively.find {
+            it is KtNamedDeclaration && it.name?.lowercase() == USE_SITE_ELEMENT_NAME
+        }
+
+        if (byName != null) {
+            return byName as KtExpression
+        }
+
+        error("Cannot find use-site element to check visibility at.")
     }
 
     private fun KaSession.checkVisibilityAndBuildResult(

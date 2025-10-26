@@ -577,6 +577,35 @@ class SirAsSwiftSourcesPrinterTests {
     }
 
     @Test
+    fun `should print simple enum with cases`() {
+        val module = buildModule {
+            name = "Test"
+            declarations.add(
+                buildEnum {
+                    origin = SirOrigin.Unknown
+                    name = "SimpleEnum"
+
+                    declarations.add(
+                        buildEnumCase {
+                            name = "FIRST"
+                        }
+                    )
+                    declarations.add(
+                        buildEnumCase {
+                            name = "LAST"
+                        }
+                    )
+                }
+            )
+        }
+
+        runTest(
+            module,
+            "testData/simple_enum_with_cases"
+        )
+    }
+
+    @Test
     fun `should print empty class inside class`() {
 
         val module = buildModule {
@@ -1416,6 +1445,132 @@ class SirAsSwiftSourcesPrinterTests {
         runTest(
             module,
             "testData/protocol_declarations"
+        )
+    }
+
+    @Test
+    fun `should print async callables`() {
+        val module = buildModule {
+            name = "Test"
+
+            declarations.add(
+                buildFunction {
+                    origin = SirOrigin.Unknown
+                    visibility = SirVisibility.PUBLIC
+                    name = "asyncFunction"
+                    parameters.add(SirParameter(argumentName = "arg1", type = SirNominalType(SirSwiftModule.int32)))
+                    isAsync = true
+                    returnType = SirType.any
+                }
+            )
+
+            declarations.add(
+                buildFunction {
+                    origin = SirOrigin.Unknown
+                    visibility = SirVisibility.PUBLIC
+                    name = "asyncFunctionEmptyArgs"
+                    isAsync = true
+                    returnType = SirType.void
+                }
+            )
+
+            declarations.add(
+                buildFunction {
+                    origin = SirOrigin.Unknown
+                    visibility = SirVisibility.PUBLIC
+                    name = "throwingAsyncFunction"
+                    parameters.add(SirParameter(argumentName = "arg1", type = SirNominalType(SirSwiftModule.int32)))
+                    isAsync = true
+                    returnType = SirType.any
+                    errorType = SirType.any
+                }
+            )
+            declarations.add(
+                buildClass {
+                    origin = SirOrigin.Unknown
+                    name = "AsyncMethods"
+
+                    declarations.add(
+                        buildFunction {
+                            origin = SirOrigin.Unknown
+                            visibility = SirVisibility.PUBLIC
+                            name = "asyncMethodEmptyArgs"
+                            isAsync = true
+                            returnType = SirNominalType(SirSwiftModule.bool)
+                        }
+                    )
+
+                    declarations.add(
+                        buildFunction {
+                            origin = SirOrigin.Unknown
+                            visibility = SirVisibility.PUBLIC
+                            name = "asyncMethod"
+                            isAsync = true
+                            parameters.add(
+                                SirParameter(
+                                    argumentName = "value",
+                                    type = SirNominalType(SirSwiftModule.int32)
+                                )
+                            )
+                            returnType = SirType.void
+                        }
+                    )
+                }.attachDeclarations()
+            )
+
+            declarations.add(
+                buildVariable {
+                    origin = SirOrigin.Unknown
+                    name = "asyncProperty"
+                    type = SirNominalType(SirSwiftModule.int32)
+                    getter = buildGetter {
+                        isAsync = true
+                    }
+                }
+            )
+
+            declarations.add(
+                buildFunction {
+                    origin = SirOrigin.Unknown
+                    visibility = SirVisibility.PUBLIC
+                    name = "functionWithAsyncClosure"
+                    parameters.add(
+                        SirParameter(
+                            argumentName = "asyncEmptyClosure",
+                            type = SirFunctionalType(
+                                parameterTypes = emptyList(),
+                                isAsync = true,
+                                returnType = SirType.void,
+                            )
+                        )
+                    )
+                    returnType = SirType.void
+                }
+            )
+
+            declarations.add(
+                buildFunction {
+                    origin = SirOrigin.Unknown
+                    visibility = SirVisibility.PUBLIC
+                    name = "functionWithAsyncReturnClosure"
+                    parameters.add(
+                        SirParameter(
+                            argumentName = "asyncReturnClosure",
+                            type = SirFunctionalType(
+                                parameterTypes = listOf(SirNominalType(SirSwiftModule.int32)),
+                                isAsync = true,
+                                returnType = SirNominalType(SirSwiftModule.bool),
+                            )
+                        )
+                    )
+                    returnType = SirType.void
+                }
+            )
+        }.attachDeclarations()
+
+        runTest(
+            module,
+            "testData/async_callables"
         )
     }
 

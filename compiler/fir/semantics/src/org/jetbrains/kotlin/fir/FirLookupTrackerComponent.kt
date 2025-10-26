@@ -7,10 +7,12 @@ package org.jetbrains.kotlin.fir
 
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.fir.resolve.calls.AbstractCallInfo
+import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.ClassIdBasedLocality
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames.DEFAULT_NAME_FOR_COMPANION_OBJECT
@@ -22,10 +24,13 @@ abstract class FirLookupTrackerComponent : FirSessionComponent {
     abstract fun recordLookup(name: String, inScopes: Iterable<String>, source: KtSourceElement?, fileSource: KtSourceElement?)
 
     abstract fun recordLookup(name: String, inScope: String, source: KtSourceElement?, fileSource: KtSourceElement?)
+
+    abstract fun recordDirtyDeclaration(symbol: FirBasedSymbol<*>)
 }
 
 fun FirLookupTrackerComponent.recordCallLookup(callInfo: AbstractCallInfo, inType: ConeKotlinType) {
     val classId = inType.classId ?: return
+    @OptIn(ClassIdBasedLocality::class)
     if (classId.isLocal) return
     val scopes = SmartList(classId.asFqNameString())
     if (classId.shortClassName == DEFAULT_NAME_FOR_COMPANION_OBJECT) {
@@ -41,6 +46,7 @@ fun FirLookupTrackerComponent.recordCallLookup(callInfo: AbstractCallInfo, inSco
 }
 
 fun FirLookupTrackerComponent.recordClassLikeLookup(classId: ClassId, source: KtSourceElement?, fileSource: KtSourceElement?) {
+    @OptIn(ClassIdBasedLocality::class)
     if (!classId.isLocal && classId !in StandardClassIds.allBuiltinTypes) {
         val classFqName = classId.asSingleFqName()
         recordLookup(classFqName.shortName().asString(), classFqName.parent().asString(), source, fileSource)
@@ -48,6 +54,7 @@ fun FirLookupTrackerComponent.recordClassLikeLookup(classId: ClassId, source: Kt
 }
 
 fun FirLookupTrackerComponent.recordCompanionLookup(classId: ClassId, source: KtSourceElement?, fileSource: KtSourceElement?) {
+    @OptIn(ClassIdBasedLocality::class)
     if (!classId.isLocal && classId !in StandardClassIds.allBuiltinTypes) {
         val classFqName = classId.asSingleFqName()
         recordLookup(classFqName.shortName().asString(), classFqName.parent().asString(), source, fileSource)

@@ -1,7 +1,7 @@
 // RUN_PIPELINE_TILL: FRONTEND
 open class A {
     open <!VAR_PROPERTY_WITH_EXPLICIT_BACKING_FIELD!>var<!> it: Number
-        <!NON_FINAL_PROPERTY_WITH_EXPLICIT_BACKING_FIELD!>private field = 3<!>
+        <!NON_FINAL_PROPERTY_WITH_EXPLICIT_BACKING_FIELD!><!WRONG_MODIFIER_TARGET!>private<!> field = 3<!>
         set(value) {
             field = value.toInt()
         }
@@ -20,5 +20,5 @@ open class B : A() {
         set(value) {}
 }
 
-/* GENERATED_FIR_TAGS: additiveExpression, assignment, classDeclaration, functionDeclaration, getter, integerLiteral,
-override, propertyDeclaration, setter */
+/* GENERATED_FIR_TAGS: additiveExpression, assignment, classDeclaration, explicitBackingField, functionDeclaration,
+getter, integerLiteral, override, propertyDeclaration, setter */

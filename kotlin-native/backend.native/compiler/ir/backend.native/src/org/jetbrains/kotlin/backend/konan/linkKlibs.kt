@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.backend.common.overrides.FakeOverrideChecker
 import org.jetbrains.kotlin.backend.common.phaser.KotlinBackendIrHolder
 import org.jetbrains.kotlin.backend.common.serialization.DescriptorByIdSignatureFinderImpl
 import org.jetbrains.kotlin.backend.common.serialization.IrModuleDeserializer
-import org.jetbrains.kotlin.backend.konan.driver.PhaseContext
+import org.jetbrains.kotlin.backend.konan.driver.NativeBackendPhaseContext
 import org.jetbrains.kotlin.backend.konan.ir.KonanSymbols
 import org.jetbrains.kotlin.backend.konan.ir.interop.IrProviderForCEnumAndCStructStubs
 import org.jetbrains.kotlin.backend.konan.ir.konanLibrary
@@ -45,7 +45,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.descriptorUtil.module
 import org.jetbrains.kotlin.utils.DFS
 
-internal interface LinkKlibsContext : PhaseContext {
+internal interface LinkKlibsContext : NativeBackendPhaseContext {
     val symbolTable: SymbolTable?
 
     val reflectionTypes: KonanReflectionTypes
@@ -104,8 +104,6 @@ internal fun LinkKlibsContext.linkKlibs(
     val stdlibIsCached = stdlibModule.konanLibrary?.let { config.cachedLibraries.isLibraryCached(it) } == true
     val stdlibIsBeingCached = libraryToCacheModule == stdlibModule
     require(!(stdlibIsCached && stdlibIsBeingCached)) { "The cache for stdlib is already built" }
-    val kFunctionImplIsBeingCached = stdlibIsBeingCached && libraryToCache.strategy.containsKFunctionImpl
-    val shouldUseLazyFunctionClasses = (stdlibIsCached || stdlibIsBeingCached) && !kFunctionImplIsBeingCached
 
     val stubGenerator = DeclarationStubGeneratorImpl(
             moduleDescriptor, symbolTable,
@@ -114,11 +112,7 @@ internal fun LinkKlibsContext.linkKlibs(
             KonanStubGeneratorExtensions
     )
     val irBuiltInsOverDescriptors = generatorContext.irBuiltIns as IrBuiltInsOverDescriptors
-    val functionIrClassFactory: KonanIrAbstractDescriptorBasedFunctionFactory =
-            if (shouldUseLazyFunctionClasses && config.lazyIrForCaches)
-                LazyIrFunctionFactory(symbolTable, stubGenerator, irBuiltInsOverDescriptors, reflectionTypes)
-            else
-                BuiltInFictitiousFunctionIrClassFactory(symbolTable, irBuiltInsOverDescriptors, reflectionTypes)
+    val functionIrClassFactory = BuiltInFictitiousFunctionIrClassFactory(symbolTable, irBuiltInsOverDescriptors, reflectionTypes)
     irBuiltInsOverDescriptors.functionFactory = functionIrClassFactory
     val symbols = KonanSymbols(
             this,
@@ -142,7 +136,7 @@ internal fun LinkKlibsContext.linkKlibs(
 
         val friendModulesMap = (
                 listOf(moduleDescriptor.name.asStringStripSpecialMarkers()) +
-                        config.resolve.includedLibraries.map { it.uniqueName }
+                        config.includedLibraries.map { it.uniqueName }
                 ).associateWith { friendModules }
 
         KonanIrLinker(
@@ -228,9 +222,9 @@ internal fun LinkKlibsContext.linkKlibs(
 
     // TODO: find out what should be done in the new builtins/symbols about it
     if (stdlibIsBeingCached) {
-        (functionIrClassFactory as? BuiltInFictitiousFunctionIrClassFactory)?.buildAllClasses()
+        functionIrClassFactory.buildAllClasses()
     }
-    (functionIrClassFactory as? BuiltInFictitiousFunctionIrClassFactory)?.module =
+    functionIrClassFactory.module =
             (modules.values + mainModule).single { it.descriptor == this.stdlibModule }
 
     mainModule.files.forEach { it.metadata = DescriptorMetadataSource.File(listOf(mainModule.descriptor)) }

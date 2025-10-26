@@ -3,7 +3,7 @@ KaNamedClassSymbol:
   classId: null
   classKind: CLASS
   companionObject: null
-  compilerVisibility: Public
+  compilerVisibility: Local
   contextReceivers: []
   isActual: false
   isData: false
@@ -23,8 +23,9 @@ KaNamedClassSymbol:
       type: kotlin/Any
   ]
   typeParameters: []
-  visibility: PUBLIC
+  visibility: LOCAL
   getContainingFileSymbol: KaFileSymbol(generatedNestedClassInNestedInLocalClass.kt)
   getContainingModule: KaSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: null

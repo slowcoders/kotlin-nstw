@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanCacheTask
 import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanCompileTask
 import org.jetbrains.kotlin.konan.target.*
 import org.jetbrains.kotlin.library.KOTLIN_NATIVE_STDLIB_NAME
+import org.jetbrains.kotlin.nativeDistribution.nativeBootstrapDistribution
 import org.jetbrains.kotlin.nativeDistribution.nativeDistribution
 import org.jetbrains.kotlin.testing.native.GitDownloadTask
 import java.net.URI
@@ -59,7 +60,7 @@ val targetList = enabledTargets(extensions.getByType<PlatformManager>())
 bitcode {
     allTargets {
         module("main") {
-            headersDirs.from("src/externalCallsChecker/common/cpp", "src/objcExport/cpp", "src/breakpad/cpp", "src/crashHandler/common/cpp")
+            headersDirs.from("src/externalCallsChecker/common/cpp", "src/objcExport/cpp", "src/breakpad/cpp", "src/crashHandler/common/cpp", "src/utfcpp/cpp")
             sourceSets {
                 main {
                     // TODO: Split out out `base` module and merge it together with `main` into `runtime.bc`
@@ -81,6 +82,11 @@ bitcode {
         // Headers from here get reused by Swift Export, so this module should not depend on anything in the runtime
         module("objcExport") {
             // There must not be any implementation files, only headers.
+            sourceSets {}
+        }
+
+        module("utfcpp") {
+            // Header-only library
             sourceSets {}
         }
 
@@ -602,9 +608,7 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
     group = BasePlugin.BUILD_GROUP
     description = "Build the Kotlin/Native standard library"
 
-    // Requires Native distribution with the compiler JARs.
-    this.compilerDistribution.set(nativeDistribution)
-    dependsOn(":kotlin-native:distCompiler")
+    this.compilerDistribution.set(nativeBootstrapDistribution)
 
     this.outputDirectory.set(
             layout.buildDirectory.dir("stdlib/${HostManager.hostName}/stdlib")
@@ -618,6 +622,7 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
             "-Xallow-kotlin-package",
             "-Xexplicit-api=strict",
             "-Xexpect-actual-classes",
+            "-Xklib-ir-inliner=intra-module",
             "-Xcontext-parameters",
             "-module-name", KOTLIN_NATIVE_STDLIB_NAME,
             "-opt-in=kotlin.RequiresOptIn",
@@ -631,9 +636,8 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
             "-Xdont-warn-on-error-suppression",
             "-Xstdlib-compilation",
 
-            // See allowReturnValueCheckerButNotReport() in libraries/stdlib/build.gradle.kts:
-            "-Xreturn-value-checker=check",
-            "-Xwarning-level=RETURN_VALUE_NOT_USED:disabled",
+            // See addReturnValueCheckerInfo() in libraries/stdlib/build.gradle.kts:
+            "-Xreturn-value-checker=full",
 
             "-Xfragment-refines=nativeMain:nativeWasm,nativeMain:common,nativeWasm:common,nativeWasm:commonNonJvm,commonNonJvm:common",
             "-Xmanifest-native-targets=${platformManager.targetValues.joinToString(separator = ",") { it.visibleName }}",
@@ -676,6 +680,7 @@ cacheableTargetNames.forEach { targetName ->
 
         // Requires Native distribution with stdlib klib and runtime modules for `targetName`.
         this.compilerDistribution.set(dist)
+        dependsOn(":kotlin-native:distCompiler")
         dependsOn(":kotlin-native:${targetName}CrossDistRuntime")
         inputs.dir(dist.map { it.runtime(targetName) }) // manually depend on runtime modules (stdlib cache links these modules in)
 

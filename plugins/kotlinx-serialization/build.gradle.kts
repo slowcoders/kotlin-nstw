@@ -99,10 +99,10 @@ dependencies {
     testFixturesApi("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.0")
     testFixturesApi("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
 
-    coreJsIrRuntimeForTests("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.0") { isTransitive = false }
-    jsonJsIrRuntimeForTests("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0") { isTransitive = false }
-    coreNativeRuntimeForTests("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.0") { isTransitive = false }
-    jsonNativeRuntimeForTests("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0") { isTransitive = false }
+    coreJsIrRuntimeForTests("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3") { isTransitive = false }
+    jsonJsIrRuntimeForTests("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3") { isTransitive = false }
+    coreNativeRuntimeForTests("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3") { isTransitive = false }
+    jsonNativeRuntimeForTests("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3") { isTransitive = false }
     serializationPluginForTests(project(":kotlinx-serialization-compiler-plugin"))
 
     testRuntimeOnly(intellijCore())
@@ -111,10 +111,8 @@ dependencies {
     testRuntimeOnly(project(":compiler:fir:fir-serialization"))
 
     // Dependencies for Kotlin/Native test infra:
-    if (!kotlinBuildProperties.isInIdeaSync) {
-        testImplementation(testFixtures(project(":native:native.tests")))
-    }
-    testImplementation(testFixtures(project(":native:native.tests:klib-ir-inliner")))
+    testFixturesApi(testFixtures(project(":native:native.tests")))
+    testFixturesApi(testFixtures(project(":native:native.tests:klib-ir-inliner")))
 
     // Implicit dependencies on CORE and JSON native artifacts to run native tests on CI
     listOf(
@@ -124,8 +122,8 @@ dependencies {
         "iossimulatorarm64",
         "mingwx64"
     ).forEach {
-        implicitKotlinApiDependency("org.jetbrains.kotlinx:kotlinx-serialization-core-$it:1.7.0")
-        implicitKotlinApiDependency("org.jetbrains.kotlinx:kotlinx-serialization-json-$it:1.7.0")
+        implicitKotlinApiDependency("org.jetbrains.kotlinx:kotlinx-serialization-core-$it:1.7.3")
+        implicitKotlinApiDependency("org.jetbrains.kotlinx:kotlinx-serialization-json-$it:1.7.3")
     }
 }
 
@@ -198,7 +196,7 @@ projectTests {
         compilerPluginDependencies = listOf(serializationPluginForTests)
     )
 
-    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateSerializationTestsKt")
+    testGenerator("org.jetbrains.kotlinx.serialization.GenerateSerializationTestsKt")
 
     withJvmStdlibAndReflect()
 }

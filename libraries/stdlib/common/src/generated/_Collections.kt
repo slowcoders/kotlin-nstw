@@ -5,6 +5,7 @@
 
 @file:kotlin.jvm.JvmMultifileClass
 @file:kotlin.jvm.JvmName("CollectionsKt")
+@file:Suppress("REDUNDANT_CALL_OF_CONVERSION_METHOD")
 
 package kotlin.collections
 
@@ -298,6 +299,8 @@ public inline fun <T> Iterable<T>.firstOrNull(predicate: (T) -> Boolean): T? {
 
 /**
  * Returns an element at the given [index] or the result of calling the [defaultValue] function if the [index] is out of bounds of this list.
+ * 
+ * @sample samples.collections.Collections.Elements.getOrElse
  */
 @kotlin.internal.InlineOnly
 public inline fun <T> List<T>.getOrElse(index: Int, defaultValue: (Int) -> T): T {
@@ -1011,6 +1014,8 @@ public fun <T> MutableList<T>.shuffle(random: Random): Unit {
  * 
  * The sort is _stable_. It means that elements for which [selector] returned equal values preserve their order
  * relative to each other after sorting.
+ * 
+ * @sample samples.collections.Collections.Sorting.sortBy
  */
 public inline fun <T, R : Comparable<R>> MutableList<T>.sortBy(crossinline selector: (T) -> R?): Unit {
     if (size > 1) sortWith(compareBy(selector))
@@ -1021,6 +1026,8 @@ public inline fun <T, R : Comparable<R>> MutableList<T>.sortBy(crossinline selec
  * 
  * The sort is _stable_. It means that elements for which [selector] returned equal values preserve their order
  * relative to each other after sorting.
+ * 
+ * @sample samples.collections.Collections.Sorting.sortByDescending
  */
 public inline fun <T, R : Comparable<R>> MutableList<T>.sortByDescending(crossinline selector: (T) -> R?): Unit {
     if (size > 1) sortWith(compareByDescending(selector))

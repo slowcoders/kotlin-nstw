@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 public class FirWasmJsSteppingTestGenerated extends AbstractFirWasmJsSteppingTest {
   @Test
   public void testAllFilesPresentInStepping() {
-    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/debug/stepping"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/debug/stepping"), Pattern.compile("^(.+)\\.kt$"), null, true);
   }
 
   @Test
@@ -409,6 +409,12 @@ public class FirWasmJsSteppingTestGenerated extends AbstractFirWasmJsSteppingTes
   }
 
   @Test
+  @TestMetadata("javaSam.kt")
+  public void testJavaSam() {
+    runTest("compiler/testData/debug/stepping/javaSam.kt");
+  }
+
+  @Test
   @TestMetadata("kt15259.kt")
   public void testKt15259() {
     runTest("compiler/testData/debug/stepping/kt15259.kt");
@@ -547,6 +553,12 @@ public class FirWasmJsSteppingTestGenerated extends AbstractFirWasmJsSteppingTes
   }
 
   @Test
+  @TestMetadata("noLinenumberInInvokeOfSuspendLambda.kt")
+  public void testNoLinenumberInInvokeOfSuspendLambda() {
+    runTest("compiler/testData/debug/stepping/noLinenumberInInvokeOfSuspendLambda.kt");
+  }
+
+  @Test
   @TestMetadata("noParametersArgumentCallInExpression.kt")
   public void testNoParametersArgumentCallInExpression() {
     runTest("compiler/testData/debug/stepping/noParametersArgumentCallInExpression.kt");
@@ -568,6 +580,12 @@ public class FirWasmJsSteppingTestGenerated extends AbstractFirWasmJsSteppingTes
   @TestMetadata("overridenGetterSetter.kt")
   public void testOverridenGetterSetter() {
     runTest("compiler/testData/debug/stepping/overridenGetterSetter.kt");
+  }
+
+  @Test
+  @TestMetadata("partiallyInlinedFun.kt")
+  public void testPartiallyInlinedFun() {
+    runTest("compiler/testData/debug/stepping/partiallyInlinedFun.kt");
   }
 
   @Test
@@ -598,6 +616,12 @@ public class FirWasmJsSteppingTestGenerated extends AbstractFirWasmJsSteppingTes
   @TestMetadata("recursion.kt")
   public void testRecursion() {
     runTest("compiler/testData/debug/stepping/recursion.kt");
+  }
+
+  @Test
+  @TestMetadata("reorder.kt")
+  public void testReorder() {
+    runTest("compiler/testData/debug/stepping/reorder.kt");
   }
 
   @Test
@@ -661,6 +685,24 @@ public class FirWasmJsSteppingTestGenerated extends AbstractFirWasmJsSteppingTes
   }
 
   @Test
+  @TestMetadata("suspendClosingBrace.kt")
+  public void testSuspendClosingBrace() {
+    runTest("compiler/testData/debug/stepping/suspendClosingBrace.kt");
+  }
+
+  @Test
+  @TestMetadata("suspendClosingBrace2.kt")
+  public void testSuspendClosingBrace2() {
+    runTest("compiler/testData/debug/stepping/suspendClosingBrace2.kt");
+  }
+
+  @Test
+  @TestMetadata("suspendClosingBrace3.kt")
+  public void testSuspendClosingBrace3() {
+    runTest("compiler/testData/debug/stepping/suspendClosingBrace3.kt");
+  }
+
+  @Test
   @TestMetadata("suspendFunWithLambdaParameter.kt")
   public void testSuspendFunWithLambdaParameter() {
     runTest("compiler/testData/debug/stepping/suspendFunWithLambdaParameter.kt");
@@ -712,6 +754,18 @@ public class FirWasmJsSteppingTestGenerated extends AbstractFirWasmJsSteppingTes
   @TestMetadata("tryFinally.kt")
   public void testTryFinally() {
     runTest("compiler/testData/debug/stepping/tryFinally.kt");
+  }
+
+  @Test
+  @TestMetadata("tryFinallyAndNonLocalReturn.kt")
+  public void testTryFinallyAndNonLocalReturn() {
+    runTest("compiler/testData/debug/stepping/tryFinallyAndNonLocalReturn.kt");
+  }
+
+  @Test
+  @TestMetadata("tryOneLineFinallyAndNonLocalReturn.kt")
+  public void testTryOneLineFinallyAndNonLocalReturn() {
+    runTest("compiler/testData/debug/stepping/tryOneLineFinallyAndNonLocalReturn.kt");
   }
 
   @Test
@@ -796,6 +850,12 @@ public class FirWasmJsSteppingTestGenerated extends AbstractFirWasmJsSteppingTes
   @TestMetadata("whenIsChecks.kt")
   public void testWhenIsChecks() {
     runTest("compiler/testData/debug/stepping/whenIsChecks.kt");
+  }
+
+  @Test
+  @TestMetadata("whenIsChecksIndy.kt")
+  public void testWhenIsChecksIndy() {
+    runTest("compiler/testData/debug/stepping/whenIsChecksIndy.kt");
   }
 
   @Test

@@ -6,7 +6,6 @@
 package org.jetbrains.kotlin.generators.tests.analysis.api
 
 import org.jetbrains.kotlin.analysis.api.fir.test.cases.imports.AbstractKaDefaultImportsProviderTest
-import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeCreator.AbstractBuildArrayTypeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.annotations.*
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.analysisScopeProvider.AbstractCanBeAnalysedTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.compileTimeConstantProvider.AbstractCompileTimeConstantEvaluatorTest
@@ -27,7 +26,6 @@ import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.express
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.expressionTypeProvider.AbstractDeclarationReturnTypeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.expressionTypeProvider.AbstractExpectedExpressionTypeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.expressionTypeProvider.AbstractHLExpressionTypeTest
-import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.importOptimizer.AbstractAnalysisApiImportOptimizerTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.inheritorsProvider.AbstractDanglingFileSealedInheritorsTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.inheritorsProvider.AbstractSealedInheritorsTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.javaInteroperabilityComponent.AbstractDeclarationTypeAsPsiTypeTest
@@ -35,7 +33,6 @@ import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.javaInt
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.javaInteroperabilityComponent.AbstractPsiTypeAsKaTypeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.klibSourceFileProvider.AbstractGetKlibSourceFileNameTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.readWriteAccess.AbstractReadWriteAccessTest
-import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.referenceResolveProvider.AbstractIsImplicitCompanionReferenceTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.relationProvider.AbstractGetExpectsForActualTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.relationProvider.AbstractOriginalConstructorIfTypeAliasedTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.resolveExtensionInfoProvider.AbstractResolveExtensionInfoProviderTest
@@ -54,6 +51,7 @@ import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.symbolD
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.symbolInfoProvider.AbstractAnnotationApplicableTargetsTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.symbolInfoProvider.AbstractCanBeOperatorTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.symbolInfoProvider.AbstractSamClassBySamConstructorTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeCreator.AbstractBuildArrayTypeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeCreator.AbstractBuildClassTypeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeCreator.AbstractTypeParameterTypeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeInfoProvider.AbstractDoubleColonReceiverTypeTest
@@ -71,8 +69,9 @@ import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.restrictedAnalysis
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.session.*
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.symbols.*
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.types.*
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.types.typeCreation.AbstractTypeCreatorDslTest
 import org.jetbrains.kotlin.analysis.test.framework.test.configurators.*
-import org.jetbrains.kotlin.generators.TestGroup
+import org.jetbrains.kotlin.generators.dsl.TestGroup
 import org.jetbrains.kotlin.generators.tests.analysis.api.dsl.*
 import org.jetbrains.kotlin.generators.util.TestGeneratorUtil
 
@@ -222,10 +221,6 @@ private fun AnalysisApiTestGroup.generateAnalysisApiNonComponentsTests() {
                 symbolsModel(it, "symbolRestoreFromDifferentModule")
             }
 
-            test<AbstractMultiModuleSymbolByPsiTest> {
-                symbolsModel(it, "multiModuleSymbolByPsi")
-            }
-
             test<AbstractSymbolByFqNameTest> {
                 symbolsModel(it, "symbolByFqName")
             }
@@ -304,6 +299,12 @@ private fun AnalysisApiTestGroup.generateAnalysisApiNonComponentsTests() {
             group("typePointers", filter = frontendIs(FrontendKind.Fir)) {
                 test<AbstractTypePointerConsistencyTest> {
                     model(it, "consistency")
+                }
+            }
+
+            group("typeCreation") {
+                test<AbstractTypeCreatorDslTest> {
+                    model(it, "byDsl")
                 }
             }
         }
@@ -465,14 +466,6 @@ private fun AnalysisApiTestGroup.generateAnalysisApiComponentsTests() {
         // dependent analysis tests here.
         test<AbstractContainingModuleByFileTest>(filter = analysisSessionModeIs(AnalysisSessionMode.Normal)) {
             model(it, "containingModuleByFile")
-        }
-    }
-
-    component("importOptimizer") {
-        test<AbstractAnalysisApiImportOptimizerTest>(
-            filter = analysisSessionModeIs(AnalysisSessionMode.Normal) and frontendIs(FrontendKind.Fir),
-        ) {
-            model(it, "analyseImports")
         }
     }
 
@@ -655,11 +648,9 @@ private fun AnalysisApiTestGroup.generateAnalysisApiComponentsTests() {
         test<AbstractLenientClassSymbolSubtypingTypeRelationTest> {
             model(it, "subtypingAndEquality")
         }
-    }
 
-    component("referenceResolveProvider") {
-        test<AbstractIsImplicitCompanionReferenceTest> {
-            model(it, "isImplicitReferenceToCompanion")
+        test<AbstractCanBeCalledAsExtensionOnTest>(filter = frontendIs(FrontendKind.Fir)) {
+            model(it, "canBeCalledAsExtensionOn")
         }
     }
 

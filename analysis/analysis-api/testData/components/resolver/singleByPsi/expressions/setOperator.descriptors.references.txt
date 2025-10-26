@@ -1,6 +1,12 @@
 KtNameReferenceExpression(93,101): 'variable'
   KtSimpleNameReference:
-    variable: MyClass
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      variable: MyClass
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

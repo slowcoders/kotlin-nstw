@@ -5,32 +5,42 @@
 
 package org.jetbrains.kotlin.buildtools.`internal`.compat.arguments
 
+import java.lang.IllegalStateException
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.OptIn
 import kotlin.String
 import kotlin.Suppress
-import kotlin.collections.List
 import kotlin.collections.MutableMap
-import kotlin.collections.mutableListOf
+import kotlin.collections.MutableSet
 import kotlin.collections.mutableMapOf
-import org.jetbrains.kotlin.buildtools.api.arguments.CommonToolArguments.Companion.NOWARN
-import org.jetbrains.kotlin.buildtools.api.arguments.CommonToolArguments.Companion.VERBOSE
-import org.jetbrains.kotlin.buildtools.api.arguments.CommonToolArguments.Companion.VERSION
-import org.jetbrains.kotlin.buildtools.api.arguments.CommonToolArguments.Companion.WERROR
-import org.jetbrains.kotlin.buildtools.api.arguments.CommonToolArguments.Companion.WEXTRA
+import kotlin.collections.mutableSetOf
+import org.jetbrains.kotlin.buildtools.`internal`.compat.arguments.CommonToolArgumentsImpl.Companion.HELP
+import org.jetbrains.kotlin.buildtools.`internal`.compat.arguments.CommonToolArgumentsImpl.Companion.NOWARN
+import org.jetbrains.kotlin.buildtools.`internal`.compat.arguments.CommonToolArgumentsImpl.Companion.VERBOSE
+import org.jetbrains.kotlin.buildtools.`internal`.compat.arguments.CommonToolArgumentsImpl.Companion.VERSION
+import org.jetbrains.kotlin.buildtools.`internal`.compat.arguments.CommonToolArgumentsImpl.Companion.WERROR
+import org.jetbrains.kotlin.buildtools.`internal`.compat.arguments.CommonToolArgumentsImpl.Companion.WEXTRA
+import org.jetbrains.kotlin.buildtools.`internal`.compat.arguments.CommonToolArgumentsImpl.Companion.X
+import org.jetbrains.kotlin.buildtools.api.KotlinReleaseVersion
 import org.jetbrains.kotlin.buildtools.api.arguments.ExperimentalCompilerArgument
-import org.jetbrains.kotlin.cli.common.arguments.parseCommandLineArguments
 import org.jetbrains.kotlin.buildtools.api.arguments.CommonToolArguments as ArgumentsCommonToolArguments
 import org.jetbrains.kotlin.cli.common.arguments.CommonToolArguments as CommonToolArguments
+import org.jetbrains.kotlin.compilerRunner.toArgumentStrings as compilerToArgumentStrings
+import org.jetbrains.kotlin.config.KotlinCompilerVersion.VERSION as KC_VERSION
 
-internal open class CommonToolArgumentsImpl : ArgumentsCommonToolArguments {
+internal abstract class CommonToolArgumentsImpl : ArgumentsCommonToolArguments {
+  protected val internalArguments: MutableSet<String> = mutableSetOf()
+
   private val optionsMap: MutableMap<String, Any?> = mutableMapOf()
 
   @Suppress("UNCHECKED_CAST")
   override operator fun <V> `get`(key: ArgumentsCommonToolArguments.CommonToolArgument<V>): V = optionsMap[key.id] as V
 
   override operator fun <V> `set`(key: ArgumentsCommonToolArguments.CommonToolArgument<V>, `value`: V) {
+    if (key.availableSinceVersion > KotlinReleaseVersion(2, 2, 20)) {
+      throw IllegalStateException("${key.id} is available only since ${key.availableSinceVersion}")
+    }
     optionsMap[key.id] = `value`
   }
 
@@ -45,45 +55,56 @@ internal open class CommonToolArgumentsImpl : ArgumentsCommonToolArguments {
 
   public operator fun contains(key: CommonToolArgument<*>): Boolean = key.id in optionsMap
 
-  open override fun applyArgumentStrings(arguments: List<String>) {
-    val compilerArgs: CommonToolArguments = parseCommandLineArguments(arguments)
-    applyCompilerArguments(compilerArgs)
-  }
-
   @Suppress("DEPRECATION")
-  @OptIn(ExperimentalCompilerArgument::class)
-  open override fun toArgumentStrings(): List<String> {
-    val arguments = mutableListOf<String>()
-    if ("VERSION" in optionsMap) { arguments.add("-version=" + get(VERSION)) }
-    if ("VERBOSE" in optionsMap) { arguments.add("-verbose=" + get(VERBOSE)) }
-    if ("NOWARN" in optionsMap) { arguments.add("-nowarn=" + get(NOWARN)) }
-    if ("WERROR" in optionsMap) { arguments.add("-Werror=" + get(WERROR)) }
-    if ("WEXTRA" in optionsMap) { arguments.add("-Wextra=" + get(WEXTRA)) }
+  public fun toCompilerArguments(arguments: CommonToolArguments): CommonToolArguments {
+    val unknownArgs = optionsMap.keys.filter { it !in knownArguments }
+    if (unknownArgs.isNotEmpty()) {
+      throw IllegalStateException("Unknown arguments: ${unknownArgs.joinToString()}")
+    }
+    if (WERROR in this) { arguments.allWarningsAsErrors = get(WERROR)}
+    try { if (WEXTRA in this) { arguments.extraWarnings = get(WEXTRA)} } catch (e: NoSuchMethodError) { throw IllegalStateException("""Compiler parameter not recognized: WEXTRA. Current compiler version is: $KC_VERSION, but the argument was introduced in 2.1.0""").initCause(e) }
+    if (X in this) { arguments.extraHelp = get(X)}
+    if (HELP in this) { arguments.help = get(HELP)}
+    if (NOWARN in this) { arguments.suppressWarnings = get(NOWARN)}
+    if (VERBOSE in this) { arguments.verbose = get(VERBOSE)}
+    if (VERSION in this) { arguments.version = get(VERSION)}
     return arguments
   }
 
   @Suppress("DEPRECATION")
   public fun applyCompilerArguments(arguments: CommonToolArguments) {
-    this[VERSION] = arguments.version
-    this[VERBOSE] = arguments.verbose
-    this[NOWARN] = arguments.suppressWarnings
-    this[WERROR] = arguments.allWarningsAsErrors
-    this[WEXTRA] = arguments.extraWarnings
+    try { this[WERROR] = arguments.allWarningsAsErrors } catch (_: NoSuchMethodError) {  }
+    try { this[WEXTRA] = arguments.extraWarnings } catch (_: NoSuchMethodError) {  }
+    try { this[X] = arguments.extraHelp } catch (_: NoSuchMethodError) {  }
+    try { this[HELP] = arguments.help } catch (_: NoSuchMethodError) {  }
+    try { this[NOWARN] = arguments.suppressWarnings } catch (_: NoSuchMethodError) {  }
+    try { this[VERBOSE] = arguments.verbose } catch (_: NoSuchMethodError) {  }
+    try { this[VERSION] = arguments.version } catch (_: NoSuchMethodError) {  }
+    internalArguments.addAll(arguments.internalArguments.map { it.stringRepresentation })
   }
 
   public class CommonToolArgument<V>(
     public val id: String,
-  )
+  ) {
+    init {
+      knownArguments.add(id)}
+  }
 
   public companion object {
-    public val VERSION: CommonToolArgument<Boolean> = CommonToolArgument("VERSION")
-
-    public val VERBOSE: CommonToolArgument<Boolean> = CommonToolArgument("VERBOSE")
-
-    public val NOWARN: CommonToolArgument<Boolean> = CommonToolArgument("NOWARN")
+    private val knownArguments: MutableSet<String> = mutableSetOf()
 
     public val WERROR: CommonToolArgument<Boolean> = CommonToolArgument("WERROR")
 
     public val WEXTRA: CommonToolArgument<Boolean> = CommonToolArgument("WEXTRA")
+
+    public val X: CommonToolArgument<Boolean> = CommonToolArgument("X")
+
+    public val HELP: CommonToolArgument<Boolean> = CommonToolArgument("HELP")
+
+    public val NOWARN: CommonToolArgument<Boolean> = CommonToolArgument("NOWARN")
+
+    public val VERBOSE: CommonToolArgument<Boolean> = CommonToolArgument("VERBOSE")
+
+    public val VERSION: CommonToolArgument<Boolean> = CommonToolArgument("VERSION")
   }
 }

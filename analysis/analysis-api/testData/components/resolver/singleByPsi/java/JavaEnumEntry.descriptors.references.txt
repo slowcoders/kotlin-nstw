@@ -1,6 +1,12 @@
 KtNameReferenceExpression(69,76): 'RUNTIME'
   KtSimpleNameReference:
-    (in java.lang.annotation.RetentionPolicy) RUNTIME
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in java.lang.annotation.RetentionPolicy) RUNTIME
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

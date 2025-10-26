@@ -8,12 +8,15 @@ package org.jetbrains.kotlin.ir.inline
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
 import org.jetbrains.kotlin.backend.common.LoweringContext
 import org.jetbrains.kotlin.backend.common.lower.inline.KlibSyntheticAccessorGenerator
-import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.backend.common.reportWarning
+import org.jetbrains.kotlin.config.AnalysisFlags
+import org.jetbrains.kotlin.config.ExplicitApiMode
+import org.jetbrains.kotlin.config.languageVersionSettings
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities.isPrivate
 import org.jetbrains.kotlin.descriptors.DescriptorVisibility
 import org.jetbrains.kotlin.descriptors.Visibilities
+import org.jetbrains.kotlin.ir.IrDiagnosticRenderers
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.*
@@ -35,7 +38,6 @@ import org.jetbrains.kotlin.utils.addToStdlib.runIf
  * - It's not designed to work with the JVM backend because the visibility rules on JVM are stricter.
  * - By the point it's executed, all _private_ inline functions have already been inlined.
  */
-@PhaseDescription("SyntheticAccessorLowering")
 class SyntheticAccessorLowering(private val context: LoweringContext, isExecutedOnFirstPhase: Boolean = false) : FileLoweringPass {
     /**
      * Whether the visibility of a generated accessor should be narrowed from _public_ to _internal_ if an accessor is only used
@@ -43,6 +45,13 @@ class SyntheticAccessorLowering(private val context: LoweringContext, isExecuted
      * This "narrowing" is supposed to be used only during the first phase of compilation.
      */
     private val narrowAccessorVisibilities = isExecutedOnFirstPhase
+
+    /**
+     * Warnings about created synthetic accessors are only meaningful to library's author, to help maintain its ABI.
+     * When accessors are created while consuming a library (the second stage), there is nothing that the user should worry about,
+     * plus nothing they can do about them.
+     */
+    private val emitExplicitApiModeWarnings = isExecutedOnFirstPhase
 
     private val accessorGenerator = KlibSyntheticAccessorGenerator(context)
 
@@ -53,6 +62,7 @@ class SyntheticAccessorLowering(private val context: LoweringContext, isExecuted
         val accessors = transformer.generatedAccessors.freezeAndGetAccessors()
         runIf(accessors.isNotEmpty()) {
             runIf(narrowAccessorVisibilities) { narrowAccessorVisibilities(accessors) }
+            emitWarningForPublicAccessorsInExplicitAPIMode(accessors, irFile)
             addAccessorsToParents(accessors)
         }
     }
@@ -244,6 +254,32 @@ class SyntheticAccessorLowering(private val context: LoweringContext, isExecuted
                 )
             }
             return isIncorrect
+        }
+    }
+
+    private fun emitWarningForPublicAccessorsInExplicitAPIMode(accessors: Collection<GeneratedAccessor>, irFile: IrFile) {
+        if (!emitExplicitApiModeWarnings) return
+        val explicitApiMode = context.configuration.languageVersionSettings.getFlag(AnalysisFlags.explicitApiMode)
+        if (explicitApiMode == ExplicitApiMode.DISABLED) return
+
+        for (accessor in accessors) {
+            if (accessor.accessorFunction.visibility == DescriptorVisibilities.PUBLIC) {
+                val message = buildString {
+                    append("Public synthetic accessor '${accessor.accessorFunction.name}' was generated in explicit API mode. ")
+                    append("This accessor is a part of the library ABI now.")
+                    (accessor.targetSymbol.owner as? IrDeclarationWithName)?.let { target ->
+                        val kind = IrDiagnosticRenderers.DECLARATION_KIND.render(target)
+                        append(" It became possible because $kind '${target.name}', which is not a part of the library ABI, ")
+                        append("is exposed through an inline function so it can be used in other libraries. ")
+                        append("Please, modify the source code to avoid exposure of $kind '${target.name}' and generation of the accessor.")
+                    }
+                }
+                context.reportWarning(
+                    message,
+                    irFile,
+                    accessor.accessorFunction,
+                )
+            }
         }
     }
 

@@ -1,5 +1,7 @@
 Foo.kt:
   FILE[kind=Facade[packageFqName=<root>, facadeFqName=FooKt]]
+    facadeFqName: FooKt
+    partSimpleName: "FooKt"
     PACKAGE_DIRECTIVE
     IMPORT_LIST
     PROPERTY[fqName=foo, hasBackingField=null, hasDelegate=false, hasDelegateExpression=false, hasInitializer=false, hasReturnTypeRef=true, isExtension=true, isTopLevel=true, isVar=false, name=foo]
@@ -31,11 +33,11 @@ I1.kt:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/I1, fqName=I1, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=true, isLocal=false, isTopLevel=true, name=I1, superNames=[]]
+    CLASS[classId=/I1, fqName=I1, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=true, isLocal=false, isTopLevel=true, name=I1, superNames=[]]
 
 
 I2.kt:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/I2, fqName=I2, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=true, isLocal=false, isTopLevel=true, name=I2, superNames=[]]
+    CLASS[classId=/I2, fqName=I2, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=true, isLocal=false, isTopLevel=true, name=I2, superNames=[]]

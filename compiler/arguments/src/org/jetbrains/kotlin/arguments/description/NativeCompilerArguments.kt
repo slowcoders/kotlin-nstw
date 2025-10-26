@@ -13,9 +13,6 @@ import org.jetbrains.kotlin.arguments.dsl.types.BooleanType
 import org.jetbrains.kotlin.arguments.dsl.types.IntType
 import org.jetbrains.kotlin.arguments.dsl.types.StringArrayType
 import org.jetbrains.kotlin.arguments.dsl.types.StringType
-import org.jetbrains.kotlin.cli.common.arguments.DefaultValue
-import org.jetbrains.kotlin.cli.common.arguments.GradleInputTypes
-import org.jetbrains.kotlin.cli.common.arguments.GradleOption
 
 val actualNativeArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.nativeArguments) {
     compilerArgument {
@@ -965,17 +962,6 @@ The default value is 1.""".asReleaseDependent()
     }
 
     compilerArgument {
-        name = "Xlazy-ir-for-caches"
-        description = "Use lazy IR for cached libraries.".asReleaseDependent()
-        valueType = StringType.defaultNull
-        valueDescription = "{disable|enable}".asReleaseDependent()
-
-        lifecycle(
-            introducedVersion = KotlinReleaseVersion.v1_6_20,
-        )
-    }
-
-    compilerArgument {
         name = "Xomit-framework-binary"
         description = "Omit binary when compiling the framework.".asReleaseDependent()
         valueType = BooleanType.defaultFalse
@@ -1062,7 +1048,8 @@ The default value is 1.""".asReleaseDependent()
 
     compilerArgument {
         name = "Xmanifest-native-targets"
-        description = "Comma-separated list that will be written as the value of 'native_targets' property in the .klib manifest. Unknown values are discarded.".asReleaseDependent()
+        description =
+            "Comma-separated list that will be written as the value of 'native_targets' property in the .klib manifest. Unknown values are discarded.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
 
         lifecycle(

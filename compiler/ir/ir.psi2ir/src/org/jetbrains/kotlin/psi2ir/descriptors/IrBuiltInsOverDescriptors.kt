@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.psi2ir.descriptors
 
-import org.jetbrains.kotlin.builtins.BuiltInsPackageFragment
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames.BUILT_INS_PACKAGE_FQ_NAME
@@ -27,7 +26,6 @@ import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.descriptors.*
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstructorCallImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
-import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrPropertySymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
@@ -40,6 +38,7 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.resolve.descriptorUtil.classId
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.storage.LockBasedStorageManager
 import org.jetbrains.kotlin.types.*
@@ -552,38 +551,6 @@ class IrBuiltInsOverDescriptors(
 
     override val enumClass = builtIns.enum.toIrSymbol()
 
-    private fun <T : Any> getFunctionsByKey(
-        name: Name,
-        vararg packageNameSegments: String,
-        makeKey: (SimpleFunctionDescriptor) -> T?
-    ): Map<T, IrSimpleFunctionSymbol> {
-        val result = mutableMapOf<T, IrSimpleFunctionSymbol>()
-        for (d in symbolFinder.builtInsPackage(*packageNameSegments).getContributedFunctions(name, NoLookupLocation.FROM_BACKEND)) {
-            makeKey(d)?.let { key ->
-                result[key] = d.toIrSymbol()
-            }
-        }
-        return result
-    }
-
-    override fun getNonBuiltInFunctionsByExtensionReceiver(
-        name: Name, vararg packageNameSegments: String
-    ): Map<IrClassifierSymbol, IrSimpleFunctionSymbol> =
-        getFunctionsByKey(name, *packageNameSegments) {
-            if (it.containingDeclaration !is BuiltInsPackageFragment && it.extensionReceiverParameter != null) {
-                symbolTable.referenceClassifier(it.extensionReceiverParameter!!.type.constructor.declarationDescriptor!!)
-            } else null
-        }
-
-    override fun getNonBuiltinFunctionsByReturnType(
-        name: Name, vararg packageNameSegments: String
-    ): Map<IrClassifierSymbol, IrSimpleFunctionSymbol> =
-        getFunctionsByKey(Name.identifier("getProgressionLastElement"), *packageNameSegments) { d ->
-            if (d.containingDeclaration !is BuiltInsPackageFragment) {
-                d.returnType?.constructor?.declarationDescriptor?.let { symbolTable.referenceClassifier(it) }
-            } else null
-        }
-
     override val extensionToString: IrSimpleFunctionSymbol = symbolFinder.findFunctions(OperatorNameConventions.TO_STRING, "kotlin").first {
         val descriptor = it.descriptor
         descriptor is SimpleFunctionDescriptor && descriptor.dispatchReceiverParameter == null &&
@@ -591,13 +558,12 @@ class IrBuiltInsOverDescriptors(
                 KotlinBuiltIns.isNullableAny(descriptor.extensionReceiverParameter!!.type) && descriptor.valueParameters.isEmpty()
     }
 
-    override val memberToString: IrSimpleFunctionSymbol = symbolFinder.findBuiltInClassMemberFunctions(
-        anyClass,
-        OperatorNameConventions.TO_STRING
-    ).single {
-        val descriptor = it.descriptor
-        descriptor is SimpleFunctionDescriptor && descriptor.valueParameters.isEmpty()
-    }
+    override val memberToString: IrSimpleFunctionSymbol = symbolFinder
+        .findFunctions(CallableId(builtIns.any.classId!!, OperatorNameConventions.TO_STRING))
+        .single {
+            val descriptor = it.descriptor
+            descriptor is SimpleFunctionDescriptor && descriptor.valueParameters.isEmpty()
+        }
 
     override val extensionStringPlus: IrSimpleFunctionSymbol = symbolFinder.findFunctions(OperatorNameConventions.PLUS, "kotlin").first {
         val descriptor = it.descriptor
@@ -608,15 +574,14 @@ class IrBuiltInsOverDescriptors(
                 KotlinBuiltIns.isNullableAny(descriptor.valueParameters.first().type)
     }
 
-    override val memberStringPlus: IrSimpleFunctionSymbol = symbolFinder.findBuiltInClassMemberFunctions(
-        stringClass,
-        OperatorNameConventions.PLUS
-    ).single {
-        val descriptor = it.descriptor
-        descriptor is SimpleFunctionDescriptor &&
-                descriptor.valueParameters.size == 1 &&
-                KotlinBuiltIns.isNullableAny(descriptor.valueParameters.first().type)
-    }
+    override val memberStringPlus: IrSimpleFunctionSymbol = symbolFinder
+        .findFunctions(CallableId(builtIns.string.classId!!, OperatorNameConventions.PLUS))
+        .single {
+            val descriptor = it.descriptor
+            descriptor is SimpleFunctionDescriptor &&
+                    descriptor.valueParameters.size == 1 &&
+                    KotlinBuiltIns.isNullableAny(descriptor.valueParameters.first().type)
+        }
 
     override fun functionN(arity: Int): IrClass = functionFactory.functionN(arity)
     override fun kFunctionN(arity: Int): IrClass = functionFactory.kFunctionN(arity)
@@ -631,9 +596,6 @@ private inline fun MemberScope.findFirstFunction(name: String, predicate: (Calla
 class SymbolFinderOverDescriptors(private val builtIns: KotlinBuiltIns, private val symbolTable: SymbolTable) : SymbolFinder() {
     internal fun builtInsPackage(vararg packageNameSegments: String) =
         builtIns.builtInsModule.getPackage(FqName.fromSegments(listOf(*packageNameSegments))).memberScope
-
-    override fun findGetter(property: IrPropertySymbol): IrSimpleFunctionSymbol? =
-        symbolTable.descriptorExtension.referenceSimpleFunction(property.descriptor.getter!!)
 
     private fun getClassDescriptor(classId: ClassId) : ClassDescriptor? {
         val parentClassId = classId.parentClassId
@@ -672,11 +634,6 @@ class SymbolFinderOverDescriptors(private val builtIns: KotlinBuiltIns, private 
             .orEmpty()
             .map { it.toIrSymbol() }
     }
-
-    override fun findBuiltInClassMemberFunctions(builtInClass: IrClassSymbol, name: Name): Iterable<IrSimpleFunctionSymbol> =
-        builtInClass.descriptor.unsubstitutedMemberScope
-            .getContributedFunctions(name, NoLookupLocation.FROM_BACKEND)
-            .map { it.toIrSymbol() }
 
     private fun ClassDescriptor.toIrSymbol(): IrClassSymbol {
         return symbolTable.descriptorExtension.referenceClass(this)

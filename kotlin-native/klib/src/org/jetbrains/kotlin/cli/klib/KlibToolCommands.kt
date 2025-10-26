@@ -6,29 +6,33 @@
 package org.jetbrains.kotlin.cli.klib
 
 import org.jetbrains.kotlin.backend.common.DumpIrReferenceRenderingAsSignatureStrategy
+import org.jetbrains.kotlin.backend.common.serialization.IrInterningService
 import org.jetbrains.kotlin.backend.common.serialization.IrModuleDeserializer
+import org.jetbrains.kotlin.backend.common.serialization.NonLinkingIrInlineFunctionDeserializer
 import org.jetbrains.kotlin.backend.konan.serialization.KonanIdSignaturer
 import org.jetbrains.kotlin.backend.konan.serialization.KonanManglerDesc
 import org.jetbrains.kotlin.backend.konan.serialization.KonanManglerIr
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
-import org.jetbrains.kotlin.ir.util.DumpIrTreeOptions
-import org.jetbrains.kotlin.ir.util.IdSignatureRenderer
-import org.jetbrains.kotlin.ir.util.SymbolTable
-import org.jetbrains.kotlin.ir.util.dump
+import org.jetbrains.kotlin.ir.declarations.impl.IrFileImpl
+import org.jetbrains.kotlin.ir.symbols.impl.IrFileSymbolImpl
+import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.konan.library.BitcodeLibrary
 import org.jetbrains.kotlin.konan.library.impl.createKonanLibrary
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.library.KotlinIrSignatureVersion
 import org.jetbrains.kotlin.library.KotlinLibrary
 import org.jetbrains.kotlin.library.abi.*
+import org.jetbrains.kotlin.library.components.metadata
 import org.jetbrains.kotlin.library.hasAbi
 import org.jetbrains.kotlin.library.metadata.kotlinLibrary
 import org.jetbrains.kotlin.library.metadata.parseModuleHeader
 import org.jetbrains.kotlin.library.metadata.parsePackageFragment
 import org.jetbrains.kotlin.library.nativeTargets
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi2ir.descriptors.IrBuiltInsOverDescriptors
 import org.jetbrains.kotlin.psi2ir.generators.TypeTranslatorImpl
+import org.jetbrains.kotlin.utils.Printer
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.io.File
 import java.util.*
@@ -41,7 +45,7 @@ internal sealed class KlibToolCommand(
     abstract fun execute()
 
     protected fun checkLibraryHasIr(library: KotlinLibrary): Boolean {
-        if (!library.hasIr) {
+        if (!library.hasMainIr) {
             output.logError("Library ${library.libraryFile} is an IR-less library")
             return false
         }
@@ -82,7 +86,9 @@ internal sealed class KlibToolCommand(
 internal class Info(output: KlibToolOutput, args: KlibToolArguments) : KlibToolCommand(output, args) {
     override fun execute() {
         val library = resolveKlib(args.libraryPath)
-        val metadataHeader = parseModuleHeader(library.moduleHeaderData)
+        val metadata = library.metadata
+
+        val metadataHeader = parseModuleHeader(metadata.moduleHeaderData)
 
         val nonEmptyPackageFQNs = buildSet {
             addAll(metadataHeader.packageFragmentNameList)
@@ -90,8 +96,8 @@ internal class Info(output: KlibToolOutput, args: KlibToolArguments) : KlibToolC
 
             // Sometimes `emptyPackageList` is empty, so it's necessary to explicitly filter out empty packages:
             val stillRemainingEmptyPackageFQNs = filterTo(hashSetOf()) { packageName ->
-                library.packageMetadataParts(packageName).all { partName ->
-                    parsePackageFragment(library.packageMetadata(packageName, partName)).isEmpty()
+                metadata.getPackageFragmentNames(packageName).all { partName ->
+                    parsePackageFragment(metadata.getPackageFragment(packageName, partName)).isEmpty()
                 }
             }
 
@@ -107,17 +113,16 @@ internal class Info(output: KlibToolOutput, args: KlibToolArguments) : KlibToolC
         nonEmptyPackageFQNs.forEach { packageFQN ->
             output.appendLine("  $packageFQN")
         }
-        output.appendLine("Has IR: ${library.hasIr}")
+        output.appendLine("Has IR: ${library.hasMainIr}")
         val irInfo = KlibIrInfoLoader(library).loadIrInfo()
-        irInfo?.meaningfulInlineFunctionNumber?.let { output.appendLine("  Non-local inline functions: $it") }
-        output.appendLine("Has FileEntries table: ${library.hasFileEntriesTable}")
+        irInfo?.preparedInlineFunctionCopyNumber?.let { output.appendLine("  Inlinable function copies: $it") }
         output.appendLine("Has LLVM bitcode: ${library.hasBitcode}")
         output.appendLine("Has ABI: ${library.hasAbi}")
         output.appendLine("Manifest properties:")
         manifestProperties.entries.forEach { (key, value) ->
             output.appendLine("  $key=$value")
         }
-        library.loadSizeInfo(irInfo)?.renderTo(output)
+        library.loadSizeInfo()?.renderTo(output)
     }
 
     companion object {
@@ -194,6 +199,64 @@ internal class DumpIr(output: KlibToolOutput, args: KlibToolArguments) : KlibToo
         )
 
         output.append(irFragment.dump(dumpOptions))
+    }
+}
+
+internal class DumpIrInlinableFunctions(output: KlibToolOutput, args: KlibToolArguments) : KlibToolCommand(output, args) {
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
+    override fun execute() {
+        val library = resolveKlib(args.libraryPath)
+
+        if (!checkLibraryHasIr(library)) return
+
+        if (!library.hasInlinableFunsIr) {
+            output.appendLine("// No inlinable functions in ${library.libraryFile}")
+            return
+        }
+
+        if (args.signatureVersion != null && args.signatureVersion != KotlinIrSignatureVersion.V2) {
+            // TODO: support passing any signature version through `DumpIrTreeOptions`, KT-62828
+            output.logWarning("using a non-default signature version in \"dump-ir-inlinable-functions\" is not supported yet")
+        }
+
+        val module = ModuleDescriptorLoader(output).load(library)
+
+        val idSignaturer = KonanIdSignaturer(KonanManglerDesc)
+        val symbolTable = SymbolTable(idSignaturer, IrFactoryImpl)
+        val typeTranslator = TypeTranslatorImpl(symbolTable, ModuleDescriptorLoader.languageVersionSettings, module)
+        val irBuiltIns = IrBuiltInsOverDescriptors(module.builtIns, typeTranslator, symbolTable)
+
+        val moduleDeserializer = NonLinkingIrInlineFunctionDeserializer.ModuleDeserializer(
+                library = library,
+                detachedSymbolTable = symbolTable,
+                irInterner = IrInterningService(),
+                irBuiltIns = irBuiltIns,
+        )
+
+        val dummyIrFile = IrFileImpl(
+                fileEntry = NaiveSourceBasedFileEntryImpl(name = "<unknown>"),
+                symbol = IrFileSymbolImpl(),
+                packageFqName = FqName.ROOT
+        )
+
+        val dumpOptions = DumpIrTreeOptions(
+                printSignatures = true,
+                referenceRenderingStrategy = DumpIrReferenceRenderingAsSignatureStrategy(KonanManglerIr)
+        )
+
+        val irDumps: List<String> = moduleDeserializer.reversedSignatureIndex.keys.mapNotNull { signature: IdSignature ->
+            val preprocessedFunction = moduleDeserializer.deserializeInlineFunction(signature, dummyIrFile)
+                    ?: return@mapNotNull null
+            val irDump = preprocessedFunction.dump(dumpOptions)
+            val irDumpFirstLine = irDump.substringBefore(Printer.LINE_SEPARATOR)
+            irDumpFirstLine to irDump
+        }.sortedBy { /* irDumpFirstLine */ it.first }.map { /* irDump */ it.second }
+
+        output.appendLine("// ${irDumps.size} inlinable functions in ${library.libraryFile}")
+
+        for (irDump in irDumps) {
+            output.appendLine(irDump)
+        }
     }
 }
 

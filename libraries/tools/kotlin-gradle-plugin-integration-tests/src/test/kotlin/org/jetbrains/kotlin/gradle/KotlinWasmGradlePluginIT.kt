@@ -576,6 +576,7 @@ class KotlinWasmGradlePluginIT : KGPBaseTest() {
                 kotlinMultiplatform.wasmJs {
                     browser {
                         webpackTask {
+                            it.generateConfigOnly = true
                             it.devServerProperty.set(
                                 KotlinWebpackConfig.DevServer(
                                     static = mutableListOf("foo")
@@ -586,9 +587,18 @@ class KotlinWasmGradlePluginIT : KGPBaseTest() {
                         commonWebpackConfig {
                             it.outputFileName = "check.js"
                             it.devServer = (it.devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                                @Suppress("DEPRECATION")
                                 static = (static ?: mutableListOf()).apply {
                                     add("bar")
                                 }
+                            }
+                        }
+
+                        runTask {
+                            it.devServerProperty.set(it.devServerProperty.get().copy())
+
+                            if (it.devServerProperty.get().statics.isEmpty()) {
+                                error("No dev server statics after copying of data class")
                             }
                         }
                     }
@@ -604,13 +614,13 @@ class KotlinWasmGradlePluginIT : KGPBaseTest() {
                 }
             }
 
-            build("assemble") {
+            build("wasmJsBrowserProductionWebpack") {
                 assertTasksExecuted(":wasmJsBrowserProductionWebpack")
 
                 assertOutputContains("File output name: check.js")
-                val pathConfig = output.substringAfter("Path config: ").substringBefore("\n")
+                val pathConfig = output.substringAfter("Path config: ").substringBefore("webpack.config.js")
                 assertFileContains(
-                    Path(pathConfig),
+                    Path(pathConfig).resolve("webpack.config.js"),
                     "\"static\": [\n" +
                             "    \"foo\",\n" +
                             "    \"bar\"\n" +

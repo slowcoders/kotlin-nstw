@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.analysis.low.level.api.fir.diagnostic.compiler.base
 
 import com.intellij.testFramework.TestDataPath;
 import org.jetbrains.kotlin.test.util.KtTestUtil;
-import org.jetbrains.kotlin.test.utils.TransformersFunctions;
 import org.jetbrains.kotlin.test.TestMetadata;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -395,6 +394,18 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("recursiveAnnotationWithVarargAndDefaultValue.kt")
+    public void testRecursiveAnnotationWithVarargAndDefaultValue() {
+      runTest("compiler/testData/codegen/box/annotations/recursiveAnnotationWithVarargAndDefaultValue.kt");
+    }
+
+    @Test
+    @TestMetadata("recursiveAnnotationWithVarargAndWithoutDefaultValue.kt")
+    public void testRecursiveAnnotationWithVarargAndWithoutDefaultValue() {
+      runTest("compiler/testData/codegen/box/annotations/recursiveAnnotationWithVarargAndWithoutDefaultValue.kt");
+    }
+
+    @Test
     @TestMetadata("resolveWithLowPriorityAnnotation.kt")
     public void testResolveWithLowPriorityAnnotation() {
       runTest("compiler/testData/codegen/box/annotations/resolveWithLowPriorityAnnotation.kt");
@@ -546,6 +557,18 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("annotationAnnotationParam.kt")
+      public void testAnnotationAnnotationParam() {
+        runTest("compiler/testData/codegen/box/annotations/instances/annotationAnnotationParam.kt");
+      }
+
+      @Test
+      @TestMetadata("annotationAnyDispatch.kt")
+      public void testAnnotationAnyDispatch() {
+        runTest("compiler/testData/codegen/box/annotations/instances/annotationAnyDispatch.kt");
+      }
+
+      @Test
       @TestMetadata("annotationEnclosingName.kt")
       public void testAnnotationEnclosingName() {
         runTest("compiler/testData/codegen/box/annotations/instances/annotationEnclosingName.kt");
@@ -561,6 +584,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("annotationFromStdlib.kt")
       public void testAnnotationFromStdlib() {
         runTest("compiler/testData/codegen/box/annotations/instances/annotationFromStdlib.kt");
+      }
+
+      @Test
+      @TestMetadata("annotationInlineMultiModule.kt")
+      public void testAnnotationInlineMultiModule() {
+        runTest("compiler/testData/codegen/box/annotations/instances/annotationInlineMultiModule.kt");
       }
 
       @Test
@@ -600,6 +629,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("annotationToStringDefaultsAndEmptyArrays.kt")
+      public void testAnnotationToStringDefaultsAndEmptyArrays() {
+        runTest("compiler/testData/codegen/box/annotations/instances/annotationToStringDefaultsAndEmptyArrays.kt");
+      }
+
+      @Test
       @TestMetadata("annotationType.kt")
       public void testAnnotationType() {
         runTest("compiler/testData/codegen/box/annotations/instances/annotationType.kt");
@@ -624,6 +659,42 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("arrayContentEqAny.kt")
+      public void testArrayContentEqAny() {
+        runTest("compiler/testData/codegen/box/annotations/instances/arrayContentEqAny.kt");
+      }
+
+      @Test
+      @TestMetadata("arraysAndKClass.kt")
+      public void testArraysAndKClass() {
+        runTest("compiler/testData/codegen/box/annotations/instances/arraysAndKClass.kt");
+      }
+
+      @Test
+      @TestMetadata("differentAnnotationTypes.kt")
+      public void testDifferentAnnotationTypes() {
+        runTest("compiler/testData/codegen/box/annotations/instances/differentAnnotationTypes.kt");
+      }
+
+      @Test
+      @TestMetadata("differentOrder.kt")
+      public void testDifferentOrder() {
+        runTest("compiler/testData/codegen/box/annotations/instances/differentOrder.kt");
+      }
+
+      @Test
+      @TestMetadata("enumAndKClass.kt")
+      public void testEnumAndKClass() {
+        runTest("compiler/testData/codegen/box/annotations/instances/enumAndKClass.kt");
+      }
+
+      @Test
+      @TestMetadata("enumArray.kt")
+      public void testEnumArray() {
+        runTest("compiler/testData/codegen/box/annotations/instances/enumArray.kt");
+      }
+
+      @Test
       @TestMetadata("inInlineFunction.kt")
       public void testInInlineFunction() {
         runTest("compiler/testData/codegen/box/annotations/instances/inInlineFunction.kt");
@@ -633,6 +704,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("innerAnnotationInstantiation.kt")
       public void testInnerAnnotationInstantiation() {
         runTest("compiler/testData/codegen/box/annotations/instances/innerAnnotationInstantiation.kt");
+      }
+
+      @Test
+      @TestMetadata("instanceEquality.kt")
+      public void testInstanceEquality() {
+        runTest("compiler/testData/codegen/box/annotations/instances/instanceEquality.kt");
       }
 
       @Test
@@ -657,6 +734,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("kotlinExistingAnnotation.kt")
       public void testKotlinExistingAnnotation() {
         runTest("compiler/testData/codegen/box/annotations/instances/kotlinExistingAnnotation.kt");
+      }
+
+      @Test
+      @TestMetadata("mixedArray.kt")
+      public void testMixedArray() {
+        runTest("compiler/testData/codegen/box/annotations/instances/mixedArray.kt");
       }
 
       @Test
@@ -690,9 +773,27 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("naNAndZero.kt")
+      public void testNaNAndZero() {
+        runTest("compiler/testData/codegen/box/annotations/instances/naNAndZero.kt");
+      }
+
+      @Test
+      @TestMetadata("nested.kt")
+      public void testNested() {
+        runTest("compiler/testData/codegen/box/annotations/instances/nested.kt");
+      }
+
+      @Test
       @TestMetadata("nestedAnnotationInstances.kt")
       public void testNestedAnnotationInstances() {
         runTest("compiler/testData/codegen/box/annotations/instances/nestedAnnotationInstances.kt");
+      }
+
+      @Test
+      @TestMetadata("nestedDefaults.kt")
+      public void testNestedDefaults() {
+        runTest("compiler/testData/codegen/box/annotations/instances/nestedDefaults.kt");
       }
 
       @Test
@@ -702,9 +803,33 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("repeatableInstantiation.kt")
+      public void testRepeatableInstantiation() {
+        runTest("compiler/testData/codegen/box/annotations/instances/repeatableInstantiation.kt");
+      }
+
+      @Test
+      @TestMetadata("typeAliasesAndGenericsInterop.kt")
+      public void testTypeAliasesAndGenericsInterop() {
+        runTest("compiler/testData/codegen/box/annotations/instances/typeAliasesAndGenericsInterop.kt");
+      }
+
+      @Test
+      @TestMetadata("unsignedAndBooleanArrays.kt")
+      public void testUnsignedAndBooleanArrays() {
+        runTest("compiler/testData/codegen/box/annotations/instances/unsignedAndBooleanArrays.kt");
+      }
+
+      @Test
       @TestMetadata("varargInAnnotationParameterInstantiation.kt")
       public void testVarargInAnnotationParameterInstantiation() {
         runTest("compiler/testData/codegen/box/annotations/instances/varargInAnnotationParameterInstantiation.kt");
+      }
+
+      @Test
+      @TestMetadata("withDefaults.kt")
+      public void testWithDefaults() {
+        runTest("compiler/testData/codegen/box/annotations/instances/withDefaults.kt");
       }
     }
 
@@ -3313,7 +3438,7 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt74377.kt")
     public void testKt74377() {
-      runTest("compiler/testData/codegen/box/bridges/kt74377.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/bridges/kt74377.kt");
     }
 
     @Test
@@ -3680,6 +3805,18 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestMetadata("typeParameterInExtensionReceiver.kt")
     public void testTypeParameterInExtensionReceiver() {
       runTest("compiler/testData/codegen/box/bridges/typeParameterInExtensionReceiver.kt");
+    }
+
+    @Test
+    @TestMetadata("varargBridge1.kt")
+    public void testVarargBridge1() {
+      runTest("compiler/testData/codegen/box/bridges/varargBridge1.kt");
+    }
+
+    @Test
+    @TestMetadata("varargBridge2.kt")
+    public void testVarargBridge2() {
+      runTest("compiler/testData/codegen/box/bridges/varargBridge2.kt");
     }
 
     @Nested
@@ -6927,6 +7064,24 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("kt80795.kt")
+    public void testKt80795() {
+      runTest("compiler/testData/codegen/box/casts/kt80795.kt");
+    }
+
+    @Test
+    @TestMetadata("kt81257.kt")
+    public void testKt81257() {
+      runTest("compiler/testData/codegen/box/casts/kt81257.kt");
+    }
+
+    @Test
+    @TestMetadata("kt81617.kt")
+    public void testKt81617() {
+      runTest("compiler/testData/codegen/box/casts/kt81617.kt");
+    }
+
+    @Test
     @TestMetadata("lambdaToUnitCast.kt")
     public void testLambdaToUnitCast() {
       runTest("compiler/testData/codegen/box/casts/lambdaToUnitCast.kt");
@@ -6990,6 +7145,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestMetadata("wasmCastMessages.kt")
     public void testWasmCastMessages() {
       runTest("compiler/testData/codegen/box/casts/wasmCastMessages.kt");
+    }
+
+    @Test
+    @TestMetadata("wasmCastMessagesWasmJs.kt")
+    public void testWasmCastMessagesWasmJs() {
+      runTest("compiler/testData/codegen/box/casts/wasmCastMessagesWasmJs.kt");
     }
 
     @Nested
@@ -9074,7 +9235,7 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("closureBoxedVarOptimizations.kt")
       public void testClosureBoxedVarOptimizations() {
-        runTest("compiler/testData/codegen/box/closures/capturedVarsOptimization/closureBoxedVarOptimizations.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/closures/capturedVarsOptimization/closureBoxedVarOptimizations.kt");
       }
 
       @Test
@@ -9177,27 +9338,55 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("genericCollection.kt")
+    public void testGenericCollection() {
+      runTest("compiler/testData/codegen/box/collectionLiterals/genericCollection.kt");
+    }
+
+    @Test
+    @TestMetadata("multipleOfOverloads.kt")
+    public void testMultipleOfOverloads() {
+      runTest("compiler/testData/codegen/box/collectionLiterals/multipleOfOverloads.kt");
+    }
+
+    @Test
+    @TestMetadata("nonGenericCollection.kt")
+    public void testNonGenericCollection() {
+      runTest("compiler/testData/codegen/box/collectionLiterals/nonGenericCollection.kt");
+    }
+  }
+
+  @Nested
+  @TestMetadata("compiler/testData/codegen/box/collectionLiteralsInAnnotations")
+  @TestDataPath("$PROJECT_ROOT")
+  public class CollectionLiteralsInAnnotations {
+    @Test
+    public void testAllFilesPresentInCollectionLiteralsInAnnotations() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/collectionLiteralsInAnnotations"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
     @TestMetadata("collectionLiteralsInArgumentPosition.kt")
     public void testCollectionLiteralsInArgumentPosition() {
-      runTest("compiler/testData/codegen/box/collectionLiterals/collectionLiteralsInArgumentPosition.kt");
+      runTest("compiler/testData/codegen/box/collectionLiteralsInAnnotations/collectionLiteralsInArgumentPosition.kt");
     }
 
     @Test
     @TestMetadata("collectionLiteralsWithConstants.kt")
     public void testCollectionLiteralsWithConstants() {
-      runTest("compiler/testData/codegen/box/collectionLiterals/collectionLiteralsWithConstants.kt");
+      runTest("compiler/testData/codegen/box/collectionLiteralsInAnnotations/collectionLiteralsWithConstants.kt");
     }
 
     @Test
     @TestMetadata("collectionLiteralsWithVarargs.kt")
     public void testCollectionLiteralsWithVarargs() {
-      runTest("compiler/testData/codegen/box/collectionLiterals/collectionLiteralsWithVarargs.kt");
+      runTest("compiler/testData/codegen/box/collectionLiteralsInAnnotations/collectionLiteralsWithVarargs.kt");
     }
 
     @Test
     @TestMetadata("defaultAnnotationParameterValues.kt")
     public void testDefaultAnnotationParameterValues() {
-      runTest("compiler/testData/codegen/box/collectionLiterals/defaultAnnotationParameterValues.kt");
+      runTest("compiler/testData/codegen/box/collectionLiteralsInAnnotations/defaultAnnotationParameterValues.kt");
     }
   }
 
@@ -10999,6 +11188,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("invokeMultipleContextParametersOfSameType.kt")
+    public void testInvokeMultipleContextParametersOfSameType() {
+      runTest("compiler/testData/codegen/box/contextParameters/invokeMultipleContextParametersOfSameType.kt");
+    }
+
+    @Test
     @TestMetadata("invokeOnTypeWithContext.kt")
     public void testInvokeOnTypeWithContext() {
       runTest("compiler/testData/codegen/box/contextParameters/invokeOnTypeWithContext.kt");
@@ -12078,6 +12273,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("forInArrayWithIndexNameBasedDestructuringShortForm.kt")
+      public void testForInArrayWithIndexNameBasedDestructuringShortForm() {
+        runTest("compiler/testData/codegen/box/controlStructures/forInArrayWithIndex/forInArrayWithIndexNameBasedDestructuringShortForm.kt");
+      }
+
+      @Test
       @TestMetadata("forInArrayWithIndexNoElementVar.kt")
       public void testForInArrayWithIndexNoElementVar() {
         runTest("compiler/testData/codegen/box/controlStructures/forInArrayWithIndex/forInArrayWithIndexNoElementVar.kt");
@@ -12214,6 +12415,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("forInCharSequenceWithIndexNameBasedDestructuringShortForm.kt")
+      public void testForInCharSequenceWithIndexNameBasedDestructuringShortForm() {
+        runTest("compiler/testData/codegen/box/controlStructures/forInCharSequenceWithIndex/forInCharSequenceWithIndexNameBasedDestructuringShortForm.kt");
+      }
+
+      @Test
       @TestMetadata("forInCharSequenceWithIndexNoElementVarCheckSideEffects.kt")
       public void testForInCharSequenceWithIndexNoElementVarCheckSideEffects() {
         runTest("compiler/testData/codegen/box/controlStructures/forInCharSequenceWithIndex/forInCharSequenceWithIndexNoElementVarCheckSideEffects.kt");
@@ -12235,6 +12442,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("forInStringWithIndex.kt")
       public void testForInStringWithIndex() {
         runTest("compiler/testData/codegen/box/controlStructures/forInCharSequenceWithIndex/forInStringWithIndex.kt");
+      }
+
+      @Test
+      @TestMetadata("forInStringWithIndexNameBasedDestructuringShortForm.kt")
+      public void testForInStringWithIndexNameBasedDestructuringShortForm() {
+        runTest("compiler/testData/codegen/box/controlStructures/forInCharSequenceWithIndex/forInStringWithIndexNameBasedDestructuringShortForm.kt");
       }
 
       @Test
@@ -12433,6 +12646,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("forInSequenceWithIndexCheckSideEffects.kt")
       public void testForInSequenceWithIndexCheckSideEffects() {
         runTest("compiler/testData/codegen/box/controlStructures/forInSequenceWithIndex/forInSequenceWithIndexCheckSideEffects.kt");
+      }
+
+      @Test
+      @TestMetadata("forInSequenceWithIndexNameBasedDestructuringShortForm.kt")
+      public void testForInSequenceWithIndexNameBasedDestructuringShortForm() {
+        runTest("compiler/testData/codegen/box/controlStructures/forInSequenceWithIndex/forInSequenceWithIndexNameBasedDestructuringShortForm.kt");
       }
 
       @Test
@@ -13969,6 +14188,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("unsafeTransform.kt")
+    public void testUnsafeTransform() {
+      runTest("compiler/testData/codegen/box/coroutines/unsafeTransform.kt");
+    }
+
+    @Test
     @TestMetadata("varCaptuedInCoroutineIntrinsic.kt")
     public void testVarCaptuedInCoroutineIntrinsic() {
       runTest("compiler/testData/codegen/box/coroutines/varCaptuedInCoroutineIntrinsic.kt");
@@ -14235,6 +14460,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("fqName.kt")
       public void testFqName() {
         runTest("compiler/testData/codegen/box/coroutines/debug/fqName.kt");
+      }
+
+      @Test
+      @TestMetadata("linenumberDoesNotDuplicate.kt")
+      public void testLinenumberDoesNotDuplicate() {
+        runTest("compiler/testData/codegen/box/coroutines/debug/linenumberDoesNotDuplicate.kt");
       }
 
       @Test
@@ -20159,6 +20390,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("elvisToCommonType.kt")
+    public void testElvisToCommonType() {
+      runTest("compiler/testData/codegen/box/elvis/elvisToCommonType.kt");
+    }
+
+    @Test
     @TestMetadata("genericElvisWithMoreSpecificLHS.kt")
     public void testGenericElvisWithMoreSpecificLHS() {
       runTest("compiler/testData/codegen/box/elvis/genericElvisWithMoreSpecificLHS.kt");
@@ -20560,12 +20797,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestMetadata("enumEntriesIntrinsicMultipleEnums.kt")
     public void testEnumEntriesIntrinsicMultipleEnums() {
       runTest("compiler/testData/codegen/box/enum/enumEntriesIntrinsicMultipleEnums.kt");
-    }
-
-    @Test
-    @TestMetadata("enumEntriesIntrinsicWithoutFeature.kt")
-    public void testEnumEntriesIntrinsicWithoutFeature() {
-      runTest("compiler/testData/codegen/box/enum/enumEntriesIntrinsicWithoutFeature.kt");
     }
 
     @Test
@@ -21677,7 +21908,7 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("extensionFunctionAsASupertypeOfValueClass.kt")
     public void testExtensionFunctionAsASupertypeOfValueClass() {
-      runTest("compiler/testData/codegen/box/extensionFunctions/extensionFunctionAsASupertypeOfValueClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/extensionFunctions/extensionFunctionAsASupertypeOfValueClass.kt");
     }
 
     @Test
@@ -21761,7 +21992,7 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("extensionFunctionInValueClass.kt")
     public void testExtensionFunctionInValueClass() {
-      runTest("compiler/testData/codegen/box/extensionFunctions/extensionFunctionInValueClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/extensionFunctions/extensionFunctionInValueClass.kt");
     }
 
     @Test
@@ -25052,6 +25283,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("liftThroughFunObjectLambda.kt")
+      public void testLiftThroughFunObjectLambda() {
+        runTest("compiler/testData/codegen/box/functions/localFunctions/liftThroughFunObjectLambda.kt");
+      }
+
+      @Test
       @TestMetadata("localExtensionOnNullableParameter.kt")
       public void testLocalExtensionOnNullableParameter() {
         runTest("compiler/testData/codegen/box/functions/localFunctions/localExtensionOnNullableParameter.kt");
@@ -25813,6 +26050,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("ifWithAssignmentAndNothingBranch.kt")
+    public void testIfWithAssignmentAndNothingBranch() {
+      runTest("compiler/testData/codegen/box/inference/ifWithAssignmentAndNothingBranch.kt");
+    }
+
+    @Test
     @TestMetadata("inferenceWithTypeVariableInsideCapturedType.kt")
     public void testInferenceWithTypeVariableInsideCapturedType() {
       runTest("compiler/testData/codegen/box/inference/inferenceWithTypeVariableInsideCapturedType.kt");
@@ -25951,6 +26194,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("noCheckNotNullForFlexibleTypeInWhenAtAssignment.kt")
+    public void testNoCheckNotNullForFlexibleTypeInWhenAtAssignment() {
+      runTest("compiler/testData/codegen/box/inference/noCheckNotNullForFlexibleTypeInWhenAtAssignment.kt");
+    }
+
+    @Test
     @TestMetadata("noCoercionToUniForNullableLambdaReturnType.kt")
     public void testNoCoercionToUniForNullableLambdaReturnType() {
       runTest("compiler/testData/codegen/box/inference/noCoercionToUniForNullableLambdaReturnType.kt");
@@ -26041,9 +26290,45 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("tryCatchAtAssignment.kt")
+    public void testTryCatchAtAssignment() {
+      runTest("compiler/testData/codegen/box/inference/tryCatchAtAssignment.kt");
+    }
+
+    @Test
+    @TestMetadata("tryCatchAtAssignmentWithSmartCast.kt")
+    public void testTryCatchAtAssignmentWithSmartCast() {
+      runTest("compiler/testData/codegen/box/inference/tryCatchAtAssignmentWithSmartCast.kt");
+    }
+
+    @Test
+    @TestMetadata("tryWithAssignmentAndNothingTypedCatch.kt")
+    public void testTryWithAssignmentAndNothingTypedCatch() {
+      runTest("compiler/testData/codegen/box/inference/tryWithAssignmentAndNothingTypedCatch.kt");
+    }
+
+    @Test
     @TestMetadata("unsafeVarianceCodegen.kt")
     public void testUnsafeVarianceCodegen() {
       runTest("compiler/testData/codegen/box/inference/unsafeVarianceCodegen.kt");
+    }
+
+    @Test
+    @TestMetadata("whenAtAssignment.kt")
+    public void testWhenAtAssignment() {
+      runTest("compiler/testData/codegen/box/inference/whenAtAssignment.kt");
+    }
+
+    @Test
+    @TestMetadata("whenAtAssignmentWithSmartCast.kt")
+    public void testWhenAtAssignmentWithSmartCast() {
+      runTest("compiler/testData/codegen/box/inference/whenAtAssignmentWithSmartCast.kt");
+    }
+
+    @Test
+    @TestMetadata("whenAtAssignmentWithSmartCastInsideCapturedLambda.kt")
+    public void testWhenAtAssignmentWithSmartCastInsideCapturedLambda() {
+      runTest("compiler/testData/codegen/box/inference/whenAtAssignmentWithSmartCastInsideCapturedLambda.kt");
     }
 
     @Nested
@@ -26785,6 +27070,18 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
+        @TestMetadata("kt66359a.kt")
+        public void testKt66359a() {
+          runTest("compiler/testData/codegen/box/inference/pcla/issues/kt66359a.kt");
+        }
+
+        @Test
+        @TestMetadata("kt66359b.kt")
+        public void testKt66359b() {
+          runTest("compiler/testData/codegen/box/inference/pcla/issues/kt66359b.kt");
+        }
+
+        @Test
         @TestMetadata("kt67993.kt")
         public void testKt67993() {
           runTest("compiler/testData/codegen/box/inference/pcla/issues/kt67993.kt");
@@ -27493,9 +27790,21 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("defaultArgsLateinitLowering.kt")
+    public void testDefaultArgsLateinitLowering() {
+      runTest("compiler/testData/codegen/box/inline/defaultArgsLateinitLowering.kt");
+    }
+
+    @Test
     @TestMetadata("defaultArgsLowering.kt")
     public void testDefaultArgsLowering() {
       runTest("compiler/testData/codegen/box/inline/defaultArgsLowering.kt");
+    }
+
+    @Test
+    @TestMetadata("defaultArgsLoweringWithIntraModuleInliner.kt")
+    public void testDefaultArgsLoweringWithIntraModuleInliner() {
+      runTest("compiler/testData/codegen/box/inline/defaultArgsLoweringWithIntraModuleInliner.kt");
     }
 
     @Test
@@ -27957,451 +28266,451 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("annotatedMemberExtensionProperty.kt")
     public void testAnnotatedMemberExtensionProperty() {
-      runTest("compiler/testData/codegen/box/inlineClasses/annotatedMemberExtensionProperty.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/annotatedMemberExtensionProperty.kt");
     }
 
     @Test
     @TestMetadata("annotatedMemberExtensionPropertyGeneric.kt")
     public void testAnnotatedMemberExtensionPropertyGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/annotatedMemberExtensionPropertyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/annotatedMemberExtensionPropertyGeneric.kt");
     }
 
     @Test
     @TestMetadata("anonymousObjectAsDefaultParam.kt")
     public void testAnonymousObjectAsDefaultParam() {
-      runTest("compiler/testData/codegen/box/inlineClasses/anonymousObjectAsDefaultParam.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/anonymousObjectAsDefaultParam.kt");
     }
 
     @Test
     @TestMetadata("anonymousObjectAsDefaultParamFull.kt")
     public void testAnonymousObjectAsDefaultParamFull() {
-      runTest("compiler/testData/codegen/box/inlineClasses/anonymousObjectAsDefaultParamFull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/anonymousObjectAsDefaultParamFull.kt");
     }
 
     @Test
     @TestMetadata("anonymousObjectAsDefaultParamSingleFile.kt")
     public void testAnonymousObjectAsDefaultParamSingleFile() {
-      runTest("compiler/testData/codegen/box/inlineClasses/anonymousObjectAsDefaultParamSingleFile.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/anonymousObjectAsDefaultParamSingleFile.kt");
     }
 
     @Test
     @TestMetadata("anySuperCall.kt")
     public void testAnySuperCall() {
-      runTest("compiler/testData/codegen/box/inlineClasses/anySuperCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/anySuperCall.kt");
     }
 
     @Test
     @TestMetadata("anySuperCallGeneric.kt")
     public void testAnySuperCallGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/anySuperCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/anySuperCallGeneric.kt");
     }
 
     @Test
     @TestMetadata("boundCallableReferencePassedToInlineFunction.kt")
     public void testBoundCallableReferencePassedToInlineFunction() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boundCallableReferencePassedToInlineFunction.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boundCallableReferencePassedToInlineFunction.kt");
     }
 
     @Test
     @TestMetadata("boundCallableReferencePassedToInlineFunctionGeneric.kt")
     public void testBoundCallableReferencePassedToInlineFunctionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boundCallableReferencePassedToInlineFunctionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boundCallableReferencePassedToInlineFunctionGeneric.kt");
     }
 
     @Test
     @TestMetadata("boundCallableReferencePassedToInlineFunctionGeneric2.kt")
     public void testBoundCallableReferencePassedToInlineFunctionGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boundCallableReferencePassedToInlineFunctionGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boundCallableReferencePassedToInlineFunctionGeneric2.kt");
     }
 
     @Test
     @TestMetadata("boxImplDoesNotExecuteInSecondaryConstructor.kt")
     public void testBoxImplDoesNotExecuteInSecondaryConstructor() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxImplDoesNotExecuteInSecondaryConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxImplDoesNotExecuteInSecondaryConstructor.kt");
     }
 
     @Test
     @TestMetadata("boxImplDoesNotExecuteInSecondaryConstructorGeneric.kt")
     public void testBoxImplDoesNotExecuteInSecondaryConstructorGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxImplDoesNotExecuteInSecondaryConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxImplDoesNotExecuteInSecondaryConstructorGeneric.kt");
     }
 
     @Test
     @TestMetadata("boxImplDoesNotExecuteInitBlock.kt")
     public void testBoxImplDoesNotExecuteInitBlock() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxImplDoesNotExecuteInitBlock.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxImplDoesNotExecuteInitBlock.kt");
     }
 
     @Test
     @TestMetadata("boxImplDoesNotExecuteInitBlockGeneric.kt")
     public void testBoxImplDoesNotExecuteInitBlockGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxImplDoesNotExecuteInitBlockGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxImplDoesNotExecuteInitBlockGeneric.kt");
     }
 
     @Test
     @TestMetadata("boxNullableForFakeOverride.kt")
     public void testBoxNullableForFakeOverride() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableForFakeOverride.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableForFakeOverride.kt");
     }
 
     @Test
     @TestMetadata("boxNullableForFakeOverrideGeneric.kt")
     public void testBoxNullableForFakeOverrideGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableForFakeOverrideGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableForFakeOverrideGeneric.kt");
     }
 
     @Test
     @TestMetadata("boxNullableForFakeOverrideGeneric2.kt")
     public void testBoxNullableForFakeOverrideGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableForFakeOverrideGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableForFakeOverrideGeneric2.kt");
     }
 
     @Test
     @TestMetadata("boxNullableValueOfInlineClassWithNonNullUnderlyingType.kt")
     public void testBoxNullableValueOfInlineClassWithNonNullUnderlyingType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithNonNullUnderlyingType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithNonNullUnderlyingType.kt");
     }
 
     @Test
     @TestMetadata("boxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric.kt")
     public void testBoxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("boxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric2.kt")
     public void testBoxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric2.kt");
     }
 
     @Test
     @TestMetadata("boxNullableValueOfInlineClassWithPrimitiveUnderlyingType.kt")
     public void testBoxNullableValueOfInlineClassWithPrimitiveUnderlyingType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithPrimitiveUnderlyingType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithPrimitiveUnderlyingType.kt");
     }
 
     @Test
     @TestMetadata("boxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric.kt")
     public void testBoxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("boxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric2.kt")
     public void testBoxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric2.kt");
     }
 
     @Test
     @TestMetadata("boxResultInlineClassOfConstructorCall.kt")
     public void testBoxResultInlineClassOfConstructorCall() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxResultInlineClassOfConstructorCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxResultInlineClassOfConstructorCall.kt");
     }
 
     @Test
     @TestMetadata("boxResultInlineClassOfConstructorCallGeneric.kt")
     public void testBoxResultInlineClassOfConstructorCallGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxResultInlineClassOfConstructorCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxResultInlineClassOfConstructorCallGeneric.kt");
     }
 
     @Test
     @TestMetadata("boxResultInlineClassOfConstructorCallGeneric2.kt")
     public void testBoxResultInlineClassOfConstructorCallGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxResultInlineClassOfConstructorCallGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxResultInlineClassOfConstructorCallGeneric2.kt");
     }
 
     @Test
     @TestMetadata("boxUnboxInlineClassesWithOperatorsGetSet.kt")
     public void testBoxUnboxInlineClassesWithOperatorsGetSet() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxUnboxInlineClassesWithOperatorsGetSet.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxUnboxInlineClassesWithOperatorsGetSet.kt");
     }
 
     @Test
     @TestMetadata("boxUnboxInlineClassesWithOperatorsGetSetGeneric.kt")
     public void testBoxUnboxInlineClassesWithOperatorsGetSetGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxUnboxInlineClassesWithOperatorsGetSetGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxUnboxInlineClassesWithOperatorsGetSetGeneric.kt");
     }
 
     @Test
     @TestMetadata("boxUnboxOfInlineClassForCapturedVars.kt")
     public void testBoxUnboxOfInlineClassForCapturedVars() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxUnboxOfInlineClassForCapturedVars.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxUnboxOfInlineClassForCapturedVars.kt");
     }
 
     @Test
     @TestMetadata("boxUnboxOfInlineClassForCapturedVarsGeneric.kt")
     public void testBoxUnboxOfInlineClassForCapturedVarsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/boxUnboxOfInlineClassForCapturedVarsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/boxUnboxOfInlineClassForCapturedVarsGeneric.kt");
     }
 
     @Test
     @TestMetadata("bridgeForFunctionReturningInlineClass.kt")
     public void testBridgeForFunctionReturningInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/bridgeForFunctionReturningInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/bridgeForFunctionReturningInlineClass.kt");
     }
 
     @Test
     @TestMetadata("bridgeForFunctionReturningInlineClassGeneric.kt")
     public void testBridgeForFunctionReturningInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/bridgeForFunctionReturningInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/bridgeForFunctionReturningInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("bridgeGenerationWithInlineClassOverAny.kt")
     public void testBridgeGenerationWithInlineClassOverAny() {
-      runTest("compiler/testData/codegen/box/inlineClasses/bridgeGenerationWithInlineClassOverAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/bridgeGenerationWithInlineClassOverAny.kt");
     }
 
     @Test
     @TestMetadata("bridgeGenerationWithInlineClassOverAnyGeneric.kt")
     public void testBridgeGenerationWithInlineClassOverAnyGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/bridgeGenerationWithInlineClassOverAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/bridgeGenerationWithInlineClassOverAnyGeneric.kt");
     }
 
     @Test
     @TestMetadata("bridgeGenerationWithInlineClassOverAnyGeneric2.kt")
     public void testBridgeGenerationWithInlineClassOverAnyGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/bridgeGenerationWithInlineClassOverAnyGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/bridgeGenerationWithInlineClassOverAnyGeneric2.kt");
     }
 
     @Test
     @TestMetadata("bridgesWhenInlineClassImplementsGenericInterface.kt")
     public void testBridgesWhenInlineClassImplementsGenericInterface() {
-      runTest("compiler/testData/codegen/box/inlineClasses/bridgesWhenInlineClassImplementsGenericInterface.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/bridgesWhenInlineClassImplementsGenericInterface.kt");
     }
 
     @Test
     @TestMetadata("bridgesWhenInlineClassImplementsGenericInterfaceGeneric.kt")
     public void testBridgesWhenInlineClassImplementsGenericInterfaceGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/bridgesWhenInlineClassImplementsGenericInterfaceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/bridgesWhenInlineClassImplementsGenericInterfaceGeneric.kt");
     }
 
     @Test
     @TestMetadata("callComputablePropertyInsideInlineClass.kt")
     public void testCallComputablePropertyInsideInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/callComputablePropertyInsideInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/callComputablePropertyInsideInlineClass.kt");
     }
 
     @Test
     @TestMetadata("callSpecializedEqualsViaReflection.kt")
     public void testCallSpecializedEqualsViaReflection() {
-      runTest("compiler/testData/codegen/box/inlineClasses/callSpecializedEqualsViaReflection.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/callSpecializedEqualsViaReflection.kt");
     }
 
     @Test
     @TestMetadata("callSpecializedEqualsViaReflectionGeneric.kt")
     public void testCallSpecializedEqualsViaReflectionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/callSpecializedEqualsViaReflectionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/callSpecializedEqualsViaReflectionGeneric.kt");
     }
 
     @Test
     @TestMetadata("callSpeciallyOverriddenPropertyOfInlineClass.kt")
     public void testCallSpeciallyOverriddenPropertyOfInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/callSpeciallyOverriddenPropertyOfInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/callSpeciallyOverriddenPropertyOfInlineClass.kt");
     }
 
     @Test
     @TestMetadata("callSpeciallyOverriddenPropertyOfInlineClassGeneric.kt")
     public void testCallSpeciallyOverriddenPropertyOfInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/callSpeciallyOverriddenPropertyOfInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/callSpeciallyOverriddenPropertyOfInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("callableReferencesWithInlineClasses.kt")
     public void testCallableReferencesWithInlineClasses() {
-      runTest("compiler/testData/codegen/box/inlineClasses/callableReferencesWithInlineClasses.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/callableReferencesWithInlineClasses.kt");
     }
 
     @Test
     @TestMetadata("callableReferencesWithInlineClassesGeneric.kt")
     public void testCallableReferencesWithInlineClassesGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/callableReferencesWithInlineClassesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/callableReferencesWithInlineClassesGeneric.kt");
     }
 
     @Test
     @TestMetadata("castInsideWhenExpression.kt")
     public void testCastInsideWhenExpression() {
-      runTest("compiler/testData/codegen/box/inlineClasses/castInsideWhenExpression.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/castInsideWhenExpression.kt");
     }
 
     @Test
     @TestMetadata("castInsideWhenExpressionGeneric.kt")
     public void testCastInsideWhenExpressionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/castInsideWhenExpressionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/castInsideWhenExpressionGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkBoxUnboxOfArgumentsOnInlinedFunctions.kt")
     public void testCheckBoxUnboxOfArgumentsOnInlinedFunctions() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxUnboxOfArgumentsOnInlinedFunctions.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxUnboxOfArgumentsOnInlinedFunctions.kt");
     }
 
     @Test
     @TestMetadata("checkBoxUnboxOfArgumentsOnInlinedFunctionsGeneric.kt")
     public void testCheckBoxUnboxOfArgumentsOnInlinedFunctionsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxUnboxOfArgumentsOnInlinedFunctionsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxUnboxOfArgumentsOnInlinedFunctionsGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingAfterAssertionOperator.kt")
     public void testCheckBoxingAfterAssertionOperator() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingAfterAssertionOperator.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingAfterAssertionOperator.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingAfterAssertionOperatorGeneric.kt")
     public void testCheckBoxingAfterAssertionOperatorGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingAfterAssertionOperatorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingAfterAssertionOperatorGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingForComplexClassHierarchy.kt")
     public void testCheckBoxingForComplexClassHierarchy() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingForComplexClassHierarchy.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingForComplexClassHierarchy.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingForComplexClassHierarchyGeneric.kt")
     public void testCheckBoxingForComplexClassHierarchyGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingForComplexClassHierarchyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingForComplexClassHierarchyGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingForNonLocalAndLabeledReturns.kt")
     public void testCheckBoxingForNonLocalAndLabeledReturns() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingForNonLocalAndLabeledReturns.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingForNonLocalAndLabeledReturns.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingForNonLocalAndLabeledReturnsGeneric.kt")
     public void testCheckBoxingForNonLocalAndLabeledReturnsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingForNonLocalAndLabeledReturnsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingForNonLocalAndLabeledReturnsGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingFromReturnTypeForInlineClasses.kt")
     public void testCheckBoxingFromReturnTypeForInlineClasses() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingFromReturnTypeForInlineClasses.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingFromReturnTypeForInlineClasses.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingFromReturnTypeForInlineClassesGeneric.kt")
     public void testCheckBoxingFromReturnTypeForInlineClassesGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingFromReturnTypeForInlineClassesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingFromReturnTypeForInlineClassesGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingOnFunctionCalls.kt")
     public void testCheckBoxingOnFunctionCalls() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingOnFunctionCalls.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingOnFunctionCalls.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingOnFunctionCallsGeneric.kt")
     public void testCheckBoxingOnFunctionCallsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingOnFunctionCallsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingOnFunctionCallsGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingOnLocalVariableAssignments.kt")
     public void testCheckBoxingOnLocalVariableAssignments() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingOnLocalVariableAssignments.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingOnLocalVariableAssignments.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingOnLocalVariableAssignmentsGeneric.kt")
     public void testCheckBoxingOnLocalVariableAssignmentsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingOnLocalVariableAssignmentsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingOnLocalVariableAssignmentsGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingUnboxingForInheritedTypeSpecializedFunctions.kt")
     public void testCheckBoxingUnboxingForInheritedTypeSpecializedFunctions() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingUnboxingForInheritedTypeSpecializedFunctions.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingUnboxingForInheritedTypeSpecializedFunctions.kt");
     }
 
     @Test
     @TestMetadata("checkBoxingUnboxingForInheritedTypeSpecializedFunctionsGeneric.kt")
     public void testCheckBoxingUnboxingForInheritedTypeSpecializedFunctionsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingUnboxingForInheritedTypeSpecializedFunctionsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkBoxingUnboxingForInheritedTypeSpecializedFunctionsGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkCallingMembersInsideInlineClass.kt")
     public void testCheckCallingMembersInsideInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkCallingMembersInsideInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkCallingMembersInsideInlineClass.kt");
     }
 
     @Test
     @TestMetadata("checkCallingMembersInsideInlineClassGeneric.kt")
     public void testCheckCallingMembersInsideInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkCallingMembersInsideInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkCallingMembersInsideInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkCastToInlineClass.kt")
     public void testCheckCastToInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkCastToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkCastToInlineClass.kt");
     }
 
     @Test
     @TestMetadata("checkCastToInlineClassGeneric.kt")
     public void testCheckCastToInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkCastToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkCastToInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkForInstanceOfInlineClass.kt")
     public void testCheckForInstanceOfInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkForInstanceOfInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkForInstanceOfInlineClass.kt");
     }
 
     @Test
     @TestMetadata("checkForInstanceOfInlineClassGeneric.kt")
     public void testCheckForInstanceOfInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkForInstanceOfInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkForInstanceOfInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkLambdaWithInlineClassesInFunctionalType.kt")
     public void testCheckLambdaWithInlineClassesInFunctionalType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkLambdaWithInlineClassesInFunctionalType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkLambdaWithInlineClassesInFunctionalType.kt");
     }
 
     @Test
     @TestMetadata("checkLambdaWithInlineClassesInFunctionalTypeGeneric.kt")
     public void testCheckLambdaWithInlineClassesInFunctionalTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkLambdaWithInlineClassesInFunctionalTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkLambdaWithInlineClassesInFunctionalTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkUnboxingResultFromTypeVariable.kt")
     public void testCheckUnboxingResultFromTypeVariable() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkUnboxingResultFromTypeVariable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkUnboxingResultFromTypeVariable.kt");
     }
 
     @Test
     @TestMetadata("checkUnboxingResultFromTypeVariableGeneric.kt")
     public void testCheckUnboxingResultFromTypeVariableGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkUnboxingResultFromTypeVariableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkUnboxingResultFromTypeVariableGeneric.kt");
     }
 
     @Test
     @TestMetadata("checkUnboxingResultFromTypeVariableGeneric2.kt")
     public void testCheckUnboxingResultFromTypeVariableGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/checkUnboxingResultFromTypeVariableGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/checkUnboxingResultFromTypeVariableGeneric2.kt");
     }
 
     @Test
     @TestMetadata("classInInlineClassInit.kt")
     public void testClassInInlineClassInit() {
-      runTest("compiler/testData/codegen/box/inlineClasses/classInInlineClassInit.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/classInInlineClassInit.kt");
     }
 
     @Test
     @TestMetadata("classInInlineClassInitGeneric.kt")
     public void testClassInInlineClassInitGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/classInInlineClassInitGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/classInInlineClassInitGeneric.kt");
     }
 
     @Test
@@ -28413,43 +28722,43 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("classLiteralOnInlineClassGeneric.kt")
     public void testClassLiteralOnInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/classLiteralOnInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/classLiteralOnInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("computablePropertyInsideInlineClass.kt")
     public void testComputablePropertyInsideInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/computablePropertyInsideInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/computablePropertyInsideInlineClass.kt");
     }
 
     @Test
     @TestMetadata("conformToComparableAndCallInterfaceMethod.kt")
     public void testConformToComparableAndCallInterfaceMethod() {
-      runTest("compiler/testData/codegen/box/inlineClasses/conformToComparableAndCallInterfaceMethod.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/conformToComparableAndCallInterfaceMethod.kt");
     }
 
     @Test
     @TestMetadata("conformToComparableAndCallInterfaceMethodGeneric.kt")
     public void testConformToComparableAndCallInterfaceMethodGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/conformToComparableAndCallInterfaceMethodGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/conformToComparableAndCallInterfaceMethodGeneric.kt");
     }
 
     @Test
     @TestMetadata("constructorCallableReference.kt")
     public void testConstructorCallableReference() {
-      runTest("compiler/testData/codegen/box/inlineClasses/constructorCallableReference.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/constructorCallableReference.kt");
     }
 
     @Test
     @TestMetadata("constructorCallableReferenceGeneric.kt")
     public void testConstructorCallableReferenceGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/constructorCallableReferenceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/constructorCallableReferenceGeneric.kt");
     }
 
     @Test
     @TestMetadata("constructorImplVisibility.kt")
     public void testConstructorImplVisibility() {
-      runTest("compiler/testData/codegen/box/inlineClasses/constructorImplVisibility.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/constructorImplVisibility.kt");
     }
 
     @Test
@@ -28461,91 +28770,91 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("contextParameters.kt")
     public void testContextParameters() {
-      runTest("compiler/testData/codegen/box/inlineClasses/contextParameters.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/contextParameters.kt");
     }
 
     @Test
     @TestMetadata("correctBoxingForBranchExpressions.kt")
     public void testCorrectBoxingForBranchExpressions() {
-      runTest("compiler/testData/codegen/box/inlineClasses/correctBoxingForBranchExpressions.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/correctBoxingForBranchExpressions.kt");
     }
 
     @Test
     @TestMetadata("correctBoxingForBranchExpressionsGeneric.kt")
     public void testCorrectBoxingForBranchExpressionsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/correctBoxingForBranchExpressionsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/correctBoxingForBranchExpressionsGeneric.kt");
     }
 
     @Test
     @TestMetadata("createInlineClassInArgumentPosition.kt")
     public void testCreateInlineClassInArgumentPosition() {
-      runTest("compiler/testData/codegen/box/inlineClasses/createInlineClassInArgumentPosition.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/createInlineClassInArgumentPosition.kt");
     }
 
     @Test
     @TestMetadata("createInlineClassInArgumentPositionGeneric.kt")
     public void testCreateInlineClassInArgumentPositionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/createInlineClassInArgumentPositionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/createInlineClassInArgumentPositionGeneric.kt");
     }
 
     @Test
     @TestMetadata("crossinlineWithInlineClassInParameter.kt")
     public void testCrossinlineWithInlineClassInParameter() {
-      runTest("compiler/testData/codegen/box/inlineClasses/crossinlineWithInlineClassInParameter.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/crossinlineWithInlineClassInParameter.kt");
     }
 
     @Test
     @TestMetadata("crossinlineWithInlineClassInParameterGeneric.kt")
     public void testCrossinlineWithInlineClassInParameterGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/crossinlineWithInlineClassInParameterGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/crossinlineWithInlineClassInParameterGeneric.kt");
     }
 
     @Test
     @TestMetadata("crossinlineWithInlineClassInParameterGeneric2.kt")
     public void testCrossinlineWithInlineClassInParameterGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/crossinlineWithInlineClassInParameterGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/crossinlineWithInlineClassInParameterGeneric2.kt");
     }
 
     @Test
     @TestMetadata("customIterator.kt")
     public void testCustomIterator() {
-      runTest("compiler/testData/codegen/box/inlineClasses/customIterator.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/customIterator.kt");
     }
 
     @Test
     @TestMetadata("defaultFunctionsFromAnyForInlineClass.kt")
     public void testDefaultFunctionsFromAnyForInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/defaultFunctionsFromAnyForInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/defaultFunctionsFromAnyForInlineClass.kt");
     }
 
     @Test
     @TestMetadata("defaultFunctionsFromAnyForInlineClassGeneric.kt")
     public void testDefaultFunctionsFromAnyForInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/defaultFunctionsFromAnyForInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/defaultFunctionsFromAnyForInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("defaultInterfaceMethodsInInlineClass.kt")
     public void testDefaultInterfaceMethodsInInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/defaultInterfaceMethodsInInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/defaultInterfaceMethodsInInlineClass.kt");
     }
 
     @Test
     @TestMetadata("defaultInterfaceMethodsInInlineClassGeneric.kt")
     public void testDefaultInterfaceMethodsInInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/defaultInterfaceMethodsInInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/defaultInterfaceMethodsInInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("defaultWithInlineClassArgument.kt")
     public void testDefaultWithInlineClassArgument() {
-      runTest("compiler/testData/codegen/box/inlineClasses/defaultWithInlineClassArgument.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/defaultWithInlineClassArgument.kt");
     }
 
     @Test
     @TestMetadata("defaultWithInlineClassArgumentGeneric.kt")
     public void testDefaultWithInlineClassArgumentGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/defaultWithInlineClassArgumentGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/defaultWithInlineClassArgumentGeneric.kt");
     }
 
     @Test
@@ -28557,169 +28866,169 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("dnnInValue.kt")
     public void testDnnInValue() {
-      runTest("compiler/testData/codegen/box/inlineClasses/dnnInValue.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/dnnInValue.kt");
     }
 
     @Test
     @TestMetadata("elvisWithInlineClassAndNullConstant.kt")
     public void testElvisWithInlineClassAndNullConstant() {
-      runTest("compiler/testData/codegen/box/inlineClasses/elvisWithInlineClassAndNullConstant.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/elvisWithInlineClassAndNullConstant.kt");
     }
 
     @Test
     @TestMetadata("elvisWithInlineClassAndNullConstantGeneric.kt")
     public void testElvisWithInlineClassAndNullConstantGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/elvisWithInlineClassAndNullConstantGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/elvisWithInlineClassAndNullConstantGeneric.kt");
     }
 
     @Test
     @TestMetadata("emptyConstructorForInlineClass.kt")
     public void testEmptyConstructorForInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/emptyConstructorForInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/emptyConstructorForInlineClass.kt");
     }
 
     @Test
     @TestMetadata("emptyConstructorForInlineClassGeneric.kt")
     public void testEmptyConstructorForInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/emptyConstructorForInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/emptyConstructorForInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksInlineClassNonNull.kt")
     public void testEqualityChecksInlineClassNonNull() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksInlineClassNonNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksInlineClassNonNull.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksInlineClassNonNullGeneric.kt")
     public void testEqualityChecksInlineClassNonNullGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksInlineClassNonNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksInlineClassNonNullGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksMixedNullability.kt")
     public void testEqualityChecksMixedNullability() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksMixedNullability.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksMixedNullability.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksMixedNullabilityGeneric.kt")
     public void testEqualityChecksMixedNullabilityGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksMixedNullabilityGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksMixedNullabilityGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedInlineClassNonNull.kt")
     public void testEqualityChecksNegatedInlineClassNonNull() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedInlineClassNonNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedInlineClassNonNull.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedInlineClassNonNullGeneric.kt")
     public void testEqualityChecksNegatedInlineClassNonNullGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedInlineClassNonNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedInlineClassNonNullGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedNonNull.kt")
     public void testEqualityChecksNegatedNonNull() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNonNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNonNull.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedNonNullGeneric.kt")
     public void testEqualityChecksNegatedNonNullGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNonNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNonNullGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedNullable.kt")
     public void testEqualityChecksNegatedNullable() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNullable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNullable.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedNullableGeneric.kt")
     public void testEqualityChecksNegatedNullableGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNullableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNullableGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedNullableGeneric2.kt")
     public void testEqualityChecksNegatedNullableGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNullableGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedNullableGeneric2.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedPrimitive.kt")
     public void testEqualityChecksNegatedPrimitive() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedPrimitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedPrimitive.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNegatedPrimitiveGeneric.kt")
     public void testEqualityChecksNegatedPrimitiveGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedPrimitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNegatedPrimitiveGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNonNull.kt")
     public void testEqualityChecksNonNull() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNonNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNonNull.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNonNullGeneric.kt")
     public void testEqualityChecksNonNullGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNonNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNonNullGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNullable.kt")
     public void testEqualityChecksNullable() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNullable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNullable.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNullableGeneric.kt")
     public void testEqualityChecksNullableGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNullableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNullableGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksNullableGeneric2.kt")
     public void testEqualityChecksNullableGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNullableGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksNullableGeneric2.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksPrimitive.kt")
     public void testEqualityChecksPrimitive() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksPrimitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksPrimitive.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksPrimitiveGeneric.kt")
     public void testEqualityChecksPrimitiveGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksPrimitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksPrimitiveGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalityChecksPrimitiveUnboxed.kt")
     public void testEqualityChecksPrimitiveUnboxed() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksPrimitiveUnboxed.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityChecksPrimitiveUnboxed.kt");
     }
 
     @Test
     @TestMetadata("equalityForBoxesOfNullableValuesOfInlineClass.kt")
     public void testEqualityForBoxesOfNullableValuesOfInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityForBoxesOfNullableValuesOfInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityForBoxesOfNullableValuesOfInlineClass.kt");
     }
 
     @Test
     @TestMetadata("equalityForBoxesOfNullableValuesOfInlineClassGeneric.kt")
     public void testEqualityForBoxesOfNullableValuesOfInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalityForBoxesOfNullableValuesOfInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalityForBoxesOfNullableValuesOfInlineClassGeneric.kt");
     }
 
     @Test
@@ -28731,151 +29040,151 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("equalsCallsLeftArgument.kt")
     public void testEqualsCallsLeftArgument() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsCallsLeftArgument.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsCallsLeftArgument.kt");
     }
 
     @Test
     @TestMetadata("equalsCallsLeftArgumentGeneric.kt")
     public void testEqualsCallsLeftArgumentGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsCallsLeftArgumentGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsCallsLeftArgumentGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderInlineClass.kt")
     public void testEqualsEvaluationOrderInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderInlineClass.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderInlineClassGeneric.kt")
     public void testEqualsEvaluationOrderInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderNonNull.kt")
     public void testEqualsEvaluationOrderNonNull() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNonNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNonNull.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderNonNullGeneric.kt")
     public void testEqualsEvaluationOrderNonNullGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNonNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNonNullGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderNullable.kt")
     public void testEqualsEvaluationOrderNullable() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNullable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNullable.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderNullableGeneric.kt")
     public void testEqualsEvaluationOrderNullableGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNullableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNullableGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderNullableGeneric2.kt")
     public void testEqualsEvaluationOrderNullableGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNullableGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderNullableGeneric2.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderPrimitive.kt")
     public void testEqualsEvaluationOrderPrimitive() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderPrimitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderPrimitive.kt");
     }
 
     @Test
     @TestMetadata("equalsEvaluationOrderPrimitiveGeneric.kt")
     public void testEqualsEvaluationOrderPrimitiveGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderPrimitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsEvaluationOrderPrimitiveGeneric.kt");
     }
 
     @Test
     @TestMetadata("equalsOperatorWithGenericCall.kt")
     public void testEqualsOperatorWithGenericCall() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsOperatorWithGenericCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsOperatorWithGenericCall.kt");
     }
 
     @Test
     @TestMetadata("equalsOperatorWithGenericCallGeneric.kt")
     public void testEqualsOperatorWithGenericCallGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/equalsOperatorWithGenericCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/equalsOperatorWithGenericCallGeneric.kt");
     }
 
     @Test
     @TestMetadata("extLambdaInInlineClassFun.kt")
     public void testExtLambdaInInlineClassFun() {
-      runTest("compiler/testData/codegen/box/inlineClasses/extLambdaInInlineClassFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/extLambdaInInlineClassFun.kt");
     }
 
     @Test
     @TestMetadata("extLambdaInInlineClassFun2.kt")
     public void testExtLambdaInInlineClassFun2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/extLambdaInInlineClassFun2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/extLambdaInInlineClassFun2.kt");
     }
 
     @Test
     @TestMetadata("extLambdaInInlineClassFun2Generic.kt")
     public void testExtLambdaInInlineClassFun2Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/extLambdaInInlineClassFun2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/extLambdaInInlineClassFun2Generic.kt");
     }
 
     @Test
     @TestMetadata("extLambdaInInlineClassFunGeneric.kt")
     public void testExtLambdaInInlineClassFunGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/extLambdaInInlineClassFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/extLambdaInInlineClassFunGeneric.kt");
     }
 
     @Test
     @TestMetadata("fieldNameClash.kt")
     public void testFieldNameClash() {
-      runTest("compiler/testData/codegen/box/inlineClasses/fieldNameClash.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/fieldNameClash.kt");
     }
 
     @Test
     @TestMetadata("fieldNameClashGeneric.kt")
     public void testFieldNameClashGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/fieldNameClashGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/fieldNameClashGeneric.kt");
     }
 
     @Test
     @TestMetadata("funInterfaceDoubleSuffux.kt")
     public void testFunInterfaceDoubleSuffux() {
-      runTest("compiler/testData/codegen/box/inlineClasses/funInterfaceDoubleSuffux.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/funInterfaceDoubleSuffux.kt");
     }
 
     @Test
     @TestMetadata("funInterfaceDoubleSuffux2.kt")
     public void testFunInterfaceDoubleSuffux2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/funInterfaceDoubleSuffux2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/funInterfaceDoubleSuffux2.kt");
     }
 
     @Test
     @TestMetadata("functionExpression.kt")
     public void testFunctionExpression() {
-      runTest("compiler/testData/codegen/box/inlineClasses/functionExpression.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/functionExpression.kt");
     }
 
     @Test
     @TestMetadata("functionExpressionGeneric.kt")
     public void testFunctionExpressionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/functionExpressionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/functionExpressionGeneric.kt");
     }
 
     @Test
     @TestMetadata("genericInlineClassSynthMembers.kt")
     public void testGenericInlineClassSynthMembers() {
-      runTest("compiler/testData/codegen/box/inlineClasses/genericInlineClassSynthMembers.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/genericInlineClassSynthMembers.kt");
     }
 
     @Test
     @TestMetadata("genericVararg2ndConstructor.kt")
     public void testGenericVararg2ndConstructor() {
-      runTest("compiler/testData/codegen/box/inlineClasses/genericVararg2ndConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/genericVararg2ndConstructor.kt");
     }
 
     @Test
@@ -28893,31 +29202,31 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("initBlock.kt")
     public void testInitBlock() {
-      runTest("compiler/testData/codegen/box/inlineClasses/initBlock.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/initBlock.kt");
     }
 
     @Test
     @TestMetadata("initBlockGeneric.kt")
     public void testInitBlockGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/initBlockGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/initBlockGeneric.kt");
     }
 
     @Test
     @TestMetadata("initInCompanion.kt")
     public void testInitInCompanion() {
-      runTest("compiler/testData/codegen/box/inlineClasses/initInCompanion.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/initInCompanion.kt");
     }
 
     @Test
     @TestMetadata("inlineClassAsLastExpressionInInLambda.kt")
     public void testInlineClassAsLastExpressionInInLambda() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassAsLastExpressionInInLambda.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassAsLastExpressionInInLambda.kt");
     }
 
     @Test
     @TestMetadata("inlineClassAsLastExpressionInInLambdaGeneric.kt")
     public void testInlineClassAsLastExpressionInInLambdaGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassAsLastExpressionInInLambdaGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassAsLastExpressionInInLambdaGeneric.kt");
     }
 
     @Test
@@ -28929,13 +29238,13 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("inlineClassEqualityShouldUseTotalOrderForFloatingPointData.kt")
     public void testInlineClassEqualityShouldUseTotalOrderForFloatingPointData() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassEqualityShouldUseTotalOrderForFloatingPointData.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassEqualityShouldUseTotalOrderForFloatingPointData.kt");
     }
 
     @Test
     @TestMetadata("inlineClassEqualityShouldUseTotalOrderForFloatingPointDataGeneric.kt")
     public void testInlineClassEqualityShouldUseTotalOrderForFloatingPointDataGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassEqualityShouldUseTotalOrderForFloatingPointDataGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassEqualityShouldUseTotalOrderForFloatingPointDataGeneric.kt");
     }
 
     @Test
@@ -28959,85 +29268,85 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("inlineClassFieldHandling.kt")
     public void testInlineClassFieldHandling() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassFieldHandling.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassFieldHandling.kt");
     }
 
     @Test
     @TestMetadata("inlineClassFieldHandlingGeneric.kt")
     public void testInlineClassFieldHandlingGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassFieldHandlingGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassFieldHandlingGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassFunctionInvoke.kt")
     public void testInlineClassFunctionInvoke() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassFunctionInvoke.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassFunctionInvoke.kt");
     }
 
     @Test
     @TestMetadata("inlineClassFunctionInvokeGeneric.kt")
     public void testInlineClassFunctionInvokeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassFunctionInvokeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassFunctionInvokeGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassHashCodeOverride.kt")
     public void testInlineClassHashCodeOverride() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassHashCodeOverride.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassHashCodeOverride.kt");
     }
 
     @Test
     @TestMetadata("inlineClassImplementsCollection.kt")
     public void testInlineClassImplementsCollection() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassImplementsCollection.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassImplementsCollection.kt");
     }
 
     @Test
     @TestMetadata("inlineClassImplementsCollectionGeneric.kt")
     public void testInlineClassImplementsCollectionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassImplementsCollectionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassImplementsCollectionGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassImplementsJavaLangInterface.kt")
     public void testInlineClassImplementsJavaLangInterface() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassImplementsJavaLangInterface.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassImplementsJavaLangInterface.kt");
     }
 
     @Test
     @TestMetadata("inlineClassInInitBlock.kt")
     public void testInlineClassInInitBlock() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassInInitBlock.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassInInitBlock.kt");
     }
 
     @Test
     @TestMetadata("inlineClassInInitBlockGeneric.kt")
     public void testInlineClassInInitBlockGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassInInitBlockGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassInInitBlockGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassInStringTemplate.kt")
     public void testInlineClassInStringTemplate() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassInStringTemplate.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassInStringTemplate.kt");
     }
 
     @Test
     @TestMetadata("inlineClassInStringTemplateGeneric.kt")
     public void testInlineClassInStringTemplateGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassInStringTemplateGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassInStringTemplateGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassPropertyReferenceGetAndSet.kt")
     public void testInlineClassPropertyReferenceGetAndSet() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassPropertyReferenceGetAndSet.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassPropertyReferenceGetAndSet.kt");
     }
 
     @Test
     @TestMetadata("inlineClassPropertyReferenceGetAndSetGeneric.kt")
     public void testInlineClassPropertyReferenceGetAndSetGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassPropertyReferenceGetAndSetGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassPropertyReferenceGetAndSetGeneric.kt");
     }
 
     @Test
@@ -29055,145 +29364,145 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("inlineClassValueCapturedInInlineLambda.kt")
     public void testInlineClassValueCapturedInInlineLambda() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValueCapturedInInlineLambda.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValueCapturedInInlineLambda.kt");
     }
 
     @Test
     @TestMetadata("inlineClassValueCapturedInInlineLambdaGeneric.kt")
     public void testInlineClassValueCapturedInInlineLambdaGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValueCapturedInInlineLambdaGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValueCapturedInInlineLambdaGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassValueCapturedInNonInlineLambda.kt")
     public void testInlineClassValueCapturedInNonInlineLambda() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValueCapturedInNonInlineLambda.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValueCapturedInNonInlineLambda.kt");
     }
 
     @Test
     @TestMetadata("inlineClassValueCapturedInNonInlineLambdaGeneric.kt")
     public void testInlineClassValueCapturedInNonInlineLambdaGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValueCapturedInNonInlineLambdaGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValueCapturedInNonInlineLambdaGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassValuesInsideStrings.kt")
     public void testInlineClassValuesInsideStrings() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValuesInsideStrings.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValuesInsideStrings.kt");
     }
 
     @Test
     @TestMetadata("inlineClassValuesInsideStringsGeneric.kt")
     public void testInlineClassValuesInsideStringsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValuesInsideStringsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassValuesInsideStringsGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassWithCustomEquals.kt")
     public void testInlineClassWithCustomEquals() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithCustomEquals.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithCustomEquals.kt");
     }
 
     @Test
     @TestMetadata("inlineClassWithCustomEqualsGeneric.kt")
     public void testInlineClassWithCustomEqualsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithCustomEqualsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithCustomEqualsGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassWithDefaultFunctionsFromAny.kt")
     public void testInlineClassWithDefaultFunctionsFromAny() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithDefaultFunctionsFromAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithDefaultFunctionsFromAny.kt");
     }
 
     @Test
     @TestMetadata("inlineClassWithDefaultFunctionsFromAnyGeneric.kt")
     public void testInlineClassWithDefaultFunctionsFromAnyGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithDefaultFunctionsFromAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassWithDefaultFunctionsFromAnyGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassesAsInlineFunParameters.kt")
     public void testInlineClassesAsInlineFunParameters() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesAsInlineFunParameters.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesAsInlineFunParameters.kt");
     }
 
     @Test
     @TestMetadata("inlineClassesAsInlineFunParametersGeneric.kt")
     public void testInlineClassesAsInlineFunParametersGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesAsInlineFunParametersGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesAsInlineFunParametersGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassesCheckCast.kt")
     public void testInlineClassesCheckCast() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesCheckCast.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesCheckCast.kt");
     }
 
     @Test
     @TestMetadata("inlineClassesCheckCastGeneric.kt")
     public void testInlineClassesCheckCastGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesCheckCastGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesCheckCastGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassesInInlineLambdaParameters.kt")
     public void testInlineClassesInInlineLambdaParameters() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesInInlineLambdaParameters.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesInInlineLambdaParameters.kt");
     }
 
     @Test
     @TestMetadata("inlineClassesInInlineLambdaParametersGeneric.kt")
     public void testInlineClassesInInlineLambdaParametersGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesInInlineLambdaParametersGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesInInlineLambdaParametersGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineClassesRefTypesInInlineLambdaParameters.kt")
     public void testInlineClassesRefTypesInInlineLambdaParameters() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesRefTypesInInlineLambdaParameters.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesRefTypesInInlineLambdaParameters.kt");
     }
 
     @Test
     @TestMetadata("inlineClassesRefTypesInInlineLambdaParametersGeneric.kt")
     public void testInlineClassesRefTypesInInlineLambdaParametersGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesRefTypesInInlineLambdaParametersGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineClassesRefTypesInInlineLambdaParametersGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineExtLambdaInInlineClassFun.kt")
     public void testInlineExtLambdaInInlineClassFun() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineExtLambdaInInlineClassFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineExtLambdaInInlineClassFun.kt");
     }
 
     @Test
     @TestMetadata("inlineExtLambdaInInlineClassFun2.kt")
     public void testInlineExtLambdaInInlineClassFun2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineExtLambdaInInlineClassFun2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineExtLambdaInInlineClassFun2.kt");
     }
 
     @Test
     @TestMetadata("inlineExtLambdaInInlineClassFun2Generic.kt")
     public void testInlineExtLambdaInInlineClassFun2Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineExtLambdaInInlineClassFun2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineExtLambdaInInlineClassFun2Generic.kt");
     }
 
     @Test
     @TestMetadata("inlineExtLambdaInInlineClassFunGeneric.kt")
     public void testInlineExtLambdaInInlineClassFunGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineExtLambdaInInlineClassFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineExtLambdaInInlineClassFunGeneric.kt");
     }
 
     @Test
     @TestMetadata("inlineFunctionInsideInlineClass.kt")
     public void testInlineFunctionInsideInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineFunctionInsideInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineFunctionInsideInlineClass.kt");
     }
 
     @Test
     @TestMetadata("inlineFunctionInsideInlineClassGeneric.kt")
     public void testInlineFunctionInsideInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/inlineFunctionInsideInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/inlineFunctionInsideInlineClassGeneric.kt");
     }
 
     @Test
@@ -29229,37 +29538,37 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("iterateOverArrayOfInlineClassValues.kt")
     public void testIterateOverArrayOfInlineClassValues() {
-      runTest("compiler/testData/codegen/box/inlineClasses/iterateOverArrayOfInlineClassValues.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/iterateOverArrayOfInlineClassValues.kt");
     }
 
     @Test
     @TestMetadata("iterateOverArrayOfInlineClassValuesGeneric.kt")
     public void testIterateOverArrayOfInlineClassValuesGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/iterateOverArrayOfInlineClassValuesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/iterateOverArrayOfInlineClassValuesGeneric.kt");
     }
 
     @Test
     @TestMetadata("iterateOverListOfInlineClassValues.kt")
     public void testIterateOverListOfInlineClassValues() {
-      runTest("compiler/testData/codegen/box/inlineClasses/iterateOverListOfInlineClassValues.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/iterateOverListOfInlineClassValues.kt");
     }
 
     @Test
     @TestMetadata("iterateOverListOfInlineClassValuesGeneric.kt")
     public void testIterateOverListOfInlineClassValuesGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/iterateOverListOfInlineClassValuesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/iterateOverListOfInlineClassValuesGeneric.kt");
     }
 
     @Test
     @TestMetadata("javaClassIntrinsicOnInlineClasses.kt")
     public void testJavaClassIntrinsicOnInlineClasses() {
-      runTest("compiler/testData/codegen/box/inlineClasses/javaClassIntrinsicOnInlineClasses.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/javaClassIntrinsicOnInlineClasses.kt");
     }
 
     @Test
     @TestMetadata("javaClassIntrinsicOnInlineClassesGeneric.kt")
     public void testJavaClassIntrinsicOnInlineClassesGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/javaClassIntrinsicOnInlineClassesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/javaClassIntrinsicOnInlineClassesGeneric.kt");
     }
 
     @Test
@@ -29271,25 +29580,25 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("javaPrimitiveTypeICGeneric.kt")
     public void testJavaPrimitiveTypeICGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/javaPrimitiveTypeICGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/javaPrimitiveTypeICGeneric.kt");
     }
 
     @Test
     @TestMetadata("jvmFieldInInlineClassCompanion.kt")
     public void testJvmFieldInInlineClassCompanion() {
-      runTest("compiler/testData/codegen/box/inlineClasses/jvmFieldInInlineClassCompanion.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/jvmFieldInInlineClassCompanion.kt");
     }
 
     @Test
     @TestMetadata("jvmFieldInInlineClassCompanionGeneric.kt")
     public void testJvmFieldInInlineClassCompanionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/jvmFieldInInlineClassCompanionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/jvmFieldInInlineClassCompanionGeneric.kt");
     }
 
     @Test
     @TestMetadata("jvmInline.kt")
     public void testJvmInline() {
-      runTest("compiler/testData/codegen/box/inlineClasses/jvmInline.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/jvmInline.kt");
     }
 
     @Test
@@ -29307,25 +29616,25 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("jvmStaticFunInInlineClassCompanion.kt")
     public void testJvmStaticFunInInlineClassCompanion() {
-      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticFunInInlineClassCompanion.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticFunInInlineClassCompanion.kt");
     }
 
     @Test
     @TestMetadata("jvmStaticFunInInlineClassCompanionGeneric.kt")
     public void testJvmStaticFunInInlineClassCompanionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticFunInInlineClassCompanionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticFunInInlineClassCompanionGeneric.kt");
     }
 
     @Test
     @TestMetadata("jvmStaticPropertyAccessorInInlineClassCompanion.kt")
     public void testJvmStaticPropertyAccessorInInlineClassCompanion() {
-      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticPropertyAccessorInInlineClassCompanion.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticPropertyAccessorInInlineClassCompanion.kt");
     }
 
     @Test
     @TestMetadata("jvmStaticPropertyAccessorInInlineClassCompanionGeneric.kt")
     public void testJvmStaticPropertyAccessorInInlineClassCompanionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticPropertyAccessorInInlineClassCompanionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticPropertyAccessorInInlineClassCompanionGeneric.kt");
     }
 
     @Test
@@ -29337,241 +29646,241 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("jvmStaticVarInInlineClassCompanionGeneric.kt")
     public void testJvmStaticVarInInlineClassCompanionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticVarInInlineClassCompanionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/jvmStaticVarInInlineClassCompanionGeneric.kt");
     }
 
     @Test
     @TestMetadata("kclassInAnnotation.kt")
     public void testKclassInAnnotation() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kclassInAnnotation.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kclassInAnnotation.kt");
     }
 
     @Test
     @TestMetadata("kclassInAnnotationGeneric.kt")
     public void testKclassInAnnotationGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kclassInAnnotationGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kclassInAnnotationGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt25246.kt")
     public void testKt25246() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt25246.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt25246.kt");
     }
 
     @Test
     @TestMetadata("kt25750.kt")
     public void testKt25750() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt25750.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt25750.kt");
     }
 
     @Test
     @TestMetadata("kt25750Generic.kt")
     public void testKt25750Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt25750Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt25750Generic.kt");
     }
 
     @Test
     @TestMetadata("kt25771.kt")
     public void testKt25771() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt25771.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt25771.kt");
     }
 
     @Test
     @TestMetadata("kt26103.kt")
     public void testKt26103() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt26103.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt26103.kt");
     }
 
     @Test
     @TestMetadata("kt26103_contravariantUnderlyingType.kt")
     public void testKt26103_contravariantUnderlyingType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt26103_contravariantUnderlyingType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt26103_contravariantUnderlyingType.kt");
     }
 
     @Test
     @TestMetadata("kt26103_covariantUnderlyingType.kt")
     public void testKt26103_covariantUnderlyingType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt26103_covariantUnderlyingType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt26103_covariantUnderlyingType.kt");
     }
 
     @Test
     @TestMetadata("kt26103_original.kt")
     public void testKt26103_original() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt26103_original.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt26103_original.kt");
     }
 
     @Test
     @TestMetadata("kt27096.kt")
     public void testKt27096() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096.kt");
     }
 
     @Test
     @TestMetadata("kt27096Generic.kt")
     public void testKt27096Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096Generic.kt");
     }
 
     @Test
     @TestMetadata("kt27096_enum.kt")
     public void testKt27096_enum() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_enum.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_enum.kt");
     }
 
     @Test
     @TestMetadata("kt27096_enumGeneric.kt")
     public void testKt27096_enumGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_enumGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_enumGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt27096_functional.kt")
     public void testKt27096_functional() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_functional.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_functional.kt");
     }
 
     @Test
     @TestMetadata("kt27096_functionalGeneric.kt")
     public void testKt27096_functionalGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_functionalGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_functionalGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt27096_innerClass.kt")
     public void testKt27096_innerClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_innerClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_innerClass.kt");
     }
 
     @Test
     @TestMetadata("kt27096_nullablePrimitive.kt")
     public void testKt27096_nullablePrimitive() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullablePrimitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullablePrimitive.kt");
     }
 
     @Test
     @TestMetadata("kt27096_nullablePrimitiveGeneric.kt")
     public void testKt27096_nullablePrimitiveGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullablePrimitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullablePrimitiveGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt27096_nullablePrimitiveGeneric2.kt")
     public void testKt27096_nullablePrimitiveGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullablePrimitiveGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullablePrimitiveGeneric2.kt");
     }
 
     @Test
     @TestMetadata("kt27096_nullableReference.kt")
     public void testKt27096_nullableReference() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullableReference.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullableReference.kt");
     }
 
     @Test
     @TestMetadata("kt27096_nullableReferenceGeneric.kt")
     public void testKt27096_nullableReferenceGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullableReferenceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullableReferenceGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt27096_nullableReferenceGeneric2.kt")
     public void testKt27096_nullableReferenceGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullableReferenceGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_nullableReferenceGeneric2.kt");
     }
 
     @Test
     @TestMetadata("kt27096_primitive.kt")
     public void testKt27096_primitive() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_primitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_primitive.kt");
     }
 
     @Test
     @TestMetadata("kt27096_primitiveGeneric.kt")
     public void testKt27096_primitiveGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_primitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_primitiveGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt27096_reference.kt")
     public void testKt27096_reference() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_reference.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_reference.kt");
     }
 
     @Test
     @TestMetadata("kt27096_referenceGeneric.kt")
     public void testKt27096_referenceGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_referenceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27096_referenceGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt27113.kt")
     public void testKt27113() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27113.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27113.kt");
     }
 
     @Test
     @TestMetadata("kt27113a.kt")
     public void testKt27113a() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27113a.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27113a.kt");
     }
 
     @Test
     @TestMetadata("kt27113aGeneric.kt")
     public void testKt27113aGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27113aGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27113aGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt27132.kt")
     public void testKt27132() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27132.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27132.kt");
     }
 
     @Test
     @TestMetadata("kt27132Generic.kt")
     public void testKt27132Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27132Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27132Generic.kt");
     }
 
     @Test
     @TestMetadata("kt27140.kt")
     public void testKt27140() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27140.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27140.kt");
     }
 
     @Test
     @TestMetadata("kt27140Generic.kt")
     public void testKt27140Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27140Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27140Generic.kt");
     }
 
     @Test
     @TestMetadata("kt27705.kt")
     public void testKt27705() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27705.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27705.kt");
     }
 
     @Test
     @TestMetadata("kt27705Generic.kt")
     public void testKt27705Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27705Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27705Generic.kt");
     }
 
     @Test
     @TestMetadata("kt27706.kt")
     public void testKt27706() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27706.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27706.kt");
     }
 
     @Test
     @TestMetadata("kt27706Generic.kt")
     public void testKt27706Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt27706Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt27706Generic.kt");
     }
 
     @Test
     @TestMetadata("kt28405.kt")
     public void testKt28405() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt28405.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt28405.kt");
     }
 
     @Test
@@ -29613,13 +29922,13 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt33119.kt")
     public void testKt33119() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt33119.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt33119.kt");
     }
 
     @Test
     @TestMetadata("kt33119Generic.kt")
     public void testKt33119Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt33119Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt33119Generic.kt");
     }
 
     @Test
@@ -29637,49 +29946,49 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt37998.kt")
     public void testKt37998() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt37998.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt37998.kt");
     }
 
     @Test
     @TestMetadata("kt37998Generic.kt")
     public void testKt37998Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt37998Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt37998Generic.kt");
     }
 
     @Test
     @TestMetadata("kt38680.kt")
     public void testKt38680() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt38680.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt38680.kt");
     }
 
     @Test
     @TestMetadata("kt38680Generic.kt")
     public void testKt38680Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt38680Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt38680Generic.kt");
     }
 
     @Test
     @TestMetadata("kt38680a.kt")
     public void testKt38680a() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt38680a.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt38680a.kt");
     }
 
     @Test
     @TestMetadata("kt38680aGeneric.kt")
     public void testKt38680aGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt38680aGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt38680aGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt38680b.kt")
     public void testKt38680b() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt38680b.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt38680b.kt");
     }
 
     @Test
     @TestMetadata("kt38680bGeneric.kt")
     public void testKt38680bGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt38680bGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt38680bGeneric.kt");
     }
 
     @Test
@@ -29691,19 +30000,19 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt44701_jvmOverloads.kt")
     public void testKt44701_jvmOverloads() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt44701_jvmOverloads.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt44701_jvmOverloads.kt");
     }
 
     @Test
     @TestMetadata("kt44701_jvmOverloadsGeneric.kt")
     public void testKt44701_jvmOverloadsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt44701_jvmOverloadsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt44701_jvmOverloadsGeneric.kt");
     }
 
     @Test
     @TestMetadata("kt44701_jvmOverloadsGeneric2.kt")
     public void testKt44701_jvmOverloadsGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt44701_jvmOverloadsGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt44701_jvmOverloadsGeneric2.kt");
     }
 
     @Test
@@ -29715,55 +30024,55 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt44978.kt")
     public void testKt44978() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt44978.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt44978.kt");
     }
 
     @Test
     @TestMetadata("kt45084.kt")
     public void testKt45084() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt45084.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt45084.kt");
     }
 
     @Test
     @TestMetadata("kt45084Generic.kt")
     public void testKt45084Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt45084Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt45084Generic.kt");
     }
 
     @Test
     @TestMetadata("kt45991.kt")
     public void testKt45991() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt45991.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt45991.kt");
     }
 
     @Test
     @TestMetadata("kt46554.kt")
     public void testKt46554() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt46554.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt46554.kt");
     }
 
     @Test
     @TestMetadata("kt46554Generic.kt")
     public void testKt46554Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt46554Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt46554Generic.kt");
     }
 
     @Test
     @TestMetadata("kt47609.kt")
     public void testKt47609() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt47609.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt47609.kt");
     }
 
     @Test
     @TestMetadata("kt47762.kt")
     public void testKt47762() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt47762.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt47762.kt");
     }
 
     @Test
     @TestMetadata("kt47762Generic.kt")
     public void testKt47762Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt47762Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt47762Generic.kt");
     }
 
     @Test
@@ -29775,13 +30084,13 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt48993.kt")
     public void testKt48993() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt48993.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt48993.kt");
     }
 
     @Test
     @TestMetadata("kt48993Generic.kt")
     public void testKt48993Generic() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt48993Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt48993Generic.kt");
     }
 
     @Test
@@ -29805,7 +30114,7 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt51254.kt")
     public void testKt51254() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt51254.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt51254.kt");
     }
 
     @Test
@@ -29829,13 +30138,13 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt52913.kt")
     public void testKt52913() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt52913.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt52913.kt");
     }
 
     @Test
     @TestMetadata("kt54455.kt")
     public void testKt54455() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt54455.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt54455.kt");
     }
 
     @Test
@@ -29859,31 +30168,31 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("kt57242.kt")
     public void testKt57242() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt57242.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt57242.kt");
     }
 
     @Test
     @TestMetadata("kt57261.kt")
     public void testKt57261() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt57261.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt57261.kt");
     }
 
     @Test
     @TestMetadata("kt57973.kt")
     public void testKt57973() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt57973.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt57973.kt");
     }
 
     @Test
     @TestMetadata("kt70461.kt")
     public void testKt70461() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt70461.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt70461.kt");
     }
 
     @Test
     @TestMetadata("kt71649.kt")
     public void testKt71649() {
-      runTest("compiler/testData/codegen/box/inlineClasses/kt71649.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/kt71649.kt");
     }
 
     @Test
@@ -29895,25 +30204,25 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("mangledDefaultParameterFunction.kt")
     public void testMangledDefaultParameterFunction() {
-      runTest("compiler/testData/codegen/box/inlineClasses/mangledDefaultParameterFunction.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/mangledDefaultParameterFunction.kt");
     }
 
     @Test
     @TestMetadata("mangledDefaultParameterFunctionGeneric.kt")
     public void testMangledDefaultParameterFunctionGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/mangledDefaultParameterFunctionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/mangledDefaultParameterFunctionGeneric.kt");
     }
 
     @Test
     @TestMetadata("mangledSuperCalls.kt")
     public void testMangledSuperCalls() {
-      runTest("compiler/testData/codegen/box/inlineClasses/mangledSuperCalls.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/mangledSuperCalls.kt");
     }
 
     @Test
     @TestMetadata("mangledSuperCallsGeneric.kt")
     public void testMangledSuperCallsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/mangledSuperCallsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/mangledSuperCallsGeneric.kt");
     }
 
     @Test
@@ -29925,13 +30234,13 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("mappingOfBoxedFlexibleInlineClassType.kt")
     public void testMappingOfBoxedFlexibleInlineClassType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/mappingOfBoxedFlexibleInlineClassType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/mappingOfBoxedFlexibleInlineClassType.kt");
     }
 
     @Test
     @TestMetadata("mappingOfBoxedFlexibleInlineClassTypeGeneric.kt")
     public void testMappingOfBoxedFlexibleInlineClassTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/mappingOfBoxedFlexibleInlineClassTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/mappingOfBoxedFlexibleInlineClassTypeGeneric.kt");
     }
 
     @Test
@@ -29943,25 +30252,25 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("nestedInlineClass.kt")
     public void testNestedInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/nestedInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/nestedInlineClass.kt");
     }
 
     @Test
     @TestMetadata("nestedInlineClassGeneric.kt")
     public void testNestedInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/nestedInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/nestedInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("noAssertionsOnInlineClassBasedOnNullableType.kt")
     public void testNoAssertionsOnInlineClassBasedOnNullableType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/noAssertionsOnInlineClassBasedOnNullableType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/noAssertionsOnInlineClassBasedOnNullableType.kt");
     }
 
     @Test
     @TestMetadata("noAssertionsOnInlineClassBasedOnNullableTypeGeneric.kt")
     public void testNoAssertionsOnInlineClassBasedOnNullableTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/noAssertionsOnInlineClassBasedOnNullableTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/noAssertionsOnInlineClassBasedOnNullableTypeGeneric.kt");
     }
 
     @Test
@@ -29973,157 +30282,157 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("nullableEqeqNonNull.kt")
     public void testNullableEqeqNonNull() {
-      runTest("compiler/testData/codegen/box/inlineClasses/nullableEqeqNonNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/nullableEqeqNonNull.kt");
     }
 
     @Test
     @TestMetadata("nullableEqeqNonNullGeneric.kt")
     public void testNullableEqeqNonNullGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/nullableEqeqNonNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/nullableEqeqNonNullGeneric.kt");
     }
 
     @Test
     @TestMetadata("nullableWrapperEquality.kt")
     public void testNullableWrapperEquality() {
-      runTest("compiler/testData/codegen/box/inlineClasses/nullableWrapperEquality.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/nullableWrapperEquality.kt");
     }
 
     @Test
     @TestMetadata("nullableWrapperEqualityGeneric.kt")
     public void testNullableWrapperEqualityGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/nullableWrapperEqualityGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/nullableWrapperEqualityGeneric.kt");
     }
 
     @Test
     @TestMetadata("nullableWrapperEqualityGeneric2.kt")
     public void testNullableWrapperEqualityGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/nullableWrapperEqualityGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/nullableWrapperEqualityGeneric2.kt");
     }
 
     @Test
     @TestMetadata("overrideReturnNothing.kt")
     public void testOverrideReturnNothing() {
-      runTest("compiler/testData/codegen/box/inlineClasses/overrideReturnNothing.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/overrideReturnNothing.kt");
     }
 
     @Test
     @TestMetadata("overridingFunCallingPrivateFun.kt")
     public void testOverridingFunCallingPrivateFun() {
-      runTest("compiler/testData/codegen/box/inlineClasses/overridingFunCallingPrivateFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/overridingFunCallingPrivateFun.kt");
     }
 
     @Test
     @TestMetadata("overridingFunCallingPrivateFunGeneric.kt")
     public void testOverridingFunCallingPrivateFunGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/overridingFunCallingPrivateFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/overridingFunCallingPrivateFunGeneric.kt");
     }
 
     @Test
     @TestMetadata("passInlineClassAsVararg.kt")
     public void testPassInlineClassAsVararg() {
-      runTest("compiler/testData/codegen/box/inlineClasses/passInlineClassAsVararg.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/passInlineClassAsVararg.kt");
     }
 
     @Test
     @TestMetadata("passInlineClassAsVarargGeneric.kt")
     public void testPassInlineClassAsVarargGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/passInlineClassAsVarargGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/passInlineClassAsVarargGeneric.kt");
     }
 
     @Test
     @TestMetadata("passInlineClassWithSpreadOperatorToVarargs.kt")
     public void testPassInlineClassWithSpreadOperatorToVarargs() {
-      runTest("compiler/testData/codegen/box/inlineClasses/passInlineClassWithSpreadOperatorToVarargs.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/passInlineClassWithSpreadOperatorToVarargs.kt");
     }
 
     @Test
     @TestMetadata("passInlineClassWithSpreadOperatorToVarargsGeneric.kt")
     public void testPassInlineClassWithSpreadOperatorToVarargsGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/passInlineClassWithSpreadOperatorToVarargsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/passInlineClassWithSpreadOperatorToVarargsGeneric.kt");
     }
 
     @Test
     @TestMetadata("privateConstructorFunInterfaceMultiModule.kt")
     public void testPrivateConstructorFunInterfaceMultiModule() {
-      runTest("compiler/testData/codegen/box/inlineClasses/privateConstructorFunInterfaceMultiModule.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/privateConstructorFunInterfaceMultiModule.kt");
     }
 
     @Test
     @TestMetadata("privateConstructorFunInterfaceMultiModuleGeneric.kt")
     public void testPrivateConstructorFunInterfaceMultiModuleGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/privateConstructorFunInterfaceMultiModuleGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/privateConstructorFunInterfaceMultiModuleGeneric.kt");
     }
 
     @Test
     @TestMetadata("propertyLoweringOrder.kt")
     public void testPropertyLoweringOrder() {
-      runTest("compiler/testData/codegen/box/inlineClasses/propertyLoweringOrder.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/propertyLoweringOrder.kt");
     }
 
     @Test
     @TestMetadata("propertyLoweringOrderGeneric.kt")
     public void testPropertyLoweringOrderGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/propertyLoweringOrderGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/propertyLoweringOrderGeneric.kt");
     }
 
     @Test
     @TestMetadata("referToPropertyInCompanionObjectOfInlineClass.kt")
     public void testReferToPropertyInCompanionObjectOfInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/referToPropertyInCompanionObjectOfInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/referToPropertyInCompanionObjectOfInlineClass.kt");
     }
 
     @Test
     @TestMetadata("referToPropertyInCompanionObjectOfInlineClassGeneric.kt")
     public void testReferToPropertyInCompanionObjectOfInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/referToPropertyInCompanionObjectOfInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/referToPropertyInCompanionObjectOfInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("referToUnderlyingPropertyInsideInlineClass.kt")
     public void testReferToUnderlyingPropertyInsideInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/referToUnderlyingPropertyInsideInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/referToUnderlyingPropertyInsideInlineClass.kt");
     }
 
     @Test
     @TestMetadata("referToUnderlyingPropertyInsideInlineClassGeneric.kt")
     public void testReferToUnderlyingPropertyInsideInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/referToUnderlyingPropertyInsideInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/referToUnderlyingPropertyInsideInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("referToUnderlyingPropertyOfInlineClass.kt")
     public void testReferToUnderlyingPropertyOfInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/referToUnderlyingPropertyOfInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/referToUnderlyingPropertyOfInlineClass.kt");
     }
 
     @Test
     @TestMetadata("referToUnderlyingPropertyOfInlineClassGeneric.kt")
     public void testReferToUnderlyingPropertyOfInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/referToUnderlyingPropertyOfInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/referToUnderlyingPropertyOfInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("removeInInlineCollectionOfInlineClassAsInt.kt")
     public void testRemoveInInlineCollectionOfInlineClassAsInt() {
-      runTest("compiler/testData/codegen/box/inlineClasses/removeInInlineCollectionOfInlineClassAsInt.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/removeInInlineCollectionOfInlineClassAsInt.kt");
     }
 
     @Test
     @TestMetadata("result.kt")
     public void testResult() {
-      runTest("compiler/testData/codegen/box/inlineClasses/result.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/result.kt");
     }
 
     @Test
     @TestMetadata("resultGeneric.kt")
     public void testResultGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/resultGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/resultGeneric.kt");
     }
 
     @Test
     @TestMetadata("resultGeneric2.kt")
     public void testResultGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/resultGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/resultGeneric2.kt");
     }
 
     @Test
@@ -30135,31 +30444,31 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("resultRunCatchingOrElse.kt")
     public void testResultRunCatchingOrElse() {
-      runTest("compiler/testData/codegen/box/inlineClasses/resultRunCatchingOrElse.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/resultRunCatchingOrElse.kt");
     }
 
     @Test
     @TestMetadata("safeAsOfTypeParameterWithInlineClassBound.kt")
     public void testSafeAsOfTypeParameterWithInlineClassBound() {
-      runTest("compiler/testData/codegen/box/inlineClasses/safeAsOfTypeParameterWithInlineClassBound.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/safeAsOfTypeParameterWithInlineClassBound.kt");
     }
 
     @Test
     @TestMetadata("safeAsOfTypeParameterWithInlineClassBoundGeneric.kt")
     public void testSafeAsOfTypeParameterWithInlineClassBoundGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/safeAsOfTypeParameterWithInlineClassBoundGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/safeAsOfTypeParameterWithInlineClassBoundGeneric.kt");
     }
 
     @Test
     @TestMetadata("samWrapperDifferentModule.kt")
     public void testSamWrapperDifferentModule() {
-      runTest("compiler/testData/codegen/box/inlineClasses/samWrapperDifferentModule.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/samWrapperDifferentModule.kt");
     }
 
     @Test
     @TestMetadata("samWrapperDifferentModuleGeneric.kt")
     public void testSamWrapperDifferentModuleGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/samWrapperDifferentModuleGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/samWrapperDifferentModuleGeneric.kt");
     }
 
     @Test
@@ -30171,133 +30480,133 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("secondaryConstructorVisibilies.kt")
     public void testSecondaryConstructorVisibilies() {
-      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorVisibilies.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorVisibilies.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorWithVararg.kt")
     public void testSecondaryConstructorWithVararg() {
-      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorWithVararg.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorWithVararg.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorWithVarargGeneric.kt")
     public void testSecondaryConstructorWithVarargGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorWithVarargGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorWithVarargGeneric.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorsInsideInlineClass.kt")
     public void testSecondaryConstructorsInsideInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsInsideInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsInsideInlineClass.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorsInsideInlineClassGeneric.kt")
     public void testSecondaryConstructorsInsideInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsInsideInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsInsideInlineClassGeneric.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorsInsideInlineClassWithPrimitiveCarrierType.kt")
     public void testSecondaryConstructorsInsideInlineClassWithPrimitiveCarrierType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsInsideInlineClassWithPrimitiveCarrierType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsInsideInlineClassWithPrimitiveCarrierType.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorsInsideInlineClassWithPrimitiveCarrierTypeGeneric.kt")
     public void testSecondaryConstructorsInsideInlineClassWithPrimitiveCarrierTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsInsideInlineClassWithPrimitiveCarrierTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsInsideInlineClassWithPrimitiveCarrierTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorsWithBody.kt")
     public void testSecondaryConstructorsWithBody() {
-      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsWithBody.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/secondaryConstructorsWithBody.kt");
     }
 
     @Test
     @TestMetadata("simpleSecondaryConstructor.kt")
     public void testSimpleSecondaryConstructor() {
-      runTest("compiler/testData/codegen/box/inlineClasses/simpleSecondaryConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/simpleSecondaryConstructor.kt");
     }
 
     @Test
     @TestMetadata("simpleSecondaryConstructorGeneric.kt")
     public void testSimpleSecondaryConstructorGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/simpleSecondaryConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/simpleSecondaryConstructorGeneric.kt");
     }
 
     @Test
     @TestMetadata("smartCastOnThisOfInlineClassType.kt")
     public void testSmartCastOnThisOfInlineClassType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/smartCastOnThisOfInlineClassType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/smartCastOnThisOfInlineClassType.kt");
     }
 
     @Test
     @TestMetadata("smartCastOnThisOfInlineClassTypeGeneric.kt")
     public void testSmartCastOnThisOfInlineClassTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/smartCastOnThisOfInlineClassTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/smartCastOnThisOfInlineClassTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("stringPlus.kt")
     public void testStringPlus() {
-      runTest("compiler/testData/codegen/box/inlineClasses/stringPlus.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/stringPlus.kt");
     }
 
     @Test
     @TestMetadata("stringPlusGeneric.kt")
     public void testStringPlusGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/stringPlusGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/stringPlusGeneric.kt");
     }
 
     @Test
     @TestMetadata("toStringCallingPrivateFun.kt")
     public void testToStringCallingPrivateFun() {
-      runTest("compiler/testData/codegen/box/inlineClasses/toStringCallingPrivateFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/toStringCallingPrivateFun.kt");
     }
 
     @Test
     @TestMetadata("toStringCallingPrivateFunGeneric.kt")
     public void testToStringCallingPrivateFunGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/toStringCallingPrivateFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/toStringCallingPrivateFunGeneric.kt");
     }
 
     @Test
     @TestMetadata("toStringOfUnboxedNullable.kt")
     public void testToStringOfUnboxedNullable() {
-      runTest("compiler/testData/codegen/box/inlineClasses/toStringOfUnboxedNullable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/toStringOfUnboxedNullable.kt");
     }
 
     @Test
     @TestMetadata("toStringOfUnboxedNullableGeneric.kt")
     public void testToStringOfUnboxedNullableGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/toStringOfUnboxedNullableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/toStringOfUnboxedNullableGeneric.kt");
     }
 
     @Test
     @TestMetadata("typeChecksForInlineClasses.kt")
     public void testTypeChecksForInlineClasses() {
-      runTest("compiler/testData/codegen/box/inlineClasses/typeChecksForInlineClasses.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/typeChecksForInlineClasses.kt");
     }
 
     @Test
     @TestMetadata("typeChecksForInlineClassesGeneric.kt")
     public void testTypeChecksForInlineClassesGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/typeChecksForInlineClassesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/typeChecksForInlineClassesGeneric.kt");
     }
 
     @Test
     @TestMetadata("UIntArraySortExample.kt")
     public void testUIntArraySortExample() {
-      runTest("compiler/testData/codegen/box/inlineClasses/UIntArraySortExample.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/UIntArraySortExample.kt");
     }
 
     @Test
     @TestMetadata("UIntArraySortExampleGeneric.kt")
     public void testUIntArraySortExampleGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/UIntArraySortExampleGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/UIntArraySortExampleGeneric.kt");
     }
 
     @Test
@@ -30309,85 +30618,85 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithNonNullUnderlyingType.kt")
     public void testUnboxNullableValueOfInlineClassWithNonNullUnderlyingType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNonNullUnderlyingType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNonNullUnderlyingType.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric.kt")
     public void testUnboxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNonNullUnderlyingTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithNullableInlineClassUnderlyingTypeGWI.kt")
     public void testUnboxNullableValueOfInlineClassWithNullableInlineClassUnderlyingTypeGWI() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullableInlineClassUnderlyingTypeGWI.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullableInlineClassUnderlyingTypeGWI.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithNullableInlineClassUnderlyingTypeGWI2.kt")
     public void testUnboxNullableValueOfInlineClassWithNullableInlineClassUnderlyingTypeGWI2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullableInlineClassUnderlyingTypeGWI2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullableInlineClassUnderlyingTypeGWI2.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingType.kt")
     public void testUnboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingType.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGWI.kt")
     public void testUnboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGWI() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGWI.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGWI.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGWI2.kt")
     public void testUnboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGWI2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGWI2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGWI2.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGeneric.kt")
     public void testUnboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithNullablePrimitiveUnderlyingTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithPrimitiveUnderlyingType.kt")
     public void testUnboxNullableValueOfInlineClassWithPrimitiveUnderlyingType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithPrimitiveUnderlyingType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithPrimitiveUnderlyingType.kt");
     }
 
     @Test
     @TestMetadata("unboxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric.kt")
     public void testUnboxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxNullableValueOfInlineClassWithPrimitiveUnderlyingTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("unboxParameterOfSuspendLambdaBeforeInvoke.kt")
     public void testUnboxParameterOfSuspendLambdaBeforeInvoke() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxParameterOfSuspendLambdaBeforeInvoke.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxParameterOfSuspendLambdaBeforeInvoke.kt");
     }
 
     @Test
     @TestMetadata("unboxParameterOfSuspendLambdaBeforeInvokeGeneric.kt")
     public void testUnboxParameterOfSuspendLambdaBeforeInvokeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxParameterOfSuspendLambdaBeforeInvokeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxParameterOfSuspendLambdaBeforeInvokeGeneric.kt");
     }
 
     @Test
     @TestMetadata("unboxReceiverOnCallingMethodFromInlineClass.kt")
     public void testUnboxReceiverOnCallingMethodFromInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxReceiverOnCallingMethodFromInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxReceiverOnCallingMethodFromInlineClass.kt");
     }
 
     @Test
     @TestMetadata("unboxReceiverOnCallingMethodFromInlineClassGeneric.kt")
     public void testUnboxReceiverOnCallingMethodFromInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxReceiverOnCallingMethodFromInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxReceiverOnCallingMethodFromInlineClassGeneric.kt");
     }
 
     @Test
@@ -30399,61 +30708,61 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("unboxValueFromPlatformType.kt")
     public void testUnboxValueFromPlatformType() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueFromPlatformType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueFromPlatformType.kt");
     }
 
     @Test
     @TestMetadata("unboxValueFromPlatformTypeGeneric.kt")
     public void testUnboxValueFromPlatformTypeGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueFromPlatformTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueFromPlatformTypeGeneric.kt");
     }
 
     @Test
     @TestMetadata("unboxValueOfAnyBeforeMethodInvocation.kt")
     public void testUnboxValueOfAnyBeforeMethodInvocation() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueOfAnyBeforeMethodInvocation.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueOfAnyBeforeMethodInvocation.kt");
     }
 
     @Test
     @TestMetadata("unboxValueOfAnyBeforeMethodInvocationGeneric.kt")
     public void testUnboxValueOfAnyBeforeMethodInvocationGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueOfAnyBeforeMethodInvocationGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueOfAnyBeforeMethodInvocationGeneric.kt");
     }
 
     @Test
     @TestMetadata("unboxValueOfAnyBeforeMethodInvocationGeneric2.kt")
     public void testUnboxValueOfAnyBeforeMethodInvocationGeneric2() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueOfAnyBeforeMethodInvocationGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueOfAnyBeforeMethodInvocationGeneric2.kt");
     }
 
     @Test
     @TestMetadata("unboxValueOfNullableInlineClassUsingInlineFunction.kt")
     public void testUnboxValueOfNullableInlineClassUsingInlineFunction() {
-      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueOfNullableInlineClassUsingInlineFunction.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/unboxValueOfNullableInlineClassUsingInlineFunction.kt");
     }
 
     @Test
     @TestMetadata("useInlineClassesInsideElvisOperator.kt")
     public void testUseInlineClassesInsideElvisOperator() {
-      runTest("compiler/testData/codegen/box/inlineClasses/useInlineClassesInsideElvisOperator.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/useInlineClassesInsideElvisOperator.kt");
     }
 
     @Test
     @TestMetadata("useInlineClassesInsideElvisOperatorGeneric.kt")
     public void testUseInlineClassesInsideElvisOperatorGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/useInlineClassesInsideElvisOperatorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/useInlineClassesInsideElvisOperatorGeneric.kt");
     }
 
     @Test
     @TestMetadata("useInlineFunctionInsideInlineClass.kt")
     public void testUseInlineFunctionInsideInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/useInlineFunctionInsideInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/useInlineFunctionInsideInlineClass.kt");
     }
 
     @Test
     @TestMetadata("useInlineFunctionInsideInlineClassGeneric.kt")
     public void testUseInlineFunctionInsideInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/useInlineFunctionInsideInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/useInlineFunctionInsideInlineClassGeneric.kt");
     }
 
     @Test
@@ -30465,19 +30774,19 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("useOfInlineClassWithGenericMethodFromJavaGeneric.kt")
     public void testUseOfInlineClassWithGenericMethodFromJavaGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/useOfInlineClassWithGenericMethodFromJavaGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/useOfInlineClassWithGenericMethodFromJavaGeneric.kt");
     }
 
     @Test
     @TestMetadata("useThisInsideInlineClass.kt")
     public void testUseThisInsideInlineClass() {
-      runTest("compiler/testData/codegen/box/inlineClasses/useThisInsideInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/useThisInsideInlineClass.kt");
     }
 
     @Test
     @TestMetadata("useThisInsideInlineClassGeneric.kt")
     public void testUseThisInsideInlineClassGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/useThisInsideInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/useThisInsideInlineClassGeneric.kt");
     }
 
     @Test
@@ -30519,37 +30828,37 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("whenWithSubject.kt")
     public void testWhenWithSubject() {
-      runTest("compiler/testData/codegen/box/inlineClasses/whenWithSubject.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/whenWithSubject.kt");
     }
 
     @Test
     @TestMetadata("whenWithSubjectGeneric.kt")
     public void testWhenWithSubjectGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/whenWithSubjectGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/whenWithSubjectGeneric.kt");
     }
 
     @Test
     @TestMetadata("withReturnTypeMangling.kt")
     public void testWithReturnTypeMangling() {
-      runTest("compiler/testData/codegen/box/inlineClasses/withReturnTypeMangling.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/withReturnTypeMangling.kt");
     }
 
     @Test
     @TestMetadata("withReturnTypeManglingGeneric.kt")
     public void testWithReturnTypeManglingGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/withReturnTypeManglingGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/withReturnTypeManglingGeneric.kt");
     }
 
     @Test
     @TestMetadata("withReturnTypeManglingJvmName.kt")
     public void testWithReturnTypeManglingJvmName() {
-      runTest("compiler/testData/codegen/box/inlineClasses/withReturnTypeManglingJvmName.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/withReturnTypeManglingJvmName.kt");
     }
 
     @Test
     @TestMetadata("withReturnTypeManglingJvmNameGeneric.kt")
     public void testWithReturnTypeManglingJvmNameGeneric() {
-      runTest("compiler/testData/codegen/box/inlineClasses/withReturnTypeManglingJvmNameGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/inlineClasses/withReturnTypeManglingJvmNameGeneric.kt");
     }
 
     @Nested
@@ -30564,157 +30873,157 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("boxAny.kt")
       public void testBoxAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxAny.kt");
       }
 
       @Test
       @TestMetadata("boxAnyGeneric.kt")
       public void testBoxAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxFunLiteralAny.kt")
       public void testBoxFunLiteralAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxFunLiteralAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxFunLiteralAny.kt");
       }
 
       @Test
       @TestMetadata("boxFunLiteralAnyGeneric.kt")
       public void testBoxFunLiteralAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxFunLiteralAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxFunLiteralAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxInt.kt")
       public void testBoxInt() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxInt.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxInt.kt");
       }
 
       @Test
       @TestMetadata("boxIntGeneric.kt")
       public void testBoxIntGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxIntGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxIntGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxNullableAny.kt")
       public void testBoxNullableAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAny.kt");
       }
 
       @Test
       @TestMetadata("boxNullableAnyGeneric.kt")
       public void testBoxNullableAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxNullableAnyGeneric2.kt")
       public void testBoxNullableAnyGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyGeneric2.kt");
       }
 
       @Test
       @TestMetadata("boxNullableAnyNull.kt")
       public void testBoxNullableAnyNull() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyNull.kt");
       }
 
       @Test
       @TestMetadata("boxNullableAnyNullGeneric.kt")
       public void testBoxNullableAnyNullGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyNullGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxNullableAnyNullGeneric2.kt")
       public void testBoxNullableAnyNullGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyNullGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableAnyNullGeneric2.kt");
       }
 
       @Test
       @TestMetadata("boxNullableInt.kt")
       public void testBoxNullableInt() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableInt.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableInt.kt");
       }
 
       @Test
       @TestMetadata("boxNullableIntGeneric.kt")
       public void testBoxNullableIntGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxNullableIntGeneric2.kt")
       public void testBoxNullableIntGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntGeneric2.kt");
       }
 
       @Test
       @TestMetadata("boxNullableIntNull.kt")
       public void testBoxNullableIntNull() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntNull.kt");
       }
 
       @Test
       @TestMetadata("boxNullableIntNullGeneric.kt")
       public void testBoxNullableIntNullGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntNullGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxNullableIntNullGeneric2.kt")
       public void testBoxNullableIntNullGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntNullGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableIntNullGeneric2.kt");
       }
 
       @Test
       @TestMetadata("boxNullableString.kt")
       public void testBoxNullableString() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableString.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableString.kt");
       }
 
       @Test
       @TestMetadata("boxNullableStringGeneric.kt")
       public void testBoxNullableStringGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxNullableStringGeneric2.kt")
       public void testBoxNullableStringGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringGeneric2.kt");
       }
 
       @Test
       @TestMetadata("boxNullableStringNull.kt")
       public void testBoxNullableStringNull() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringNull.kt");
       }
 
       @Test
       @TestMetadata("boxNullableStringNullGeneric.kt")
       public void testBoxNullableStringNullGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringNullGeneric.kt");
       }
 
       @Test
       @TestMetadata("boxNullableStringNullGeneric2.kt")
       public void testBoxNullableStringNullGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringNullGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxNullableStringNullGeneric2.kt");
       }
 
       @Test
       @TestMetadata("boxString.kt")
       public void testBoxString() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxString.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxString.kt");
       }
 
       @Test
       @TestMetadata("boxStringGeneric.kt")
       public void testBoxStringGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxStringGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueInLambda/boxStringGeneric.kt");
       }
 
       @Test
@@ -30742,367 +31051,367 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("boxReturnValueInDefaultMethod.kt")
       public void testBoxReturnValueInDefaultMethod() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/boxReturnValueInDefaultMethod.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/boxReturnValueInDefaultMethod.kt");
       }
 
       @Test
       @TestMetadata("boxReturnValueInDefaultMethodGenericInt.kt")
       public void testBoxReturnValueInDefaultMethodGenericInt() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/boxReturnValueInDefaultMethodGenericInt.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/boxReturnValueInDefaultMethodGenericInt.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideChainErasedToAny.kt")
       public void testCovariantOverrideChainErasedToAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToAny.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideChainErasedToAnyGeneric.kt")
       public void testCovariantOverrideChainErasedToAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideChainErasedToNullableAny.kt")
       public void testCovariantOverrideChainErasedToNullableAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToNullableAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToNullableAny.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideChainErasedToNullableAnyGeneric.kt")
       public void testCovariantOverrideChainErasedToNullableAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToNullableAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToNullableAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideChainErasedToNullableAnyGeneric2.kt")
       public void testCovariantOverrideChainErasedToNullableAnyGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToNullableAnyGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideChainErasedToNullableAnyGeneric2.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideErasedToAny.kt")
       public void testCovariantOverrideErasedToAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToAny.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideErasedToAnyGeneric.kt")
       public void testCovariantOverrideErasedToAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideErasedToInterface.kt")
       public void testCovariantOverrideErasedToInterface() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToInterface.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToInterface.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideErasedToInterfaceGeneric.kt")
       public void testCovariantOverrideErasedToInterfaceGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToInterfaceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToInterfaceGeneric.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideErasedToPrimitive.kt")
       public void testCovariantOverrideErasedToPrimitive() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToPrimitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToPrimitive.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideErasedToPrimitiveGeneric.kt")
       public void testCovariantOverrideErasedToPrimitiveGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToPrimitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideErasedToPrimitiveGeneric.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideListVsMutableList.kt")
       public void testCovariantOverrideListVsMutableList() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideListVsMutableList.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideListVsMutableList.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideListVsMutableListGeneric.kt")
       public void testCovariantOverrideListVsMutableListGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideListVsMutableListGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideListVsMutableListGeneric.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideUnrelatedInterfaces.kt")
       public void testCovariantOverrideUnrelatedInterfaces() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideUnrelatedInterfaces.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideUnrelatedInterfaces.kt");
       }
 
       @Test
       @TestMetadata("covariantOverrideUnrelatedInterfacesGeneric.kt")
       public void testCovariantOverrideUnrelatedInterfacesGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideUnrelatedInterfacesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/covariantOverrideUnrelatedInterfacesGeneric.kt");
       }
 
       @Test
       @TestMetadata("genericOverride.kt")
       public void testGenericOverride() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/genericOverride.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/genericOverride.kt");
       }
 
       @Test
       @TestMetadata("genericOverrideGeneric.kt")
       public void testGenericOverrideGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/genericOverrideGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/genericOverrideGeneric.kt");
       }
 
       @Test
       @TestMetadata("genericOverrideSpecialized.kt")
       public void testGenericOverrideSpecialized() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/genericOverrideSpecialized.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/genericOverrideSpecialized.kt");
       }
 
       @Test
       @TestMetadata("genericOverrideSpecializedGeneric.kt")
       public void testGenericOverrideSpecializedGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/genericOverrideSpecializedGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/genericOverrideSpecializedGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassInOverriddenReturnTypes.kt")
       public void testInlineClassInOverriddenReturnTypes() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/inlineClassInOverriddenReturnTypes.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/inlineClassInOverriddenReturnTypes.kt");
       }
 
       @Test
       @TestMetadata("inlineClassInOverriddenReturnTypesGeneric.kt")
       public void testInlineClassInOverriddenReturnTypesGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/inlineClassInOverriddenReturnTypesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/inlineClassInOverriddenReturnTypesGeneric.kt");
       }
 
       @Test
       @TestMetadata("kt28483.kt")
       public void testKt28483() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt28483.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt28483.kt");
       }
 
       @Test
       @TestMetadata("kt28483Generic.kt")
       public void testKt28483Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt28483Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt28483Generic.kt");
       }
 
       @Test
       @TestMetadata("kt28483Generic2.kt")
       public void testKt28483Generic2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt28483Generic2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt28483Generic2.kt");
       }
 
       @Test
       @TestMetadata("kt31585.kt")
       public void testKt31585() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt31585.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt31585.kt");
       }
 
       @Test
       @TestMetadata("kt31585Generic.kt")
       public void testKt31585Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt31585Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt31585Generic.kt");
       }
 
       @Test
       @TestMetadata("kt35234.kt")
       public void testKt35234() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt35234.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt35234.kt");
       }
 
       @Test
       @TestMetadata("kt35234Generic.kt")
       public void testKt35234Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt35234Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt35234Generic.kt");
       }
 
       @Test
       @TestMetadata("kt35234a.kt")
       public void testKt35234a() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt35234a.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/kt35234a.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithInlineClass.kt")
       public void testOverrideGenericWithInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithInlineClass.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithInlineClassGeneric.kt")
       public void testOverrideGenericWithInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithNullableInlineClassUpperBoundWithNonNullAny.kt")
       public void testOverrideGenericWithNullableInlineClassUpperBoundWithNonNullAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullAny.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithNullableInlineClassUpperBoundWithNonNullAnyGeneric.kt")
       public void testOverrideGenericWithNullableInlineClassUpperBoundWithNonNullAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAny.kt")
       public void testOverrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAny.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyG.kt")
       public void testOverrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyG() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyG.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyG.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyG2.kt")
       public void testOverrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyG2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyG2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyG2.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNG.kt")
       public void testOverrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNG() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNG.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNG.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNG2.kt")
       public void testOverrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNG2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNG2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNG2.kt");
       }
 
       @Test
       @TestMetadata("overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNull.kt")
       public void testOverrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNull() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideGenericWithNullableInlineClassUpperBoundWithNonNullNullableAnyNull.kt");
       }
 
       @Test
       @TestMetadata("overrideNullableInlineClassWithNonNullAny.kt")
       public void testOverrideNullableInlineClassWithNonNullAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullAny.kt");
       }
 
       @Test
       @TestMetadata("overrideNullableInlineClassWithNonNullAnyGeneric.kt")
       public void testOverrideNullableInlineClassWithNonNullAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("overrideNullableInlineClassWithNonNullNullableAny.kt")
       public void testOverrideNullableInlineClassWithNonNullNullableAny() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAny.kt");
       }
 
       @Test
       @TestMetadata("overrideNullableInlineClassWithNonNullNullableAnyGeneric.kt")
       public void testOverrideNullableInlineClassWithNonNullNullableAnyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyGeneric.kt");
       }
 
       @Test
       @TestMetadata("overrideNullableInlineClassWithNonNullNullableAnyGeneric2.kt")
       public void testOverrideNullableInlineClassWithNonNullNullableAnyGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyGeneric2.kt");
       }
 
       @Test
       @TestMetadata("overrideNullableInlineClassWithNonNullNullableAnyNull.kt")
       public void testOverrideNullableInlineClassWithNonNullNullableAnyNull() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyNull.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyNull.kt");
       }
 
       @Test
       @TestMetadata("overrideNullableInlineClassWithNonNullNullableAnyNullGeneric.kt")
       public void testOverrideNullableInlineClassWithNonNullNullableAnyNullGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyNullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyNullGeneric.kt");
       }
 
       @Test
       @TestMetadata("overrideNullableInlineClassWithNonNullNullableAnyNullGeneric2.kt")
       public void testOverrideNullableInlineClassWithNonNullNullableAnyNullGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyNullGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/overrideNullableInlineClassWithNonNullNullableAnyNullGeneric2.kt");
       }
 
       @Test
       @TestMetadata("relatedReturnTypes1a.kt")
       public void testRelatedReturnTypes1a() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes1a.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes1a.kt");
       }
 
       @Test
       @TestMetadata("relatedReturnTypes1aGeneric.kt")
       public void testRelatedReturnTypes1aGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes1aGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes1aGeneric.kt");
       }
 
       @Test
       @TestMetadata("relatedReturnTypes1b.kt")
       public void testRelatedReturnTypes1b() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes1b.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes1b.kt");
       }
 
       @Test
       @TestMetadata("relatedReturnTypes1bGeneric.kt")
       public void testRelatedReturnTypes1bGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes1bGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes1bGeneric.kt");
       }
 
       @Test
       @TestMetadata("relatedReturnTypes2a.kt")
       public void testRelatedReturnTypes2a() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes2a.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes2a.kt");
       }
 
       @Test
       @TestMetadata("relatedReturnTypes2aGeneric.kt")
       public void testRelatedReturnTypes2aGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes2aGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes2aGeneric.kt");
       }
 
       @Test
       @TestMetadata("relatedReturnTypes2b.kt")
       public void testRelatedReturnTypes2b() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes2b.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes2b.kt");
       }
 
       @Test
       @TestMetadata("relatedReturnTypes2bGeneric.kt")
       public void testRelatedReturnTypes2bGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes2bGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/relatedReturnTypes2bGeneric.kt");
       }
 
       @Test
       @TestMetadata("uncastInlineClassToAnyAndBack.kt")
       public void testUncastInlineClassToAnyAndBack() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/uncastInlineClassToAnyAndBack.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/uncastInlineClassToAnyAndBack.kt");
       }
 
       @Test
       @TestMetadata("uncastInlineClassToAnyAndBackGeneric.kt")
       public void testUncastInlineClassToAnyAndBackGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/uncastInlineClassToAnyAndBackGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/uncastInlineClassToAnyAndBackGeneric.kt");
       }
 
       @Test
       @TestMetadata("unrelatedGenerics.kt")
       public void testUnrelatedGenerics() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/unrelatedGenerics.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/unrelatedGenerics.kt");
       }
 
       @Test
       @TestMetadata("unrelatedGenericsGeneric.kt")
       public void testUnrelatedGenericsGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/unrelatedGenericsGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/boxReturnValueOnOverride/unrelatedGenericsGeneric.kt");
       }
     }
 
@@ -31118,247 +31427,247 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("boundInlineClassExtensionFun.kt")
       public void testBoundInlineClassExtensionFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassExtensionFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassExtensionFun.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassExtensionFunGeneric.kt")
       public void testBoundInlineClassExtensionFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassExtensionFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassExtensionFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassExtensionVal.kt")
       public void testBoundInlineClassExtensionVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassExtensionVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassExtensionVal.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassExtensionValGeneric.kt")
       public void testBoundInlineClassExtensionValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassExtensionValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassExtensionValGeneric.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassMemberFun.kt")
       public void testBoundInlineClassMemberFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassMemberFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassMemberFun.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassMemberFunGeneric.kt")
       public void testBoundInlineClassMemberFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassMemberFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassMemberFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassMemberVal.kt")
       public void testBoundInlineClassMemberVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassMemberVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassMemberVal.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassMemberValGeneric.kt")
       public void testBoundInlineClassMemberValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassMemberValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassMemberValGeneric.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassPrimaryVal.kt")
       public void testBoundInlineClassPrimaryVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassPrimaryVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassPrimaryVal.kt");
       }
 
       @Test
       @TestMetadata("boundInlineClassPrimaryValGeneric.kt")
       public void testBoundInlineClassPrimaryValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassPrimaryValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/boundInlineClassPrimaryValGeneric.kt");
       }
 
       @Test
       @TestMetadata("constructorWithInlineClassParameters.kt")
       public void testConstructorWithInlineClassParameters() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/constructorWithInlineClassParameters.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/constructorWithInlineClassParameters.kt");
       }
 
       @Test
       @TestMetadata("constructorWithInlineClassParametersGeneric.kt")
       public void testConstructorWithInlineClassParametersGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/constructorWithInlineClassParametersGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/constructorWithInlineClassParametersGeneric.kt");
       }
 
       @Test
       @TestMetadata("equalsHashCodeToString.kt")
       public void testEqualsHashCodeToString() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/equalsHashCodeToString.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/equalsHashCodeToString.kt");
       }
 
       @Test
       @TestMetadata("equalsHashCodeToStringGeneric.kt")
       public void testEqualsHashCodeToStringGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/equalsHashCodeToStringGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/equalsHashCodeToStringGeneric.kt");
       }
 
       @Test
       @TestMetadata("funWithInlineClassParameters.kt")
       public void testFunWithInlineClassParameters() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/funWithInlineClassParameters.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/funWithInlineClassParameters.kt");
       }
 
       @Test
       @TestMetadata("funWithInlineClassParametersGeneric.kt")
       public void testFunWithInlineClassParametersGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/funWithInlineClassParametersGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/funWithInlineClassParametersGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassExtensionFun.kt")
       public void testInlineClassExtensionFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassExtensionFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassExtensionFun.kt");
       }
 
       @Test
       @TestMetadata("inlineClassExtensionFunGeneric.kt")
       public void testInlineClassExtensionFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassExtensionFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassExtensionFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassExtensionVal.kt")
       public void testInlineClassExtensionVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassExtensionVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassExtensionVal.kt");
       }
 
       @Test
       @TestMetadata("inlineClassExtensionValGeneric.kt")
       public void testInlineClassExtensionValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassExtensionValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassExtensionValGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassInternalPrimaryVal.kt")
       public void testInlineClassInternalPrimaryVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassInternalPrimaryVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassInternalPrimaryVal.kt");
       }
 
       @Test
       @TestMetadata("inlineClassInternalPrimaryValGeneric.kt")
       public void testInlineClassInternalPrimaryValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassInternalPrimaryValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassInternalPrimaryValGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassMemberFun.kt")
       public void testInlineClassMemberFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassMemberFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassMemberFun.kt");
       }
 
       @Test
       @TestMetadata("inlineClassMemberFunGeneric.kt")
       public void testInlineClassMemberFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassMemberFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassMemberFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassMemberVal.kt")
       public void testInlineClassMemberVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassMemberVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassMemberVal.kt");
       }
 
       @Test
       @TestMetadata("inlineClassMemberValGeneric.kt")
       public void testInlineClassMemberValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassMemberValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassMemberValGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrimaryConstructor.kt")
       public void testInlineClassPrimaryConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrimaryConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrimaryConstructor.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrimaryConstructorGeneric.kt")
       public void testInlineClassPrimaryConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrimaryConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrimaryConstructorGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrimaryVal.kt")
       public void testInlineClassPrimaryVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrimaryVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrimaryVal.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrimaryValGeneric.kt")
       public void testInlineClassPrimaryValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrimaryValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrimaryValGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrivatePrimaryVal.kt")
       public void testInlineClassPrivatePrimaryVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrivatePrimaryVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrivatePrimaryVal.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrivatePrimaryValGeneric.kt")
       public void testInlineClassPrivatePrimaryValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrivatePrimaryValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassPrivatePrimaryValGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassTypeBoundMemberVar.kt")
       public void testInlineClassTypeBoundMemberVar() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeBoundMemberVar.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeBoundMemberVar.kt");
       }
 
       @Test
       @TestMetadata("inlineClassTypeBoundMemberVarGeneric.kt")
       public void testInlineClassTypeBoundMemberVarGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeBoundMemberVarGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeBoundMemberVarGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassTypeMemberVar.kt")
       public void testInlineClassTypeMemberVar() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeMemberVar.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeMemberVar.kt");
       }
 
       @Test
       @TestMetadata("inlineClassTypeMemberVarGeneric.kt")
       public void testInlineClassTypeMemberVarGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeMemberVarGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeMemberVarGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassTypeTopLevelVar.kt")
       public void testInlineClassTypeTopLevelVar() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeTopLevelVar.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeTopLevelVar.kt");
       }
 
       @Test
       @TestMetadata("inlineClassTypeTopLevelVarGeneric.kt")
       public void testInlineClassTypeTopLevelVarGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeTopLevelVarGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/inlineClassTypeTopLevelVarGeneric.kt");
       }
 
       @Test
       @TestMetadata("kt37986.kt")
       public void testKt37986() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/kt37986.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/kt37986.kt");
       }
 
       @Test
       @TestMetadata("kt37986Generic.kt")
       public void testKt37986Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/kt37986Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/kt37986Generic.kt");
       }
 
       @Test
       @TestMetadata("withInlineFunctionWithMultipleConstraints.kt")
       public void testWithInlineFunctionWithMultipleConstraints() {
-        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/withInlineFunctionWithMultipleConstraints.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/withInlineFunctionWithMultipleConstraints.kt");
       }
 
       @Nested
@@ -31373,73 +31682,73 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("any.kt")
         public void testAny() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/any.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/any.kt");
         }
 
         @Test
         @TestMetadata("anyGeneric.kt")
         public void testAnyGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/anyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/anyGeneric.kt");
         }
 
         @Test
         @TestMetadata("anyN.kt")
         public void testAnyN() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/anyN.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/anyN.kt");
         }
 
         @Test
         @TestMetadata("anyNGeneric.kt")
         public void testAnyNGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/anyNGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/anyNGeneric.kt");
         }
 
         @Test
         @TestMetadata("anyNGeneric2.kt")
         public void testAnyNGeneric2() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/anyNGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/anyNGeneric2.kt");
         }
 
         @Test
         @TestMetadata("int.kt")
         public void testInt() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/int.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/int.kt");
         }
 
         @Test
         @TestMetadata("intGeneric.kt")
         public void testIntGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/intGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/intGeneric.kt");
         }
 
         @Test
         @TestMetadata("intN.kt")
         public void testIntN() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/intN.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/intN.kt");
         }
 
         @Test
         @TestMetadata("intNGeneric.kt")
         public void testIntNGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/intNGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/intNGeneric.kt");
         }
 
         @Test
         @TestMetadata("intNGeneric2.kt")
         public void testIntNGeneric2() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/intNGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/intNGeneric2.kt");
         }
 
         @Test
         @TestMetadata("null.kt")
         public void testNull() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/null.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/null.kt");
         }
 
         @Test
         @TestMetadata("nullGeneric.kt")
         public void testNullGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/nullGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/nullGeneric.kt");
         }
 
         @Test
@@ -31451,31 +31760,31 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("string.kt")
         public void testString() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/string.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/string.kt");
         }
 
         @Test
         @TestMetadata("stringGeneric.kt")
         public void testStringGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/stringGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/stringGeneric.kt");
         }
 
         @Test
         @TestMetadata("stringN.kt")
         public void testStringN() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/stringN.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/stringN.kt");
         }
 
         @Test
         @TestMetadata("stringNGeneric.kt")
         public void testStringNGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/stringNGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/stringNGeneric.kt");
         }
 
         @Test
         @TestMetadata("stringNGeneric2.kt")
         public void testStringNGeneric2() {
-          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/stringNGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/callableReferences/let/stringNGeneric2.kt");
         }
       }
     }
@@ -31487,133 +31796,133 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("accessPrivateInlineClassCompanionMethod.kt")
       public void testAccessPrivateInlineClassCompanionMethod() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassCompanionMethod.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassCompanionMethod.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassCompanionMethod2.kt")
       public void testAccessPrivateInlineClassCompanionMethod2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassCompanionMethod2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassCompanionMethod2.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassCompanionMethod2Generic.kt")
       public void testAccessPrivateInlineClassCompanionMethod2Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassCompanionMethod2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassCompanionMethod2Generic.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassCompanionMethodGeneric.kt")
       public void testAccessPrivateInlineClassCompanionMethodGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassCompanionMethodGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassCompanionMethodGeneric.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassConstructorFromCompanion.kt")
       public void testAccessPrivateInlineClassConstructorFromCompanion() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassConstructorFromCompanion.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassConstructorFromCompanion.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassConstructorFromCompanionGeneric.kt")
       public void testAccessPrivateInlineClassConstructorFromCompanionGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassConstructorFromCompanionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassConstructorFromCompanionGeneric.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassConstructorFromLambda.kt")
       public void testAccessPrivateInlineClassConstructorFromLambda() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassConstructorFromLambda.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassConstructorFromLambda.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassConstructorFromLambdaGeneric.kt")
       public void testAccessPrivateInlineClassConstructorFromLambdaGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassConstructorFromLambdaGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassConstructorFromLambdaGeneric.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromCompanion.kt")
       public void testAccessPrivateInlineClassMethodFromCompanion() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromCompanion.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromCompanion.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromCompanion2.kt")
       public void testAccessPrivateInlineClassMethodFromCompanion2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromCompanion2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromCompanion2.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromCompanion2Generic.kt")
       public void testAccessPrivateInlineClassMethodFromCompanion2Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromCompanion2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromCompanion2Generic.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromCompanionGeneric.kt")
       public void testAccessPrivateInlineClassMethodFromCompanionGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromCompanionGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromCompanionGeneric.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromInlineLambda.kt")
       public void testAccessPrivateInlineClassMethodFromInlineLambda() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromInlineLambda.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromInlineLambda.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromInlineLambda2.kt")
       public void testAccessPrivateInlineClassMethodFromInlineLambda2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromInlineLambda2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromInlineLambda2.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromInlineLambda2Generic.kt")
       public void testAccessPrivateInlineClassMethodFromInlineLambda2Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromInlineLambda2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromInlineLambda2Generic.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromInlineLambdaGeneric.kt")
       public void testAccessPrivateInlineClassMethodFromInlineLambdaGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromInlineLambdaGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromInlineLambdaGeneric.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromLambda.kt")
       public void testAccessPrivateInlineClassMethodFromLambda() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromLambda.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromLambda.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromLambda2.kt")
       public void testAccessPrivateInlineClassMethodFromLambda2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromLambda2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromLambda2.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromLambda2Generic.kt")
       public void testAccessPrivateInlineClassMethodFromLambda2Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromLambda2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromLambda2Generic.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateInlineClassMethodFromLambdaGeneric.kt")
       public void testAccessPrivateInlineClassMethodFromLambdaGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromLambdaGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateInlineClassMethodFromLambdaGeneric.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateStaticInlineClassCompanionMethod.kt")
       public void testAccessPrivateStaticInlineClassCompanionMethod() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateStaticInlineClassCompanionMethod.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateStaticInlineClassCompanionMethod.kt");
       }
 
       @Test
       @TestMetadata("accessPrivateStaticInlineClassCompanionMethodGeneric.kt")
       public void testAccessPrivateStaticInlineClassCompanionMethodGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateStaticInlineClassCompanionMethodGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/accessPrivateStaticInlineClassCompanionMethodGeneric.kt");
       }
 
       @Test
@@ -31624,133 +31933,133 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("captureInlineClassInstanceInLambda.kt")
       public void testCaptureInlineClassInstanceInLambda() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInLambda.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInLambda.kt");
       }
 
       @Test
       @TestMetadata("captureInlineClassInstanceInLambda2.kt")
       public void testCaptureInlineClassInstanceInLambda2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInLambda2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInLambda2.kt");
       }
 
       @Test
       @TestMetadata("captureInlineClassInstanceInLambda2Generic.kt")
       public void testCaptureInlineClassInstanceInLambda2Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInLambda2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInLambda2Generic.kt");
       }
 
       @Test
       @TestMetadata("captureInlineClassInstanceInLambdaGeneric.kt")
       public void testCaptureInlineClassInstanceInLambdaGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInLambdaGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInLambdaGeneric.kt");
       }
 
       @Test
       @TestMetadata("captureInlineClassInstanceInObject.kt")
       public void testCaptureInlineClassInstanceInObject() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInObject.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInObject.kt");
       }
 
       @Test
       @TestMetadata("captureInlineClassInstanceInObjectGeneric.kt")
       public void testCaptureInlineClassInstanceInObjectGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInObjectGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/captureInlineClassInstanceInObjectGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineLambdaInInlineClassFun.kt")
       public void testInlineLambdaInInlineClassFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/inlineLambdaInInlineClassFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/inlineLambdaInInlineClassFun.kt");
       }
 
       @Test
       @TestMetadata("inlineLambdaInInlineClassFunGeneric.kt")
       public void testInlineLambdaInInlineClassFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/inlineLambdaInInlineClassFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/inlineLambdaInInlineClassFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("kt26858.kt")
       public void testKt26858() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt26858.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt26858.kt");
       }
 
       @Test
       @TestMetadata("kt26858Generic.kt")
       public void testKt26858Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt26858Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt26858Generic.kt");
       }
 
       @Test
       @TestMetadata("kt27513.kt")
       public void testKt27513() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt27513.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt27513.kt");
       }
 
       @Test
       @TestMetadata("kt27513Generic.kt")
       public void testKt27513Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt27513Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt27513Generic.kt");
       }
 
       @Test
       @TestMetadata("kt30780.kt")
       public void testKt30780() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt30780.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt30780.kt");
       }
 
       @Test
       @TestMetadata("kt30780Generic.kt")
       public void testKt30780Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt30780Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/kt30780Generic.kt");
       }
 
       @Test
       @TestMetadata("lambdaInInlineClassFun.kt")
       public void testLambdaInInlineClassFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/lambdaInInlineClassFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/lambdaInInlineClassFun.kt");
       }
 
       @Test
       @TestMetadata("lambdaInInlineClassFunGeneric.kt")
       public void testLambdaInInlineClassFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/lambdaInInlineClassFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/lambdaInInlineClassFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("objectInInlineClassFun.kt")
       public void testObjectInInlineClassFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/objectInInlineClassFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/objectInInlineClassFun.kt");
       }
 
       @Test
       @TestMetadata("objectInInlineClassFunGeneric.kt")
       public void testObjectInInlineClassFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/objectInInlineClassFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/objectInInlineClassFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("toPrivateCompanionFun.kt")
       public void testToPrivateCompanionFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/toPrivateCompanionFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/toPrivateCompanionFun.kt");
       }
 
       @Test
       @TestMetadata("toPrivateCompanionFunGeneric.kt")
       public void testToPrivateCompanionFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/toPrivateCompanionFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/toPrivateCompanionFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("toPrivateCompanionVal.kt")
       public void testToPrivateCompanionVal() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/toPrivateCompanionVal.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/toPrivateCompanionVal.kt");
       }
 
       @Test
       @TestMetadata("toPrivateCompanionValGeneric.kt")
       public void testToPrivateCompanionValGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/toPrivateCompanionValGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/contextsAndAccessors/toPrivateCompanionValGeneric.kt");
       }
     }
 
@@ -31766,139 +32075,139 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("defaultConstructorParameterValuesOfInlineClassType.kt")
       public void testDefaultConstructorParameterValuesOfInlineClassType() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultConstructorParameterValuesOfInlineClassType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultConstructorParameterValuesOfInlineClassType.kt");
       }
 
       @Test
       @TestMetadata("defaultConstructorParameterValuesOfInlineClassTypeGeneric.kt")
       public void testDefaultConstructorParameterValuesOfInlineClassTypeGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultConstructorParameterValuesOfInlineClassTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultConstructorParameterValuesOfInlineClassTypeGeneric.kt");
       }
 
       @Test
       @TestMetadata("defaultInterfaceFunParameterValuesOfInlineClassType.kt")
       public void testDefaultInterfaceFunParameterValuesOfInlineClassType() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultInterfaceFunParameterValuesOfInlineClassType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultInterfaceFunParameterValuesOfInlineClassType.kt");
       }
 
       @Test
       @TestMetadata("defaultInterfaceFunParameterValuesOfInlineClassTypeGeneric.kt")
       public void testDefaultInterfaceFunParameterValuesOfInlineClassTypeGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultInterfaceFunParameterValuesOfInlineClassTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultInterfaceFunParameterValuesOfInlineClassTypeGeneric.kt");
       }
 
       @Test
       @TestMetadata("defaultParameterValuesOfInlineClassType.kt")
       public void testDefaultParameterValuesOfInlineClassType() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultParameterValuesOfInlineClassType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultParameterValuesOfInlineClassType.kt");
       }
 
       @Test
       @TestMetadata("defaultParameterValuesOfInlineClassTypeBoxing.kt")
       public void testDefaultParameterValuesOfInlineClassTypeBoxing() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultParameterValuesOfInlineClassTypeBoxing.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultParameterValuesOfInlineClassTypeBoxing.kt");
       }
 
       @Test
       @TestMetadata("defaultParameterValuesOfInlineClassTypeBoxingGeneric.kt")
       public void testDefaultParameterValuesOfInlineClassTypeBoxingGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultParameterValuesOfInlineClassTypeBoxingGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultParameterValuesOfInlineClassTypeBoxingGeneric.kt");
       }
 
       @Test
       @TestMetadata("defaultParameterValuesOfInlineClassTypeGeneric.kt")
       public void testDefaultParameterValuesOfInlineClassTypeGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultParameterValuesOfInlineClassTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultParameterValuesOfInlineClassTypeGeneric.kt");
       }
 
       @Test
       @TestMetadata("defaultValueOfInlineClassTypeInInlineFun.kt")
       public void testDefaultValueOfInlineClassTypeInInlineFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultValueOfInlineClassTypeInInlineFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultValueOfInlineClassTypeInInlineFun.kt");
       }
 
       @Test
       @TestMetadata("defaultValueOfInlineClassTypeInInlineFunGeneric.kt")
       public void testDefaultValueOfInlineClassTypeInInlineFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultValueOfInlineClassTypeInInlineFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultValueOfInlineClassTypeInInlineFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("defaultValueOfInlineClassTypeInInlineFunInInlineClass.kt")
       public void testDefaultValueOfInlineClassTypeInInlineFunInInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultValueOfInlineClassTypeInInlineFunInInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultValueOfInlineClassTypeInInlineFunInInlineClass.kt");
       }
 
       @Test
       @TestMetadata("defaultValueOfInlineClassTypeInInlineFunInInlineClassGeneric.kt")
       public void testDefaultValueOfInlineClassTypeInInlineFunInInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultValueOfInlineClassTypeInInlineFunInInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultValueOfInlineClassTypeInInlineFunInInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassFun.kt")
       public void testInlineClassFun() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassFun.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassFun.kt");
       }
 
       @Test
       @TestMetadata("inlineClassFunGeneric.kt")
       public void testInlineClassFunGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassFunGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassFunGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrimaryConstructor.kt")
       public void testInlineClassPrimaryConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassPrimaryConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassPrimaryConstructor.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrimaryConstructorGeneric.kt")
       public void testInlineClassPrimaryConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassPrimaryConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassPrimaryConstructorGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrimaryConstructorWithInlineClassValue.kt")
       public void testInlineClassPrimaryConstructorWithInlineClassValue() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassPrimaryConstructorWithInlineClassValue.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassPrimaryConstructorWithInlineClassValue.kt");
       }
 
       @Test
       @TestMetadata("inlineClassPrimaryConstructorWithInlineClassValueGeneric.kt")
       public void testInlineClassPrimaryConstructorWithInlineClassValueGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassPrimaryConstructorWithInlineClassValueGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassPrimaryConstructorWithInlineClassValueGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineClassSecondaryConstructor.kt")
       public void testInlineClassSecondaryConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassSecondaryConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassSecondaryConstructor.kt");
       }
 
       @Test
       @TestMetadata("inlineClassSecondaryConstructorGeneric.kt")
       public void testInlineClassSecondaryConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassSecondaryConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/inlineClassSecondaryConstructorGeneric.kt");
       }
 
       @Test
       @TestMetadata("kt26554.kt")
       public void testKt26554() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/kt26554.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/kt26554.kt");
       }
 
       @Test
       @TestMetadata("kt27416.kt")
       public void testKt27416() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/kt27416.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/kt27416.kt");
       }
 
       @Test
       @TestMetadata("kt27416Generic.kt")
       public void testKt27416Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/kt27416Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/kt27416Generic.kt");
       }
 
       @Nested
@@ -31913,37 +32222,37 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("disable.kt")
         public void testDisable() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/disable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/disable.kt");
         }
 
         @Test
         @TestMetadata("disableGeneric.kt")
         public void testDisableGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/disableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/disableGeneric.kt");
         }
 
         @Test
         @TestMetadata("enable.kt")
         public void testEnable() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/enable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/enable.kt");
         }
 
         @Test
         @TestMetadata("enableGeneric.kt")
         public void testEnableGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/enableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/enableGeneric.kt");
         }
 
         @Test
         @TestMetadata("noCompatibility.kt")
         public void testNoCompatibility() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/noCompatibility.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/noCompatibility.kt");
         }
 
         @Test
         @TestMetadata("noCompatibilityGeneric.kt")
         public void testNoCompatibilityGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/noCompatibilityGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/defaultWithDefaultParameter/noCompatibilityGeneric.kt");
         }
       }
 
@@ -31959,37 +32268,37 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("disable.kt")
         public void testDisable() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/disable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/disable.kt");
         }
 
         @Test
         @TestMetadata("disableGeneric.kt")
         public void testDisableGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/disableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/disableGeneric.kt");
         }
 
         @Test
         @TestMetadata("enable.kt")
         public void testEnable() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/enable.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/enable.kt");
         }
 
         @Test
         @TestMetadata("enableGeneric.kt")
         public void testEnableGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/enableGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/enableGeneric.kt");
         }
 
         @Test
         @TestMetadata("noCompatibility.kt")
         public void testNoCompatibility() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/noCompatibility.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/noCompatibility.kt");
         }
 
         @Test
         @TestMetadata("noCompatibilityGeneric.kt")
         public void testNoCompatibilityGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/noCompatibilityGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/defaultParameterValues/overrideFunctionWithDefaultParameter/noCompatibilityGeneric.kt");
         }
       }
     }
@@ -32052,19 +32361,19 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("argumentIC.kt")
       public void testArgumentIC() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/argumentIC.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/argumentIC.kt");
       }
 
       @Test
       @TestMetadata("argumentICGeneric.kt")
       public void testArgumentICGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/argumentICGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/argumentICGeneric.kt");
       }
 
       @Test
       @TestMetadata("argumentICGeneric2.kt")
       public void testArgumentICGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/argumentICGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/argumentICGeneric2.kt");
       }
 
       @Test
@@ -32088,43 +32397,43 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("kt51121.kt")
       public void testKt51121() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/kt51121.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/kt51121.kt");
       }
 
       @Test
       @TestMetadata("kt51121_2.kt")
       public void testKt51121_2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/kt51121_2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/kt51121_2.kt");
       }
 
       @Test
       @TestMetadata("mangledSamWrappers.kt")
       public void testMangledSamWrappers() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/mangledSamWrappers.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/mangledSamWrappers.kt");
       }
 
       @Test
       @TestMetadata("mangledSamWrappersGeneric.kt")
       public void testMangledSamWrappersGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/mangledSamWrappersGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/mangledSamWrappersGeneric.kt");
       }
 
       @Test
       @TestMetadata("returnIC.kt")
       public void testReturnIC() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/returnIC.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/returnIC.kt");
       }
 
       @Test
       @TestMetadata("returnICGeneric.kt")
       public void testReturnICGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/returnICGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/returnICGeneric.kt");
       }
 
       @Test
       @TestMetadata("returnICGeneric2.kt")
       public void testReturnICGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/returnICGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/funInterface/returnICGeneric2.kt");
       }
 
       @Test
@@ -32146,217 +32455,217 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("anonymousObjectInFunctionWithMangledName.kt")
       public void testAnonymousObjectInFunctionWithMangledName() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/anonymousObjectInFunctionWithMangledName.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/anonymousObjectInFunctionWithMangledName.kt");
       }
 
       @Test
       @TestMetadata("anonymousObjectInFunctionWithMangledNameGeneric.kt")
       public void testAnonymousObjectInFunctionWithMangledNameGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/anonymousObjectInFunctionWithMangledNameGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/anonymousObjectInFunctionWithMangledNameGeneric.kt");
       }
 
       @Test
       @TestMetadata("extensionFunctionsDoNotClash.kt")
       public void testExtensionFunctionsDoNotClash() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/extensionFunctionsDoNotClash.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/extensionFunctionsDoNotClash.kt");
       }
 
       @Test
       @TestMetadata("extensionFunctionsDoNotClashGeneric.kt")
       public void testExtensionFunctionsDoNotClashGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/extensionFunctionsDoNotClashGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/extensionFunctionsDoNotClashGeneric.kt");
       }
 
       @Test
       @TestMetadata("functionsWithDifferentNullabilityDoNotClash.kt")
       public void testFunctionsWithDifferentNullabilityDoNotClash() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/functionsWithDifferentNullabilityDoNotClash.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/functionsWithDifferentNullabilityDoNotClash.kt");
       }
 
       @Test
       @TestMetadata("functionsWithDifferentNullabilityDoNotClashGeneric.kt")
       public void testFunctionsWithDifferentNullabilityDoNotClashGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/functionsWithDifferentNullabilityDoNotClashGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/functionsWithDifferentNullabilityDoNotClashGeneric.kt");
       }
 
       @Test
       @TestMetadata("genericFunctionsDoNotClash.kt")
       public void testGenericFunctionsDoNotClash() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/genericFunctionsDoNotClash.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/genericFunctionsDoNotClash.kt");
       }
 
       @Test
       @TestMetadata("genericFunctionsDoNotClashGeneric.kt")
       public void testGenericFunctionsDoNotClashGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/genericFunctionsDoNotClashGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/genericFunctionsDoNotClashGeneric.kt");
       }
 
       @Test
       @TestMetadata("genericSignatureOfFunctionWithMangledName.kt")
       public void testGenericSignatureOfFunctionWithMangledName() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/genericSignatureOfFunctionWithMangledName.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/genericSignatureOfFunctionWithMangledName.kt");
       }
 
       @Test
       @TestMetadata("genericSignatureOfFunctionWithMangledNameGeneric.kt")
       public void testGenericSignatureOfFunctionWithMangledNameGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/genericSignatureOfFunctionWithMangledNameGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/genericSignatureOfFunctionWithMangledNameGeneric.kt");
       }
 
       @Test
       @TestMetadata("localClassInFunctionWithMangledName.kt")
       public void testLocalClassInFunctionWithMangledName() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/localClassInFunctionWithMangledName.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/localClassInFunctionWithMangledName.kt");
       }
 
       @Test
       @TestMetadata("localClassInFunctionWithMangledNameGeneric.kt")
       public void testLocalClassInFunctionWithMangledNameGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/localClassInFunctionWithMangledNameGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/localClassInFunctionWithMangledNameGeneric.kt");
       }
 
       @Test
       @TestMetadata("mangledFunctionsCanBeOverridden.kt")
       public void testMangledFunctionsCanBeOverridden() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsCanBeOverridden.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsCanBeOverridden.kt");
       }
 
       @Test
       @TestMetadata("mangledFunctionsCanBeOverriddenGeneric.kt")
       public void testMangledFunctionsCanBeOverriddenGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsCanBeOverriddenGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsCanBeOverriddenGeneric.kt");
       }
 
       @Test
       @TestMetadata("mangledFunctionsDoNotClash.kt")
       public void testMangledFunctionsDoNotClash() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsDoNotClash.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsDoNotClash.kt");
       }
 
       @Test
       @TestMetadata("mangledFunctionsDoNotClashGeneric.kt")
       public void testMangledFunctionsDoNotClashGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsDoNotClashGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsDoNotClashGeneric.kt");
       }
 
       @Test
       @TestMetadata("mangledFunctionsPresentInStackTrace.kt")
       public void testMangledFunctionsPresentInStackTrace() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsPresentInStackTrace.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsPresentInStackTrace.kt");
       }
 
       @Test
       @TestMetadata("mangledFunctionsPresentInStackTraceGeneric.kt")
       public void testMangledFunctionsPresentInStackTraceGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsPresentInStackTraceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mangledFunctionsPresentInStackTraceGeneric.kt");
       }
 
       @Test
       @TestMetadata("mixedSignatureFunctionsDoNotClash.kt")
       public void testMixedSignatureFunctionsDoNotClash() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mixedSignatureFunctionsDoNotClash.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mixedSignatureFunctionsDoNotClash.kt");
       }
 
       @Test
       @TestMetadata("mixedSignatureFunctionsDoNotClashGeneric.kt")
       public void testMixedSignatureFunctionsDoNotClashGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mixedSignatureFunctionsDoNotClashGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/mixedSignatureFunctionsDoNotClashGeneric.kt");
       }
 
       @Test
       @TestMetadata("overridingMethodInGenericClass.kt")
       public void testOverridingMethodInGenericClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/overridingMethodInGenericClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/overridingMethodInGenericClass.kt");
       }
 
       @Test
       @TestMetadata("overridingMethodInGenericClass2.kt")
       public void testOverridingMethodInGenericClass2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/overridingMethodInGenericClass2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/overridingMethodInGenericClass2.kt");
       }
 
       @Test
       @TestMetadata("overridingMethodInGenericClass2Generic.kt")
       public void testOverridingMethodInGenericClass2Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/overridingMethodInGenericClass2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/overridingMethodInGenericClass2Generic.kt");
       }
 
       @Test
       @TestMetadata("overridingMethodInGenericClassGeneric.kt")
       public void testOverridingMethodInGenericClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/overridingMethodInGenericClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/overridingMethodInGenericClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("propertySetterWithInlineClassTypeArgument.kt")
       public void testPropertySetterWithInlineClassTypeArgument() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/propertySetterWithInlineClassTypeArgument.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/propertySetterWithInlineClassTypeArgument.kt");
       }
 
       @Test
       @TestMetadata("propertySetterWithInlineClassTypeArgumentGeneric.kt")
       public void testPropertySetterWithInlineClassTypeArgumentGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/propertySetterWithInlineClassTypeArgumentGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/propertySetterWithInlineClassTypeArgumentGeneric.kt");
       }
 
       @Test
       @TestMetadata("reflectionForFunctionWithMangledName.kt")
       public void testReflectionForFunctionWithMangledName() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForFunctionWithMangledName.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForFunctionWithMangledName.kt");
       }
 
       @Test
       @TestMetadata("reflectionForFunctionWithMangledNameGeneric.kt")
       public void testReflectionForFunctionWithMangledNameGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForFunctionWithMangledNameGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForFunctionWithMangledNameGeneric.kt");
       }
 
       @Test
       @TestMetadata("reflectionForLocalClassInFunctionWithMangledName.kt")
       public void testReflectionForLocalClassInFunctionWithMangledName() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForLocalClassInFunctionWithMangledName.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForLocalClassInFunctionWithMangledName.kt");
       }
 
       @Test
       @TestMetadata("reflectionForLocalClassInFunctionWithMangledNameGeneric.kt")
       public void testReflectionForLocalClassInFunctionWithMangledNameGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForLocalClassInFunctionWithMangledNameGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForLocalClassInFunctionWithMangledNameGeneric.kt");
       }
 
       @Test
       @TestMetadata("reflectionForPropertyOfInlineClassType.kt")
       public void testReflectionForPropertyOfInlineClassType() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForPropertyOfInlineClassType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForPropertyOfInlineClassType.kt");
       }
 
       @Test
       @TestMetadata("reflectionForPropertyOfInlineClassTypeGeneric.kt")
       public void testReflectionForPropertyOfInlineClassTypeGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForPropertyOfInlineClassTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/reflectionForPropertyOfInlineClassTypeGeneric.kt");
       }
 
       @Test
       @TestMetadata("syntheticAccessorForFunctionWithMangledName.kt")
       public void testSyntheticAccessorForFunctionWithMangledName() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/syntheticAccessorForFunctionWithMangledName.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/syntheticAccessorForFunctionWithMangledName.kt");
       }
 
       @Test
       @TestMetadata("syntheticAccessorForFunctionWithMangledNameGeneric.kt")
       public void testSyntheticAccessorForFunctionWithMangledNameGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/syntheticAccessorForFunctionWithMangledNameGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/syntheticAccessorForFunctionWithMangledNameGeneric.kt");
       }
 
       @Test
       @TestMetadata("syntheticAccessorsForPropertyOfInlineClassType.kt")
       public void testSyntheticAccessorsForPropertyOfInlineClassType() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/syntheticAccessorsForPropertyOfInlineClassType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/syntheticAccessorsForPropertyOfInlineClassType.kt");
       }
 
       @Test
       @TestMetadata("syntheticAccessorsForPropertyOfInlineClassTypeGeneric.kt")
       public void testSyntheticAccessorsForPropertyOfInlineClassTypeGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/syntheticAccessorsForPropertyOfInlineClassTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/functionNameMangling/syntheticAccessorsForPropertyOfInlineClassTypeGeneric.kt");
       }
     }
 
@@ -32424,97 +32733,97 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("constructorReferencedFromOtherFile1.kt")
       public void testConstructorReferencedFromOtherFile1() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorReferencedFromOtherFile1.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorReferencedFromOtherFile1.kt");
       }
 
       @Test
       @TestMetadata("constructorReferencedFromOtherFile1Generic.kt")
       public void testConstructorReferencedFromOtherFile1Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorReferencedFromOtherFile1Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorReferencedFromOtherFile1Generic.kt");
       }
 
       @Test
       @TestMetadata("constructorReferencedFromOtherFile2.kt")
       public void testConstructorReferencedFromOtherFile2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorReferencedFromOtherFile2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorReferencedFromOtherFile2.kt");
       }
 
       @Test
       @TestMetadata("constructorReferencedFromOtherFile2Generic.kt")
       public void testConstructorReferencedFromOtherFile2Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorReferencedFromOtherFile2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorReferencedFromOtherFile2Generic.kt");
       }
 
       @Test
       @TestMetadata("constructorWithDefaultParameters.kt")
       public void testConstructorWithDefaultParameters() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorWithDefaultParameters.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorWithDefaultParameters.kt");
       }
 
       @Test
       @TestMetadata("constructorWithDefaultParametersGeneric.kt")
       public void testConstructorWithDefaultParametersGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorWithDefaultParametersGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/constructorWithDefaultParametersGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegatingSuperConstructorCall.kt")
       public void testDelegatingSuperConstructorCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingSuperConstructorCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingSuperConstructorCall.kt");
       }
 
       @Test
       @TestMetadata("delegatingSuperConstructorCallGeneric.kt")
       public void testDelegatingSuperConstructorCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingSuperConstructorCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingSuperConstructorCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegatingSuperConstructorCallInSecondaryConstructor.kt")
       public void testDelegatingSuperConstructorCallInSecondaryConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingSuperConstructorCallInSecondaryConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingSuperConstructorCallInSecondaryConstructor.kt");
       }
 
       @Test
       @TestMetadata("delegatingSuperConstructorCallInSecondaryConstructorGeneric.kt")
       public void testDelegatingSuperConstructorCallInSecondaryConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingSuperConstructorCallInSecondaryConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingSuperConstructorCallInSecondaryConstructorGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegatingThisConstructorCall.kt")
       public void testDelegatingThisConstructorCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingThisConstructorCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingThisConstructorCall.kt");
       }
 
       @Test
       @TestMetadata("delegatingThisConstructorCallGeneric.kt")
       public void testDelegatingThisConstructorCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingThisConstructorCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/delegatingThisConstructorCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("enumClassConstructor.kt")
       public void testEnumClassConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/enumClassConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/enumClassConstructor.kt");
       }
 
       @Test
       @TestMetadata("enumClassConstructorGeneric.kt")
       public void testEnumClassConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/enumClassConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/enumClassConstructorGeneric.kt");
       }
 
       @Test
       @TestMetadata("innerClassConstructor.kt")
       public void testInnerClassConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/innerClassConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/innerClassConstructor.kt");
       }
 
       @Test
       @TestMetadata("innerClassConstructorGeneric.kt")
       public void testInnerClassConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/innerClassConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/innerClassConstructorGeneric.kt");
       }
 
       @Test
@@ -32526,49 +32835,49 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("primaryConstructor.kt")
       public void testPrimaryConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/primaryConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/primaryConstructor.kt");
       }
 
       @Test
       @TestMetadata("primaryConstructorGeneric.kt")
       public void testPrimaryConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/primaryConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/primaryConstructorGeneric.kt");
       }
 
       @Test
       @TestMetadata("privateConstructor.kt")
       public void testPrivateConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/privateConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/privateConstructor.kt");
       }
 
       @Test
       @TestMetadata("privateConstructorGeneric.kt")
       public void testPrivateConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/privateConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/privateConstructorGeneric.kt");
       }
 
       @Test
       @TestMetadata("sealedClassConstructor.kt")
       public void testSealedClassConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/sealedClassConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/sealedClassConstructor.kt");
       }
 
       @Test
       @TestMetadata("sealedClassConstructorGeneric.kt")
       public void testSealedClassConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/sealedClassConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/sealedClassConstructorGeneric.kt");
       }
 
       @Test
       @TestMetadata("secondaryConstructor.kt")
       public void testSecondaryConstructor() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/secondaryConstructor.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/secondaryConstructor.kt");
       }
 
       @Test
       @TestMetadata("secondaryConstructorGeneric.kt")
       public void testSecondaryConstructorGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/secondaryConstructorGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/hiddenConstructor/secondaryConstructorGeneric.kt");
       }
     }
 
@@ -32584,43 +32893,43 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("inlineCollectionOfInlineClass.kt")
       public void testInlineCollectionOfInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineCollectionOfInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineCollectionOfInlineClass.kt");
       }
 
       @Test
       @TestMetadata("inlineCollectionOfInlineClassGeneric.kt")
       public void testInlineCollectionOfInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineCollectionOfInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineCollectionOfInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineListOfInlineClass.kt")
       public void testInlineListOfInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineListOfInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineListOfInlineClass.kt");
       }
 
       @Test
       @TestMetadata("inlineListOfInlineClassGeneric.kt")
       public void testInlineListOfInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineListOfInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineListOfInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineMapOfInlineClass.kt")
       public void testInlineMapOfInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineMapOfInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineMapOfInlineClass.kt");
       }
 
       @Test
       @TestMetadata("inlineMapOfInlineClassGeneric.kt")
       public void testInlineMapOfInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineMapOfInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineMapOfInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("inlineMutableCollectionBulkAdd.kt")
       public void testInlineMutableCollectionBulkAdd() {
-        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineMutableCollectionBulkAdd.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/inlineClassCollection/inlineMutableCollectionBulkAdd.kt");
       }
     }
 
@@ -32636,91 +32945,91 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("interfaceImplementationByDelegation.kt")
       public void testInterfaceImplementationByDelegation() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/interfaceImplementationByDelegation.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/interfaceImplementationByDelegation.kt");
       }
 
       @Test
       @TestMetadata("interfaceImplementationByDelegationGeneric.kt")
       public void testInterfaceImplementationByDelegationGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/interfaceImplementationByDelegationGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/interfaceImplementationByDelegationGeneric.kt");
       }
 
       @Test
       @TestMetadata("kt38337.kt")
       public void testKt38337() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/kt38337.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/kt38337.kt");
       }
 
       @Test
       @TestMetadata("kt38337Generic.kt")
       public void testKt38337Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/kt38337Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/kt38337Generic.kt");
       }
 
       @Test
       @TestMetadata("memberExtValDelegationWithInlineClassParameterTypes.kt")
       public void testMemberExtValDelegationWithInlineClassParameterTypes() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberExtValDelegationWithInlineClassParameterTypes.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberExtValDelegationWithInlineClassParameterTypes.kt");
       }
 
       @Test
       @TestMetadata("memberExtValDelegationWithInlineClassParameterTypesGeneric.kt")
       public void testMemberExtValDelegationWithInlineClassParameterTypesGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberExtValDelegationWithInlineClassParameterTypesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberExtValDelegationWithInlineClassParameterTypesGeneric.kt");
       }
 
       @Test
       @TestMetadata("memberExtVarDelegationWithInlineClassParameterTypes.kt")
       public void testMemberExtVarDelegationWithInlineClassParameterTypes() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberExtVarDelegationWithInlineClassParameterTypes.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberExtVarDelegationWithInlineClassParameterTypes.kt");
       }
 
       @Test
       @TestMetadata("memberFunDelegatedToInlineClassInt.kt")
       public void testMemberFunDelegatedToInlineClassInt() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegatedToInlineClassInt.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegatedToInlineClassInt.kt");
       }
 
       @Test
       @TestMetadata("memberFunDelegatedToInlineClassIntGeneric.kt")
       public void testMemberFunDelegatedToInlineClassIntGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegatedToInlineClassIntGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegatedToInlineClassIntGeneric.kt");
       }
 
       @Test
       @TestMetadata("memberFunDelegatedToInlineClassLong.kt")
       public void testMemberFunDelegatedToInlineClassLong() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegatedToInlineClassLong.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegatedToInlineClassLong.kt");
       }
 
       @Test
       @TestMetadata("memberFunDelegatedToInlineClassLongGeneric.kt")
       public void testMemberFunDelegatedToInlineClassLongGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegatedToInlineClassLongGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegatedToInlineClassLongGeneric.kt");
       }
 
       @Test
       @TestMetadata("memberFunDelegationToInlineClassWithInlineClassParameterTypes.kt")
       public void testMemberFunDelegationToInlineClassWithInlineClassParameterTypes() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegationToInlineClassWithInlineClassParameterTypes.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegationToInlineClassWithInlineClassParameterTypes.kt");
       }
 
       @Test
       @TestMetadata("memberFunDelegationToInlineClassWithInlineClassParameterTypesGeneric.kt")
       public void testMemberFunDelegationToInlineClassWithInlineClassParameterTypesGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegationToInlineClassWithInlineClassParameterTypesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegationToInlineClassWithInlineClassParameterTypesGeneric.kt");
       }
 
       @Test
       @TestMetadata("memberFunDelegationWithInlineClassParameterTypes.kt")
       public void testMemberFunDelegationWithInlineClassParameterTypes() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegationWithInlineClassParameterTypes.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegationWithInlineClassParameterTypes.kt");
       }
 
       @Test
       @TestMetadata("memberFunDelegationWithInlineClassParameterTypesGeneric.kt")
       public void testMemberFunDelegationWithInlineClassParameterTypesGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegationWithInlineClassParameterTypesGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceDelegation/memberFunDelegationWithInlineClassParameterTypesGeneric.kt");
       }
     }
 
@@ -32736,133 +33045,133 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("complexGenericMethodWithInlineClassOverride.kt")
       public void testComplexGenericMethodWithInlineClassOverride() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride.kt");
       }
 
       @Test
       @TestMetadata("complexGenericMethodWithInlineClassOverride2.kt")
       public void testComplexGenericMethodWithInlineClassOverride2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride2.kt");
       }
 
       @Test
       @TestMetadata("complexGenericMethodWithInlineClassOverride2Generic.kt")
       public void testComplexGenericMethodWithInlineClassOverride2Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride2Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride2Generic.kt");
       }
 
       @Test
       @TestMetadata("complexGenericMethodWithInlineClassOverride3.kt")
       public void testComplexGenericMethodWithInlineClassOverride3() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride3.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride3.kt");
       }
 
       @Test
       @TestMetadata("complexGenericMethodWithInlineClassOverride3Generic.kt")
       public void testComplexGenericMethodWithInlineClassOverride3Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride3Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverride3Generic.kt");
       }
 
       @Test
       @TestMetadata("complexGenericMethodWithInlineClassOverrideGeneric.kt")
       public void testComplexGenericMethodWithInlineClassOverrideGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverrideGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/complexGenericMethodWithInlineClassOverrideGeneric.kt");
       }
 
       @Test
       @TestMetadata("defaultInterfaceExtensionFunCall.kt")
       public void testDefaultInterfaceExtensionFunCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/defaultInterfaceExtensionFunCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/defaultInterfaceExtensionFunCall.kt");
       }
 
       @Test
       @TestMetadata("defaultInterfaceExtensionFunCallGeneric.kt")
       public void testDefaultInterfaceExtensionFunCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/defaultInterfaceExtensionFunCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/defaultInterfaceExtensionFunCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("defaultInterfaceMethodCall.kt")
       public void testDefaultInterfaceMethodCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/defaultInterfaceMethodCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/defaultInterfaceMethodCall.kt");
       }
 
       @Test
       @TestMetadata("defaultInterfaceMethodCallGeneric.kt")
       public void testDefaultInterfaceMethodCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/defaultInterfaceMethodCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/defaultInterfaceMethodCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("genericDefaultInterfaceExtensionFunCall.kt")
       public void testGenericDefaultInterfaceExtensionFunCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericDefaultInterfaceExtensionFunCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericDefaultInterfaceExtensionFunCall.kt");
       }
 
       @Test
       @TestMetadata("genericDefaultInterfaceExtensionFunCallGeneric.kt")
       public void testGenericDefaultInterfaceExtensionFunCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericDefaultInterfaceExtensionFunCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericDefaultInterfaceExtensionFunCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("genericDefaultInterfaceMethodCall.kt")
       public void testGenericDefaultInterfaceMethodCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericDefaultInterfaceMethodCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericDefaultInterfaceMethodCall.kt");
       }
 
       @Test
       @TestMetadata("genericDefaultInterfaceMethodCallGeneric.kt")
       public void testGenericDefaultInterfaceMethodCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericDefaultInterfaceMethodCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericDefaultInterfaceMethodCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("genericInterfaceMethodCall.kt")
       public void testGenericInterfaceMethodCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericInterfaceMethodCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericInterfaceMethodCall.kt");
       }
 
       @Test
       @TestMetadata("genericInterfaceMethodCallGeneric.kt")
       public void testGenericInterfaceMethodCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericInterfaceMethodCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericInterfaceMethodCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("genericMethodWithInlineClassOverride.kt")
       public void testGenericMethodWithInlineClassOverride() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericMethodWithInlineClassOverride.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericMethodWithInlineClassOverride.kt");
       }
 
       @Test
       @TestMetadata("genericMethodWithInlineClassOverrideGeneric.kt")
       public void testGenericMethodWithInlineClassOverrideGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericMethodWithInlineClassOverrideGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/genericMethodWithInlineClassOverrideGeneric.kt");
       }
 
       @Test
       @TestMetadata("interfaceSuperCall.kt")
       public void testInterfaceSuperCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/interfaceSuperCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/interfaceSuperCall.kt");
       }
 
       @Test
       @TestMetadata("interfaceSuperCallGeneric.kt")
       public void testInterfaceSuperCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/interfaceSuperCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/interfaceSuperCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("overriddenDefaultInterfaceMethodCall.kt")
       public void testOverriddenDefaultInterfaceMethodCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/overriddenDefaultInterfaceMethodCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/overriddenDefaultInterfaceMethodCall.kt");
       }
 
       @Test
       @TestMetadata("overriddenDefaultInterfaceMethodCallGeneric.kt")
       public void testOverriddenDefaultInterfaceMethodCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/overriddenDefaultInterfaceMethodCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/interfaceMethodCalls/overriddenDefaultInterfaceMethodCallGeneric.kt");
       }
     }
 
@@ -32966,109 +33275,109 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("javaDefaultMethod.kt")
       public void testJavaDefaultMethod() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/javaDefaultMethod.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/javaDefaultMethod.kt");
       }
 
       @Test
       @TestMetadata("javaDefaultMethodGeneric.kt")
       public void testJavaDefaultMethodGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/javaDefaultMethodGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/javaDefaultMethodGeneric.kt");
       }
 
       @Test
       @TestMetadata("javaDefaultMethodOverriddenByKotlin.kt")
       public void testJavaDefaultMethodOverriddenByKotlin() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/javaDefaultMethodOverriddenByKotlin.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/javaDefaultMethodOverriddenByKotlin.kt");
       }
 
       @Test
       @TestMetadata("javaDefaultMethodOverriddenByKotlinGeneric.kt")
       public void testJavaDefaultMethodOverriddenByKotlinGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/javaDefaultMethodOverriddenByKotlinGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/javaDefaultMethodOverriddenByKotlinGeneric.kt");
       }
 
       @Test
       @TestMetadata("jvmDefault.kt")
       public void testJvmDefault() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefault.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefault.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultGeneric.kt")
       public void testJvmDefaultGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultGeneric.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultGeneric2.kt")
       public void testJvmDefaultGeneric2() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultGeneric2.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultGenericGeneric.kt")
       public void testJvmDefaultGenericGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultGenericGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultGenericGeneric.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultPrimaryProperty.kt")
       public void testJvmDefaultPrimaryProperty() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultPrimaryProperty.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultPrimaryProperty.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultPrimaryPropertyGeneric.kt")
       public void testJvmDefaultPrimaryPropertyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultPrimaryPropertyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultPrimaryPropertyGeneric.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultProperty.kt")
       public void testJvmDefaultProperty() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultProperty.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultProperty.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultPropertyGeneric.kt")
       public void testJvmDefaultPropertyGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultPropertyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultPropertyGeneric.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultSafeCall.kt")
       public void testJvmDefaultSafeCall() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSafeCall.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSafeCall.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultSafeCallGeneric.kt")
       public void testJvmDefaultSafeCallGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSafeCallGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSafeCallGeneric.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultSmartCast.kt")
       public void testJvmDefaultSmartCast() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSmartCast.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSmartCast.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultSmartCastGeneric.kt")
       public void testJvmDefaultSmartCastGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSmartCastGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSmartCastGeneric.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultSuspend.kt")
       public void testJvmDefaultSuspend() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSuspend.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSuspend.kt");
       }
 
       @Test
       @TestMetadata("jvmDefaultSuspendGeneric.kt")
       public void testJvmDefaultSuspendGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSuspendGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/jvm8DefaultInterfaceMethods/jvmDefaultSuspendGeneric.kt");
       }
     }
 
@@ -33184,6 +33493,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("secondaryConstructor.kt")
+      public void testSecondaryConstructor() {
+        runTest("compiler/testData/codegen/box/inlineClasses/jvmExposeBoxed/secondaryConstructor.kt");
+      }
+
+      @Test
       @TestMetadata("simple.kt")
       public void testSimple() {
         runTest("compiler/testData/codegen/box/inlineClasses/jvmExposeBoxed/simple.kt");
@@ -33238,6 +33553,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @TestMetadata("constructorBoxed.kt")
         public void testConstructorBoxed() {
           runTest("compiler/testData/codegen/box/inlineClasses/jvmExposeBoxed/directive/constructorBoxed.kt");
+        }
+
+        @Test
+        @TestMetadata("defaultInInterface.kt")
+        public void testDefaultInInterface() {
+          runTest("compiler/testData/codegen/box/inlineClasses/jvmExposeBoxed/directive/defaultInInterface.kt");
         }
 
         @Test
@@ -33298,6 +33619,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @TestMetadata("noArg2.kt")
         public void testNoArg2() {
           runTest("compiler/testData/codegen/box/inlineClasses/jvmExposeBoxed/directive/noArg2.kt");
+        }
+
+        @Test
+        @TestMetadata("openClass.kt")
+        public void testOpenClass() {
+          runTest("compiler/testData/codegen/box/inlineClasses/jvmExposeBoxed/directive/openClass.kt");
         }
 
         @Test
@@ -33416,145 +33743,145 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("captureLocalVarDelegatedToInlineClass.kt")
       public void testCaptureLocalVarDelegatedToInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/captureLocalVarDelegatedToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/captureLocalVarDelegatedToInlineClass.kt");
       }
 
       @Test
       @TestMetadata("captureLocalVarDelegatedToInlineClassGeneric.kt")
       public void testCaptureLocalVarDelegatedToInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/captureLocalVarDelegatedToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/captureLocalVarDelegatedToInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegateClassVarToInlineClass.kt")
       public void testDelegateClassVarToInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateClassVarToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateClassVarToInlineClass.kt");
       }
 
       @Test
       @TestMetadata("delegateClassVarToInlineClassGeneric.kt")
       public void testDelegateClassVarToInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateClassVarToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateClassVarToInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegateClassVarToInlineClassWithProvideDelegate.kt")
       public void testDelegateClassVarToInlineClassWithProvideDelegate() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateClassVarToInlineClassWithProvideDelegate.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateClassVarToInlineClassWithProvideDelegate.kt");
       }
 
       @Test
       @TestMetadata("delegateClassVarToInlineClassWithProvideDelegateGeneric.kt")
       public void testDelegateClassVarToInlineClassWithProvideDelegateGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateClassVarToInlineClassWithProvideDelegateGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateClassVarToInlineClassWithProvideDelegateGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegateCompanionVarToInlineClass.kt")
       public void testDelegateCompanionVarToInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateCompanionVarToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateCompanionVarToInlineClass.kt");
       }
 
       @Test
       @TestMetadata("delegateCompanionVarToInlineClassGeneric.kt")
       public void testDelegateCompanionVarToInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateCompanionVarToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateCompanionVarToInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegateJvmStaticCompanionVarToInlineClass.kt")
       public void testDelegateJvmStaticCompanionVarToInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateJvmStaticCompanionVarToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateJvmStaticCompanionVarToInlineClass.kt");
       }
 
       @Test
       @TestMetadata("delegateJvmStaticCompanionVarToInlineClassGeneric.kt")
       public void testDelegateJvmStaticCompanionVarToInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateJvmStaticCompanionVarToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateJvmStaticCompanionVarToInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegateLocalVarToInlineClass.kt")
       public void testDelegateLocalVarToInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateLocalVarToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateLocalVarToInlineClass.kt");
       }
 
       @Test
       @TestMetadata("delegateLocalVarToInlineClassGeneric.kt")
       public void testDelegateLocalVarToInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateLocalVarToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateLocalVarToInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegateObjectVarToInlineClass.kt")
       public void testDelegateObjectVarToInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateObjectVarToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateObjectVarToInlineClass.kt");
       }
 
       @Test
       @TestMetadata("delegateObjectVarToInlineClassGeneric.kt")
       public void testDelegateObjectVarToInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateObjectVarToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateObjectVarToInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegatePrivateCompanionVarToInlineClass.kt")
       public void testDelegatePrivateCompanionVarToInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegatePrivateCompanionVarToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegatePrivateCompanionVarToInlineClass.kt");
       }
 
       @Test
       @TestMetadata("delegatePrivateCompanionVarToInlineClassGeneric.kt")
       public void testDelegatePrivateCompanionVarToInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegatePrivateCompanionVarToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegatePrivateCompanionVarToInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegateTopLevelVarToInlineClass.kt")
       public void testDelegateTopLevelVarToInlineClass() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateTopLevelVarToInlineClass.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateTopLevelVarToInlineClass.kt");
       }
 
       @Test
       @TestMetadata("delegateTopLevelVarToInlineClassGeneric.kt")
       public void testDelegateTopLevelVarToInlineClassGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateTopLevelVarToInlineClassGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegateTopLevelVarToInlineClassGeneric.kt");
       }
 
       @Test
       @TestMetadata("delegatedPropertyOfInlineClassType.kt")
       public void testDelegatedPropertyOfInlineClassType() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegatedPropertyOfInlineClassType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegatedPropertyOfInlineClassType.kt");
       }
 
       @Test
       @TestMetadata("delegatedPropertyOfInlineClassTypeGeneric.kt")
       public void testDelegatedPropertyOfInlineClassTypeGeneric() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegatedPropertyOfInlineClassTypeGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/delegatedPropertyOfInlineClassTypeGeneric.kt");
       }
 
       @Test
       @TestMetadata("kt27070.kt")
       public void testKt27070() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/kt27070.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/kt27070.kt");
       }
 
       @Test
       @TestMetadata("kt27070Generic.kt")
       public void testKt27070Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/kt27070Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/kt27070Generic.kt");
       }
 
       @Test
       @TestMetadata("kt42933.kt")
       public void testKt42933() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/kt42933.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/kt42933.kt");
       }
 
       @Test
       @TestMetadata("kt42933Generic.kt")
       public void testKt42933Generic() {
-        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/kt42933Generic.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/propertyDelegation/kt42933Generic.kt");
       }
     }
 
@@ -33674,7 +34001,7 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @Test
       @TestMetadata("genericArrayInlineClassCast.kt")
       public void testGenericArrayInlineClassCast() {
-        runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/genericArrayInlineClassCast.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+        runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/genericArrayInlineClassCast.kt");
       }
 
       @Nested
@@ -33689,55 +34016,55 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("any.kt")
         public void testAny() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/any.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/any.kt");
         }
 
         @Test
         @TestMetadata("anyGeneric.kt")
         public void testAnyGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/anyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/anyGeneric.kt");
         }
 
         @Test
         @TestMetadata("anyN.kt")
         public void testAnyN() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/anyN.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/anyN.kt");
         }
 
         @Test
         @TestMetadata("anyNGeneric.kt")
         public void testAnyNGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/anyNGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/anyNGeneric.kt");
         }
 
         @Test
         @TestMetadata("anyNGeneric2.kt")
         public void testAnyNGeneric2() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/anyNGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/anyNGeneric2.kt");
         }
 
         @Test
         @TestMetadata("iface.kt")
         public void testIface() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/iface.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/iface.kt");
         }
 
         @Test
         @TestMetadata("ifaceChild.kt")
         public void testIfaceChild() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/ifaceChild.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/ifaceChild.kt");
         }
 
         @Test
         @TestMetadata("ifaceChildGeneric.kt")
         public void testIfaceChildGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/ifaceChildGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/ifaceChildGeneric.kt");
         }
 
         @Test
         @TestMetadata("ifaceGeneric.kt")
         public void testIfaceGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/ifaceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/ifaceGeneric.kt");
         }
 
         @Test
@@ -33749,13 +34076,13 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("primitive.kt")
         public void testPrimitive() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/primitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/primitive.kt");
         }
 
         @Test
         @TestMetadata("primitiveGeneric.kt")
         public void testPrimitiveGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/primitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/primitiveGeneric.kt");
         }
 
         @Test
@@ -33767,25 +34094,25 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("resultAny.kt")
         public void testResultAny() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/resultAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/resultAny.kt");
         }
 
         @Test
         @TestMetadata("resultAnyGeneric.kt")
         public void testResultAnyGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/resultAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/resultAnyGeneric.kt");
         }
 
         @Test
         @TestMetadata("string.kt")
         public void testString() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/string.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/string.kt");
         }
 
         @Test
         @TestMetadata("stringGeneric.kt")
         public void testStringGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/stringGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/funInterface/stringGeneric.kt");
         }
       }
 
@@ -33801,55 +34128,55 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("any.kt")
         public void testAny() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/any.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/any.kt");
         }
 
         @Test
         @TestMetadata("anyGeneric.kt")
         public void testAnyGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/anyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/anyGeneric.kt");
         }
 
         @Test
         @TestMetadata("anyN.kt")
         public void testAnyN() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/anyN.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/anyN.kt");
         }
 
         @Test
         @TestMetadata("anyNGeneric.kt")
         public void testAnyNGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/anyNGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/anyNGeneric.kt");
         }
 
         @Test
         @TestMetadata("anyNGeneric2.kt")
         public void testAnyNGeneric2() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/anyNGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/anyNGeneric2.kt");
         }
 
         @Test
         @TestMetadata("iface.kt")
         public void testIface() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/iface.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/iface.kt");
         }
 
         @Test
         @TestMetadata("ifaceChild.kt")
         public void testIfaceChild() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/ifaceChild.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/ifaceChild.kt");
         }
 
         @Test
         @TestMetadata("ifaceChildGeneric.kt")
         public void testIfaceChildGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/ifaceChildGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/ifaceChildGeneric.kt");
         }
 
         @Test
         @TestMetadata("ifaceGeneric.kt")
         public void testIfaceGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/ifaceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/ifaceGeneric.kt");
         }
 
         @Test
@@ -33861,13 +34188,13 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("primitive.kt")
         public void testPrimitive() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/primitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/primitive.kt");
         }
 
         @Test
         @TestMetadata("primitiveGeneric.kt")
         public void testPrimitiveGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/primitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/primitiveGeneric.kt");
         }
 
         @Test
@@ -33879,25 +34206,25 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("resultAny.kt")
         public void testResultAny() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/resultAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/resultAny.kt");
         }
 
         @Test
         @TestMetadata("resultAnyGeneric.kt")
         public void testResultAnyGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/resultAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/resultAnyGeneric.kt");
         }
 
         @Test
         @TestMetadata("string.kt")
         public void testString() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/string.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/string.kt");
         }
 
         @Test
         @TestMetadata("stringGeneric.kt")
         public void testStringGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/stringGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/lambda/stringGeneric.kt");
         }
       }
 
@@ -33913,55 +34240,55 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("any.kt")
         public void testAny() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/any.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/any.kt");
         }
 
         @Test
         @TestMetadata("anyGeneric.kt")
         public void testAnyGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/anyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/anyGeneric.kt");
         }
 
         @Test
         @TestMetadata("anyN.kt")
         public void testAnyN() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/anyN.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/anyN.kt");
         }
 
         @Test
         @TestMetadata("anyNGeneric.kt")
         public void testAnyNGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/anyNGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/anyNGeneric.kt");
         }
 
         @Test
         @TestMetadata("anyNGeneric2.kt")
         public void testAnyNGeneric2() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/anyNGeneric2.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/anyNGeneric2.kt");
         }
 
         @Test
         @TestMetadata("iface.kt")
         public void testIface() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/iface.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/iface.kt");
         }
 
         @Test
         @TestMetadata("ifaceChild.kt")
         public void testIfaceChild() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/ifaceChild.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/ifaceChild.kt");
         }
 
         @Test
         @TestMetadata("ifaceChildGeneric.kt")
         public void testIfaceChildGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/ifaceChildGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/ifaceChildGeneric.kt");
         }
 
         @Test
         @TestMetadata("ifaceGeneric.kt")
         public void testIfaceGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/ifaceGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/ifaceGeneric.kt");
         }
 
         @Test
@@ -33973,13 +34300,13 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("primitive.kt")
         public void testPrimitive() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/primitive.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/primitive.kt");
         }
 
         @Test
         @TestMetadata("primitiveGeneric.kt")
         public void testPrimitiveGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/primitiveGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/primitiveGeneric.kt");
         }
 
         @Test
@@ -33991,25 +34318,25 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         @TestMetadata("resultAny.kt")
         public void testResultAny() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/resultAny.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/resultAny.kt");
         }
 
         @Test
         @TestMetadata("resultAnyGeneric.kt")
         public void testResultAnyGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/resultAnyGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/resultAnyGeneric.kt");
         }
 
         @Test
         @TestMetadata("string.kt")
         public void testString() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/string.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/string.kt");
         }
 
         @Test
         @TestMetadata("stringGeneric.kt")
         public void testStringGeneric() {
-          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/stringGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+          runTest("compiler/testData/codegen/box/inlineClasses/unboxGenericParameter/objectLiteral/stringGeneric.kt");
         }
       }
     }
@@ -36245,6 +36572,24 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     }
 
     @Test
+    @TestMetadata("ubyteOperations.kt")
+    public void testUbyteOperations() {
+      runTest("compiler/testData/codegen/box/involvesIrInterpreter/ubyteOperations.kt");
+    }
+
+    @Test
+    @TestMetadata("uintOperations.kt")
+    public void testUintOperations() {
+      runTest("compiler/testData/codegen/box/involvesIrInterpreter/uintOperations.kt");
+    }
+
+    @Test
+    @TestMetadata("ulongOperations.kt")
+    public void testUlongOperations() {
+      runTest("compiler/testData/codegen/box/involvesIrInterpreter/ulongOperations.kt");
+    }
+
+    @Test
     @TestMetadata("unsignedConst.kt")
     public void testUnsignedConst() {
       runTest("compiler/testData/codegen/box/involvesIrInterpreter/unsignedConst.kt");
@@ -36254,6 +36599,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestMetadata("useCorrectToString.kt")
     public void testUseCorrectToString() {
       runTest("compiler/testData/codegen/box/involvesIrInterpreter/useCorrectToString.kt");
+    }
+
+    @Test
+    @TestMetadata("ushortOperations.kt")
+    public void testUshortOperations() {
+      runTest("compiler/testData/codegen/box/involvesIrInterpreter/ushortOperations.kt");
     }
 
     @Nested
@@ -36342,12 +36693,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
-      @TestMetadata("ifConstVal.kt")
-      public void testIfConstVal() {
-        runTest("compiler/testData/codegen/box/involvesIrInterpreter/intrinsicConst/ifConstVal.kt");
-      }
-
-      @Test
       @TestMetadata("kCallableName.kt")
       public void testKCallableName() {
         runTest("compiler/testData/codegen/box/involvesIrInterpreter/intrinsicConst/kCallableName.kt");
@@ -36383,6 +36728,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestDataPath("$PROJECT_ROOT")
     public class Serialization {
       @Test
+      @TestMetadata("actualAnnotationOnFakeOverride.kt")
+      public void testActualAnnotationOnFakeOverride() {
+        runTest("compiler/testData/codegen/box/involvesIrInterpreter/serialization/actualAnnotationOnFakeOverride.kt");
+      }
+
+      @Test
       public void testAllFilesPresentInSerialization() {
         KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/involvesIrInterpreter/serialization"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
@@ -36400,9 +36751,27 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("annotationOnFakeOverrideProperty.kt")
+      public void testAnnotationOnFakeOverrideProperty() {
+        runTest("compiler/testData/codegen/box/involvesIrInterpreter/serialization/annotationOnFakeOverrideProperty.kt");
+      }
+
+      @Test
+      @TestMetadata("annotationOnFakeOverrideWithJava.kt")
+      public void testAnnotationOnFakeOverrideWithJava() {
+        runTest("compiler/testData/codegen/box/involvesIrInterpreter/serialization/annotationOnFakeOverrideWithJava.kt");
+      }
+
+      @Test
       @TestMetadata("annotationOnParameterOnFakeOverride.kt")
       public void testAnnotationOnParameterOnFakeOverride() {
         runTest("compiler/testData/codegen/box/involvesIrInterpreter/serialization/annotationOnParameterOnFakeOverride.kt");
+      }
+
+      @Test
+      @TestMetadata("annotationOnSecondParameterOnFakeOverride.kt")
+      public void testAnnotationOnSecondParameterOnFakeOverride() {
+        runTest("compiler/testData/codegen/box/involvesIrInterpreter/serialization/annotationOnSecondParameterOnFakeOverride.kt");
       }
 
       @Test
@@ -36421,6 +36790,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("annotationWithArray.kt")
       public void testAnnotationWithArray() {
         runTest("compiler/testData/codegen/box/involvesIrInterpreter/serialization/annotationWithArray.kt");
+      }
+
+      @Test
+      @TestMetadata("annotationWithDefaultValueOnFakeOverride.kt")
+      public void testAnnotationWithDefaultValueOnFakeOverride() {
+        runTest("compiler/testData/codegen/box/involvesIrInterpreter/serialization/annotationWithDefaultValueOnFakeOverride.kt");
       }
 
       @Test
@@ -36966,6 +37341,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestMetadata("ambiguousJavaVararg.kt")
     public void testAmbiguousJavaVararg() {
       runTest("compiler/testData/codegen/box/javaInterop/ambiguousJavaVararg.kt");
+    }
+
+    @Test
+    @TestMetadata("attemptToEvaluateConstantFromJava.kt")
+    public void testAttemptToEvaluateConstantFromJava() {
+      runTest("compiler/testData/codegen/box/javaInterop/attemptToEvaluateConstantFromJava.kt");
     }
 
     @Test
@@ -38631,6 +39012,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
+        @TestMetadata("funInterfaceMixedMode.kt")
+        public void testFunInterfaceMixedMode() {
+          runTest("compiler/testData/codegen/box/jvm8/defaults/enable/funInterfaceMixedMode.kt");
+        }
+
+        @Test
         @TestMetadata("inheritedFunctionWithDefaultParameters.kt")
         public void testInheritedFunctionWithDefaultParameters() {
           runTest("compiler/testData/codegen/box/jvm8/defaults/enable/inheritedFunctionWithDefaultParameters.kt");
@@ -38924,6 +39311,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @TestMetadata("funInterface.kt")
         public void testFunInterface() {
           runTest("compiler/testData/codegen/box/jvm8/defaults/noCompatibility/funInterface.kt");
+        }
+
+        @Test
+        @TestMetadata("funInterfaceMixedMode.kt")
+        public void testFunInterfaceMixedMode() {
+          runTest("compiler/testData/codegen/box/jvm8/defaults/noCompatibility/funInterfaceMixedMode.kt");
         }
 
         @Test
@@ -43069,6 +43462,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
+        @TestMetadata("friendDependency.kt")
+        public void testFriendDependency() {
+          runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/friendDependency.kt");
+        }
+
+        @Test
         @TestMetadata("iheritanceFromExpected2-2.kt")
         public void testIheritanceFromExpected2_2() {
           runTest("compiler/testData/codegen/box/multiplatform/k2/hmpp/iheritanceFromExpected2-2.kt");
@@ -46602,6 +47001,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("backingFieldAndPropertyWithTheSameName.kt")
+      public void testBackingFieldAndPropertyWithTheSameName() {
+        runTest("compiler/testData/codegen/box/properties/backingField/backingFieldAndPropertyWithTheSameName.kt");
+      }
+
+      @Test
       @TestMetadata("backingFieldInitializedInInit.kt")
       public void testBackingFieldInitializedInInit() {
         runTest("compiler/testData/codegen/box/properties/backingField/backingFieldInitializedInInit.kt");
@@ -46656,6 +47061,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("explicitFieldCallableReference.kt")
+      public void testExplicitFieldCallableReference() {
+        runTest("compiler/testData/codegen/box/properties/backingField/explicitFieldCallableReference.kt");
+      }
+
+      @Test
       @TestMetadata("getterReturnTypeWithBackingField.kt")
       public void testGetterReturnTypeWithBackingField() {
         runTest("compiler/testData/codegen/box/properties/backingField/getterReturnTypeWithBackingField.kt");
@@ -46677,6 +47088,18 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("overriddenPropertiesWithExplicitBackingFields.kt")
       public void testOverriddenPropertiesWithExplicitBackingFields() {
         runTest("compiler/testData/codegen/box/properties/backingField/overriddenPropertiesWithExplicitBackingFields.kt");
+      }
+
+      @Test
+      @TestMetadata("overrideWithExplicitBackingField.kt")
+      public void testOverrideWithExplicitBackingField() {
+        runTest("compiler/testData/codegen/box/properties/backingField/overrideWithExplicitBackingField.kt");
+      }
+
+      @Test
+      @TestMetadata("propertyWithBackingFieldAndWithContext.kt")
+      public void testPropertyWithBackingFieldAndWithContext() {
+        runTest("compiler/testData/codegen/box/properties/backingField/propertyWithBackingFieldAndWithContext.kt");
       }
     }
 
@@ -46871,24 +47294,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
-        @TestMetadata("companionObjectField.kt")
-        public void testCompanionObjectField() {
-          runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/companionObjectField.kt");
-        }
-
-        @Test
-        @TestMetadata("emptyLhs.kt")
-        public void testEmptyLhs() {
-          runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/emptyLhs.kt");
-        }
-
-        @Test
-        @TestMetadata("innerSubclass.kt")
-        public void testInnerSubclass() {
-          runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/innerSubclass.kt");
-        }
-
-        @Test
         @TestMetadata("isInitializedMultiFile.kt")
         public void testIsInitializedMultiFile() {
           runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/isInitializedMultiFile.kt");
@@ -46901,33 +47306,9 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
-        @TestMetadata("nonInlineLambda.kt")
-        public void testNonInlineLambda() {
-          runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/nonInlineLambda.kt");
-        }
-
-        @Test
-        @TestMetadata("propertyImportedFromObject.kt")
-        public void testPropertyImportedFromObject() {
-          runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/propertyImportedFromObject.kt");
-        }
-
-        @Test
-        @TestMetadata("sideEffects.kt")
-        public void testSideEffects() {
-          runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/sideEffects.kt");
-        }
-
-        @Test
         @TestMetadata("simpleIsInitialized.kt")
         public void testSimpleIsInitialized() {
           runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/simpleIsInitialized.kt");
-        }
-
-        @Test
-        @TestMetadata("topLevelProperty.kt")
-        public void testTopLevelProperty() {
-          runTest("compiler/testData/codegen/box/properties/lateinit/isInitializedAndDeinitialize/topLevelProperty.kt");
         }
       }
 
@@ -53643,6 +54024,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
+        @TestMetadata("contextPropertyWithSameNameAsPrimary.kt")
+        public void testContextPropertyWithSameNameAsPrimary() {
+          runTest("compiler/testData/codegen/box/reflection/call/inlineClasses/contextPropertyWithSameNameAsPrimary.kt");
+        }
+
+        @Test
         @TestMetadata("inlineClassConstructor.kt")
         public void testInlineClassConstructor() {
           runTest("compiler/testData/codegen/box/reflection/call/inlineClasses/inlineClassConstructor.kt");
@@ -53691,6 +54078,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
           @TestMetadata("constructorWithInlineClassParameters.kt")
           public void testConstructorWithInlineClassParameters() {
             runTest("compiler/testData/codegen/box/reflection/call/inlineClasses/nonNullObject/constructorWithInlineClassParameters.kt");
+          }
+
+          @Test
+          @TestMetadata("contextParameters.kt")
+          public void testContextParameters() {
+            runTest("compiler/testData/codegen/box/reflection/call/inlineClasses/nonNullObject/contextParameters.kt");
           }
 
           @Test
@@ -53770,6 +54163,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
           }
 
           @Test
+          @TestMetadata("contextParameters.kt")
+          public void testContextParameters() {
+            runTest("compiler/testData/codegen/box/reflection/call/inlineClasses/nullableObject/contextParameters.kt");
+          }
+
+          @Test
           @TestMetadata("fieldAccessors.kt")
           public void testFieldAccessors() {
             runTest("compiler/testData/codegen/box/reflection/call/inlineClasses/nullableObject/fieldAccessors.kt");
@@ -53846,6 +54245,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
           }
 
           @Test
+          @TestMetadata("contextParameters.kt")
+          public void testContextParameters() {
+            runTest("compiler/testData/codegen/box/reflection/call/inlineClasses/primitive/contextParameters.kt");
+          }
+
+          @Test
           @TestMetadata("fieldAccessors.kt")
           public void testFieldAccessors() {
             runTest("compiler/testData/codegen/box/reflection/call/inlineClasses/primitive/fieldAccessors.kt");
@@ -53912,106 +54317,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
           }
         }
       }
-
-      @Nested
-      @TestMetadata("compiler/testData/codegen/box/reflection/call/valueClasses")
-      @TestDataPath("$PROJECT_ROOT")
-      public class ValueClasses {
-        @Test
-        public void testAllFilesPresentInValueClasses() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/reflection/call/valueClasses"), Pattern.compile("^(.+)\\.kt$"), null, true);
-        }
-
-        @Test
-        @TestMetadata("constructorWithMfvcParameters.kt")
-        public void testConstructorWithMfvcParameters() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/constructorWithMfvcParameters.kt");
-        }
-
-        @Test
-        @TestMetadata("fieldAccessors.kt")
-        public void testFieldAccessors() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/fieldAccessors.kt");
-        }
-
-        @Test
-        @TestMetadata("functionsWithMfvcParameters.kt")
-        public void testFunctionsWithMfvcParameters() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/functionsWithMfvcParameters.kt");
-        }
-
-        @Test
-        @TestMetadata("internalPrimaryValOfMfvc.kt")
-        public void testInternalPrimaryValOfMfvc() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/internalPrimaryValOfMfvc.kt");
-        }
-
-        @Test
-        @TestMetadata("jvmStaticFieldInObject.kt")
-        public void testJvmStaticFieldInObject() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/jvmStaticFieldInObject.kt");
-        }
-
-        @Test
-        @TestMetadata("jvmStaticFunction.kt")
-        public void testJvmStaticFunction() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/jvmStaticFunction.kt");
-        }
-
-        @Test
-        @TestMetadata("mfvcConstructor.kt")
-        public void testMfvcConstructor() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/mfvcConstructor.kt");
-        }
-
-        @Test
-        @TestMetadata("nonOverridingFunOfMfvc.kt")
-        public void testNonOverridingFunOfMfvc() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/nonOverridingFunOfMfvc.kt");
-        }
-
-        @Test
-        @TestMetadata("nonOverridingVarOfMfvc.kt")
-        public void testNonOverridingVarOfMfvc() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/nonOverridingVarOfMfvc.kt");
-        }
-
-        @Test
-        @TestMetadata("overridingFunOfMfvc.kt")
-        public void testOverridingFunOfMfvc() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/overridingFunOfMfvc.kt");
-        }
-
-        @Test
-        @TestMetadata("overridingVarOfMfvc.kt")
-        public void testOverridingVarOfMfvc() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/overridingVarOfMfvc.kt");
-        }
-
-        @Test
-        @TestMetadata("primaryValOfMfvc.kt")
-        public void testPrimaryValOfMfvc() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/primaryValOfMfvc.kt");
-        }
-
-        @Test
-        @TestMetadata("properties.kt")
-        public void testProperties() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/properties.kt");
-        }
-
-        @Test
-        @TestMetadata("secondaryConstructorVisibilies.kt")
-        public void testSecondaryConstructorVisibilies() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/secondaryConstructorVisibilies.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
-        }
-
-        @Test
-        @TestMetadata("suspendFunction.kt")
-        public void testSuspendFunction() {
-          runTest("compiler/testData/codegen/box/reflection/call/valueClasses/suspendFunction.kt");
-        }
-      }
     }
 
     @Nested
@@ -54039,18 +54344,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("boundJvmStaticInObject.kt")
       public void testBoundJvmStaticInObject() {
         runTest("compiler/testData/codegen/box/reflection/callBy/boundJvmStaticInObject.kt");
-      }
-
-      @Test
-      @TestMetadata("brokenDefaultParametersFromDifferentFunctions.kt")
-      public void testBrokenDefaultParametersFromDifferentFunctions() {
-        runTest("compiler/testData/codegen/box/reflection/callBy/brokenDefaultParametersFromDifferentFunctions.kt");
-      }
-
-      @Test
-      @TestMetadata("brokenDefaultParametersFromDifferentFunctionsJvmDefault.kt")
-      public void testBrokenDefaultParametersFromDifferentFunctionsJvmDefault() {
-        runTest("compiler/testData/codegen/box/reflection/callBy/brokenDefaultParametersFromDifferentFunctionsJvmDefault.kt");
       }
 
       @Test
@@ -54183,42 +54476,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("manyMaskArguments.kt")
       public void testManyMaskArguments() {
         runTest("compiler/testData/codegen/box/reflection/callBy/manyMaskArguments.kt");
-      }
-
-      @Test
-      @TestMetadata("mfvcDefaultArguments.kt")
-      public void testMfvcDefaultArguments() {
-        runTest("compiler/testData/codegen/box/reflection/callBy/mfvcDefaultArguments.kt");
-      }
-
-      @Test
-      @TestMetadata("mfvcFunctionsAndConstructors.kt")
-      public void testMfvcFunctionsAndConstructors() {
-        runTest("compiler/testData/codegen/box/reflection/callBy/mfvcFunctionsAndConstructors.kt");
-      }
-
-      @Test
-      @TestMetadata("mfvcInterface.kt")
-      public void testMfvcInterface() {
-        runTest("compiler/testData/codegen/box/reflection/callBy/mfvcInterface.kt");
-      }
-
-      @Test
-      @TestMetadata("mfvcInterfaceJvmDefault.kt")
-      public void testMfvcInterfaceJvmDefault() {
-        runTest("compiler/testData/codegen/box/reflection/callBy/mfvcInterfaceJvmDefault.kt");
-      }
-
-      @Test
-      @TestMetadata("mfvcKt61304.kt")
-      public void testMfvcKt61304() {
-        runTest("compiler/testData/codegen/box/reflection/callBy/mfvcKt61304.kt");
-      }
-
-      @Test
-      @TestMetadata("mfvcMembers.kt")
-      public void testMfvcMembers() {
-        runTest("compiler/testData/codegen/box/reflection/callBy/mfvcMembers.kt");
       }
 
       @Test
@@ -55062,12 +55319,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
-      @TestMetadata("reflectOnDefaultWithMfvcArgument.kt")
-      public void testReflectOnDefaultWithMfvcArgument() {
-        runTest("compiler/testData/codegen/box/reflection/lambdaClasses/reflectOnDefaultWithMfvcArgument.kt");
-      }
-
-      @Test
       @TestMetadata("reflectOnLambdaInArrayConstructor.kt")
       public void testReflectOnLambdaInArrayConstructor() {
         runTest("compiler/testData/codegen/box/reflection/lambdaClasses/reflectOnLambdaInArrayConstructor.kt");
@@ -55163,12 +55414,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("constructorWithInlineClassParameters.kt")
       public void testConstructorWithInlineClassParameters() {
         runTest("compiler/testData/codegen/box/reflection/mapping/constructorWithInlineClassParameters.kt");
-      }
-
-      @Test
-      @TestMetadata("constructorWithMfvcParameters.kt")
-      public void testConstructorWithMfvcParameters() {
-        runTest("compiler/testData/codegen/box/reflection/mapping/constructorWithMfvcParameters.kt");
       }
 
       @Test
@@ -55409,6 +55654,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
+        @TestMetadata("genericArrayElementTypeInSupertype.kt")
+        public void testGenericArrayElementTypeInSupertype() {
+          runTest("compiler/testData/codegen/box/reflection/mapping/types/genericArrayElementTypeInSupertype.kt");
+        }
+
+        @Test
         @TestMetadata("inlineClassInSignature.kt")
         public void testInlineClassInSignature() {
           runTest("compiler/testData/codegen/box/reflection/mapping/types/inlineClassInSignature.kt");
@@ -55430,18 +55681,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @TestMetadata("memberFunctions.kt")
         public void testMemberFunctions() {
           runTest("compiler/testData/codegen/box/reflection/mapping/types/memberFunctions.kt");
-        }
-
-        @Test
-        @TestMetadata("mfvcInSignature.kt")
-        public void testMfvcInSignature() {
-          runTest("compiler/testData/codegen/box/reflection/mapping/types/mfvcInSignature.kt");
-        }
-
-        @Test
-        @TestMetadata("mfvcPrimaryVal.kt")
-        public void testMfvcPrimaryVal() {
-          runTest("compiler/testData/codegen/box/reflection/mapping/types/mfvcPrimaryVal.kt");
         }
 
         @Test
@@ -55508,28 +55747,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @TestMetadata("withNullability.kt")
         public void testWithNullability() {
           runTest("compiler/testData/codegen/box/reflection/mapping/types/withNullability.kt");
-        }
-      }
-
-      @Nested
-      @TestMetadata("compiler/testData/codegen/box/reflection/mapping/valueClasses")
-      @TestDataPath("$PROJECT_ROOT")
-      public class ValueClasses {
-        @Test
-        public void testAllFilesPresentInValueClasses() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/reflection/mapping/valueClasses"), Pattern.compile("^(.+)\\.kt$"), null, true);
-        }
-
-        @Test
-        @TestMetadata("mfvcPrimaryVal.kt")
-        public void testMfvcPrimaryVal() {
-          runTest("compiler/testData/codegen/box/reflection/mapping/valueClasses/mfvcPrimaryVal.kt");
-        }
-
-        @Test
-        @TestMetadata("suspendFunctionWithMfvcInSignature.kt")
-        public void testSuspendFunctionWithMfvcInSignature() {
-          runTest("compiler/testData/codegen/box/reflection/mapping/valueClasses/suspendFunctionWithMfvcInSignature.kt");
         }
       }
     }
@@ -56469,9 +56686,21 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
-        @TestMetadata("defaultImpls.kt")
-        public void testDefaultImpls() {
-          runTest("compiler/testData/codegen/box/reflection/properties/localDelegated/defaultImpls.kt");
+        @TestMetadata("equals.kt")
+        public void testEquals() {
+          runTest("compiler/testData/codegen/box/reflection/properties/localDelegated/equals.kt");
+        }
+
+        @Test
+        @TestMetadata("inInterface.kt")
+        public void testInInterface() {
+          runTest("compiler/testData/codegen/box/reflection/properties/localDelegated/inInterface.kt");
+        }
+
+        @Test
+        @TestMetadata("inInterfaceDefaultImpls.kt")
+        public void testInInterfaceDefaultImpls() {
+          runTest("compiler/testData/codegen/box/reflection/properties/localDelegated/inInterfaceDefaultImpls.kt");
         }
 
         @Test
@@ -56534,6 +56763,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("arrayClassifier.kt")
+      public void testArrayClassifier() {
+        runTest("compiler/testData/codegen/box/reflection/supertypes/arrayClassifier.kt");
+      }
+
+      @Test
       @TestMetadata("builtInClassSupertypes.kt")
       public void testBuiltInClassSupertypes() {
         runTest("compiler/testData/codegen/box/reflection/supertypes/builtInClassSupertypes.kt");
@@ -56543,6 +56778,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("flexibleTypesSubstitution.kt")
       public void testFlexibleTypesSubstitution() {
         runTest("compiler/testData/codegen/box/reflection/supertypes/flexibleTypesSubstitution.kt");
+      }
+
+      @Test
+      @TestMetadata("functionSupertype.kt")
+      public void testFunctionSupertype() {
+        runTest("compiler/testData/codegen/box/reflection/supertypes/functionSupertype.kt");
       }
 
       @Test
@@ -56558,6 +56799,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("javaArrayType.kt")
+      public void testJavaArrayType() {
+        runTest("compiler/testData/codegen/box/reflection/supertypes/javaArrayType.kt");
+      }
+
+      @Test
       @TestMetadata("nullablilitySubstitution.kt")
       public void testNullablilitySubstitution() {
         runTest("compiler/testData/codegen/box/reflection/supertypes/nullablilitySubstitution.kt");
@@ -56570,9 +56817,21 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("rawSupertypes.kt")
+      public void testRawSupertypes() {
+        runTest("compiler/testData/codegen/box/reflection/supertypes/rawSupertypes.kt");
+      }
+
+      @Test
       @TestMetadata("simpleSupertypes.kt")
       public void testSimpleSupertypes() {
         runTest("compiler/testData/codegen/box/reflection/supertypes/simpleSupertypes.kt");
+      }
+
+      @Test
+      @TestMetadata("suspendFunctionSupertype.kt")
+      public void testSuspendFunctionSupertype() {
+        runTest("compiler/testData/codegen/box/reflection/supertypes/suspendFunctionSupertype.kt");
       }
     }
 
@@ -56656,6 +56915,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("ktype1_anonymousObject.kt")
+      public void testKtype1_anonymousObject() {
+        runTest("compiler/testData/codegen/box/reflection/typeOf/ktype1_anonymousObject.kt");
+      }
+
+      @Test
       @TestMetadata("localClass.kt")
       public void testLocalClass() {
         runTest("compiler/testData/codegen/box/reflection/typeOf/localClass.kt");
@@ -56701,6 +56966,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("primitiveJavaTypes.kt")
       public void testPrimitiveJavaTypes() {
         runTest("compiler/testData/codegen/box/reflection/typeOf/primitiveJavaTypes.kt");
+      }
+
+      @Test
+      @TestMetadata("rawRecursiveType.kt")
+      public void testRawRecursiveType() {
+        runTest("compiler/testData/codegen/box/reflection/typeOf/rawRecursiveType.kt");
       }
 
       @Test
@@ -56906,12 +57177,6 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
           }
 
           @Test
-          @TestMetadata("typeParameterFlags.kt")
-          public void testTypeParameterFlags() {
-            runTest("compiler/testData/codegen/box/reflection/typeOf/noReflect/nonReifiedTypeParameters/typeParameterFlags.kt");
-          }
-
-          @Test
           @TestMetadata("upperBoundUsesOuterClassParameter.kt")
           public void testUpperBoundUsesOuterClassParameter() {
             runTest("compiler/testData/codegen/box/reflection/typeOf/noReflect/nonReifiedTypeParameters/upperBoundUsesOuterClassParameter.kt");
@@ -57060,9 +57325,21 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
-      @TestMetadata("innerGenericParameter.kt")
-      public void testInnerGenericParameter() {
-        runTest("compiler/testData/codegen/box/reflection/typeParameters/innerGenericParameter.kt");
+      @TestMetadata("functionClasses.kt")
+      public void testFunctionClasses() {
+        runTest("compiler/testData/codegen/box/reflection/typeParameters/functionClasses.kt");
+      }
+
+      @Test
+      @TestMetadata("innerGeneric.kt")
+      public void testInnerGeneric() {
+        runTest("compiler/testData/codegen/box/reflection/typeParameters/innerGeneric.kt");
+      }
+
+      @Test
+      @TestMetadata("innerGenericJava.kt")
+      public void testInnerGenericJava() {
+        runTest("compiler/testData/codegen/box/reflection/typeParameters/innerGenericJava.kt");
       }
 
       @Test
@@ -57166,6 +57443,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       }
 
       @Test
+      @TestMetadata("typeAliasedTypeInSupertype.kt")
+      public void testTypeAliasedTypeInSupertype() {
+        runTest("compiler/testData/codegen/box/reflection/types/typeAliasedTypeInSupertype.kt");
+      }
+
+      @Test
       @TestMetadata("typeArguments.kt")
       public void testTypeArguments() {
         runTest("compiler/testData/codegen/box/reflection/types/typeArguments.kt");
@@ -57190,6 +57473,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @Test
         public void testAllFilesPresentInCreateType() {
           KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/reflection/types/createType"), Pattern.compile("^(.+)\\.kt$"), null, true);
+        }
+
+        @Test
+        @TestMetadata("annotations.kt")
+        public void testAnnotations() {
+          runTest("compiler/testData/codegen/box/reflection/types/createType/annotations.kt");
         }
 
         @Test
@@ -57233,9 +57522,39 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         }
 
         @Test
+        @TestMetadata("collections.kt")
+        public void testCollections() {
+          runTest("compiler/testData/codegen/box/reflection/types/subtyping/collections.kt");
+        }
+
+        @Test
+        @TestMetadata("flexibleArrayElementVariance.kt")
+        public void testFlexibleArrayElementVariance() {
+          runTest("compiler/testData/codegen/box/reflection/types/subtyping/flexibleArrayElementVariance.kt");
+        }
+
+        @Test
+        @TestMetadata("innerGenericCapturedType.kt")
+        public void testInnerGenericCapturedType() {
+          runTest("compiler/testData/codegen/box/reflection/types/subtyping/innerGenericCapturedType.kt");
+        }
+
+        @Test
+        @TestMetadata("nestedGenericCapturedType.kt")
+        public void testNestedGenericCapturedType() {
+          runTest("compiler/testData/codegen/box/reflection/types/subtyping/nestedGenericCapturedType.kt");
+        }
+
+        @Test
         @TestMetadata("platformType.kt")
         public void testPlatformType() {
           runTest("compiler/testData/codegen/box/reflection/types/subtyping/platformType.kt");
+        }
+
+        @Test
+        @TestMetadata("rawType.kt")
+        public void testRawType() {
+          runTest("compiler/testData/codegen/box/reflection/types/subtyping/rawType.kt");
         }
 
         @Test
@@ -57254,6 +57573,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
         @TestMetadata("typeProjection.kt")
         public void testTypeProjection() {
           runTest("compiler/testData/codegen/box/reflection/types/subtyping/typeProjection.kt");
+        }
+
+        @Test
+        @TestMetadata("variance.kt")
+        public void testVariance() {
+          runTest("compiler/testData/codegen/box/reflection/types/subtyping/variance.kt");
         }
       }
     }
@@ -57302,6 +57627,18 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestMetadata("commonSupertypeContravariant2.kt")
     public void testCommonSupertypeContravariant2() {
       runTest("compiler/testData/codegen/box/regressions/commonSupertypeContravariant2.kt");
+    }
+
+    @Test
+    @TestMetadata("dataClassInInlineFunctionWithTypeParameters.kt")
+    public void testDataClassInInlineFunctionWithTypeParameters() {
+      runTest("compiler/testData/codegen/box/regressions/dataClassInInlineFunctionWithTypeParameters.kt");
+    }
+
+    @Test
+    @TestMetadata("dataClassInRegularFunctionWithTypeParameters.kt")
+    public void testDataClassInRegularFunctionWithTypeParameters() {
+      runTest("compiler/testData/codegen/box/regressions/dataClassInRegularFunctionWithTypeParameters.kt");
     }
 
     @Test
@@ -57824,6 +58161,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestMetadata("lambdaPostponeConstruction.kt")
     public void testLambdaPostponeConstruction() {
       runTest("compiler/testData/codegen/box/regressions/lambdaPostponeConstruction.kt");
+    }
+
+    @Test
+    @TestMetadata("lambdaWithTypeParameters.kt")
+    public void testLambdaWithTypeParameters() {
+      runTest("compiler/testData/codegen/box/regressions/lambdaWithTypeParameters.kt");
     }
 
     @Test
@@ -59153,6 +59496,12 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
       @TestMetadata("kt19251_child.kt")
       public void testKt19251_child() {
         runTest("compiler/testData/codegen/box/sam/constructors/kt19251_child.kt");
+      }
+
+      @Test
+      @TestMetadata("missingSuperinterface.kt")
+      public void testMissingSuperinterface() {
+        runTest("compiler/testData/codegen/box/sam/constructors/missingSuperinterface.kt");
       }
 
       @Test
@@ -62288,6 +62637,208 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
   }
 
   @Nested
+  @TestMetadata("compiler/testData/codegen/box/typeErasure")
+  @TestDataPath("$PROJECT_ROOT")
+  public class TypeErasure {
+    @Test
+    public void testAllFilesPresentInTypeErasure() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/typeErasure"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameter.kt")
+    public void testFunWithReifiedTypeParameter() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterAndContextParameter.kt")
+    public void testFunWithReifiedTypeParameterAndContextParameter() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterAndContextParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterAndExtensionReceiver.kt")
+    public void testFunWithReifiedTypeParameterAndExtensionReceiver() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterAndExtensionReceiver.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterContextParameterAndExtensionReceiver.kt")
+    public void testFunWithReifiedTypeParameterContextParameterAndExtensionReceiver() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterContextParameterAndExtensionReceiver.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterContextParameterAndExtensionReceiverInsideClass.kt")
+    public void testFunWithReifiedTypeParameterContextParameterAndExtensionReceiverInsideClass() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterContextParameterAndExtensionReceiverInsideClass.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterInlinesFunWithThreeTypeParameters.kt")
+    public void testFunWithReifiedTypeParameterInlinesFunWithThreeTypeParameters() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterInlinesFunWithThreeTypeParameters.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterInlinesFunWithTwoTypeParameters.kt")
+    public void testFunWithReifiedTypeParameterInlinesFunWithTwoTypeParameters() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterInlinesFunWithTwoTypeParameters.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterInsideClass.kt")
+    public void testFunWithReifiedTypeParameterInsideClass() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterInsideClass.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterInsideInnerClass.kt")
+    public void testFunWithReifiedTypeParameterInsideInnerClass() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterInsideInnerClass.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterInsideNestedClass.kt")
+    public void testFunWithReifiedTypeParameterInsideNestedClass() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterInsideNestedClass.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterWithTwoUpperBounds.kt")
+    public void testFunWithReifiedTypeParameterWithTwoUpperBounds() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterWithTwoUpperBounds.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithReifiedTypeParameterWithUpperBound.kt")
+    public void testFunWithReifiedTypeParameterWithUpperBound() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithReifiedTypeParameterWithUpperBound.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameter.kt")
+    public void testFunWithTypeParameter() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterAndContextParameter.kt")
+    public void testFunWithTypeParameterAndContextParameter() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterAndContextParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterAndExtensionReceiver.kt")
+    public void testFunWithTypeParameterAndExtensionReceiver() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterAndExtensionReceiver.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterContextParameterAndExtensionReceiver.kt")
+    public void testFunWithTypeParameterContextParameterAndExtensionReceiver() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterContextParameterAndExtensionReceiver.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterContextParameterAndExtensionReceiverInsideClass.kt")
+    public void testFunWithTypeParameterContextParameterAndExtensionReceiverInsideClass() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterContextParameterAndExtensionReceiverInsideClass.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterInsideClass.kt")
+    public void testFunWithTypeParameterInsideClass() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterInsideClass.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterInsideInnerClass.kt")
+    public void testFunWithTypeParameterInsideInnerClass() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterInsideInnerClass.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterInsideNestedClass.kt")
+    public void testFunWithTypeParameterInsideNestedClass() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterInsideNestedClass.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterWithTwoUpperBounds.kt")
+    public void testFunWithTypeParameterWithTwoUpperBounds() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterWithTwoUpperBounds.kt");
+    }
+
+    @Test
+    @TestMetadata("funWithTypeParameterWithUpperBound.kt")
+    public void testFunWithTypeParameterWithUpperBound() {
+      runTest("compiler/testData/codegen/box/typeErasure/funWithTypeParameterWithUpperBound.kt");
+    }
+
+    @Test
+    @TestMetadata("outerClassWithTypeParameterAndChainOfInnerClassesWithTypeParameters.kt")
+    public void testOuterClassWithTypeParameterAndChainOfInnerClassesWithTypeParameters() {
+      runTest("compiler/testData/codegen/box/typeErasure/outerClassWithTypeParameterAndChainOfInnerClassesWithTypeParameters.kt");
+    }
+
+    @Test
+    @TestMetadata("outerClassWithTypeParameterAndInlineFunctionWithReifiedTypeParameter.kt")
+    public void testOuterClassWithTypeParameterAndInlineFunctionWithReifiedTypeParameter() {
+      runTest("compiler/testData/codegen/box/typeErasure/outerClassWithTypeParameterAndInlineFunctionWithReifiedTypeParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("outerClassWithTypeParameterAndInlineFunctionWithTypeParameter.kt")
+    public void testOuterClassWithTypeParameterAndInlineFunctionWithTypeParameter() {
+      runTest("compiler/testData/codegen/box/typeErasure/outerClassWithTypeParameterAndInlineFunctionWithTypeParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("outerClassWithTypeParameterAndInnerClassWithTypeParameter.kt")
+    public void testOuterClassWithTypeParameterAndInnerClassWithTypeParameter() {
+      runTest("compiler/testData/codegen/box/typeErasure/outerClassWithTypeParameterAndInnerClassWithTypeParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("outerClassWithTypeParameterWithTwoUpperBounds.kt")
+    public void testOuterClassWithTypeParameterWithTwoUpperBounds() {
+      runTest("compiler/testData/codegen/box/typeErasure/outerClassWithTypeParameterWithTwoUpperBounds.kt");
+    }
+
+    @Test
+    @TestMetadata("outerClassWithTypeParameterWithUpperBoundAndInlineFunctionWithReifiedTypeParameterWithTwoUpperBounds.kt")
+    public void testOuterClassWithTypeParameterWithUpperBoundAndInlineFunctionWithReifiedTypeParameterWithTwoUpperBounds() {
+      runTest("compiler/testData/codegen/box/typeErasure/outerClassWithTypeParameterWithUpperBoundAndInlineFunctionWithReifiedTypeParameterWithTwoUpperBounds.kt");
+    }
+
+    @Test
+    @TestMetadata("twoFunWithReifiedTypeParametersInlineFunWithReifiedTypeParameters.kt")
+    public void testTwoFunWithReifiedTypeParametersInlineFunWithReifiedTypeParameters() {
+      runTest("compiler/testData/codegen/box/typeErasure/twoFunWithReifiedTypeParametersInlineFunWithReifiedTypeParameters.kt");
+    }
+
+    @Test
+    @TestMetadata("twoFunWithReifiedTypeParametersInlineFunWithTwoTypeParameters.kt")
+    public void testTwoFunWithReifiedTypeParametersInlineFunWithTwoTypeParameters() {
+      runTest("compiler/testData/codegen/box/typeErasure/twoFunWithReifiedTypeParametersInlineFunWithTwoTypeParameters.kt");
+    }
+
+    @Test
+    @TestMetadata("twoFunWithTypeParametersInlineFunWithReifiedTypeParameters.kt")
+    public void testTwoFunWithTypeParametersInlineFunWithReifiedTypeParameters() {
+      runTest("compiler/testData/codegen/box/typeErasure/twoFunWithTypeParametersInlineFunWithReifiedTypeParameters.kt");
+    }
+
+    @Test
+    @TestMetadata("twoFunWithTypeParametersWithUpperBoundsInlineFunWithReifiedTypeParameters.kt")
+    public void testTwoFunWithTypeParametersWithUpperBoundsInlineFunWithReifiedTypeParameters() {
+      runTest("compiler/testData/codegen/box/typeErasure/twoFunWithTypeParametersWithUpperBoundsInlineFunWithReifiedTypeParameters.kt");
+    }
+  }
+
+  @Nested
   @TestMetadata("compiler/testData/codegen/box/typeInfo")
   @TestDataPath("$PROJECT_ROOT")
   public class TypeInfo {
@@ -63243,7 +63794,7 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("contextParameters.kt")
     public void testContextParameters() {
-      runTest("compiler/testData/codegen/box/valueClasses/contextParameters.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/valueClasses/contextParameters.kt");
     }
 
     @Test
@@ -63387,19 +63938,19 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("nothingAsParameterType.kt")
     public void testNothingAsParameterType() {
-      runTest("compiler/testData/codegen/box/valueClasses/nothingAsParameterType.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/valueClasses/nothingAsParameterType.kt");
     }
 
     @Test
     @TestMetadata("overrideFunctionWithDefaultParameter.kt")
     public void testOverrideFunctionWithDefaultParameter() {
-      runTest("compiler/testData/codegen/box/valueClasses/overrideFunctionWithDefaultParameter.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/valueClasses/overrideFunctionWithDefaultParameter.kt");
     }
 
     @Test
     @TestMetadata("overrideFunctionWithDefaultParameterGeneric.kt")
     public void testOverrideFunctionWithDefaultParameterGeneric() {
-      runTest("compiler/testData/codegen/box/valueClasses/overrideFunctionWithDefaultParameterGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/valueClasses/overrideFunctionWithDefaultParameterGeneric.kt");
     }
 
     @Test
@@ -63435,19 +63986,19 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @Test
     @TestMetadata("secondaryConstructorVisibilies.kt")
     public void testSecondaryConstructorVisibilies() {
-      runTest("compiler/testData/codegen/box/valueClasses/secondaryConstructorVisibilies.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/valueClasses/secondaryConstructorVisibilies.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorWithVararg.kt")
     public void testSecondaryConstructorWithVararg() {
-      runTest("compiler/testData/codegen/box/valueClasses/secondaryConstructorWithVararg.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/valueClasses/secondaryConstructorWithVararg.kt");
     }
 
     @Test
     @TestMetadata("secondaryConstructorWithVarargGeneric.kt")
     public void testSecondaryConstructorWithVarargGeneric() {
-      runTest("compiler/testData/codegen/box/valueClasses/secondaryConstructorWithVarargGeneric.kt", TransformersFunctions.getReplaceOptionalJvmInlineAnnotationWithUniversal());
+      runTest("compiler/testData/codegen/box/valueClasses/secondaryConstructorWithVarargGeneric.kt");
     }
 
     @Test
@@ -64142,6 +64693,358 @@ public class LLBlackBoxTestGenerated extends AbstractLLBlackBoxTest {
     @TestMetadata("tryLoopTry.kt")
     public void testTryLoopTry() {
       runTest("compiler/testData/codegen/box/wasm-new-exception-handling/tryLoopTry.kt");
+    }
+  }
+
+  @Nested
+  @TestMetadata("compiler/testData/codegen/box/wasm-old-exception-handling")
+  @TestDataPath("$PROJECT_ROOT")
+  public class Wasm_old_exception_handling {
+    @Test
+    public void testAllFilesPresentInWasm_old_exception_handling() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/wasm-old-exception-handling"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("breakAndOuterFinally.kt")
+    public void testBreakAndOuterFinally() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/breakAndOuterFinally.kt");
+    }
+
+    @Test
+    @TestMetadata("catch1.kt")
+    public void testCatch1() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/catch1.kt");
+    }
+
+    @Test
+    @TestMetadata("catch2.kt")
+    public void testCatch2() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/catch2.kt");
+    }
+
+    @Test
+    @TestMetadata("catch3.kt")
+    public void testCatch3() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/catch3.kt");
+    }
+
+    @Test
+    @TestMetadata("catch4.kt")
+    public void testCatch4() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/catch4.kt");
+    }
+
+    @Test
+    @TestMetadata("catch5.kt")
+    public void testCatch5() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/catch5.kt");
+    }
+
+    @Test
+    @TestMetadata("catch6.kt")
+    public void testCatch6() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/catch6.kt");
+    }
+
+    @Test
+    @TestMetadata("catch7.kt")
+    public void testCatch7() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/catch7.kt");
+    }
+
+    @Test
+    @TestMetadata("catch8.kt")
+    public void testCatch8() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/catch8.kt");
+    }
+
+    @Test
+    @TestMetadata("continueAndOuterFinally.kt")
+    public void testContinueAndOuterFinally() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/continueAndOuterFinally.kt");
+    }
+
+    @Test
+    @TestMetadata("decrementInFinally.kt")
+    public void testDecrementInFinally() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/decrementInFinally.kt");
+    }
+
+    @Test
+    @TestMetadata("extend0.kt")
+    public void testExtend0() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/extend0.kt");
+    }
+
+    @Test
+    @TestMetadata("finally1.kt")
+    public void testFinally1() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally1.kt");
+    }
+
+    @Test
+    @TestMetadata("finally10.kt")
+    public void testFinally10() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally10.kt");
+    }
+
+    @Test
+    @TestMetadata("finally11.kt")
+    public void testFinally11() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally11.kt");
+    }
+
+    @Test
+    @TestMetadata("finally2.kt")
+    public void testFinally2() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally2.kt");
+    }
+
+    @Test
+    @TestMetadata("finally3.kt")
+    public void testFinally3() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally3.kt");
+    }
+
+    @Test
+    @TestMetadata("finally4.kt")
+    public void testFinally4() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally4.kt");
+    }
+
+    @Test
+    @TestMetadata("finally5.kt")
+    public void testFinally5() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally5.kt");
+    }
+
+    @Test
+    @TestMetadata("finally6.kt")
+    public void testFinally6() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally6.kt");
+    }
+
+    @Test
+    @TestMetadata("finally7.kt")
+    public void testFinally7() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally7.kt");
+    }
+
+    @Test
+    @TestMetadata("finally8.kt")
+    public void testFinally8() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally8.kt");
+    }
+
+    @Test
+    @TestMetadata("finally9.kt")
+    public void testFinally9() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finally9.kt");
+    }
+
+    @Test
+    @TestMetadata("finallyAndFinally.kt")
+    public void testFinallyAndFinally() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/finallyAndFinally.kt");
+    }
+
+    @Test
+    @TestMetadata("kt31923_break.kt")
+    public void testKt31923_break() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt31923_break.kt");
+    }
+
+    @Test
+    @TestMetadata("kt31923_continue.kt")
+    public void testKt31923_continue() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt31923_continue.kt");
+    }
+
+    @Test
+    @TestMetadata("kt31923_return.kt")
+    public void testKt31923_return() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt31923_return.kt");
+    }
+
+    @Test
+    @TestMetadata("kt3549.kt")
+    public void testKt3549() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt3549.kt");
+    }
+
+    @Test
+    @TestMetadata("kt3706.kt")
+    public void testKt3706() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt3706.kt");
+    }
+
+    @Test
+    @TestMetadata("kt3867.kt")
+    public void testKt3867() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt3867.kt");
+    }
+
+    @Test
+    @TestMetadata("kt3874.kt")
+    public void testKt3874() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt3874.kt");
+    }
+
+    @Test
+    @TestMetadata("kt3894.kt")
+    public void testKt3894() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt3894.kt");
+    }
+
+    @Test
+    @TestMetadata("kt4134.kt")
+    public void testKt4134() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/kt4134.kt");
+    }
+
+    @Test
+    @TestMetadata("loopAndFinally.kt")
+    public void testLoopAndFinally() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/loopAndFinally.kt");
+    }
+
+    @Test
+    @TestMetadata("nestedFinallyAndNonFinallyTry.kt")
+    public void testNestedFinallyAndNonFinallyTry() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/nestedFinallyAndNonFinallyTry.kt");
+    }
+
+    @Test
+    @TestMetadata("nestedFinallyAndNonFinallyTry2.kt")
+    public void testNestedFinallyAndNonFinallyTry2() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/nestedFinallyAndNonFinallyTry2.kt");
+    }
+
+    @Test
+    @TestMetadata("nestedFinallyAndNonFinallyTry3.kt")
+    public void testNestedFinallyAndNonFinallyTry3() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/nestedFinallyAndNonFinallyTry3.kt");
+    }
+
+    @Test
+    @TestMetadata("nestedFinallyAndNonFinallyTry4.kt")
+    public void testNestedFinallyAndNonFinallyTry4() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/nestedFinallyAndNonFinallyTry4.kt");
+    }
+
+    @Test
+    @TestMetadata("notChainCatch.kt")
+    public void testNotChainCatch() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/notChainCatch.kt");
+    }
+
+    @Test
+    @TestMetadata("objectInFinally.kt")
+    public void testObjectInFinally() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/objectInFinally.kt");
+    }
+
+    @Test
+    @TestMetadata("rethrow.kt")
+    public void testRethrow() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/rethrow.kt");
+    }
+
+    @Test
+    @TestMetadata("returnNullFromInlined.kt")
+    public void testReturnNullFromInlined() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/returnNullFromInlined.kt");
+    }
+
+    @Test
+    @TestMetadata("returnsDifferentTypes.kt")
+    public void testReturnsDifferentTypes() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/returnsDifferentTypes.kt");
+    }
+
+    @Test
+    @TestMetadata("someStuff.kt")
+    public void testSomeStuff() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/someStuff.kt");
+    }
+
+    @Test
+    @TestMetadata("throw0.kt")
+    public void testThrow0() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/throw0.kt");
+    }
+
+    @Test
+    @TestMetadata("throw_from_catch.kt")
+    public void testThrow_from_catch() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/throw_from_catch.kt");
+    }
+
+    @Test
+    @TestMetadata("try1.kt")
+    public void testTry1() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/try1.kt");
+    }
+
+    @Test
+    @TestMetadata("try2.kt")
+    public void testTry2() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/try2.kt");
+    }
+
+    @Test
+    @TestMetadata("try3.kt")
+    public void testTry3() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/try3.kt");
+    }
+
+    @Test
+    @TestMetadata("try4.kt")
+    public void testTry4() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/try4.kt");
+    }
+
+    @Test
+    @TestMetadata("tryCatch.kt")
+    public void testTryCatch() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/tryCatch.kt");
+    }
+
+    @Test
+    @TestMetadata("tryCatchFinallyWithHandleResult.kt")
+    public void testTryCatchFinallyWithHandleResult() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/tryCatchFinallyWithHandleResult.kt");
+    }
+
+    @Test
+    @TestMetadata("tryCatchWithHandleResult.kt")
+    public void testTryCatchWithHandleResult() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/tryCatchWithHandleResult.kt");
+    }
+
+    @Test
+    @TestMetadata("tryFinally.kt")
+    public void testTryFinally() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/tryFinally.kt");
+    }
+
+    @Test
+    @TestMetadata("tryFinallyInsideInlineLambda.kt")
+    public void testTryFinallyInsideInlineLambda() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/tryFinallyInsideInlineLambda.kt");
+    }
+
+    @Test
+    @TestMetadata("tryFinallyWithHandleResult.kt")
+    public void testTryFinallyWithHandleResult() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/tryFinallyWithHandleResult.kt");
+    }
+
+    @Test
+    @TestMetadata("tryLoopTry.kt")
+    public void testTryLoopTry() {
+      runTest("compiler/testData/codegen/box/wasm-old-exception-handling/tryLoopTry.kt");
     }
   }
 

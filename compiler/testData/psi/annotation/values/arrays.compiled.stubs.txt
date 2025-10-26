@@ -2,7 +2,7 @@ Arrays.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/Arrays, fqName=Arrays, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=Arrays, superNames=[Annotation]]
+    CLASS[classId=/Arrays, fqName=Arrays, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=Arrays, superNames=[Annotation]]
       MODIFIER_LIST[public final annotation]
       PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=Arrays]
         MODIFIER_LIST[public]
@@ -99,9 +99,17 @@ WithArrays.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/WithArrays, fqName=WithArrays, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=WithArrays, superNames=[]]
+    CLASS[classId=/WithArrays, fqName=WithArrays, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=WithArrays, superNames=[]]
       MODIFIER_LIST[public final]
         ANNOTATION_ENTRY[hasValueArguments=false, shortName=Arrays]
+          valueArguments: [
+            ia -> [1, 2, 3]
+            la -> [1.toLong()]
+            fa -> []
+            da -> [2.2.toDouble()]
+            ca -> [\u0061 ('a')]
+            ba -> [true, false]
+          ]
           CONSTRUCTOR_CALLEE
             TYPE_REFERENCE
               USER_TYPE
@@ -116,9 +124,17 @@ WithExplicitArrays.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/WithExplicitArrays, fqName=WithExplicitArrays, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=WithExplicitArrays, superNames=[]]
+    CLASS[classId=/WithExplicitArrays, fqName=WithExplicitArrays, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=WithExplicitArrays, superNames=[]]
       MODIFIER_LIST[public final]
         ANNOTATION_ENTRY[hasValueArguments=false, shortName=Arrays]
+          valueArguments: [
+            ia -> [1, 2, 3]
+            la -> [1.toLong()]
+            fa -> []
+            da -> [2.2.toDouble()]
+            ca -> [\u0061 ('a')]
+            ba -> [true, false]
+          ]
           CONSTRUCTOR_CALLEE
             TYPE_REFERENCE
               USER_TYPE

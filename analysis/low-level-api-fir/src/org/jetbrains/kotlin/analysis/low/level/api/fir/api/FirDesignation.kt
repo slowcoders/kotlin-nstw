@@ -17,7 +17,6 @@ import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticProperty
 import org.jetbrains.kotlin.fir.declarations.synthetic.FirSyntheticPropertyAccessor
-import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.resolve.providers.firProvider
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.resolve.toSymbol
@@ -26,6 +25,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirScriptSymbol
 import org.jetbrains.kotlin.fir.utils.exceptions.withFirEntry
 import org.jetbrains.kotlin.fir.visitors.FirVisitorVoid
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.ClassIdBasedLocality
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtScript
@@ -137,7 +137,7 @@ private fun tryCollectDesignation(providedFile: FirFile?, target: FirElementWith
         is FirReceiverParameter,
             -> null
 
-        is FirSimpleFunction,
+        is FirNamedFunction,
         is FirProperty,
         is FirField,
         is FirConstructor,
@@ -186,6 +186,7 @@ private fun collectDesignationPathWithContainingClass(
     target: FirDeclaration,
     containingClassId: ClassId?,
 ): FirDesignation? {
+    @OptIn(ClassIdBasedLocality::class)
     if (containingClassId?.isLocal == true) {
         return null
     }

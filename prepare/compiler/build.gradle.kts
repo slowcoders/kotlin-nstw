@@ -96,7 +96,6 @@ val distLibraryProjects = listOfNotNull(
     ":kotlin-annotation-processing-runtime",
     ":kotlin-annotation-processing",
     ":kotlin-annotations-jvm",
-    ":kotlin-ant",
     ":kotlin-daemon",
     ":kotlin-daemon-client",
     ":kotlin-main-kts",
@@ -239,6 +238,10 @@ dependencies {
     fatJarContentsStripMetadata(intellijJDom()) { isTransitive = false }
     fatJarContentsStripMetadata(commonDependency("org.jetbrains.intellij.deps:log4j")) { isTransitive = false }
     fatJarContentsStripVersions(commonDependency("one.util:streamex")) { isTransitive = false }
+
+    // Used by JS parser
+    fatJarContents(libs.antlr.runtime) { isTransitive = false }
+    proguardLibraries(libs.antlr.runtime) { isTransitive = false }
 
     builtinsMetadata(kotlinStdlib())
 }

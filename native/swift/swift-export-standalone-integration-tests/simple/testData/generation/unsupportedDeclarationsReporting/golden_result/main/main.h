@@ -17,14 +17,10 @@ void * __root___Foo_init_allocate();
 
 void __root___Foo_init_initialize__TypesOfArguments__Swift_UnsafeMutableRawPointer__(void * __kt);
 
-void * a_b_c_E_A_get();
+void * a_b_c_E_A();
 
-void * a_b_c_E_B_get();
+void * a_b_c_E_B();
 
-void * a_b_c_E_C_get();
-
-NSArray<id> * a_b_c_E_entries_get();
-
-void * a_b_c_E_valueOf__TypesOfArguments__Swift_String__(NSString * value);
+void * a_b_c_E_C();
 
 NS_ASSUME_NONNULL_END

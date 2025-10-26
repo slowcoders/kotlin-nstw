@@ -34,10 +34,7 @@ import org.junit.jupiter.api.Tag
 
 @Tag("klib")
 open class AbstractNativeLibraryAbiReaderTest :
-    AbstractLibraryAbiReaderTest<FirOutputArtifact>(NativePlatforms.unspecifiedNativePlatform, TargetBackend.NATIVE) {
-
-    final override val frontend: FrontendKind<*>
-        get() = FrontendKinds.FIR
+    AbstractLibraryAbiReaderTest(NativePlatforms.unspecifiedNativePlatform, TargetBackend.NATIVE) {
 
     final override val frontendFacade: Constructor<FrontendFacade<FirOutputArtifact>>
         get() = ::FirFrontendFacade
@@ -52,9 +49,11 @@ open class AbstractNativeLibraryAbiReaderTest :
         get() = ::NativeKlibSerializerFacade
 
     override fun configure(builder: TestConfigurationBuilder) = with(builder) {
-        configureFirParser(FirParser.LightTree)
         defaultDirectives {
-            LANGUAGE with "+${LanguageFeature.IrInlinerBeforeKlibSerialization.name}"
+            LANGUAGE with listOf(
+                "+${LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization.name}",
+                "+${LanguageFeature.IrCrossModuleInlinerBeforeKlibSerialization.name}"
+            )
             // Kotlin/Native does not have "minimal" stdlib(like other backends do), so full stdlib is needed to resolve
             // `Any`, `String`, `println`, etc.
             +ConfigurationDirectives.WITH_STDLIB

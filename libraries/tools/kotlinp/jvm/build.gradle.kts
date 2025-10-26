@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.ideaExt.idea
 
 description = "kotlinp-jvm"
 
@@ -7,6 +6,8 @@ plugins {
     kotlin("jvm")
     id("jps-compatible")
     id("project-tests-convention")
+    id("test-inputs-check")
+    id("java-test-fixtures")
 }
 
 val shadows by configurations.creating
@@ -18,16 +19,16 @@ dependencies {
     api(project(":tools:kotlinp"))
     implementation(libs.intellij.asm)
 
-    testApi(intellijCore())
+    testFixturesApi(intellijCore())
 
-    testCompileOnly(project(":kotlin-metadata"))
-    testCompileOnly(project(":kotlin-metadata-jvm"))
+    testFixturesCompileOnly(project(":kotlin-metadata"))
+    testFixturesCompileOnly(project(":kotlin-metadata-jvm"))
 
-    testApi(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter.api)
+    testFixturesApi(platform(libs.junit.bom))
+    testFixturesApi(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
-    testApi(testFixtures(project(":compiler:tests-common-new")))
-    testImplementation(testFixtures(project(":generators:test-generator")))
+    testFixturesApi(testFixtures(project(":compiler:tests-common-new")))
+    testFixturesImplementation(testFixtures(project(":generators:test-generator")))
 
     testRuntimeOnly(project(":kotlin-metadata-jvm"))
 
@@ -38,20 +39,25 @@ dependencies {
 
 sourceSets {
     "main" { projectDefault() }
-    "test" {
-        projectDefault()
-        generatedTestDir()
-    }
+    "testFixtures" { projectDefault() }
 }
 
 projectTests {
-    testTask(jUnitMode = JUnitMode.JUnit5) {
-        workingDir = rootDir
-    }
+    testData(isolated, "testData")
+    testData(project(":compiler").isolated, "testData/loadJava")
+    testData(project(":compiler").isolated, "testData/serialization")
 
-    testGenerator("org.jetbrains.kotlin.kotlinp.jvm.test.GenerateKotlinpTestsKt")
+    testTask(jUnitMode = JUnitMode.JUnit5)
+
+    testGenerator("org.jetbrains.kotlin.kotlinp.jvm.test.GenerateKotlinpTestsKt", generateTestsInBuildDirectory = true)
 
     withJvmStdlibAndReflect()
+    withScriptRuntime()
+    withMockJdkAnnotationsJar()
+    withTestJar()
+    withMockJdkRuntime()
+    withAnnotations()
+    withScriptingPlugin()
 }
 
 val shadowJar by task<ShadowJar> {
@@ -68,10 +74,6 @@ val shadowJar by task<ShadowJar> {
 tasks {
     "assemble" {
         dependsOn(shadowJar)
-    }
-    "test" {
-        // These dependencies are needed because ForTestCompileRuntime loads jars from dist
-        dependsOn(rootProject.tasks.named("dist"))
     }
 }
 

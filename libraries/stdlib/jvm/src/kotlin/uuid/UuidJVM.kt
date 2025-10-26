@@ -16,11 +16,8 @@ private object SecureRandomHolder {
     val instance = SecureRandom()
 }
 
-@ExperimentalUuidApi
-internal actual fun secureRandomUuid(): Uuid {
-    val randomBytes = ByteArray(Uuid.SIZE_BYTES)
-    SecureRandomHolder.instance.nextBytes(randomBytes)
-    return uuidFromRandomBytes(randomBytes)
+internal actual fun secureRandomBytes(destination: ByteArray): Unit {
+    SecureRandomHolder.instance.nextBytes(destination)
 }
 
 @ExperimentalUuidApi
@@ -70,8 +67,16 @@ internal actual fun uuidParseHexDash(hexDashString: String): Uuid =
     uuidParseHexDashCommonImpl(hexDashString)
 
 @ExperimentalUuidApi
+internal actual fun uuidParseHexDashOrNull(hexDashString: String): Uuid? =
+    uuidParseHexDashOrNullCommonImpl(hexDashString)
+
+@ExperimentalUuidApi
 internal actual fun uuidParseHex(hexString: String): Uuid =
     uuidParseHexCommonImpl(hexString)
+
+@ExperimentalUuidApi
+internal actual fun uuidParseHexOrNull(hexString: String): Uuid? =
+    uuidParseHexOrNullCommonImpl(hexString)
 
 /**
  * Converts this [java.util.UUID] value to the corresponding [kotlin.uuid.Uuid] value.
@@ -213,6 +218,7 @@ public fun ByteBuffer.getUuid(index: Int): Uuid {
  */
 @SinceKotlin("2.0")
 @ExperimentalUuidApi
+@IgnorableReturnValue
 public fun ByteBuffer.putUuid(uuid: Uuid): ByteBuffer = uuid.toLongs { msb, lsb ->
     if (position() + 15 >= limit()) {
         throw BufferOverflowException() // otherwise a partial write could occur
@@ -258,6 +264,7 @@ public fun ByteBuffer.putUuid(uuid: Uuid): ByteBuffer = uuid.toLongs { msb, lsb 
  */
 @SinceKotlin("2.0")
 @ExperimentalUuidApi
+@IgnorableReturnValue
 public fun ByteBuffer.putUuid(index: Int, uuid: Uuid): ByteBuffer = uuid.toLongs { msb, lsb ->
     if (index < 0) {
         throw IndexOutOfBoundsException("Negative index: $index")

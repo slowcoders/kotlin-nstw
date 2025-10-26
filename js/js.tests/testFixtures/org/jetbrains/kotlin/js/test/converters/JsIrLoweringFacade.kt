@@ -7,8 +7,6 @@ package org.jetbrains.kotlin.js.test.converters
 
 import org.jetbrains.kotlin.backend.common.IrModuleInfo
 import org.jetbrains.kotlin.backend.common.serialization.cityHash64
-import org.jetbrains.kotlin.backend.js.JsGenerationGranularity
-import org.jetbrains.kotlin.backend.js.TsCompilationStrategy
 import org.jetbrains.kotlin.cli.common.isWindows
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -19,13 +17,12 @@ import org.jetbrains.kotlin.ir.backend.js.transformers.irToJs.*
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.js.backend.ast.ESM_EXTENSION
 import org.jetbrains.kotlin.js.backend.ast.REGULAR_EXTENSION
-import org.jetbrains.kotlin.js.config.JSConfigurationKeys
+import org.jetbrains.kotlin.js.config.*
 import org.jetbrains.kotlin.js.test.handlers.JsBoxRunner
 import org.jetbrains.kotlin.js.test.utils.extractTestPackage
 import org.jetbrains.kotlin.js.test.utils.jsIrIncrementalDataProvider
 import org.jetbrains.kotlin.js.test.utils.wrapWithModuleEmulationMarkers
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.serialization.js.ModuleKind
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInput
 import org.jetbrains.kotlin.test.directives.JsEnvironmentConfigurationDirectives
 import org.jetbrains.kotlin.test.directives.model.RegisteredDirectives
@@ -147,7 +144,7 @@ class JsIrLoweringFacade(
         val perModuleOnly = JsEnvironmentConfigurationDirectives.SPLIT_PER_MODULE in module.directives
         val perFileOnly = JsEnvironmentConfigurationDirectives.SPLIT_PER_FILE in module.directives
         val isEsModules = JsEnvironmentConfigurationDirectives.ES_MODULES in module.directives ||
-                module.directives[JsEnvironmentConfigurationDirectives.MODULE_KIND].contains(ModuleKind.ES)
+                module.directives[JsEnvironmentConfigurationDirectives.JS_MODULE_KIND].contains(ModuleKind.ES)
 
         val outputFile =
             File(
@@ -209,7 +206,7 @@ class JsIrLoweringFacade(
                         ).finalizePath(moduleKind)
                     )
                 }
-                output.writeTo(outputFile, moduleId, moduleKind)
+                output.writeTo(outputFile, moduleId, moduleKind, mode.granularity)
             }
         }
 
@@ -240,12 +237,25 @@ class JsIrLoweringFacade(
         jsCodeMap?.let { File("${newJsTarget.absolutePath}.map").write(it) }
     }
 
-    private fun CompilationOutputs.writeTo(outputFile: File, moduleId: String, moduleKind: ModuleKind) {
+    private fun CompilationOutputs.writeTo(
+        outputFile: File,
+        moduleId: String,
+        moduleKind: ModuleKind,
+        granularity: JsGenerationGranularity,
+    ) {
         val rootDir = outputFile.parentFile
         val tmpBuildDir = rootDir.resolve("tmp-build")
         // CompilationOutputs keeps the `outputDir` clean by removing all outdated JS and other unknown files.
         // To ensure that useful files around `outputFile`, such as irdump, are not removed, use `tmpBuildDir` instead.
-        val allJsFiles = writeAll(tmpBuildDir, outputFile.nameWithoutExtension, TsCompilationStrategy.NONE, moduleId, moduleKind).filter {
+        val artifactConfiguration = WebArtifactConfiguration(
+            moduleKind,
+            moduleId,
+            tmpBuildDir,
+            outputFile.nameWithoutExtension,
+            granularity,
+            TsCompilationStrategy.NONE
+        )
+        val allJsFiles = writeAll(artifactConfiguration).filter {
             it.extension == "js" || it.extension == "mjs"
         }
 
@@ -266,7 +276,7 @@ class JsIrLoweringFacade(
 }
 
 val RegisteredDirectives.moduleKind: ModuleKind
-    get() = get(JsEnvironmentConfigurationDirectives.MODULE_KIND).singleOrNull()
+    get() = get(JsEnvironmentConfigurationDirectives.JS_MODULE_KIND).singleOrNull()
         ?: if (contains(JsEnvironmentConfigurationDirectives.ES_MODULES)) ModuleKind.ES else ModuleKind.PLAIN
 
 val TestModule.kind: ModuleKind

@@ -1,14 +1,14 @@
 // RUN_PIPELINE_TILL: BACKEND
 // WITH_STDLIB
 
-@file:MustUseReturnValue
+@file:MustUseReturnValues
 
 fun stringF(): String = ""
 
 fun Any.consume(): Unit = Unit
 
 fun stringLambda(l: () -> String) {
-    <!RETURN_VALUE_NOT_USED!>l()<!> // unused
+    <!RETURN_VALUE_NOT_USED!>l<!>() // unused
 }
 
 fun unitLambda(l: () -> Unit) {
@@ -24,11 +24,11 @@ fun main() {
         stringF() // used
     }
     unitLambda {
-        <!RETURN_VALUE_NOT_USED!>stringF()<!>
+        <!RETURN_VALUE_NOT_USED!>stringF<!>()
     }
-    <!RETURN_VALUE_NOT_USED!>stringLambdaReturns {
+    <!RETURN_VALUE_NOT_USED!>stringLambdaReturns<!> {
         stringF()
-    }<!> // stringF() is used, stringLambdaReturns is unused
+    } // stringF() is used, stringLambdaReturns is unused
 }
 
 /* GENERATED_FIR_TAGS: annotationUseSiteTargetFile, funWithExtensionReceiver, functionDeclaration, functionalType,

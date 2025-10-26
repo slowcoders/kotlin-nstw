@@ -59,7 +59,7 @@ object FirContextParametersDeclarationChecker : FirBasicDeclarationChecker(MppCh
             is FirCallableDeclaration if declaration.isDelegationOperator() -> "Context parameters on delegation operators are unsupported.".takeIf { contextParametersEnabled }
             is FirProperty if declaration.delegate != null -> "Context parameters on delegated properties are unsupported.".takeIf { contextParametersEnabled }
             // Only valid positions
-            is FirSimpleFunction, is FirProperty, is FirAnonymousFunction -> null
+            is FirNamedFunction, is FirProperty, is FirAnonymousFunction -> null
             // Fallback if we forgot something.
             else -> "Context parameters are unsupported in this position."
         }
@@ -149,10 +149,10 @@ object FirContextParametersDeclarationChecker : FirBasicDeclarationChecker(MppCh
     fun checkSubTypes(types: List<ConeKotlinType>): Boolean {
         fun replaceTypeParametersByStarProjections(type: ConeClassLikeType): ConeClassLikeType {
             return type.withArguments(type.typeArguments.map {
-                when {
-                    it.isStarProjection -> it
-                    it.type!! is ConeTypeParameterType -> ConeStarProjection
-                    it.type!! is ConeClassLikeType -> replaceTypeParametersByStarProjections(it.type as ConeClassLikeType)
+                when (val type = it.type) {
+                    null -> it // isStarProjection
+                    is ConeTypeParameterType -> ConeStarProjection
+                    is ConeClassLikeType -> replaceTypeParametersByStarProjections(type)
                     else -> it
                 }
             }.toTypedArray())

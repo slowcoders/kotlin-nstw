@@ -21,6 +21,8 @@ import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
 import kotlinx.cli.required
+import kotlinx.metadata.klib.ChunkedKlibModuleFragmentWriteStrategy
+import org.jetbrains.kotlin.config.KlibAbiCompatibilityLevel
 import org.jetbrains.kotlin.konan.ForeignExceptionMode
 import org.jetbrains.kotlin.konan.TempFiles
 import org.jetbrains.kotlin.konan.exec.Command
@@ -261,6 +263,10 @@ private fun processCLib(
     val tool = prepareTool(cinteropArguments.target, flavor, runFromDaemon, parseKeyValuePairs(cinteropArguments.overrideKonanProperties), konanDataDir = cinteropArguments.konanDataDir)
 
     val def = DefFile(defFile, tool.substitutions)
+
+    checkCCallModeCompatibility(cinteropArguments, def)
+    checkKlibAbiCompatibilityLevel(cinteropArguments)
+
     val isLinkerOptsSetByUser = (cinteropArguments.linkerOpts.valueOrigin == ArgParser.ValueOrigin.SET_BY_USER) ||
             (cinteropArguments.linkerOptions.valueOrigin == ArgParser.ValueOrigin.SET_BY_USER) ||
             (cinteropArguments.linkerOption.valueOrigin == ArgParser.ValueOrigin.SET_BY_USER)
@@ -326,7 +332,8 @@ private fun processCLib(
             allowedOverloadsForCFunctions = def.config.allowedOverloadsForCFunctions.toSet(),
             disableDesignatedInitializerChecks = def.config.disableDesignatedInitializerChecks,
             disableExperimentalAnnotation = cinteropArguments.disableExperimentalAnnotation ?: false,
-            target = target
+            target = target,
+            cCallMode = cinteropArguments.cCallMode,
     )
 
 
@@ -398,7 +405,7 @@ private fun processCLib(
     }
 
     val compilerArgs = stubIrContext.libraryForCStubs.compilerArgs.toTypedArray()
-    val nativeOutputPath: String = when (flavor) {
+    val nativeOutputPath: String? = when (flavor) {
         KotlinPlatform.JVM -> {
             val outOFile = tempFiles.create(libName,".o")
             val compilerCmd = arrayOf(compiler, *compilerArgs,
@@ -414,6 +421,12 @@ private fun processCLib(
                     *linkerOpts)
             runCmd(linkerCmd, verbose)
             outOFile.absolutePath
+        }
+        KotlinPlatform.NATIVE if configuration.cCallMode == CCallMode.DIRECT -> {
+            // Don't generate the bitcode (and don't pack it into the resulting klib),
+            // because indirect CCall is the main reason for having it.
+            // We could introduce another flag to control that, but let's keep things simple for now.
+            null
         }
         KotlinPlatform.NATIVE -> {
             val outLib = File(nativeLibsDir, "$libName.bc")
@@ -446,9 +459,13 @@ private fun processCLib(
                 if (nopack) it.removeSuffixIfPresent(suffix) else it.suffixIfNot(suffix)
             }
 
+            val serializedMetadata = stubIrOutput.metadata.write(ChunkedKlibModuleFragmentWriteStrategy(topLevelClassifierDeclarationsPerFile = 128)).run {
+                SerializedMetadata(header, fragments, fragmentNames)
+            }
+
             createInteropLibrary(
-                    metadata = stubIrOutput.metadata,
-                    nativeBitcodeFiles = compiledFiles + nativeOutputPath,
+                    serializedMetadata = serializedMetadata,
+                    nativeBitcodeFiles = compiledFiles + listOfNotNull(nativeOutputPath),
                     target = tool.target,
                     moduleName = moduleName,
                     outputPath = outputPath,
@@ -456,9 +473,58 @@ private fun processCLib(
                     dependencies = stdlibDependency + imports.requiredLibraries.toList(),
                     nopack = nopack,
                     shortName = cinteropArguments.shortModuleName,
-                    staticLibraries = resolveLibraries(staticLibraries, libraryPaths)
+                    staticLibraries = resolveLibraries(staticLibraries, libraryPaths),
+                    klibAbiCompatibilityLevel = cinteropArguments.klibAbiCompatibilityLevel,
             )
             return null
+        }
+    }
+}
+
+private fun checkCCallModeCompatibility(
+        cinteropArguments: CInteropArguments,
+        def: DefFile
+) {
+    if (cinteropArguments.cCallMode == CCallMode.INDIRECT) return
+
+    /*
+    The two features below rely on including bitcode to the resulting cinterop klib.
+    Unless `-Xccall-mode indirect` is used, the resulting cinterop klib can be used without bitcode:
+    - `-Xccall-mode direct` makes the cinterop klib not include any bitcode.
+    - `-Xccall-mode both` makes the compiler able to use it with `-Xbinary=cCallMode=direct`
+      and therefore ignore the included bitcode.
+
+    In other words, these two features are compatible only with `-Xccall-mode indirect`.
+    Additionally, regardless of the bitcode inclusion, the compiler also doesn't support generating direct CCalls to
+    functions defined through `compileSource`.
+    */
+    check(def.config.entryPoints.isEmpty()) {
+        "entryPoint= in the .def file is only supported with -$CCALL_MODE ${CCallMode.INDIRECT.name.lowercase()}"
+    }
+
+    check(cinteropArguments.compileSource.isEmpty()) {
+        "-$COMPILE_SOURCES is only supported with -$CCALL_MODE ${CCallMode.INDIRECT.name.lowercase()}"
+    }
+}
+
+// TODO (KT-81433): Reconsider how exactly the export in P.V. feature should work in further versions (ex: 2.4.0)
+//  if we decide to upgrade LLVM.
+private fun checkKlibAbiCompatibilityLevel(cinteropArguments: CInteropArguments) {
+    val klibAbiCompatibilityLevel = cinteropArguments.klibAbiCompatibilityLevel
+    val cCallMode = cinteropArguments.cCallMode
+
+    when (klibAbiCompatibilityLevel) {
+        KlibAbiCompatibilityLevel.ABI_LEVEL_2_2 -> {
+            check(cCallMode == CCallMode.INDIRECT) {
+                "-$CCALL_MODE ${cCallMode.name.lowercase()} is not supported in combination with -$KLIB_ABI_COMPATIBILITY_LEVEL ${klibAbiCompatibilityLevel}\n" +
+                        "Please use -$KLIB_ABI_COMPATIBILITY_LEVEL ${KlibAbiCompatibilityLevel.LATEST_STABLE} or specify -$CCALL_MODE ${CCallMode.INDIRECT.name.lowercase()}"
+            }
+
+            warn("-$KLIB_ABI_COMPATIBILITY_LEVEL $klibAbiCompatibilityLevel will trigger generating KLIB compatible with KLIB ABI version $klibAbiCompatibilityLevel. This is an experimental feature.")
+        }
+
+        KlibAbiCompatibilityLevel.ABI_LEVEL_2_3 -> {
+            // No specific restrictions for now.
         }
     }
 }
@@ -484,7 +550,7 @@ private fun getLibraryResolver(
         directLibs = cinteropArguments.library,
         target,
         Distribution(KotlinNativePaths.homePath.absolutePath, konanDataDir = cinteropArguments.konanDataDir)
-    ).libraryResolver()
+    ).libraryResolver(resolveManifestDependenciesLenient = true)
 }
 
 private fun resolveDependencies(

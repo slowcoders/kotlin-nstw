@@ -6,19 +6,14 @@
 package org.jetbrains.kotlin.psi.stubs
 
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.util.IntellijInternalApi
-import com.intellij.psi.PsiComment
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
-import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtClassLikeDeclaration
 import org.jetbrains.kotlin.psi.KtEnumEntry
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
-import org.jetbrains.kotlin.psi.KtProperty
-import org.jetbrains.kotlin.psi.stubs.StubUtils.searchForHasBackingFieldComment
 import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementTypes
 import org.jetbrains.kotlin.psi.stubs.elements.KtTokenSets
 
@@ -35,6 +30,7 @@ object StubUtils {
     }
 
     @JvmStatic
+    @Suppress("DEPRECATION") // KT-78356
     fun createNestedClassId(parentStub: StubElement<*>, currentDeclaration: KtClassLikeDeclaration): ClassId? {
         if (currentDeclaration is KtObjectDeclaration && currentDeclaration.isObjectLiteral()) {
             return null
@@ -87,66 +83,64 @@ object StubUtils {
     @JvmStatic
     internal fun StubInputStream.readFqName(): FqName = FqName(readNameString()!!)
 
-    /**
-     * `/* hasBackingField: true */` or `/* hasBackingField: false */` are special comments added during conversion
-     * from a metadata to a decompiled text. This decompiled text is then used to create decompiled stubs.
-     *
-     * This is a reliable way to pass arbitrary information from the decompiler to the stub builder as the Analysis API
-     * controls both the decompiler and the stub builder, so they don't interfere with user code/comments.
-     *
-     * @see KotlinPropertyStub.hasBackingField
-     */
     @JvmStatic
-    internal fun searchForHasBackingFieldComment(property: KtProperty): Boolean? {
-        if (!property.containingKtFile.isCompiled) {
-            return null
-        }
+    internal inline fun <K : Any, V : Any> StubOutputStream.writeNullableMap(
+        map: Map<K, V>?,
+        keyWriter: StubOutputStream.(K) -> Unit,
+        valueWriter: StubOutputStream.(V) -> Unit,
+    ) {
+        val nullableSize = map?.size?.plus(1) ?: 0 // +1 since 0 is reserved for null value
+        writeVarInt(nullableSize)
 
-        var child = property.firstChild
-        while (child != null) {
-            if (child is PsiComment) {
-                searchForHasBackingField(child)?.let { return it }
+        map?.forEach { entry ->
+            keyWriter(entry.key)
+            valueWriter(entry.value)
+        }
+    }
+
+    @JvmStatic
+    internal fun <K : Any, V : Any> StubInputStream.readNullableMap(
+        keyReader: StubInputStream.() -> K,
+        valueReader: StubInputStream.() -> V,
+    ): Map<K, V>? = when (val nullableSize = readVarInt()) {
+        0 -> null
+        else -> when (val size = nullableSize - 1) { // -1 since 0 is reserved for null value
+            0 -> emptyMap()
+            1 -> mapOf(keyReader() to valueReader())
+            else -> buildMap(size) {
+                repeat(size) {
+                    val key = keyReader()
+                    val value = valueReader()
+                    put(key, value)
+                }
             }
-
-            child = child.nextSibling
-        }
-
-        return null
-    }
-
-    @OptIn(IntellijInternalApi::class)
-    private fun searchForHasBackingField(comment: PsiComment): Boolean? {
-        if (comment.tokenType != KtTokens.BLOCK_COMMENT) {
-            return null
-        }
-
-        val textLength = comment.textLength
-        if (textLength != HAS_BACKING_FIELD_COMMENT_TRUE_LENGTH && textLength != HAS_BACKING_FIELD_COMMENT_FALSE_LENGTH) {
-            return null
-        }
-
-        val text = comment.text
-        return if (text.startsWith(HAS_BACKING_FIELD_COMMENT_PREFIX)) {
-            text[HAS_BACKING_FIELD_COMMENT_VALUE_START_INDEX] == 't'
-        } else {
-            null
         }
     }
 
-    /** @see searchForHasBackingFieldComment */
-    @IntellijInternalApi
-    const val HAS_BACKING_FIELD_COMMENT_PREFIX: String = "/* hasBackingField: "
+    @JvmStatic
+    internal inline fun <E : Any> StubOutputStream.writeNullableCollection(
+        collection: Collection<E>?,
+        elementWriter: StubOutputStream.(E) -> Unit,
+    ) {
+        val nullableSize = collection?.size?.plus(1) ?: 0 // +1 since 0 is reserved for null value
+        writeVarInt(nullableSize)
 
-    /**
-     * The index of `t` or `f` in the special comment
-     */
-    @OptIn(IntellijInternalApi::class)
-    private const val HAS_BACKING_FIELD_COMMENT_VALUE_START_INDEX: Int = HAS_BACKING_FIELD_COMMENT_PREFIX.length
+        collection?.forEach { elementWriter(it) }
+    }
 
-    @OptIn(IntellijInternalApi::class)
-    private const val HAS_BACKING_FIELD_COMMENT_TRUE: String = HAS_BACKING_FIELD_COMMENT_PREFIX + "${true} */"
-    private const val HAS_BACKING_FIELD_COMMENT_TRUE_LENGTH: Int = HAS_BACKING_FIELD_COMMENT_TRUE.length
-
-    private const val HAS_BACKING_FIELD_COMMENT_FALSE_LENGTH: Int =
-        HAS_BACKING_FIELD_COMMENT_TRUE_LENGTH - true.toString().length + false.toString().length
+    @JvmStatic
+    internal fun <E : Any> StubInputStream.readNullableCollection(
+        elementReader: StubInputStream.() -> E,
+    ): List<E>? = when (val nullableSize = readVarInt()) {
+        0 -> null
+        else -> when (val size = nullableSize - 1) { // -1 since 0 is reserved for null value
+            0 -> emptyList()
+            1 -> listOf(elementReader())
+            else -> buildList(size) {
+                repeat(size) {
+                    add(elementReader())
+                }
+            }
+        }
+    }
 }

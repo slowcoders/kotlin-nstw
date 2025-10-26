@@ -5,12 +5,15 @@
 
 package org.jetbrains.kotlin.konan.test.blackbox.support.compilation
 
-import org.jetbrains.kotlin.config.nativeBinaryOptions.BinaryOptionWithValue
 import org.jetbrains.kotlin.cli.common.ExitCode
+import org.jetbrains.kotlin.config.nativeBinaryOptions.BinaryOptionWithValue
+import org.jetbrains.kotlin.config.nativeBinaryOptions.BinaryOptions
+import org.jetbrains.kotlin.config.nativeBinaryOptions.RuntimeAssertsMode
 import org.jetbrains.kotlin.konan.properties.resolvablePropertyList
 import org.jetbrains.kotlin.konan.target.AppleConfigurables
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import org.jetbrains.kotlin.konan.target.isMacabi
 import org.jetbrains.kotlin.konan.target.withOSVersion
 import org.jetbrains.kotlin.konan.test.blackbox.support.*
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestCase.*
@@ -22,18 +25,13 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.ExecutableCo
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.ExecutableCompilation.Companion.assertTestDumpFileNotEmptyIfExists
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationArtifact.*
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationDependencyType.*
+import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationResult.Companion.assertSuccess
 import org.jetbrains.kotlin.konan.test.blackbox.support.settings.*
-import org.jetbrains.kotlin.konan.test.blackbox.support.settings.ExplicitBinaryOptions
-import org.jetbrains.kotlin.konan.test.blackbox.support.util.ArgsBuilder
-import org.jetbrains.kotlin.konan.test.blackbox.support.util.buildArgs
-import org.jetbrains.kotlin.konan.test.blackbox.support.util.flatMapToSet
-import org.jetbrains.kotlin.konan.test.blackbox.support.util.mapToSet
+import org.jetbrains.kotlin.konan.test.blackbox.support.util.*
 import org.jetbrains.kotlin.library.impl.createKotlinLibraryComponents
 import org.jetbrains.kotlin.library.metadata.isCInteropLibrary
 import org.jetbrains.kotlin.test.services.JUnit5Assertions.assertTrue
 import org.jetbrains.kotlin.test.services.JUnit5Assertions.fail
-import org.jetbrains.kotlin.config.nativeBinaryOptions.BinaryOptions
-import org.jetbrains.kotlin.config.nativeBinaryOptions.RuntimeAssertsMode
 import java.io.File
 
 private fun AssertionsMode.assertionsEnabledWith(optimizationMode: OptimizationMode) = when (this) {
@@ -282,7 +280,6 @@ abstract class SourceBasedCompilation<A : TestCompilationArtifact>(
     gcType: GCType,
     gcScheduler: GCScheduler,
     allocator: Allocator,
-    private val pipelineType: PipelineType,
     cacheMode: CacheMode,
     binaryOptions: ExplicitBinaryOptions,
     freeCompilerArgs: TestCompilerArgs,
@@ -309,7 +306,6 @@ abstract class SourceBasedCompilation<A : TestCompilationArtifact>(
     allocator = allocator,
 ) {
     override fun applySpecificArgs(argsBuilder: ArgsBuilder): Unit = with(argsBuilder) {
-        pipelineType.compilerFlags.forEach { compilerFlag -> add(compilerFlag) }
         applyK2MPPArgs(this)
     }
 
@@ -323,7 +319,7 @@ abstract class SourceBasedCompilation<A : TestCompilationArtifact>(
     }
 
     private fun applyK2MPPArgs(argsBuilder: ArgsBuilder): Unit = with(argsBuilder) {
-        if (pipelineType == PipelineType.K2 && freeCompilerArgs.compilerArgs.any { it == "-XXLanguage:+MultiPlatformProjects" }) {
+        if (freeCompilerArgs.compilerArgs.any { it == "-XXLanguage:+MultiPlatformProjects" }) {
             sourceModules.mapToSet { "-Xfragments=${it.name}" }
                 .sorted().forEach { add(it) }
             sourceModules.flatMapToSet { module -> module.directDependsOnDependencies.map { "-Xfragment-refines=${module.name}:${it.name}" } }
@@ -351,7 +347,6 @@ class LibraryCompilation(
     gcType = settings.get(),
     gcScheduler = settings.get(),
     allocator = settings.get(),
-    pipelineType = settings.get(),
     cacheMode = settings.get(),
     binaryOptions = settings.get(),
     freeCompilerArgs = freeCompilerArgs,
@@ -402,7 +397,6 @@ class ObjCFrameworkCompilation(
     gcType = settings.get(),
     gcScheduler = settings.get(),
     allocator = settings.get(),
-    pipelineType = settings.getStageDependentPipelineType(sourceModules),
     cacheMode = settings.get(),
     binaryOptions = settings.get(),
     freeCompilerArgs = freeCompilerArgs,
@@ -448,7 +442,6 @@ class BinaryLibraryCompilation(
     gcType = settings.get(),
     gcScheduler = settings.get(),
     allocator = settings.get(),
-    pipelineType = settings.getStageDependentPipelineType(sourceModules),
     cacheMode = settings.get(),
     binaryOptions = settings.get(),
     freeCompilerArgs = freeCompilerArgs,
@@ -488,17 +481,39 @@ internal class GivenLibraryCompilation(givenArtifact: KLIB) : TestCompilation<KL
     override val result = TestCompilationResult.Success(givenArtifact, LoggedData.NoopCompilerCall(givenArtifact.klibFile))
 }
 
-internal class CInteropCompilation(
-    targets: KotlinNativeTargets,
-    classLoader: KotlinNativeClassLoader,
+class CInteropCompilation(
+    settings: Settings,
     freeCompilerArgs: TestCompilerArgs,
     defFile: File,
     sources: List<File> = emptyList(),
     dependencies: Iterable<CompiledDependency<KLIB>>,
     expectedArtifact: KLIB
 ) : TestCompilation<KLIB>() {
+    private val targets: KotlinNativeTargets = settings.get()
+    private val classLoader: KotlinNativeClassLoader = settings.get()
 
     override val result: TestCompilationResult<out KLIB> by lazy {
+        val staticLibraries = sources.map {
+            compileWithClangToStaticLibrary(
+                settings,
+                clangMode = when (it.extension) {
+                    "c", "m" -> ClangMode.C
+                    "cpp", "mm" -> ClangMode.CXX
+                    else -> error("unexpected file extension: $it")
+                },
+                sourceFiles = listOf(it),
+                outputFile = expectedArtifact.klibFile.resolveSibling("${it.nameWithoutExtension}.a"),
+                includeDirectories = listOf(defFile.parentFile),
+                additionalClangFlags = listOf(
+                    if (freeCompilerArgs.objcArc) {
+                        "-fobjc-arc"
+                    } else {
+                        "-fno-objc-arc"
+                    }
+                )
+            ).assertSuccess().resultingArtifact.libraryFile
+        }
+
         val args = buildList {
             add("-def")
             add(defFile.canonicalPath)
@@ -512,18 +527,12 @@ internal class CInteropCompilation(
                 add(it.artifact.path)
             }
             addAll(freeCompilerArgs.cinteropArgs)
-            sources.forEach {
-                add("-Xcompile-source")
-                add(it.absolutePath)
+            staticLibraries.forEach {
+                add("-libraryPath")
+                add(it.parentFile.absolutePath)
+                add("-staticLibrary")
+                add(it.name)
             }
-            add("-Xsource-compiler-option")
-            if (freeCompilerArgs.objcArc) {
-                add("-fobjc-arc")
-            } else {
-                add("-fno-objc-arc")
-            }
-            add("-Xsource-compiler-option")
-            add("-DNS_FORMAT_ARGUMENT(A)=")
             add("-compiler-option")
             add("-I${defFile.parentFile}")
         }
@@ -576,12 +585,29 @@ class SwiftCompilation<T : TestCompilationArtifact>(
 
         val optimizationModeFlags = swiftcOptimizationModeFlags(testRunSettings.get<OptimizationMode>())
 
-        val args = swiftExtraOpts + optimizationModeFlags + sources.map { it.absolutePath } + listOf(
-            "-sdk", configs.absoluteTargetSysRoot, "-target", swiftTarget,
-            "-o", outputFile(expectedArtifact).absolutePath,
-            "-g", // Xcode seems to pass -g even for optimized builds by default.
-            "-Xcc", "-Werror", // To fail compilation on warnings in framework header.
-        )
+        val args = buildList {
+            addAll(
+                listOf(
+                    "-sdk", configs.absoluteTargetSysRoot,
+                    "-target", swiftTarget,
+                    "-o", outputFile(expectedArtifact).absolutePath,
+                    "-g", // Xcode seems to pass -g even for optimized builds by default.
+                    "-Xcc", "-Werror", // To fail compilation on warnings in framework header.
+                )
+            )
+            if (configs.targetTriple.isMacabi) {
+                addAll(
+                    // Since the sysroot is for macOS, we should point the compiler to the directory with iOS system frameworks.
+                    listOf(
+                        "-Fsystem", "${configs.absoluteTargetSysRoot}/System/iOSSupport/System/Library/Frameworks",
+                        "-Xcc", "-isystem", "-Xcc", "${configs.absoluteTargetSysRoot}/System/iOSSupport/usr/include",
+                    )
+                )
+            }
+            addAll(sources.map { it.absolutePath })
+            addAll(optimizationModeFlags)
+            addAll(swiftExtraOpts)
+        }
 
         val loggedSwiftCParameters = LoggedData.SwiftCParameters(args, sources)
         val (loggedCall: LoggedData, immediateResult: TestCompilationResult.ImmediateResult<out T>) = try {
@@ -649,7 +675,6 @@ abstract class FinalBinaryCompilation<A : TestCompilationArtifact>(
     gcType = settings.get(),
     gcScheduler = settings.get(),
     allocator = settings.get(),
-    pipelineType = settings.getStageDependentPipelineType(sourceModules),
     cacheMode = cacheMode,
     binaryOptions = settings.get(),
     freeCompilerArgs = freeCompilerArgs,
@@ -948,25 +973,3 @@ class CategorizedDependencies(uncategorizedDependencies: Iterable<TestCompilatio
         return mapNotNull { dependency -> if (dependency.type is T) dependency.artifact as A else null }
     }
 }
-
-// Calculates PipelineType to be used for compilations involving native backend or C/ObjC export.
-// Second stage of TWO_STAGE_MULTI_MODULE must receive PipelineType.DEFAULT to be unaware of the language version used before, during first stage.
-internal fun Settings.getStageDependentPipelineType(sourceModules: Collection<TestModule>): PipelineType =
-    when (get<TestMode>()) {
-        TestMode.ONE_STAGE_MULTI_MODULE -> get<PipelineType>()
-        TestMode.TWO_STAGE_MULTI_MODULE -> {
-            if (sourceModules.isEmpty())
-                PipelineType.DEFAULT // KT-56182: Don't pass "-language_version" option to pure second compilation stage.
-            else {
-                println(  // KT-66014: TODO change println() to fail{} if all testsuites in KT-66014 would be changed
-                    "WARNING: Wrong testing approach for `mode=TWO_STAGE_MULTI_MODULE`: test explicitly uses one-stage compilation for sources:\n" +
-                            "${sourceModules.map { it.files.map { it.location.name } }}\n" +
-                            "Please re-implement test to split compilation to two stages, when `mode=TWO_STAGE_MULTI_MODULE` is specified.\n" +
-                            "TestCompilationFactory provides some tooling for this."
-                )
-                // Provided source modules must be compiled with proper frontend version,
-                // even if this version would be then wrongly passed to backend or C/ObjC generator
-                get<PipelineType>()
-            }
-        }
-    }

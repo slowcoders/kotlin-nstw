@@ -15,8 +15,6 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.compile.AbstractCompile
-import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
@@ -27,9 +25,9 @@ import org.jetbrains.kotlin.compilerRunner.GradleCompilerEnvironment
 import org.jetbrains.kotlin.compilerRunner.IncrementalCompilationEnvironment
 import org.jetbrains.kotlin.compilerRunner.OutputItemsCollectorImpl
 import org.jetbrains.kotlin.config.JvmTarget
-import org.jetbrains.kotlin.config.KotlinCompilerVersion
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.jvm.JvmTargetValidationMode
+import org.jetbrains.kotlin.gradle.internal.UnsupportedKotlinLanguageVersionsMetadata
 import org.jetbrains.kotlin.gradle.internal.tasks.allOutputFiles
 import org.jetbrains.kotlin.gradle.logging.GradleErrorMessageCollector
 import org.jetbrains.kotlin.gradle.logging.GradlePrintingMessageCollector
@@ -37,8 +35,8 @@ import org.jetbrains.kotlin.gradle.logging.kotlinDebug
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext.Companion.create
 import org.jetbrains.kotlin.gradle.plugin.diagnostics.KotlinToolingDiagnostics
+import org.jetbrains.kotlin.gradle.plugin.diagnostics.KotlinToolingDiagnostics.DeprecatedKotlinVersionKotlinDsl
 import org.jetbrains.kotlin.gradle.plugin.diagnostics.ToolingDiagnostic
-import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import org.jetbrains.kotlin.gradle.report.BuildReportMode
 import org.jetbrains.kotlin.gradle.tasks.internal.KotlinJvmOptionsCompat
 import org.jetbrains.kotlin.gradle.utils.*
@@ -117,22 +115,8 @@ abstract class KotlinCompile @Inject constructor(
     @get:Nested
     abstract val classpathSnapshotProperties: ClasspathSnapshotProperties
 
-    /** Properties related to the `kotlin.incremental.useClasspathSnapshot` feature. */
+    /** Properties related to the classpath snapshots based incremental compilation feature. */
     abstract class ClasspathSnapshotProperties {
-        @get:Internal
-        @Deprecated(
-            message = "This input property is not supported - classpath snapshots based incremental compilation is the only used approach.",
-            level = DeprecationLevel.ERROR
-        )
-        abstract val useClasspathSnapshot: Property<Boolean>
-
-        @get:Internal
-        @Deprecated(
-            message = "This input property is not supported - classpath snapshots based incremental compilation is the only used approach.",
-            level = DeprecationLevel.ERROR
-        )
-        abstract val classpath: ConfigurableFileCollection
-
         @get:Classpath
         @get:Incremental
         @get:Optional // Set if useClasspathSnapshot == true
@@ -344,6 +328,62 @@ abstract class KotlinCompile @Inject constructor(
         }
     }
 
+    /**
+     * KT-79851: Validates the Kotlin versions (API and language) when the Kotlin DSL plugin is present to simplify resolution.
+     * The check itself together with the related code generator may look overcomplicated.
+     * Though, they are such to properly check in regard to a custom compiler version set via BTA.
+     *
+     * Considering BTA follows the policy to provide proper support only up to 1 version forward,
+     * the only case we may lose is the used Kotlin version is deprecated in a version that this version of KGP wasn't aware of.
+     * In this case, we'll lose only deprecation, so it will continue working with a warning from the compiler itself.
+     * It sounds fine as it's impossible that the used version is completely dropped, and we don't catch it by this validation.
+     *
+     * @param args Kotlin JVM compiler options used to determine API and language versions.
+     */
+    private fun validateKotlinVersionsInPresenceOfKotlinDslPlugin(args: KotlinJvmCompilerOptions) {
+        if (!kotlinDslPluginIsPresent.get()) return
+
+        fun KotlinVersion?.unsupportedLevel(): ToolingDiagnostic.Severity? {
+            if (this == null) return null
+            val metadata = UnsupportedKotlinLanguageVersionsMetadata.unsupportedPerVersion[this]
+            return when {
+                metadata == null -> null
+                metadata.removalVersion != null && metadata.removalVersion <= kotlinCompilerVersion.get() -> ToolingDiagnostic.Severity.STRONG_WARNING
+                metadata.deprecationVersion <= kotlinCompilerVersion.get() -> ToolingDiagnostic.Severity.WARNING
+                else -> null
+            }
+        }
+
+        val versions = buildList {
+            // null means the default version which is always supported
+            val apiVersion = args.apiVersion.orNull
+            val apiVersionUnsupportedLevel = apiVersion.unsupportedLevel()
+            if (apiVersion != null && apiVersionUnsupportedLevel != null) {
+                add(DeprecatedKotlinVersionKotlinDsl.VersionMetadata(apiVersion, "API", "apiVersion", apiVersionUnsupportedLevel))
+            }
+            // null means the default version which is always supported
+            val languageVersion = args.languageVersion.orNull
+            val languageVersionUnsupportedLevel = languageVersion.unsupportedLevel()
+            if (languageVersion != null && languageVersionUnsupportedLevel != null) {
+                add(
+                    DeprecatedKotlinVersionKotlinDsl.VersionMetadata(
+                        languageVersion,
+                        "language",
+                        "languageVersion",
+                        languageVersionUnsupportedLevel
+                    )
+                )
+            }
+        }
+
+        if (versions.isNotEmpty()) {
+            val unsupportedVersionsMetadata = KotlinVersion.values().first {
+                UnsupportedKotlinLanguageVersionsMetadata.unsupportedPerVersion[it] == null
+            }
+            reportDiagnostic(DeprecatedKotlinVersionKotlinDsl(versions, unsupportedVersionsMetadata))
+        }
+    }
+
     private fun overrideXJvmDefaultInPresenceOfKotlinDslPlugin(
         args: K2JVMCompilerArguments
     ) {
@@ -391,6 +431,7 @@ abstract class KotlinCompile @Inject constructor(
         taskOutputsBackup: TaskOutputsBackup?,
     ) {
         validateKotlinAndJavaHasSameTargetCompatibility(args)
+        validateKotlinVersionsInPresenceOfKotlinDslPlugin(compilerOptions)
 
         val gradlePrintingMessageCollector = GradlePrintingMessageCollector(logger, args.allWarningsAsErrors)
         val gradleMessageCollector =
@@ -409,7 +450,6 @@ abstract class KotlinCompile @Inject constructor(
                 workingDir = taskBuildCacheableOutputDirectory.get().asFile,
                 rootProjectDir = projectRootDir,
                 buildDir = projectLayout.buildDirectory.getFile(),
-                disableMultiModuleIC = disableMultiModuleIC,
                 multiModuleICSettings = multiModuleICSettings,
                 icFeatures = makeIncrementalCompilationFeatures(),
                 useJvmFirRunner = useFirRunner.get(),
@@ -473,34 +513,6 @@ abstract class KotlinCompile @Inject constructor(
                     )
                 )
             }
-        }
-    }
-
-    @get:Input
-    val disableMultiModuleIC: Boolean by lazy {
-        if (!isIncrementalCompilationEnabled() || !javaOutputDir.isPresent) {
-            false
-        } else {
-
-            var illegalTaskOrNull: AbstractCompile? = null
-            project.tasks.configureEach {
-                if (it is AbstractCompile &&
-                    it !is JavaCompile &&
-                    it !is AbstractKotlinCompile<*> &&
-                    javaOutputDir.get().asFile.isParentOf(it.destinationDirectory.get().asFile)
-                ) {
-                    illegalTaskOrNull = illegalTaskOrNull ?: it
-                }
-            }
-            if (illegalTaskOrNull != null) {
-                val illegalTask = illegalTaskOrNull!!
-                logger.info(
-                    "Kotlin inter-project IC is disabled: " +
-                            "unknown task '$illegalTask' destination dir ${illegalTask.destinationDirectory.get().asFile} " +
-                            "intersects with java destination dir $javaOutputDir"
-                )
-            }
-            illegalTaskOrNull != null
         }
     }
 

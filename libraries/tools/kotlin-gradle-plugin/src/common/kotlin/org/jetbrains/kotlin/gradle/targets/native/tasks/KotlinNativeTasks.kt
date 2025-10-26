@@ -24,8 +24,9 @@ import org.gradle.work.DisableCachingByDefault
 import org.gradle.work.NormalizeLineEndings
 import org.jetbrains.kotlin.backend.common.linkage.partial.PartialLinkageMode
 import org.jetbrains.kotlin.build.report.metrics.BuildMetricsReporter
-import org.jetbrains.kotlin.build.report.metrics.GradleBuildPerformanceMetric
-import org.jetbrains.kotlin.build.report.metrics.GradleBuildTime
+import org.jetbrains.kotlin.build.report.metrics.BuildPerformanceMetric
+import org.jetbrains.kotlin.build.report.metrics.OUT_OF_WORKER_TASK_ACTION
+import org.jetbrains.kotlin.build.report.metrics.BuildTimeMetric
 import org.jetbrains.kotlin.build.report.metrics.measure
 import org.jetbrains.kotlin.cli.common.arguments.CommonToolArguments
 import org.jetbrains.kotlin.cli.common.arguments.K2NativeCompilerArguments
@@ -44,7 +45,6 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilationInfo
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext.Companion.create
-import org.jetbrains.kotlin.gradle.plugin.cocoapods.asValidFrameworkName
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.useXcodeMessageStyle
 import org.jetbrains.kotlin.gradle.plugin.statistics.NativeCompilerOptionMetrics
@@ -230,7 +230,7 @@ abstract class AbstractKotlinNativeCompile<
             val filename = "$prefix${baseName}$suffix".let {
                 when {
                     outputKind == FRAMEWORK ->
-                        it.asValidFrameworkName()
+                        it.asValidFrameworkName
 
                     outputKind in listOf(STATIC, DYNAMIC) ->
                         it.replace('-', '_')
@@ -539,7 +539,7 @@ internal constructor(
         } else {
             objectFactory.fileCollection()
                 .from(kotlinNativeProvider.flatMap { it.bundleDirectory }
-                          .map { KonanDistribution(it).platformLibsDir.resolve(konanTarget.name).listLibraryFiles() })
+                          .map { KonanDistribution(it).platformLibsDir.absoluteFile.resolve(konanTarget.name).listLibraryFiles() })
         }
 
     private fun File.listLibraryFiles(): List<File> = listFiles().orEmpty()
@@ -583,7 +583,7 @@ internal constructor(
             languageVersion = resolveLanguageVersion()
         ) {
             val arguments = createCompilerArguments()
-            val buildArguments = buildMetrics.measure(GradleBuildTime.OUT_OF_WORKER_TASK_ACTION) {
+            val buildArguments = buildMetrics.measure(OUT_OF_WORKER_TASK_ACTION) {
                 val output = outputFile.get()
                 output.parentFile.mkdirs()
 
@@ -839,7 +839,7 @@ internal class CacheBuilder(
         }.lastOrNull() ?: PartialLinkageMode.DEFAULT.name
 
     private fun getCacheDirectory(
-        resolvedConfiguration: LazyResolvedConfiguration,
+        resolvedConfiguration: LazyResolvedConfigurationWithArtifacts,
         dependency: ResolvedDependencyResult,
     ): File = getCacheDirectory(
         rootCacheDirectory = rootCacheDirectory,
@@ -852,7 +852,7 @@ internal class CacheBuilder(
     private fun needCache(libraryPath: String) =
         libraryPath.startsWith(settings.gradleUserHomeDir.absolutePath) && libraryPath.endsWith(".klib")
 
-    private fun LazyResolvedConfiguration.ensureDependencyPrecached(
+    private fun LazyResolvedConfigurationWithArtifacts.ensureDependencyPrecached(
         dependency: ResolvedDependencyResult,
         visitedDependencies: MutableSet<ResolvedDependencyResult>,
     ) {
@@ -1013,7 +1013,7 @@ internal class CacheBuilder(
             ensureCompilerProvidedLibPrecached(platformLibName, platformLibs, visitedLibs)
     }
 
-    fun buildCompilerArgs(resolvedConfiguration: LazyResolvedConfiguration): List<String> = mutableListOf<String>().apply {
+    fun buildCompilerArgs(resolvedConfiguration: LazyResolvedConfigurationWithArtifacts): List<String> = mutableListOf<String>().apply {
         if (konanCacheKind != NativeCacheKind.NONE && !optimized && konanPropertiesService.cacheWorksFor(konanTarget)) {
             rootCacheDirectory.mkdirs()
             ensureCompilerProvidedLibsPrecached()
@@ -1088,27 +1088,8 @@ abstract class CInteropProcess @Inject internal constructor(params: Params) :
     @get:Internal
     abstract val destinationDirectory: DirectoryProperty
 
-    @Deprecated(
-        message = "This property is scheduled for removal in Kotlin 2.3. Please, use `destinationDirectory` instead",
-        replaceWith = ReplaceWith("destinationDirectory"),
-        DeprecationLevel.ERROR,
-    )
-    @Internal // Taken into account in the outputFileProvider property
-    var destinationDir: Provider<File> = destinationDirectory.map { it.asFile }
-        set(value) {
-            destinationDirectory.fileProvider(value)
-        }
-
     @get:Input
     val konanTarget: KonanTarget = params.konanTarget
-
-    @Deprecated(
-        message = "This property is scheduled for removal in Kotlin 2.3. " +
-                "Please, don't use it in your builds.",
-        level = DeprecationLevel.ERROR,
-    )
-    @get:Internal
-    val konanVersion: String = project.nativeProperties.kotlinNativeVersion.get()
 
     @Suppress("unused")
     @get:Input
@@ -1246,7 +1227,7 @@ abstract class CInteropProcess @Inject internal constructor(params: Params) :
     val extraOpts: List<String> get() = settings.extraOpts
 
     @get:Internal
-    val metrics: Property<BuildMetricsReporter<GradleBuildTime, GradleBuildPerformanceMetric>> = project.objects
+    val metrics: Property<BuildMetricsReporter<BuildTimeMetric, BuildPerformanceMetric>> = project.objects
         .property(GradleBuildMetricsReporter())
 
     private val isInIdeaSync = project.isInIdeaSync

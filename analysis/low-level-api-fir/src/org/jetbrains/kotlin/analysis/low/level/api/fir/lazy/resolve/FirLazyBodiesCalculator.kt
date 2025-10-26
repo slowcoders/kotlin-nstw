@@ -10,15 +10,14 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.FirDesignation
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.withFirDesignationEntry
-import org.jetbrains.kotlin.analysis.low.level.api.fir.util.forEachDeclaration
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.builder.PsiRawFirBuilder
 import org.jetbrains.kotlin.fir.contracts.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.getExplicitBackingField
+import org.jetbrains.kotlin.fir.declarations.utils.hasGeneratedDelegateBody
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.FirContractCallBlock
 import org.jetbrains.kotlin.fir.expressions.impl.FirLazyDelegatedConstructorCall
@@ -179,10 +178,10 @@ private fun replaceLazyDelegate(target: FirVariable, copy: FirVariable) {
 private val FirCallableDeclaration.originalPsi: PsiElement? get() = unwrapFakeOverridesOrDelegated().psi
 
 private fun calculateLazyBodiesForFunction(designation: FirDesignation) {
-    val simpleFunction = designation.target as FirSimpleFunction
+    val simpleFunction = designation.target as FirNamedFunction
     require(needCalculatingLazyBodyForFunction(simpleFunction))
 
-    val newSimpleFunction = revive<FirSimpleFunction>(designation, simpleFunction.originalPsi)
+    val newSimpleFunction = revive<FirNamedFunction>(designation, simpleFunction.originalPsi)
 
     replaceLazyBody(simpleFunction, newSimpleFunction)
     replaceLazyValueParameters(simpleFunction, newSimpleFunction)
@@ -291,7 +290,7 @@ private fun rebindDelegate(newTarget: FirProperty, oldTarget: FirProperty) {
  * @see rebindDelegate
  */
 private fun rebindDelegatedAccessorBody(newTarget: FirPropertyAccessor, oldTarget: FirPropertyAccessor) {
-    if (newTarget.source?.kind != KtFakeSourceElementKind.DelegatedPropertyAccessor) return
+    if (!newTarget.hasGeneratedDelegateBody()) return
     val body = newTarget.body
     requireWithAttachment(
         body is FirSingleExpressionBlock,
@@ -683,16 +682,16 @@ private sealed class FirLazyBodiesCalculatorTransformer : FirTransformer<Persist
         return field
     }
 
-    override fun transformSimpleFunction(
-        simpleFunction: FirSimpleFunction,
+    override fun transformNamedFunction(
+        namedFunction: FirNamedFunction,
         data: PersistentList<FirDeclaration>,
-    ): FirSimpleFunction {
-        if (needCalculatingLazyBodyForFunction(simpleFunction)) {
-            val designation = FirDesignation(data, simpleFunction)
+    ): FirNamedFunction {
+        if (needCalculatingLazyBodyForFunction(namedFunction)) {
+            val designation = FirDesignation(data, namedFunction)
             calculateLazyBodiesForFunction(designation)
         }
 
-        return simpleFunction
+        return namedFunction
     }
 
     override fun transformConstructor(
@@ -840,16 +839,16 @@ private object FirTargetLazyContractsCalculatorTransformer : FirLazyContractsCal
 private sealed class FirLazyContractsCalculatorTransformer : FirTransformer<PersistentList<FirDeclaration>>() {
     override fun <E : FirElement> transformElement(element: E, data: PersistentList<FirDeclaration>): E = element
 
-    override fun transformSimpleFunction(
-        simpleFunction: FirSimpleFunction,
+    override fun transformNamedFunction(
+        namedFunction: FirNamedFunction,
         data: PersistentList<FirDeclaration>,
-    ): FirSimpleFunction {
-        if (needCalculatingLazyContractsForFunction(simpleFunction)) {
-            val designation = FirDesignation(data, simpleFunction)
+    ): FirNamedFunction {
+        if (needCalculatingLazyContractsForFunction(namedFunction)) {
+            val designation = FirDesignation(data, namedFunction)
             calculateLazyContractsForFunction(designation)
         }
 
-        return simpleFunction
+        return namedFunction
     }
 
     override fun transformConstructor(

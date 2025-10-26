@@ -14,6 +14,10 @@ object CommonExpressionCheckers : ExpressionCheckers() {
         FirOptInAnnotationCallChecker,
     )
 
+    override val annotationCheckers: Set<FirAnnotationChecker> = setOf(
+        FirDslMarkerUseSiteChecker,
+    )
+
     override val basicExpressionCheckers: Set<FirBasicExpressionChecker> = setOf(
         FirUnderscoreChecker,
         FirExpressionAnnotationChecker,
@@ -78,6 +82,7 @@ object CommonExpressionCheckers : ExpressionCheckers() {
         FirGenericQualifierOnConstructorCallChecker,
         FirVarargWithNonTrivialUpperBoundInferredToNothingChecker,
         PlatformClassMappedToKotlinConstructorCallChecker,
+        RedundantCallOfConversionMethodChecker,
     )
 
     override val propertyAccessExpressionCheckers: Set<FirPropertyAccessExpressionChecker> = setOf(
@@ -152,6 +157,7 @@ object CommonExpressionCheckers : ExpressionCheckers() {
 
     override val typeOperatorCallCheckers: Set<FirTypeOperatorCallChecker> = setOf(
         FirCastOperatorsChecker,
+        FirContextSensitiveResolutionAmbiguityCheckerForTypeOperators,
     )
 
     override val resolvedQualifierCheckers: Set<FirResolvedQualifierChecker> = setOf(
@@ -168,9 +174,10 @@ object CommonExpressionCheckers : ExpressionCheckers() {
 
     override val equalityOperatorCallCheckers: Set<FirEqualityOperatorCallChecker> = setOf(
         FirEqualityCompatibilityChecker,
+        FirContextSensitiveResolutionAmbiguityCheckerForEqualities,
     )
 
-    override val arrayLiteralCheckers: Set<FirArrayLiteralChecker> = setOf(
+    override val collectionLiteralCheckers: Set<FirCollectionLiteralChecker> = setOf(
         FirUnsupportedArrayLiteralChecker
     )
 
@@ -190,5 +197,9 @@ object CommonExpressionCheckers : ExpressionCheckers() {
 
     override val literalExpressionCheckers: Set<FirLiteralExpressionChecker> = setOf(
         FirMultiDollarInterpolationCheckerLiteral,
+    )
+
+    override val thisReceiverExpressionCheckers: Set<FirThisReceiverExpressionChecker> = setOf(
+        FirInlineExposedLessVisibleThisReceiverChecker
     )
 }

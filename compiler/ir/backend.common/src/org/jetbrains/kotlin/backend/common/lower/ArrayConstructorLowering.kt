@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.LoweringContext
 import org.jetbrains.kotlin.backend.common.ir.asInlinable
 import org.jetbrains.kotlin.backend.common.ir.inline
-import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.*
@@ -23,7 +22,6 @@ import org.jetbrains.kotlin.util.OperatorNameConventions
 /**
  * Transforms `Array(size) { index -> value }` into a loop.
  */
-@PhaseDescription(name = "ArrayConstructor")
 class ArrayConstructorLowering(private val context: LoweringContext) : BodyLoweringPass {
     override fun lower(irBody: IrBody, container: IrDeclaration) {
         irBody.transformChildrenVoid(ArrayConstructorTransformer(context, container as IrSymbolOwner))
@@ -41,7 +39,7 @@ private class ArrayConstructorTransformer(
             val clazz = irConstructor.constructedClass.symbol
             return when {
                 irConstructor.parameters.size != 2 -> null
-                clazz == context.irBuiltIns.arrayClass -> context.symbols.arrayOfNulls // Array<T> has no unary constructor: it can only exist for Array<T?>
+                clazz == context.irBuiltIns.arrayClass -> context.irBuiltIns.arrayOfNulls // Array<T> has no unary constructor: it can only exist for Array<T?>
                 context.irBuiltIns.primitiveArraysToPrimitiveTypes.contains(clazz) -> clazz.constructors.single {
                     it.owner.hasShape(regularParameters = 1, parameterTypes = listOf(context.irBuiltIns.intType))
                 }

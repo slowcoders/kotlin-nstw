@@ -21,12 +21,16 @@ abstract class DiagnosticReporter {
 
     open fun checkAndCommitReportsOn(element: AbstractKtSourceElement, context: DiagnosticContext?) {
     }
+
+    abstract val hasErrors: Boolean
 }
 
 open class KtDiagnosticReporterWithContext(
     val diagnosticReporter: DiagnosticReporter,
     val languageVersionSettings: LanguageVersionSettings
 ) : DiagnosticReporter() {
+    override val hasErrors: Boolean get() = diagnosticReporter.hasErrors
+
     override fun report(diagnostic: KtDiagnostic?, context: DiagnosticContext) = diagnosticReporter.report(diagnostic, context)
 
     override fun checkAndCommitReportsOn(element: AbstractKtSourceElement, context: DiagnosticContext?) {
@@ -47,10 +51,6 @@ open class KtDiagnosticReporterWithContext(
 
         override val languageVersionSettings: LanguageVersionSettings
             get() = this@KtDiagnosticReporterWithContext.languageVersionSettings
-
-        fun report(factory: KtSourcelessDiagnosticFactory, message: String) {
-            report(factory, message, this)
-        }
 
         fun report(factory: KtDiagnosticFactory0) {
             sourceElement?.let {

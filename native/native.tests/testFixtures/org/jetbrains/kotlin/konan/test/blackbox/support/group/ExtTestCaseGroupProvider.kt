@@ -29,8 +29,6 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.FILECHECK
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.FREE_CINTEROP_ARGS
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.FREE_COMPILER_ARGS
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.IGNORE_NATIVE
-import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.IGNORE_NATIVE_K1
-import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.IGNORE_NATIVE_K2
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.OUTPUT_DATA_FILE
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.WITH_PLATFORM_LIBS
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestRunCheck
@@ -48,13 +46,13 @@ import org.jetbrains.kotlin.test.*
 import org.jetbrains.kotlin.test.InTextDirectivesUtils.isCompatibleTarget
 import org.jetbrains.kotlin.test.InTextDirectivesUtils.isDirectiveDefined
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
-import org.jetbrains.kotlin.test.directives.KlibBasedCompilerTestDirectives
-import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives
 import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.RETURN_VALUE_CHECKER_MODE
 import org.jetbrains.kotlin.test.directives.model.RegisteredDirectives
+import org.jetbrains.kotlin.test.frontend.classic.handlers.ClassicUnstableAndK2LanguageFeaturesSkipConfigurator
 import org.jetbrains.kotlin.test.services.JUnit5Assertions.assertFalse
 import org.jetbrains.kotlin.test.services.JUnit5Assertions.assertTrue
 import org.jetbrains.kotlin.test.services.JUnit5Assertions.fail
+import org.jetbrains.kotlin.test.util.parseLanguageFeature
 import org.jetbrains.kotlin.utils.addIfNotNull
 import java.io.File
 
@@ -117,7 +115,6 @@ private class ExtTestDataFile(
     private val generatedSources = settings.get<GeneratedSources>()
     private val customKlibs = settings.get<CustomKlibs>()
     private val timeouts = settings.get<Timeouts>()
-    private val pipelineType = settings.get<PipelineType>()
     private val testMode = settings.get<TestMode>()
     private val cacheMode = settings.get<CacheMode>()
     private val optimizationMode = settings.get<OptimizationMode>()
@@ -143,16 +140,21 @@ private class ExtTestDataFile(
         val optInsForSourceCode = optIns subtract OPT_INS_PURELY_FOR_COMPILER
         val optInsForCompiler = optIns intersect OPT_INS_PURELY_FOR_COMPILER
         val extraLanguageSettings = buildSet {
-            if (klibIrInlinerMode == KlibIrInlinerMode.ON)
-                add("+${LanguageFeature.IrInlinerBeforeKlibSerialization.name}")
+            if (klibIrInlinerMode == KlibIrInlinerMode.ON) {
+                add("+${LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization.name}")
+                add("+${LanguageFeature.IrCrossModuleInlinerBeforeKlibSerialization.name}")
+            } else {
+                add("-${LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization.name}")
+                add("-${LanguageFeature.IrCrossModuleInlinerBeforeKlibSerialization.name}")
+            }
         }
 
         ExtTestDataFileSettings(
-            languageSettings = structure.directives.multiValues(LANGUAGE_DIRECTIVE) {
+            languageSettings = extraLanguageSettings + structure.directives.multiValues(LANGUAGE_DIRECTIVE) {
                 // It is already on by default, but passing it explicitly turns on a special "compatibility mode" in FE,
                 // which is not desirable.
                 it != "+NewInference"
-            } + extraLanguageSettings,
+            },
             optInsForSourceCode = optInsForSourceCode + structure.directives.multiValues(USE_EXPERIMENTAL_DIRECTIVE),
             optInsForCompiler = optInsForCompiler,
             generatedSourcesDir = computeGeneratedSourcesDir(
@@ -179,7 +181,6 @@ private class ExtTestDataFile(
                      && (cacheMode as? CacheMode.WithStaticCache)?.useStaticCacheForUserLibraries == true)
                 && !(optimizationMode != OptimizationMode.OPT && structure.directives[FILECHECK_STAGE.name] == "OptimizeTLSDataLoads")
                 && !(testDataFileSettings.languageSettings.contains("+${LanguageFeature.MultiPlatformProjects.name}")
-                     && pipelineType == PipelineType.K2
                      && testMode == TestMode.ONE_STAGE_MULTI_MODULE)
                 && structure.defFilesContents.all { it.defFileContentsIsSupportedOn(settings.get<KotlinNativeTargets>().testTarget) }
 
@@ -188,7 +189,7 @@ private class ExtTestDataFile(
         val defaultDirectives = settings.get<RegisteredDirectives>()
         args += defaultDirectives[FREE_COMPILER_ARGS]
         args += structure.directives[FREE_COMPILER_ARGS]
-        testDataFileSettings.languageSettings.sorted().mapTo(args) { "-XXLanguage:$it" }
+        testDataFileSettings.languageSettings.mapTo(args) { "-XXLanguage:$it" }
         testDataFileSettings.optInsForCompiler.sorted().mapTo(args) { "-opt-in=$it" }
         if (!structure.directives[CodegenTestDirectives.DISABLE_IR_VISIBILITY_CHECKS].containsNativeOrAny &&
             !defaultDirectives[CodegenTestDirectives.DISABLE_IR_VISIBILITY_CHECKS].containsNativeOrAny
@@ -197,7 +198,7 @@ private class ExtTestDataFile(
         }
         args += "-opt-in=kotlin.native.internal.InternalForKotlinNative" // for `Any.isPermanent()` and `Any.isStack()`
         args += "-opt-in=kotlin.native.internal.InternalForKotlinNativeTests" // for ReflectionPackageName
-        if (!structure.directives.contains(WITH_PLATFORM_LIBS))
+        if (!settings.withPlatformLibs && !structure.directives.contains(WITH_PLATFORM_LIBS))
             args += "-no-default-libs"
         val freeCInteropArgs = structure.directives.listValues(FREE_CINTEROP_ARGS.name)
             .orEmpty().flatMap { it.split(" ") }
@@ -232,16 +233,13 @@ private class ExtTestDataFile(
         if (directives.contains(ASSERTIONS_MODE)) return true
         if (isExpectedFailure) return true
         // To make the debug of possible failed testruns easier, it makes sense to run dodgy tests alone
-        if (directives.contains(IGNORE_NATIVE) ||
-            directives.contains(IGNORE_NATIVE_K1) ||
-            directives.contains(IGNORE_NATIVE_K2)
-        ) return true
+        if (directives.contains(IGNORE_NATIVE)) return true
 
         /**
          * K2 in MPP compilation expects that it receives module structure with exactly one platform leaf module
          * This invariant may be broken during grouping tests, so MPP tests should be run in standalone mode
          */
-        if (pipelineType != PipelineType.K1 && testDataFileSettings.languageSettings.contains("+MultiPlatformProjects")) return true
+        if (testDataFileSettings.languageSettings.contains("+MultiPlatformProjects")) return true
 
         var isStandaloneTest = false
 
@@ -921,7 +919,7 @@ private class ExtTestDataFileStructureFactory(parentDisposable: Disposable) : Te
     }
 }
 
-internal fun Settings.isIgnoredTarget(testDataFile: File): Boolean {
+fun Settings.isIgnoredTarget(testDataFile: File): Boolean {
     val disposable = Disposer.newDisposable("Disposable for ExtTestCaseGroupProvider.isIgnoredTarget")
     try {
         val extTestDataFileStructure = ExtTestDataFileStructureFactory(disposable).ExtTestDataFileStructure(testDataFile, emptyList())

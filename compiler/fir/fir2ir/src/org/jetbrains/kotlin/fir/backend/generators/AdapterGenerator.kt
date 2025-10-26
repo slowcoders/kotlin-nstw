@@ -100,7 +100,7 @@ class AdapterGenerator(
         val actualReturnType = function.returnTypeRef.coneType
         return expectedReturnType?.isUnit() == true &&
                 // In case of an external function whose return type is a type parameter, e.g., operator fun <T, R> invoke(T): R
-                !actualReturnType.isUnit && actualReturnType.toSymbol(c.session) !is FirTypeParameterSymbol
+                !actualReturnType.isUnit && actualReturnType.toSymbol() !is FirTypeParameterSymbol
     }
 
     /**
@@ -311,7 +311,7 @@ class AdapterGenerator(
         } else if (
             callableReferenceAccess.explicitReceiver is FirResolvedQualifier &&
             (firAdaptee !is FirConstructor ||
-                    firAdaptee.containingClassLookupTag()?.toRegularClassSymbol(session)?.isInner == true) &&
+                    firAdaptee.containingClassLookupTag()?.toRegularClassSymbol()?.isInner == true) &&
             ((firAdaptee as? FirMemberDeclaration)?.isStatic != true)
         ) {
             // Unbound callable reference 'A::foo'
@@ -489,7 +489,7 @@ class AdapterGenerator(
                         // So we do it "carefully". If we have a class `A<T>` and a method that takes e.g. `A<in String>`, we check
                         // if `T` has a non-trivial upper bound. If it has one, we don't attempt to perform a SAM conversion at all.
                         // Otherwise we erase the type to `Any?`, so `A<in String>` becomes `A<Any?>`, which is the computed SAM type.
-                        val upperBound = parameter.getUpperBounds().singleOrNull()?.upperBoundIfFlexible() as ConeKotlinType? ?: return null
+                        val upperBound = parameter.getUpperBounds().singleOrNull()?.upperBoundIfFlexible()?.asCone() ?: return null
                         if (!upperBound.isNullableAny) return null
 
                         upperBound

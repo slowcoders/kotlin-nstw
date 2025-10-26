@@ -11,7 +11,6 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilat
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationArtifact.KLIB
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationResult
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationResult.Companion.assertSuccess
-import org.jetbrains.kotlin.konan.test.blackbox.support.group.ClassicPipeline
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertContains
@@ -20,7 +19,6 @@ import kotlin.test.assertTrue
 
 @TestDataPath("\$PROJECT_ROOT")
 @EnforcedProperty(ClassLevelProperty.COMPILER_OUTPUT_INTERCEPTOR, "NONE")
-@ClassicPipeline()
 class LinkerOutputTestKT55578 : AbstractNativeLinkerOutputTest() {
     private val defaultCompilerArguments = listOf("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
 
@@ -179,7 +177,7 @@ class LinkerOutputTestKT55578 : AbstractNativeLinkerOutputTest() {
 
     private fun compileKlib(defFile: File, sourceFile: File? = null, extraArgs: List<String> = emptyList()): KLIB {
         val sourceArguments = sourceFile?.let { listOf("-Xcompile-source", sourceFile.absolutePath) } ?: emptyList()
-        return cinteropToLibrary(targets, defFile, buildDir, TestCInteropArgs(extraArgs + sourceArguments))
+        return cinteropToLibrary(defFile, buildDir, TestCInteropArgs(extraArgs + sourceArguments))
             .assertSuccess().resultingArtifact
     }
 }

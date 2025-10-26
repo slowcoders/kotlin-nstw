@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.declarations.utils.isSynthetic
 import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.types.*
+import org.jetbrains.kotlin.name.Name
 
 fun FirCallableSymbol<*>.dispatchReceiverClassTypeOrNull(): ConeClassLikeType? =
     fir.dispatchReceiverClassTypeOrNull()
@@ -41,7 +42,7 @@ fun FirDanglingModifierList.containingClass(): ConeClassLikeLookupTag? =
     containingClassAttr
 
 fun FirClassLikeSymbol<*>.getContainingClassLookupTag(): ConeClassLikeLookupTag? {
-    return if (classId.isLocal) {
+    return if (isLocal) {
         fir.containingClassForLocal()
     } else {
         val ownerId = classId.outerClassId
@@ -221,6 +222,15 @@ var FirRegularClass.isJavaRecord: Boolean? by FirDeclarationDataRegistry.data(Is
 private object IsJavaRecordComponentKey : FirDeclarationDataKey()
 var FirFunction.isJavaRecordComponent: Boolean? by FirDeclarationDataRegistry.data(IsJavaRecordComponentKey)
 
+private object IsJavaNonAbstractSealed : FirDeclarationDataKey()
+
+/**
+ * Unlike Kotlin, Java sealed classes aren't automatically abstract.
+ *
+ * @return `true` if [this] is a non-abstract sealed Java class.
+ */
+var FirRegularClass.isJavaNonAbstractSealed: Boolean? by FirDeclarationDataRegistry.data(IsJavaNonAbstractSealed)
+
 private object IsCatchParameterProperty : FirDeclarationDataKey()
 
 var FirProperty.isCatchParameter: Boolean? by FirDeclarationDataRegistry.data(IsCatchParameterProperty)
@@ -246,3 +256,9 @@ var <D : FirCallableDeclaration>
 
 val <D : FirCallableDeclaration> FirCallableSymbol<D>.delegatedWrapperData: DelegatedWrapperData<D>?
     get() = fir.delegatedWrapperData
+
+private object UnnamedContextParameterNameKey : FirDeclarationDataKey()
+
+var FirValueParameter.generatedContextParameterName: Name? by FirDeclarationDataRegistry.data(UnnamedContextParameterNameKey)
+
+val FirValueParameterSymbol.generatedContextParameterName: Name? get() = fir.generatedContextParameterName

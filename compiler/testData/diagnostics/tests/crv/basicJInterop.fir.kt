@@ -3,10 +3,10 @@
 
 // FILE: JavaMain.java
 
-import kotlin.MustUseReturnValue;
+import kotlin.MustUseReturnValues;
 import kotlin.IgnorableReturnValue;
 
-@MustUseReturnValue
+@MustUseReturnValues
 public class JavaMain {
     public JavaMain() { }
 
@@ -32,17 +32,17 @@ public class JavaMain {
 }
 
 // FILE: JavaImplicitConstructor.java
-import kotlin.MustUseReturnValue;
+import kotlin.MustUseReturnValues;
 
-@MustUseReturnValue
+@MustUseReturnValues
 public class JavaImplicitConstructor {}
 
 // FILE: KtFile.kt
 fun simple() {
-    <!RETURN_VALUE_NOT_USED!>JavaImplicitConstructor()<!>
-    <!RETURN_VALUE_NOT_USED!>JavaMain()<!>
-    <!RETURN_VALUE_NOT_USED!>JavaMain().prop<!>
-    <!RETURN_VALUE_NOT_USED!>JavaMain().checkedMethod()<!>
+    <!RETURN_VALUE_NOT_USED!>JavaImplicitConstructor<!>()
+    <!RETURN_VALUE_NOT_USED!>JavaMain<!>()
+    JavaMain().<!RETURN_VALUE_NOT_USED!>prop<!>
+    JavaMain().<!RETURN_VALUE_NOT_USED!>checkedMethod<!>()
     val annotatedClassMember = JavaMain().checkedMethod()
     JavaMain().ignoredMethod()
     val markedToIgnore = JavaMain().ignoredMethod()

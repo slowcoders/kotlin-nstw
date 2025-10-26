@@ -7,11 +7,28 @@ pluginManagement {
             url "https://packages.jetbrains.team/maven/p/ij/intellij-dependencies"
             content {
                 includeGroupByRegex("org\\.jetbrains\\.intellij\\.deps(\\..+)?")
+                includeGroupByRegex("com.intellij.platform.*")
+                includeGroupByRegex("org.jetbrains.jps.*")
             }
         }
-        maven { url "https://redirector.kotlinlang.org/maven/kotlin-dependencies" }
-        google { url "https://cache-redirector.jetbrains.com/dl.google.com/dl/android/maven2" }
-        mavenCentral { url "https://cache-redirector.jetbrains.com/maven-central" }
+        maven {
+            url "https://redirector.kotlinlang.org/maven/kotlin-dependencies"
+            content {
+                includeGroup("org.jetbrains.kotlin")
+                includeGroup("org.spdx")
+                includeGroup("org.jetbrains.kotlinx")
+                includeGroup("org.jetbrains.kotlinx.benchmark")
+            }
+        }
+        google {
+            url "https://cache-redirector.jetbrains.com/dl.google.com/dl/android/maven2"
+            content {
+                includeGroup("com.android.tools")
+            }
+        }
+        mavenCentral {
+            url "https://cache-redirector.jetbrains.com/maven-central"
+        }
         gradlePluginPortal()
     }
 
@@ -139,7 +156,6 @@ include ":benchmarks",
         ":compiler:backend.jvm.lower",
         ":compiler:backend.jvm.codegen",
         ":compiler:backend.jvm.entrypoint",
-        ":compiler:backend-common",
         ":compiler:backend",
         ":compiler:plugin-api",
         ":compiler:light-classes",
@@ -149,16 +165,15 @@ include ":benchmarks",
         ":compiler:cli-base",
         ":compiler:cli",
         ":compiler:cli-js",
+        ":compiler:cli:cli-native-klib",
         ":compiler:incremental-compilation-impl",
         ":compiler:tests-compiler-utils",
         ":compiler:tests-common",
         ":compiler:tests-integration",
         ":compiler:tests-mutes",
-        ":compiler:tests-mutes:tc-integration",
         ":compiler:tests-mutes:mutes-junit4",
         ":compiler:tests-mutes:mutes-junit5",
         ":compiler:tests-against-klib",
-        ":compiler:tests-for-compiler-generator",
         ":js:js.ast",
         ":js:js.sourcemap",
         ":js:js.serializer",
@@ -169,6 +184,8 @@ include ":benchmarks",
         ":js:js.translator",
         ":js:js.tests",
         ":js:js.tests:klib-compatibility",
+        ":js:typescript-export-model",
+        ":js:typescript-printer",
         ":native:kotlin-native-utils",
         ":native:frontend.native",
         ":native:kotlin-klib-commonizer",
@@ -212,10 +229,16 @@ include ":benchmarks",
         ":dependencies:bootstrap:kotlin-stdlib-bootstrap",
         ":dependencies:bootstrap:kotlin-build-tools-api-bootstrap",
         ":dependencies:bootstrap:kotlin-build-tools-impl-bootstrap",
+        ":dependencies:bootstrap:kotlin-build-tools-compat-bootstrap",
+        ":dependencies:bootstrap:kotlin-build-tools-cri-impl-bootstrap",
         ":dependencies:bootstrap:kotlin-script-runtime-bootstrap",
+        ":dependencies:bootstrap:kotlin-scripting-common-bootstrap",
+        ":dependencies:bootstrap:kotlin-scripting-jvm-bootstrap",
         ":dependencies:bootstrap:kotlin-daemon-client-bootstrap",
         ":dependencies:bootstrap:kotlin-reflect-bootstrap",
-        ":dependencies:bootstrap:kotlin-compiler-embeddable-bootstrap"
+        ":dependencies:bootstrap:kotlin-tooling-core-bootstrap",
+        ":dependencies:bootstrap:kotlin-compiler-embeddable-bootstrap",
+        ":dependencies:bootstrap:kotlin-compiler-runner-bootstrap"
 
 include ":kotlin-allopen-compiler-plugin",
         ":kotlin-allopen-compiler-plugin.embeddable",
@@ -271,7 +294,6 @@ include ":kotlin-script-runtime",
         ":kotlin-compiler-client-embeddable",
         ":kotlin-klib-abi-reader",
         ":kotlin-reflect",
-        ":kotlin-ant",
         ":compiler:tests-java8",
         ":compiler:tests-different-jdk",
         ":compiler:tests-spec",
@@ -519,14 +541,16 @@ include ":compiler:build-tools:kotlin-build-tools-api",
         ":compiler:build-tools:kotlin-build-tools-api-tests",
         ":compiler:build-tools:kotlin-build-tools-jdk-utils",
         ":compiler:build-tools:kotlin-build-tools-options-generator",
-        ":compiler:build-tools:util-kotlinpoet"
+        ":compiler:build-tools:util-kotlinpoet",
+        ":compiler:build-tools:kotlin-build-tools-cri-impl"
 
 if (!buildProperties.inJpsBuildIdeaSync) {
     include ":plugins:compose-compiler-plugin",
             ":plugins:compose-compiler-plugin:compiler",
             ":plugins:compose-compiler-plugin:compiler-hosted",
             ":plugins:compose-compiler-plugin:compiler-hosted:integration-tests",
-            ":plugins:compose-compiler-plugin:compiler-hosted:integration-tests:protobuf-test-classes"
+            ":plugins:compose-compiler-plugin:compiler-hosted:integration-tests:protobuf-test-classes",
+            ":plugins:compose-compiler-plugin:group-mapping"
 
     if (buildProperties.inIdeaSync) {
         include ":plugins:compose-compiler-plugin:compiler-hosted:runtime-tests"
@@ -544,6 +568,7 @@ include ":native:swift:sir",
         ":native:swift:swift-export-standalone-integration-tests",
         ":native:swift:swift-export-standalone-integration-tests:simple",
         ":native:swift:swift-export-standalone-integration-tests:external",
+        ":native:swift:swift-export-standalone-integration-tests:coroutines",
         ":generators:sir-tests-generator"
 
 if (!buildProperties.inJpsBuildIdeaSync) {
@@ -757,6 +782,7 @@ if (!buildProperties.inJpsBuildIdeaSync) {
             ':native:native.tests:codegen-box',
             ":native:native.tests:driver",
             ":native:native.tests:gc-fuzzing-tests",
+            ":native:native.tests:gc-fuzzing-tests:engine",
             ":native:native.tests:stress",
             ":native:native.tests:klib-ir-inliner",
             ":native:native.tests:klib-compatibility",
@@ -805,7 +831,6 @@ project(':kotlin-daemon-client').projectDir = "$rootDir/compiler/daemon/daemon-c
 project(':kotlin-daemon-tests').projectDir = "$rootDir/compiler/daemon/daemon-tests" as File
 project(':kotlin-compiler-runner-unshaded').projectDir = "$rootDir/compiler/compiler-runner-unshaded" as File
 project(':kotlin-compiler-runner').projectDir = "$rootDir/compiler/compiler-runner" as File
-project(':kotlin-ant').projectDir = "$rootDir/ant" as File
 project(':compiler:ir.tree').projectDir = "$rootDir/compiler/ir/ir.tree" as File
 project(':compiler:ir.tree:tree-generator').projectDir = "$rootDir/compiler/ir/ir.tree/tree-generator" as File
 project(':compiler:ir.psi2ir').projectDir = "$rootDir/compiler/ir/ir.psi2ir" as File
@@ -995,6 +1020,7 @@ if (!buildProperties.inJpsBuildIdeaSync) {
     project(':plugins:compose-compiler-plugin:compiler-hosted:integration-tests').projectDir = file("$rootDir/plugins/compose/compiler-hosted/integration-tests")
     project(':plugins:compose-compiler-plugin:compiler-hosted:integration-tests:protobuf-test-classes').projectDir =
             file("$rootDir/plugins/compose/compiler-hosted/integration-tests/protobuf-test-classes")
+    project(":plugins:compose-compiler-plugin:group-mapping").projectDir = file("$rootDir/plugins/compose/group-mapping")
 
     if (buildProperties.inIdeaSync) {
         project(':plugins:compose-compiler-plugin:compiler-hosted:runtime-tests').projectDir = file("$rootDir/plugins/compose/compiler-hosted/runtime-tests")

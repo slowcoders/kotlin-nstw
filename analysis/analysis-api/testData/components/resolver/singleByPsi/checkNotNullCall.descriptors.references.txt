@@ -1,6 +1,12 @@
 KtNameReferenceExpression(24,25): 'a'
   KtSimpleNameReference:
-    a: kotlin.Any?
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      a: kotlin.Any?
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

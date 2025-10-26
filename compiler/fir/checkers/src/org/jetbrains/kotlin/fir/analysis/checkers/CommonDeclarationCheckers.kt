@@ -48,6 +48,7 @@ object CommonDeclarationCheckers : DeclarationCheckers() {
         FirExtensionShadowedByMemberChecker.Regular,
         FirExtensionShadowedByMemberChecker.ForExpectDeclaration,
         FirReturnValueOverrideChecker,
+        FirImplicitReturnTypeAnnotationMissingDependencyChecker,
     )
 
     override val functionCheckers: Set<FirFunctionChecker> = setOf(
@@ -121,6 +122,7 @@ object CommonDeclarationCheckers : DeclarationCheckers() {
         FirMixedFunctionalTypesInSupertypesChecker.Regular,
         FirMixedFunctionalTypesInSupertypesChecker.ForExpectClass,
         FirDelegateFieldTypeMismatchChecker,
+        FirAnnotationClassInheritanceChecker,
         FirMultipleDefaultsInheritedFromSupertypesChecker.Regular,
         FirMultipleDefaultsInheritedFromSupertypesChecker.ForExpectClass,
         FirPropertyInitializationChecker,

@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.ir.backend.js.transformers.irToJs
 
 import org.jetbrains.kotlin.ir.backend.js.JsIrBackendContext
+import org.jetbrains.kotlin.ir.backend.js.localClassName
 import org.jetbrains.kotlin.ir.backend.js.tsexport.isExported
 import org.jetbrains.kotlin.ir.backend.js.utils.*
 import org.jetbrains.kotlin.ir.declarations.*
@@ -14,6 +15,7 @@ import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.js.backend.ast.*
 import org.jetbrains.kotlin.js.backend.ast.metadata.constant
+import org.jetbrains.kotlin.js.common.makeValidES5Identifier
 import org.jetbrains.kotlin.utils.DFS
 import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 
@@ -27,10 +29,10 @@ class JsNameLinkingNamer(
 
     private fun IrDeclarationWithName.getName(): JsName {
         return nameMap.getOrPut(this) {
-            val name = (this as? IrClass)?.let { context.localClassNames[this] } ?: let {
+            val name = (this as? IrClass)?.localClassName ?: let {
                 this.nameIfPropertyAccessor() ?: getJsNameOrKotlinName().asString()
             }
-            JsName(sanitizeName(name), true)
+            JsName(makeValidES5Identifier(name), true)
         }
     }
 
@@ -42,7 +44,8 @@ class JsNameLinkingNamer(
             val jsModule: String? = declaration.getJsModule()
             val maybeParentFile: IrFile? = declaration.parent as? IrFile
             val fileJsModule: String? = maybeParentFile?.getJsModule()
-            val jsQualifier: List<JsName>? = maybeParentFile?.getJsQualifier()?.split('.')?.map { JsName(it, false) }
+            val jsQualifier: List<JsName>? = (declaration.getJsQualifier() ?: maybeParentFile?.getJsQualifier())
+                ?.split('.')?.map { JsName(it, false) }
 
             return when {
                 jsModule != null -> declaration.generateImportForDeclarationWithJsModule(jsModule)
@@ -52,7 +55,7 @@ class JsNameLinkingNamer(
         }
 
         return declaration.getName().also {
-            if (declaration == context.intrinsics.void.owner.backingField) {
+            if (declaration == context.symbols.void.owner.backingField) {
                 it.constant = true
             }
         }
@@ -88,7 +91,7 @@ class JsNameLinkingNamer(
             val parent = fqNameWhenAvailable!!.parent()
             parent.child(getJsNameOrKotlinName()).asString()
         }
-        val name = JsName(sanitizeName(nameString), true)
+        val name = JsName(makeValidES5Identifier(nameString), true)
         val nameRef = name.makeRef()
 
         if (isEsModules) {
@@ -128,7 +131,7 @@ class JsNameLinkingNamer(
             }
 
         } else {
-            val moduleName = JsName(sanitizeName("\$module\$$fileJsModule"), true)
+            val moduleName = JsName(makeValidES5Identifier("\$module\$$fileJsModule"), true)
             importedModules += JsImportedModule(fileJsModule, moduleName, null)
             val qualifiedReference =
                 if (jsQualifier == null) moduleName.makeRef() else (listOf(moduleName) + jsQualifier).makeRef()
@@ -223,7 +226,7 @@ class JsNameLinkingNamer(
 }
 
 private fun IrField.safeName(): String {
-    return sanitizeName(name.asString()).let {
+    return makeValidES5Identifier(name.asString()).let {
         if (it.lastOrNull()!!.isDigit()) it + "_" else it // Avoid name clashes
     }
 }

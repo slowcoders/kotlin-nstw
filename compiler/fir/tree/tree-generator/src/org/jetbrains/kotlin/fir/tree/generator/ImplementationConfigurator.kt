@@ -44,15 +44,31 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
 
         impl(regularClass) {
             defaultFalse("hasLazyNestedClassifiers", withGetter = true)
+            default("isLocal") {
+                value = "status.visibility == Visibilities.Local"
+                withGetter = true
+            }
+            additionalImports(visibilitiesImport)
         }
 
         impl(anonymousInitializer)
 
-        impl(anonymousObject)
+        impl(anonymousObject) {
+            default("isLocal") {
+                value = "true"
+                withGetter = true
+            }
+        }
         impl(danglingModifierList)
         noImpl(anonymousObjectExpression)
 
-        impl(typeAlias)
+        impl(typeAlias) {
+            default("isLocal") {
+                value = "status.visibility == Visibilities.Local"
+                withGetter = true
+            }
+            additionalImports(visibilitiesImport)
+        }
 
         impl(import)
 
@@ -100,7 +116,7 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
             }
         }
 
-        impl(arrayLiteral)
+        impl(collectionLiteral)
 
         impl(callableReferenceAccess)
 
@@ -654,7 +670,7 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
             default("valueParameterKind", "FirValueParameterKind.Regular", withGetter = true)
         }
 
-        impl(simpleFunction)
+        impl(namedFunction)
 
         impl(safeCallExpression) {
             additionalImports(checkedSafeCallSubject)
@@ -722,7 +738,7 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
             "FirVarargArgumentsExpressionImpl",
             "FirSafeCallExpressionImpl",
             "FirCheckedSafeCallSubjectImpl",
-            "FirArrayLiteralImpl",
+            "FirCollectionLiteralImpl",
             "FirIntegerLiteralOperatorCallImpl",
             "FirReceiverParameterImpl",
             "FirClassReferenceExpressionImpl",

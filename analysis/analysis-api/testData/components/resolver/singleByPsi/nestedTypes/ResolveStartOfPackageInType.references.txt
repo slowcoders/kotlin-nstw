@@ -1,3 +1,6 @@
 KtNameReferenceExpression(89,92): 'foo'
   KtSimpleNameReference:
-    package foo
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      package foo

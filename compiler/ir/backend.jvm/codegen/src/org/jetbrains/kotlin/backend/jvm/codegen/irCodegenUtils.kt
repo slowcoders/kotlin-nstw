@@ -7,9 +7,9 @@ package org.jetbrains.kotlin.backend.jvm.codegen
 
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
 import org.jetbrains.kotlin.backend.jvm.JvmLoweredDeclarationOrigin
+import org.jetbrains.kotlin.backend.jvm.JvmSymbols
 import org.jetbrains.kotlin.backend.jvm.MultifileFacadeFileEntry
 import org.jetbrains.kotlin.backend.jvm.ir.*
-import org.jetbrains.kotlin.backend.jvm.localClassType
 import org.jetbrains.kotlin.backend.jvm.mapping.IrTypeMapper
 import org.jetbrains.kotlin.backend.jvm.mapping.mapClass
 import org.jetbrains.kotlin.backend.jvm.mapping.mapSupertype
@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.codegen.SourceInfo
 import org.jetbrains.kotlin.codegen.inline.ReifiedTypeParametersUsages
 import org.jetbrains.kotlin.codegen.inline.SourceMapper
 import org.jetbrains.kotlin.codegen.signature.BothSignatureWriter
+import org.jetbrains.kotlin.codegen.state.JvmBackendConfig
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
@@ -33,6 +34,7 @@ import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.load.java.JavaDescriptorVisibilities
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.resolve.jvm.AsmTypes
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmClassSignature
 import org.jetbrains.kotlin.utils.addIfNotNull
@@ -121,7 +123,7 @@ fun IrClass.calculateInnerClassAccessFlags(context: JvmBackendContext): Int {
 private fun IrClass.innerAccessFlagsForModalityAndKind(): Int {
     when (kind) {
         ClassKind.INTERFACE -> return Opcodes.ACC_ABSTRACT or Opcodes.ACC_INTERFACE
-        ClassKind.ENUM_CLASS -> return Opcodes.ACC_FINAL or Opcodes.ACC_ENUM
+        ClassKind.ENUM_CLASS -> return (if (modality == Modality.ABSTRACT) Opcodes.ACC_ABSTRACT else Opcodes.ACC_FINAL) or Opcodes.ACC_ENUM
         ClassKind.ANNOTATION_CLASS -> return Opcodes.ACC_ABSTRACT or Opcodes.ACC_ANNOTATION or Opcodes.ACC_INTERFACE
         else -> {
             if (modality === Modality.FINAL) {
@@ -291,6 +293,9 @@ fun IrClass.getVisibilityAccessFlagForClass(): Int {
 val IrDeclaration.isAnnotatedWithDeprecated: Boolean
     get() = annotations.hasAnnotation(FqNames.deprecated)
 
+val IrDeclaration.isAnnotatedWithJavaLangDeprecated: Boolean
+    get() = annotations.hasAnnotation(JvmStandardClassIds.Annotations.Java.Deprecated)
+
 internal fun IrDeclaration.isDeprecatedCallable(context: JvmBackendContext): Boolean =
     isAnnotatedWithDeprecated ||
             annotations.any { it.symbol == context.symbols.javaLangDeprecatedConstructorWithDeprecatedFlag }
@@ -356,4 +361,10 @@ internal fun generateExternalEntriesForEnumTypeIfNeeded(type: IrType, containing
         Opcodes.GETSTATIC, containingCodegen.typeMapper.mapClass(field.parentAsClass).internalName,
         field.name.asString(), AsmTypes.ENUM_ENTRIES.descriptor
     )
+}
+
+internal fun IrFunction.isGeneratedCodeMarker(config: JvmBackendConfig, symbols: JvmSymbols): Boolean {
+    if (!config.enhancedCoroutinesDebugging) return false
+    if (!isInline) return false
+    return parentClassOrNull?.symbol == symbols.generatedCodeMarkersInCoroutinesClass
 }

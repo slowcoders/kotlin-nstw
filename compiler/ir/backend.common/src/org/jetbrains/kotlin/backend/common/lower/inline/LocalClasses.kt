@@ -10,9 +10,7 @@ import org.jetbrains.kotlin.backend.common.LoweringContext
 import org.jetbrains.kotlin.backend.common.lower.LocalDeclarationPopupLowering
 import org.jetbrains.kotlin.backend.common.lower.LocalDeclarationsLowering
 import org.jetbrains.kotlin.backend.common.lower.VisibilityPolicy
-import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.backend.common.runOnFilePostfix
-import org.jetbrains.kotlin.descriptors.DescriptorVisibility
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.*
@@ -22,8 +20,11 @@ import org.jetbrains.kotlin.ir.expressions.impl.IrCompositeImpl
 import org.jetbrains.kotlin.ir.transformStatement
 import org.jetbrains.kotlin.ir.util.isInlineParameter
 import org.jetbrains.kotlin.ir.util.isOriginallyLocalDeclaration
+import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.util.setDeclarationsParent
-import org.jetbrains.kotlin.ir.visitors.*
+import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
+import org.jetbrains.kotlin.ir.visitors.IrTransformer
+import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 
 /**
  * Extracts local classes from inline lambdas.
@@ -37,7 +38,6 @@ import org.jetbrains.kotlin.ir.visitors.*
  *    are copied. But the compiler could optimize the usage of some local classes and not copy them.
  *    So in this case all local classes MIGHT BE COPIED.
  */
-@PhaseDescription("LocalClassesInInlineLambdasLowering")
 class LocalClassesInInlineLambdasLowering(val context: LoweringContext) : BodyLoweringPass {
     override fun lower(irFile: IrFile) {
         runOnFilePostfix(irFile)
@@ -53,7 +53,7 @@ class LocalClassesInInlineLambdasLowering(val context: LoweringContext) : BodyLo
                 if (!rootCallee.isInline)
                     return super.visitCall(expression, data)
 
-                val inlineLambdas = mutableListOf<IrFunction>()
+                val inlinableLambdas = mutableListOf<IrFunction>()
                 for (index in expression.arguments.indices) {
                     val argument = expression.arguments[index]
                     val inlineLambda = when (argument) {
@@ -64,42 +64,11 @@ class LocalClassesInInlineLambdasLowering(val context: LoweringContext) : BodyLo
                     if (inlineLambda == null)
                         expression.arguments[index] = argument?.transform(this, data)
                     else
-                        inlineLambdas.add(inlineLambda)
+                        inlinableLambdas.add(inlineLambda)
                 }
 
-                if (inlineLambdas.isEmpty())
+                if (inlinableLambdas.isEmpty())
                     return expression
-
-                // TODO: Remove fragment below after fixing KT-77103
-                // This fragment will make sure that local delegated properties accessors are lifted iff there are some other local declarations that could potentially "expose" them.
-                // That was a behavior of this lowering before the refactor. Local delegated properties accessors were not lifted if there weren't any other "liftable" declarations in inline lambda.
-                // It is just a temporary measure to avoid muting many tests that started reproducing problem explained in KT-77103 After handling this problem it will be
-                // possible to completely remove it, since more "relaxed" way of lifting local delegated properties accessors will not have any other negative effects other the one mentioned here.
-                val localDeclarations = mutableSetOf<IrDeclaration>()
-
-                for (lambda in inlineLambdas) {
-                    lambda.acceptChildrenVoid(object : IrVisitorVoid() {
-                        override fun visitElement(element: IrElement) {
-                            element.acceptChildrenVoid(this)
-                        }
-
-                        override fun visitClass(declaration: IrClass) {
-                            localDeclarations.add(declaration)
-                        }
-
-                        override fun visitFunction(declaration: IrFunction) {
-                            localDeclarations.add(declaration)
-                        }
-
-                        override fun visitLocalDelegatedProperty(declaration: IrLocalDelegatedProperty) {
-                            return
-                        }
-                    })
-                }
-
-                if (localDeclarations.isEmpty())
-                    return expression
-                // TODO: Remove fragment above after fixing KT-77103
 
                 val irBlock = IrBlockImpl(expression.startOffset, expression.endOffset, expression.type).apply {
                     statements += expression
@@ -108,13 +77,13 @@ class LocalClassesInInlineLambdasLowering(val context: LoweringContext) : BodyLo
                     context,
                     visibilityPolicy = object : VisibilityPolicy {
                         /**
-                         * Local classes extracted from inline lambdas are not yet lifted, so their visibility should remain local.
-                         * They will be visited for the second time _after_ function inlining, and only then will they be lifted to
-                         * the nearest declaration container by [LocalDeclarationPopupLowering],
+                         * Local classes and local functions extracted from inline lambdas are not yet lifted,
+                         * so their visibility should remain unchanged. They will be visited for the second time on the second compilation
+                         * stage, and only then will they be lifted to the nearest declaration container by [LocalDeclarationPopupLowering],
                          * so that's when we will change their visibility to private.
                          */
-                        override fun forClass(declaration: IrClass, inInlineFunctionScope: Boolean): DescriptorVisibility =
-                            declaration.visibility
+                        override fun forClass(declaration: IrClass, inInlineFunctionScope: Boolean) = declaration.visibility
+                        override fun forSimpleFunction(declaration: IrSimpleFunction) = declaration.visibility
                     },
                     // Lambdas cannot introduce new type parameters to the scope, which means that all the captured type parameters
                     // are also present in the inline lambda's parent declaration,
@@ -125,12 +94,64 @@ class LocalClassesInInlineLambdasLowering(val context: LoweringContext) : BodyLo
                 val localDeclarationsToPopUp = mutableListOf<IrDeclaration>()
 
                 val outerTransformer = this
-                for (lambda in inlineLambdas) {
+                for (lambda in inlinableLambdas) {
                     lambda.transformChildrenVoid(object : IrElementTransformerVoid() {
                         override fun visitLocalDelegatedProperty(declaration: IrLocalDelegatedProperty): IrStatement {
-                            declaration.getter.transformStatement(this)
-                            declaration.setter?.transformStatement(this)
-                            return declaration.delegate.transformStatement(this)
+                            /*
+                             * Keep the `delegate` variable separately from the rest of the local delegated property.
+                             * Extract the local delegated property but keep the variable in place.
+                             *
+                             * Illustrative example:
+                             *
+                             * // before the transformation:
+                             * IrCall {
+                             *     arguments[N] = <inlinable-lambda> {
+                             *         ...
+                             *         IrLocalDelegatedProperty {
+                             *             delegate = IrVariableImpl {
+                             *                 symbol = X,
+                             *                 initializer = ...,
+                             *             }
+                             *             getter = IrFunctionImpl {
+                             *                 body = // reads the state of the variable with the symbol 'X'
+                             *             }
+                             *             setter = IrFunctionImpl {
+                             *                 body = // modifies the state of the variable with the symbol 'X'
+                             *             }
+                             *         }
+                             *         ...
+                             *     }
+                             * }
+                             *
+                             * // after the transformation:
+                             * IrLocalDelegatedProperty {
+                             *     delegate = null
+                             *     getter = IrFunctionImpl {
+                             *         body = // reads the state of the variable with the symbol 'X'
+                             *     }
+                             *     setter = IrFunctionImpl {
+                             *         body = // modifies the state of the variable with the symbol 'X'
+                             *     }
+                             * }
+                             * ...
+                             * IrCall {
+                             *     arguments[N] = <inlinable-lambda> {
+                             *         ...
+                             *         IrVariableImpl {
+                             *             symbol = X,
+                             *             initializer = ...,
+                             *         }
+                             *         ...
+                             *     }
+                             * }
+                             */
+                            val delegate = declaration.delegate
+                                ?: error("Local delegated property ${declaration.render()} has not delegate")
+
+                            declaration.delegate = null
+                            localDeclarationsToPopUp += declaration
+
+                            return delegate
                         }
 
                         override fun visitRichFunctionReference(expression: IrRichFunctionReference): IrExpression {
@@ -165,6 +186,9 @@ class LocalClassesInInlineLambdasLowering(val context: LoweringContext) : BodyLo
 
                     })
                 }
+
+                if (localDeclarationsToPopUp.isEmpty())
+                    return expression
 
                 irBlock.statements.addAll(0, localDeclarationsToPopUp)
                 localDeclarationsToPopUp.forEach { it.setDeclarationsParent(data) }

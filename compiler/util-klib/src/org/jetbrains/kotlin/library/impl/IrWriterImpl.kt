@@ -13,18 +13,23 @@ import org.jetbrains.kotlin.konan.file.File as KFile
 
 class IrWriterImpl(val irLayout: IrKotlinLibraryLayout) : IrWriter {
     override fun addIr(ir: SerializedIrModule) {
-        irLayout.irDir.mkdirs()
+        serializeIrDirectory(irLayout.mainIr, ir.files.sortedBy { it.path })
+        if (ir.fileWithPreparedInlinableFunctions != null) {
+            serializeIrDirectory(irLayout.inlineableFunsIr, listOf(ir.fileWithPreparedInlinableFunctions))
+        }
+    }
 
-        with(ir.files.sortedBy { it.path }) {
-            serializeNonNullableEntities(SerializedIrFile::fileData, irLayout::irFiles)
-            serializeNonNullableEntities(SerializedIrFile::declarations, irLayout::irDeclarations)
-            serializeNonNullableEntities(SerializedIrFile::inlineDeclarations, irLayout::irInlineDeclarations)
-            serializeNonNullableEntities(SerializedIrFile::types, irLayout::irTypes)
-            serializeNonNullableEntities(SerializedIrFile::signatures, irLayout::irSignatures)
-            serializeNonNullableEntities(SerializedIrFile::strings, irLayout::irStrings)
-            serializeNonNullableEntities(SerializedIrFile::bodies, irLayout::irBodies)
-            serializeNullableEntries(SerializedIrFile::debugInfo, irLayout::irDebugInfo)
-            serializeNullableEntries(SerializedIrFile::fileEntries, irLayout::irFileEntries)
+    private fun serializeIrDirectory(irDirectory: IrKotlinLibraryLayout.IrDirectory, irFiles: List<SerializedIrFile>) {
+        irDirectory.dir.mkdirs()
+        with(irFiles.sortedBy { it.path }) {
+            serializeNonNullableEntities(SerializedIrFile::fileData, irDirectory::irFiles)
+            serializeNonNullableEntities(SerializedIrFile::declarations, irDirectory::irDeclarations)
+            serializeNonNullableEntities(SerializedIrFile::types, irDirectory::irTypes)
+            serializeNonNullableEntities(SerializedIrFile::signatures, irDirectory::irSignatures)
+            serializeNonNullableEntities(SerializedIrFile::strings, irDirectory::irStrings)
+            serializeNonNullableEntities(SerializedIrFile::bodies, irDirectory::irBodies)
+            serializeNullableEntries(SerializedIrFile::debugInfo, irDirectory::irDebugInfo)
+            serializeNullableEntries(SerializedIrFile::fileEntries, irDirectory::irFileEntries)
         }
     }
 

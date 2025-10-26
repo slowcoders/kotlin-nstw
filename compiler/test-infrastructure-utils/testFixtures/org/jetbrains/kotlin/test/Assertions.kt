@@ -8,9 +8,9 @@ package org.jetbrains.kotlin.test
 import java.io.File
 import java.nio.file.Path
 
-abstract class Assertions {
-    val isTeamCityBuild: Boolean = System.getenv("TEAMCITY_VERSION") != null
+val isTeamCityBuild: Boolean = System.getenv("TEAMCITY_VERSION") != null
 
+abstract class Assertions {
     fun assertEqualsToFile(expectedFile: File, actual: String, sanitizer: (String) -> String = { it }) {
         assertEqualsToFile(expectedFile, actual, sanitizer) { "Actual data differs from file content" }
     }
@@ -70,4 +70,9 @@ abstract class Assertions {
     }
 
     abstract fun fail(message: () -> String): Nothing
+
+    // The default implementation exists only for compatibility with IDEA
+    open fun assumeFalse(value: Boolean, message: () -> String) {
+        assertFalse(value, message)
+    }
 }

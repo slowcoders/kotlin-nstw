@@ -5,22 +5,13 @@
 
 package org.jetbrains.kotlin.backend.konan.serialization
 
-import org.jetbrains.kotlin.backend.common.serialization.BasicIrModuleDeserializer
-import org.jetbrains.kotlin.backend.common.serialization.DescriptorByIdSignatureFinderImpl
-import org.jetbrains.kotlin.backend.common.serialization.DeserializationStrategy
-import org.jetbrains.kotlin.backend.common.serialization.FileDeserializationState
-import org.jetbrains.kotlin.backend.common.serialization.IrSymbolDeserializer
-import org.jetbrains.kotlin.backend.common.serialization.KotlinIrLinker
-import org.jetbrains.kotlin.backend.common.serialization.encodings.BinarySymbolData
+import org.jetbrains.kotlin.backend.common.serialization.*
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.declarations.IrDeclaration
 import org.jetbrains.kotlin.ir.declarations.IrFile
-import org.jetbrains.kotlin.ir.declarations.IrSymbolOwner
 import org.jetbrains.kotlin.ir.declarations.path
-import org.jetbrains.kotlin.ir.symbols.IrSymbol
-import org.jetbrains.kotlin.ir.util.DeclarationStubGenerator
 import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.library.KotlinAbiVersion
@@ -31,13 +22,11 @@ class KonanPartialModuleDeserializer(
     kotlinIrLinker: KotlinIrLinker,
     moduleDescriptor: ModuleDescriptor,
     override val klib: KotlinLibrary,
-    private val stubGenerator: DeclarationStubGenerator,
     strategyResolver: (String) -> DeserializationStrategy,
     private val cacheDeserializationStrategy: CacheDeserializationStrategy,
 ) : BasicIrModuleDeserializer(
     linker = kotlinIrLinker,
     moduleDescriptor = moduleDescriptor,
-    klib = klib,
     strategyResolver = { fileName -> if (cacheDeserializationStrategy.contains(fileName)) strategyResolver(fileName) else DeserializationStrategy.ON_DEMAND },
     libraryAbiVersion = klib.versions.abiVersion ?: KotlinAbiVersion.CURRENT,
 ) {
@@ -95,33 +84,8 @@ class KonanPartialModuleDeserializer(
         DescriptorByIdSignatureFinderImpl.LookupMode.MODULE_ONLY
     )
 
-    private val deserializedSymbols = mutableMapOf<IdSignature, IrSymbol>()
-
-    // Need to notify the deserializing machinery that some symbols have already been created by stub generator
-    // (like type parameters and receiver parameters) and there's no need to create new symbols for them.
-    fun referenceIrSymbol(symbolDeserializer: IrSymbolDeserializer, sigIndex: Int, symbol: IrSymbol) {
-        val idSig = symbolDeserializer.deserializeIdSignature(sigIndex)
-        symbolDeserializer.referenceLocalIrSymbol(symbol, idSig)
-        if (idSig.isPubliclyVisible) {
-            deserializedSymbols[idSig]?.let {
-                require(it == symbol) { "Two different symbols for the same signature ${idSig.render()}" }
-            }
-            // Sometimes the linker would want to create a new symbol, so save actual symbol here
-            // and use it in [contains] and [tryDeserializeSymbol].
-            deserializedSymbols[idSig] = symbol
-        }
-    }
-
     override fun contains(idSig: IdSignature): Boolean =
-        super.contains(idSig) || deserializedSymbols.containsKey(idSig) ||
+        super.contains(idSig) ||
                 cacheDeserializationStrategy != CacheDeserializationStrategy.WholeModule
                 && idSig.isPubliclyVisible && descriptorByIdSignatureFinder.findDescriptorBySignature(idSig) != null
-
-    override fun tryDeserializeIrSymbol(idSig: IdSignature, symbolKind: BinarySymbolData.SymbolKind): IrSymbol? {
-        super.tryDeserializeIrSymbol(idSig, symbolKind)?.let { return it }
-        deserializedSymbols[idSig]?.let { return it }
-        val descriptor = descriptorByIdSignatureFinder.findDescriptorBySignature(idSig) ?: return null
-        descriptorSignatures[descriptor] = idSig
-        return (stubGenerator.generateMemberStub(descriptor) as IrSymbolOwner).symbol
-    }
 }

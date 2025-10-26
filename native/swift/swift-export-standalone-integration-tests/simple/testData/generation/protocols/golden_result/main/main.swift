@@ -14,8 +14,6 @@ public protocol Barable: KotlinRuntime.KotlinBase, main.Foeble {
 public protocol Bazzable: KotlinRuntime.KotlinBase {
 }
 public protocol ContainerProtocol: KotlinRuntime.KotlinBase {
-    typealias NestedClass = main._ContainerProtocol_NestedClass
-    typealias NestedProtocol = main._ContainerProtocol_NestedProtocol
 }
 public protocol Foeble: KotlinRuntime.KotlinBase {
     var baz: any main.Foeble {
@@ -28,12 +26,8 @@ public protocol Foeble: KotlinRuntime.KotlinBase {
 public protocol SealedBazzable: KotlinRuntime.KotlinBase, main.SealedFoeble {
 }
 public protocol SealedFoeble: KotlinRuntime.KotlinBase {
-    typealias SealedBarable = main._SealedFoeble_SealedBarable
-    typealias SomeBarable = main._SealedFoeble_SomeBarable
-    typealias SomeFoeble = main._SealedFoeble_SomeFoeble
 }
 public protocol SiblingProtocol: KotlinRuntime.KotlinBase {
-    typealias NestedClass = main._SiblingProtocol_NestedClass
 }
 @objc(_Barable)
 package protocol _Barable: main._Foeble {
@@ -45,10 +39,8 @@ package protocol _Bazzable {
 package protocol _ContainerProtocol {
 }
 public protocol _ContainerProtocol_NestedProtocol: KotlinRuntime.KotlinBase {
-    typealias NestedClass = main.__ContainerProtocol_NestedProtocol_NestedClass
 }
 public protocol _ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedProtocol: KotlinRuntime.KotlinBase {
-    typealias NestedClass = main.__ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedProtocol_NestedClass
 }
 @objc(_Foeble)
 package protocol _Foeble {
@@ -368,13 +360,27 @@ extension main.Barable where Self : KotlinRuntimeSupport._KotlinBridgeable {
         return KotlinRuntime.KotlinBase.__createProtocolWrapper(externalRCRef: Barable_bar__TypesOfArguments__anyU20main_Foeble__(self.__externalRCRef(), arg.__externalRCRef())) as! any main.Barable
     }
 }
+extension main.Barable {
+}
 extension ExportedKotlinPackages.repeating_conformances.Barable where Self : KotlinRuntimeSupport._KotlinBridgeable {
+}
+extension ExportedKotlinPackages.repeating_conformances.Barable {
 }
 extension main.Bazzable where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
+extension main.Bazzable {
+}
 extension main.ContainerProtocol where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
+extension main.ContainerProtocol {
+    typealias NestedClass = main._ContainerProtocol_NestedClass
+    typealias NestedProtocol = main._ContainerProtocol_NestedProtocol
+}
 extension ExportedKotlinPackages.packagewithprotocols.ContainerProtocol where Self : KotlinRuntimeSupport._KotlinBridgeable {
+}
+extension ExportedKotlinPackages.packagewithprotocols.ContainerProtocol {
+    typealias NestedClass = main._ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedClass
+    typealias NestedProtocol = main._ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedProtocol
 }
 extension main.Foeble where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var baz: any main.Foeble {
@@ -388,19 +394,42 @@ extension main.Foeble where Self : KotlinRuntimeSupport._KotlinBridgeable {
         return KotlinRuntime.KotlinBase.__createProtocolWrapper(externalRCRef: Foeble_bar__TypesOfArguments__anyU20main_Foeble__(self.__externalRCRef(), arg.__externalRCRef())) as! any main.Foeble
     }
 }
+extension main.Foeble {
+}
 extension ExportedKotlinPackages.repeating_conformances.Foeble where Self : KotlinRuntimeSupport._KotlinBridgeable {
+}
+extension ExportedKotlinPackages.repeating_conformances.Foeble {
 }
 extension main.SealedBazzable where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
+extension main.SealedBazzable {
+}
 extension main.SealedFoeble where Self : KotlinRuntimeSupport._KotlinBridgeable {
+}
+extension main.SealedFoeble {
+    typealias SealedBarable = main._SealedFoeble_SealedBarable
+    typealias SomeBarable = main._SealedFoeble_SomeBarable
+    typealias SomeFoeble = main._SealedFoeble_SomeFoeble
 }
 extension main.SiblingProtocol where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
+extension main.SiblingProtocol {
+    typealias NestedClass = main._SiblingProtocol_NestedClass
+}
 extension ExportedKotlinPackages.packagewithprotocols.SiblingProtocol where Self : KotlinRuntimeSupport._KotlinBridgeable {
+}
+extension ExportedKotlinPackages.packagewithprotocols.SiblingProtocol {
+    typealias NestedClass = main._ExportedKotlinPackages_packagewithprotocols_SiblingProtocol_NestedClass
 }
 extension main._ContainerProtocol_NestedProtocol where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
+extension main._ContainerProtocol_NestedProtocol {
+    typealias NestedClass = main.__ContainerProtocol_NestedProtocol_NestedClass
+}
 extension main._ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedProtocol where Self : KotlinRuntimeSupport._KotlinBridgeable {
+}
+extension main._ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedProtocol {
+    typealias NestedClass = main.__ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedProtocol_NestedClass
 }
 extension KotlinRuntimeSupport._KotlinExistential: main.ContainerProtocol where Wrapped : main._ContainerProtocol {
 }
@@ -432,37 +461,61 @@ extension KotlinRuntimeSupport._KotlinExistential: main._ExportedKotlinPackages_
 }
 extension main._SealedFoeble_SealedBarable where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
+extension main._SealedFoeble_SealedBarable {
+}
 extension ExportedKotlinPackages.packagewithprotocols {
+    public enum ENUM_WITH_INTERFACE_INHERITANCE: KotlinRuntimeSupport._KotlinBridgeable, Swift.CaseIterable, Swift.LosslessStringConvertible, Swift.RawRepresentable {
+        public var description: Swift.String {
+            get {
+                switch self {
+                default: fatalError()
+                }
+            }
+        }
+        public var rawValue: Swift.Int32 {
+            get {
+                switch self {
+                default: fatalError()
+                }
+            }
+        }
+        public init?(
+            _ description: Swift.String
+        ) {
+            switch description {
+
+            default: return nil
+            }
+        }
+        public init?(
+            rawValue: Swift.Int32
+        ) {
+            guard 0..<0 ~= rawValue else { return nil }
+            self = ENUM_WITH_INTERFACE_INHERITANCE.allCases[Int(rawValue)]
+        }
+        public init(
+            __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer!,
+            options: KotlinRuntime.KotlinBaseConstructionOptions
+        ) {
+            switch __externalRCRefUnsafe {
+            default: fatalError()
+            }
+        }
+        public func __externalRCRef() -> Swift.UnsafeMutableRawPointer! {
+            return switch self {
+            default: fatalError()
+            }
+        }
+    }
     public protocol ContainerProtocol: KotlinRuntime.KotlinBase {
-        typealias NestedClass = main._ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedClass
-        typealias NestedProtocol = main._ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedProtocol
     }
     public protocol SiblingProtocol: KotlinRuntime.KotlinBase {
-        typealias NestedClass = main._ExportedKotlinPackages_packagewithprotocols_SiblingProtocol_NestedClass
     }
     @objc(_ContainerProtocol)
     package protocol _ContainerProtocol {
     }
     @objc(_SiblingProtocol)
     package protocol _SiblingProtocol {
-    }
-    public final class ENUM_WITH_INTERFACE_INHERITANCE: KotlinRuntime.KotlinBase, ExportedKotlinPackages.packagewithprotocols.ContainerProtocol, ExportedKotlinPackages.packagewithprotocols._ContainerProtocol, Swift.CaseIterable {
-        public static var allCases: [ExportedKotlinPackages.packagewithprotocols.ENUM_WITH_INTERFACE_INHERITANCE] {
-            get {
-                return packagewithprotocols_ENUM_WITH_INTERFACE_INHERITANCE_entries_get() as! Swift.Array<ExportedKotlinPackages.packagewithprotocols.ENUM_WITH_INTERFACE_INHERITANCE>
-            }
-        }
-        package override init(
-            __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?,
-            options: KotlinRuntime.KotlinBaseConstructionOptions
-        ) {
-            super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
-        }
-        public static func valueOf(
-            value: Swift.String
-        ) -> ExportedKotlinPackages.packagewithprotocols.ENUM_WITH_INTERFACE_INHERITANCE {
-            return ExportedKotlinPackages.packagewithprotocols.ENUM_WITH_INTERFACE_INHERITANCE.__createClassWrapper(externalRCRef: packagewithprotocols_ENUM_WITH_INTERFACE_INHERITANCE_valueOf__TypesOfArguments__Swift_String__(value))
-        }
     }
     public final class INHERITANCE_COUPLE: main._ExportedKotlinPackages_packagewithprotocols_ContainerProtocol_NestedClass, ExportedKotlinPackages.packagewithprotocols.ContainerProtocol, ExportedKotlinPackages.packagewithprotocols._ContainerProtocol {
         public override init() {

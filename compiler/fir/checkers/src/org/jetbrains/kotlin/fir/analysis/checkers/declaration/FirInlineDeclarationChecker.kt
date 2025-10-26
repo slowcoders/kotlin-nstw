@@ -15,23 +15,17 @@ import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactory2
 import org.jetbrains.kotlin.diagnostics.reportOn
-import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.SessionHolder
+import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
-import org.jetbrains.kotlin.fir.analysis.checkers.PermissivenessWithMigration
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.directOverriddenSymbolsSafe
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.isDataClassCopy
 import org.jetbrains.kotlin.fir.analysis.checkers.inlineCheckerExtension
 import org.jetbrains.kotlin.fir.analysis.checkers.isInlineOnly
-import org.jetbrains.kotlin.fir.analysis.checkers.relationWithMigration
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
-import org.jetbrains.kotlin.fir.containingClassLookupTag
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.*
 import org.jetbrains.kotlin.fir.expressions.*
-import org.jetbrains.kotlin.fir.getOwnerLookupTag
-import org.jetbrains.kotlin.fir.isEnabled
 import org.jetbrains.kotlin.fir.references.symbol
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.toClassLikeSymbol
@@ -52,8 +46,8 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
             checkParametersInNotInline(declaration)
             return
         }
-        if (context.session.inlineCheckerExtension?.isGenerallyOk(declaration) == false) return
-        if (declaration !is FirPropertyAccessor && declaration !is FirSimpleFunction) return
+        if (!context.session.inlineCheckerExtension.isGenerallyOk(declaration)) return
+        if (declaration !is FirPropertyAccessor && declaration !is FirNamedFunction) return
 
         checkCallableDeclaration(declaration)
     }
@@ -183,7 +177,7 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
         private fun FirStatement.localDispatchReceiver(): ConeKotlinType? =
             (this as? FirQualifiedAccessExpression)?.dispatchReceiver?.resolvedType?.takeIf {
-                it.toClassLikeSymbol(session)?.effectiveVisibility == EffectiveVisibility.Local
+                it.toClassLikeSymbol()?.effectiveVisibility == EffectiveVisibility.Local
             }
 
         internal data class AccessedDeclarationVisibilityData(
@@ -246,7 +240,7 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
             if (receiver is FirSuperReceiverExpression) {
                 val dispatchReceiverType = receiver.dispatchReceiver?.resolvedType
-                val classSymbol = dispatchReceiverType?.toSymbol(session) ?: return
+                val classSymbol = dispatchReceiverType?.toSymbol() ?: return
                 if (!classSymbol.isDefinedInInlineFunction()) {
                     reporter.reportOn(
                         receiver.source,
@@ -260,7 +254,7 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
         private fun FirClassifierSymbol<*>.isDefinedInInlineFunction(): Boolean {
             return when (val symbol = this) {
                 is FirAnonymousObjectSymbol -> true
-                is FirRegularClassSymbol -> symbol.classId.isLocal
+                is FirRegularClassSymbol -> symbol.isLocal
                 is FirTypeAliasSymbol, is FirTypeParameterSymbol -> error("Unexpected classifier declaration type: $symbol")
             }
         }
@@ -276,7 +270,7 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
         }
 
         private fun FirBasedSymbol<*>.isInsidePrivateClass(): Boolean {
-            val containingClassSymbol = this.getOwnerLookupTag()?.toSymbol(session) ?: return false
+            val containingClassSymbol = getOwnerLookupTag()?.toSymbol() ?: return false
 
             val containingClassVisibility = when (containingClassSymbol) {
                 is FirAnonymousObjectSymbol -> return false
@@ -295,14 +289,20 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
         fun isLessVisibleThanInlineFunction(visibility: EffectiveVisibility): Boolean {
             if (visibility == EffectiveVisibility.Local && inlineFunEffectiveVisibility.privateApi) return false
-            val relation = visibility.relationWithMigration(inlineFunEffectiveVisibility)
-            return relation == PermissivenessWithMigration.LESS || relation == PermissivenessWithMigration.UNKNOWN || relation == PermissivenessWithMigration.UNKNOW_WITH_MIGRATION
+            val relation = visibility.relation(inlineFunEffectiveVisibility, session.typeContext)
+            return relation == EffectiveVisibility.Permissiveness.LESS || relation == EffectiveVisibility.Permissiveness.UNKNOWN
+        }
+
+        fun lessVisibleVisibilityOrNull(classLikeSymbol: FirClassLikeSymbol<*>, ignoreLocal: Boolean): EffectiveVisibility? {
+            if (classLikeSymbol.isLocalMember && ignoreLocal) return null
+            val symbolEffectiveVisibility = classLikeSymbol.let { it.publishedApiEffectiveVisibility ?: it.effectiveVisibility }
+            return symbolEffectiveVisibility.takeIf { isLessVisibleThanInlineFunction(it) }
         }
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
     private fun checkParameters(
-        function: FirSimpleFunction,
+        function: FirNamedFunction,
         overriddenSymbols: List<FirCallableSymbol<FirCallableDeclaration>>,
     ) {
         for (param in function.valueParameters) {
@@ -319,7 +319,7 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
             if (param.isNoinline) continue
 
             if (function.isSuspend && defaultValue != null && isSuspendFunctionType) {
-                context.session.inlineCheckerExtension?.checkSuspendFunctionalParameterWithDefaultValue(param)
+                context.session.inlineCheckerExtension.checkSuspendFunctionalParameterWithDefaultValue(param)
             }
 
             if (isSuspendFunctionType && !param.isCrossinline && !function.isSuspend) {
@@ -353,7 +353,7 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
         }
 
         //check for inherited default values
-        context.session.inlineCheckerExtension?.checkFunctionalParametersWithInheritedDefaultValues(
+        context.session.inlineCheckerExtension.checkParametersWithInheritedDefaultValues(
             function, overriddenSymbols
         )
     }
@@ -368,7 +368,7 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
     }
 
     context(context: CheckerContext, reporter: DiagnosticReporter)
-    private fun checkNothingToInline(function: FirSimpleFunction) {
+    private fun checkNothingToInline(function: FirNamedFunction) {
         if (function.isExpect || function.isSuspend) return
         if (function.typeParameters.any { it.symbol.isReified }) return
         val session = context.session
@@ -408,7 +408,7 @@ object FirInlineDeclarationChecker : FirFunctionChecker(MppCheckerKind.Common) {
     fun checkCallableDeclaration(declaration: FirCallableDeclaration) {
         if (declaration is FirPropertyAccessor) return
         val directOverriddenSymbols = declaration.symbol.directOverriddenSymbolsSafe()
-        if (declaration is FirSimpleFunction) {
+        if (declaration is FirNamedFunction) {
             checkParameters(declaration, directOverriddenSymbols)
             checkNothingToInline(declaration)
         }

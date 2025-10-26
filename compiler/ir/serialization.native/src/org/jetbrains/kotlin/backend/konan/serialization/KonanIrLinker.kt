@@ -15,18 +15,11 @@ import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.konan.isNativeStdlib
 import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
-import org.jetbrains.kotlin.ir.declarations.IrDeclaration
-import org.jetbrains.kotlin.ir.declarations.IrExternalPackageFragment
-import org.jetbrains.kotlin.ir.declarations.IrFile
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
-import org.jetbrains.kotlin.ir.declarations.moduleDescriptor
-import org.jetbrains.kotlin.ir.declarations.packageFragmentDescriptor
-import org.jetbrains.kotlin.ir.declarations.path
 import org.jetbrains.kotlin.ir.overrides.IrExternalOverridabilityCondition
 import org.jetbrains.kotlin.ir.types.IrTypeSystemContextImpl
 import org.jetbrains.kotlin.ir.util.DeclarationStubGenerator
 import org.jetbrains.kotlin.ir.util.SymbolTable
-import org.jetbrains.kotlin.ir.util.getPackageFragment
 import org.jetbrains.kotlin.library.KotlinLibrary
 import org.jetbrains.kotlin.library.metadata.impl.KlibResolvedModuleDescriptorsFactoryImpl
 import org.jetbrains.kotlin.library.metadata.isCInteropLibrary
@@ -92,7 +85,7 @@ class KonanIrLinker(
                 else -> CacheDeserializationStrategy.WholeModule
             }
             KonanPartialModuleDeserializer(
-                this, moduleDescriptor, klib, stubGenerator, strategyResolver, deserializationStrategy
+                this, moduleDescriptor, klib, strategyResolver, deserializationStrategy
             ).also {
                 moduleDeserializers[moduleDescriptor] = it
                 klibToModuleDeserializerMap[klib] = it
@@ -112,7 +105,7 @@ class KonanIrLinker(
             deserializersForModules
                 .filter { !it.key.isForwardDeclarationModuleName && it.value.moduleDescriptor !== currentModule }
                 .forEach {
-                    val klib = it.value.klib as? KotlinLibrary ?: error("Expected to be KotlinLibrary (${it.key})")
+                    val klib = it.value.klib
                     this[klib.libraryName] = it.value.moduleFragment
                 }
         }

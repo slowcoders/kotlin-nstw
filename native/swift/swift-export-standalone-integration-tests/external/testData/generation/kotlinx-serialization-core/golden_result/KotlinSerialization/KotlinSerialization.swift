@@ -1309,6 +1309,27 @@ extension ExportedKotlinPackages.kotlinx.serialization.descriptors {
     ) -> any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor {
         return KotlinRuntime.KotlinBase.__createProtocolWrapper(externalRCRef: kotlinx_serialization_descriptors_SerialDescriptor__TypesOfArguments__Swift_String_anyU20ExportedKotlinPackages_kotlinx_serialization_descriptors_SerialDescriptor__(serialName, original.__externalRCRef())) as! any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor
     }
+    public static func buildClassSerialDescriptor(
+        serialName: Swift.String,
+        typeParameters: any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor...,
+        builderAction: @escaping (ExportedKotlinPackages.kotlinx.serialization.descriptors.ClassSerialDescriptorBuilder) -> Swift.Void
+    ) -> any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor {
+        return KotlinRuntime.KotlinBase.__createProtocolWrapper(externalRCRef: kotlinx_serialization_descriptors_buildClassSerialDescriptor__TypesOfArguments__Swift_String_Swift_Array_anyU20ExportedKotlinPackages_kotlinx_serialization_descriptors_SerialDescriptor__U28ExportedKotlinPackages_kotlinx_serialization_descriptors_ClassSerialDescriptorBuilderU29202D_U20Swift_Void__(serialName, typeParameters, {
+            let originalBlock = builderAction
+            return { arg0 in return originalBlock(ExportedKotlinPackages.kotlinx.serialization.descriptors.ClassSerialDescriptorBuilder.__createClassWrapper(externalRCRef: arg0)) }
+        }())) as! any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor
+    }
+    public static func buildSerialDescriptor(
+        serialName: Swift.String,
+        kind: ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialKind,
+        typeParameters: any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor...,
+        builder: @escaping (ExportedKotlinPackages.kotlinx.serialization.descriptors.ClassSerialDescriptorBuilder) -> Swift.Void
+    ) -> any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor {
+        return KotlinRuntime.KotlinBase.__createProtocolWrapper(externalRCRef: kotlinx_serialization_descriptors_buildSerialDescriptor__TypesOfArguments__Swift_String_ExportedKotlinPackages_kotlinx_serialization_descriptors_SerialKind_Swift_Array_anyU20ExportedKotlinPackages_kotlinx_serialization_descriptors_SerialDescriptor__U28ExportedKotlinPackages_kotlinx_serialization_descriptors_ClassSerialDescriptorBuilderU29202D_U20Swift_Void__(serialName, kind.__externalRCRef(), typeParameters, {
+            let originalBlock = builder
+            return { arg0 in return originalBlock(ExportedKotlinPackages.kotlinx.serialization.descriptors.ClassSerialDescriptorBuilder.__createClassWrapper(externalRCRef: arg0)) }
+        }())) as! any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor
+    }
     public static func listSerialDescriptor(
         elementDescriptor: any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor
     ) -> any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor {
@@ -1506,7 +1527,6 @@ extension ExportedKotlinPackages.kotlinx.serialization.encoding {
     package protocol _ChunkedDecoder {
     }
     public protocol CompositeDecoder: KotlinRuntime.KotlinBase {
-        typealias Companion = KotlinSerialization._ExportedKotlinPackages_kotlinx_serialization_encoding_CompositeDecoder_Companion
         var serializersModule: ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModule {
             get
         }
@@ -1999,6 +2019,8 @@ extension ExportedKotlinPackages.kotlinx.serialization.BinaryFormat where Self :
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.BinaryFormat where Wrapped : ExportedKotlinPackages.kotlinx.serialization._BinaryFormat {
 }
+extension ExportedKotlinPackages.kotlinx.serialization.BinaryFormat {
+}
 extension ExportedKotlinPackages.kotlinx.serialization.DeserializationStrategy where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var descriptor: any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor {
         get {
@@ -2013,6 +2035,8 @@ extension ExportedKotlinPackages.kotlinx.serialization.DeserializationStrategy w
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.DeserializationStrategy where Wrapped : ExportedKotlinPackages.kotlinx.serialization._DeserializationStrategy {
 }
+extension ExportedKotlinPackages.kotlinx.serialization.DeserializationStrategy {
+}
 extension ExportedKotlinPackages.kotlinx.serialization.KSerializer where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var descriptor: any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor {
         get {
@@ -2022,6 +2046,8 @@ extension ExportedKotlinPackages.kotlinx.serialization.KSerializer where Self : 
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.KSerializer where Wrapped : ExportedKotlinPackages.kotlinx.serialization._KSerializer {
 }
+extension ExportedKotlinPackages.kotlinx.serialization.KSerializer {
+}
 extension ExportedKotlinPackages.kotlinx.serialization.SerialFormat where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var serializersModule: ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModule {
         get {
@@ -2030,6 +2056,8 @@ extension ExportedKotlinPackages.kotlinx.serialization.SerialFormat where Self :
     }
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.SerialFormat where Wrapped : ExportedKotlinPackages.kotlinx.serialization._SerialFormat {
+}
+extension ExportedKotlinPackages.kotlinx.serialization.SerialFormat {
 }
 extension ExportedKotlinPackages.kotlinx.serialization.SerializationStrategy where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var descriptor: any ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor {
@@ -2046,9 +2074,13 @@ extension ExportedKotlinPackages.kotlinx.serialization.SerializationStrategy whe
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.SerializationStrategy where Wrapped : ExportedKotlinPackages.kotlinx.serialization._SerializationStrategy {
 }
+extension ExportedKotlinPackages.kotlinx.serialization.SerializationStrategy {
+}
 extension ExportedKotlinPackages.kotlinx.serialization.StringFormat where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.StringFormat where Wrapped : ExportedKotlinPackages.kotlinx.serialization._StringFormat {
+}
+extension ExportedKotlinPackages.kotlinx.serialization.StringFormat {
 }
 extension ExportedKotlinPackages.kotlinx.serialization.`internal`.GeneratedSerializer where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public func childSerializers() -> ExportedKotlinPackages.kotlin.Array {
@@ -2060,9 +2092,13 @@ extension ExportedKotlinPackages.kotlinx.serialization.`internal`.GeneratedSeria
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.`internal`.GeneratedSerializer where Wrapped : ExportedKotlinPackages.kotlinx.serialization.`internal`._GeneratedSerializer {
 }
+extension ExportedKotlinPackages.kotlinx.serialization.`internal`.GeneratedSerializer {
+}
 extension ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModuleCollector where Self : KotlinRuntimeSupport._KotlinBridgeable {
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModuleCollector where Wrapped : ExportedKotlinPackages.kotlinx.serialization.modules._SerializersModuleCollector {
+}
+extension ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModuleCollector {
 }
 extension ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var annotations: [any ExportedKotlinPackages.kotlin.Annotation] {
@@ -2123,6 +2159,8 @@ extension ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescrip
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor where Wrapped : ExportedKotlinPackages.kotlinx.serialization.descriptors._SerialDescriptor {
 }
+extension ExportedKotlinPackages.kotlinx.serialization.descriptors.SerialDescriptor {
+}
 extension ExportedKotlinPackages.kotlinx.serialization.encoding.ChunkedDecoder where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public func decodeStringChunked(
         consumeChunk: @escaping (Swift.String) -> Swift.Void
@@ -2134,6 +2172,8 @@ extension ExportedKotlinPackages.kotlinx.serialization.encoding.ChunkedDecoder w
     }
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.encoding.ChunkedDecoder where Wrapped : ExportedKotlinPackages.kotlinx.serialization.encoding._ChunkedDecoder {
+}
+extension ExportedKotlinPackages.kotlinx.serialization.encoding.ChunkedDecoder {
 }
 extension ExportedKotlinPackages.kotlinx.serialization.encoding.CompositeDecoder where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var serializersModule: ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModule {
@@ -2221,6 +2261,9 @@ extension ExportedKotlinPackages.kotlinx.serialization.encoding.CompositeDecoder
     }
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.encoding.CompositeDecoder where Wrapped : ExportedKotlinPackages.kotlinx.serialization.encoding._CompositeDecoder {
+}
+extension ExportedKotlinPackages.kotlinx.serialization.encoding.CompositeDecoder {
+    typealias Companion = KotlinSerialization._ExportedKotlinPackages_kotlinx_serialization_encoding_CompositeDecoder_Companion
 }
 extension ExportedKotlinPackages.kotlinx.serialization.encoding.CompositeEncoder where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var serializersModule: ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModule {
@@ -2311,6 +2354,8 @@ extension ExportedKotlinPackages.kotlinx.serialization.encoding.CompositeEncoder
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.encoding.CompositeEncoder where Wrapped : ExportedKotlinPackages.kotlinx.serialization.encoding._CompositeEncoder {
 }
+extension ExportedKotlinPackages.kotlinx.serialization.encoding.CompositeEncoder {
+}
 extension ExportedKotlinPackages.kotlinx.serialization.encoding.Decoder where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var serializersModule: ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModule {
         get {
@@ -2367,6 +2412,8 @@ extension ExportedKotlinPackages.kotlinx.serialization.encoding.Decoder where Se
     }
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.encoding.Decoder where Wrapped : ExportedKotlinPackages.kotlinx.serialization.encoding._Decoder {
+}
+extension ExportedKotlinPackages.kotlinx.serialization.encoding.Decoder {
 }
 extension ExportedKotlinPackages.kotlinx.serialization.encoding.Encoder where Self : KotlinRuntimeSupport._KotlinBridgeable {
     public var serializersModule: ExportedKotlinPackages.kotlinx.serialization.modules.SerializersModule {
@@ -2449,4 +2496,6 @@ extension ExportedKotlinPackages.kotlinx.serialization.encoding.Encoder where Se
     }
 }
 extension KotlinRuntimeSupport._KotlinExistential: ExportedKotlinPackages.kotlinx.serialization.encoding.Encoder where Wrapped : ExportedKotlinPackages.kotlinx.serialization.encoding._Encoder {
+}
+extension ExportedKotlinPackages.kotlinx.serialization.encoding.Encoder {
 }

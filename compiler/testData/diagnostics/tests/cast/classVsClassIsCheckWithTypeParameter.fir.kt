@@ -1,3 +1,4 @@
+// LATEST_LV_DIFFERENCE
 // RUN_PIPELINE_TILL: BACKEND
 // ISSUE: KT-76766
 
@@ -8,23 +9,23 @@ typealias AliasWithTypeParam<T> = B<T>
 typealias Alias = B<*>
 
 fun test1(a: A<Int>){
-    <!USELESS_IS_CHECK!>a is B<*><!>
+    <!IMPOSSIBLE_IS_CHECK_WARNING!>a is B<*><!>
 }
 
 fun test2(a: A<*>){
-    <!USELESS_IS_CHECK!>a is B<*><!>
+    <!IMPOSSIBLE_IS_CHECK_WARNING!>a is B<*><!>
 }
 
 fun test3(a: A<Int>) {
-    <!USELESS_IS_CHECK!>a is AliasWithTypeParam<*><!>
+    <!IMPOSSIBLE_IS_CHECK_WARNING!>a is AliasWithTypeParam<*><!>
 }
 
 fun test4(a: A<Int>) {
-    <!USELESS_IS_CHECK!>a is Alias<!>
+    <!IMPOSSIBLE_IS_CHECK_WARNING!>a is Alias<!>
 }
 
 fun <T : A<T>> test5(x: T) {
-    <!USELESS_IS_CHECK!>x is B<*><!>
+    <!IMPOSSIBLE_IS_CHECK_WARNING!>x is B<*><!>
 }
 
 fun <T> test6(x: T) where T : A<T>, T : CharSequence {

@@ -31,12 +31,15 @@ internal class KonanForwardDeclarationModuleDeserializer(
     private val linker: KotlinIrLinker,
     private val stubGenerator: DeclarationStubGenerator,
 ) : IrModuleDeserializer(moduleDescriptor, KotlinAbiVersion.Companion.CURRENT) {
+
+    override val klib get() = error("'klib' is not available for ${this::class.java}")
+
     init {
         require(moduleDescriptor.isForwardDeclarationModule)
     }
 
     companion object {
-        private val FORWARD_DECLARATION_ORIGIN by IrDeclarationOriginImpl.Companion
+        private val FORWARD_DECLARATION_ORIGIN by IrDeclarationOriginImpl.Regular
     }
 
     private val declaredDeclaration = mutableMapOf<IdSignature, IrClass>()

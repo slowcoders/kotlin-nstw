@@ -17,7 +17,6 @@ import org.jetbrains.kotlin.analysis.api.components.isFunctionType
 import org.jetbrains.kotlin.analysis.api.components.isNothingType
 import org.jetbrains.kotlin.analysis.api.components.isPrimitive
 import org.jetbrains.kotlin.analysis.api.export.utilities.isAllSuperTypesExported
-import org.jetbrains.kotlin.analysis.api.export.utilities.isClone
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KaAnnotatedSymbol
 import org.jetbrains.kotlin.analysis.api.types.KaClassType
@@ -48,6 +47,7 @@ private val speciallyBridgedTypes = listOf(StandardClassIds.List, StandardClassI
 public class SirVisibilityCheckerImpl(
     private val sirSession: SirSession,
     private val unsupportedDeclarationReporter: UnsupportedDeclarationReporter,
+    private val enableCoroutinesSupport: Boolean,
 ) : SirVisibilityChecker {
     @OptIn(KaExperimentalApi::class)
     override fun KaDeclarationSymbol.sirAvailability(): SirAvailability = sirSession.withSessions {
@@ -85,14 +85,11 @@ public class SirVisibilityCheckerImpl(
         if (ktSymbol is KaCallableSymbol && ktSymbol.contextParameters.isNotEmpty()) {
             return@withSessions SirAvailability.Unavailable("Callables with context parameters are not supported yet")
         }
-        if (ktSymbol is KaFunctionSymbol && ktSymbol.valueParameters.any { it.isVararg }) {
-            return@withSessions SirAvailability.Unavailable("Callables with vararg parameters are not supported yet")
-        }
         if (ktSymbol is KaNamedFunctionSymbol && ktSymbol.allParameters.map { it.returnType.fullyExpandedType }
                 .filter { type -> !type.isFunctionType && speciallyBridgedTypes.none { type.isClassType(it) } }
                 .any { hasUnboundTypeParameters(it) }
         ) {
-            return@withSessions SirAvailability.Unavailable("Callables with vararg parameters are not supported yet")
+            return@withSessions SirAvailability.Unavailable("Callables with parameters unbound generic types are not supported yet")
         }
         if (containsHidesFromObjCAnnotation(ktSymbol)) {
             return@withSessions SirAvailability.Unavailable("Declaration is @HiddenFromObjC")
@@ -152,16 +149,12 @@ public class SirVisibilityCheckerImpl(
             unsupportedDeclarationReporter.report(this@isExported, "${origin.name.lowercase()} origin is not supported yet.")
             return@withSessions false
         }
-        if (isSuspend) {
+        if (isSuspend && !enableCoroutinesSupport) {
             unsupportedDeclarationReporter.report(this@isExported, "suspend functions are not supported yet.")
             return@withSessions false
         }
         if (isInline) {
             unsupportedDeclarationReporter.report(this@isExported, "inline functions are not supported yet.")
-            return@withSessions false
-        }
-        if (isClone(this@isExported)) {
-            // Cloneable (and its method `clone`) are synthetic on Native, and we don't care about them atm.
             return@withSessions false
         }
         return@withSessions true

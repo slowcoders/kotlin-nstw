@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.name.Name
 
 object JsIrBuilder {
-    val SYNTHESIZED_DECLARATION by IrDeclarationOriginImpl
+    val SYNTHESIZED_DECLARATION by IrDeclarationOriginImpl.Regular
 
     fun buildCall(
         target: IrSimpleFunctionSymbol,
@@ -119,6 +119,23 @@ object JsIrBuilder {
             }
         }
     }
+
+    fun buildDynamicMemberExpression(dispatchReceiver: IrExpression, memberName: String, type: IrType): IrExpression =
+        IrDynamicMemberExpressionImpl(
+            UNDEFINED_OFFSET, UNDEFINED_OFFSET,
+            type,
+            memberName,
+            dispatchReceiver
+        )
+
+    fun buildFunctionExpression(type: IrType, function: IrSimpleFunction) =
+        IrFunctionExpressionImpl(
+            startOffset = UNDEFINED_OFFSET,
+            endOffset = UNDEFINED_OFFSET,
+            type = type,
+            function = function,
+            origin = IrStatementOrigin.LAMBDA,
+        )
 
     fun buildRawReference(targetSymbol: IrFunctionSymbol, type: IrType): IrRawFunctionReference =
         IrRawFunctionReferenceImpl(UNDEFINED_OFFSET, UNDEFINED_OFFSET, type, targetSymbol)

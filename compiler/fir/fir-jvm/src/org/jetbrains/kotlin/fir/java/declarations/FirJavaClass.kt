@@ -50,7 +50,7 @@ class FirJavaClass @FirImplementationDetail internal constructor(
     private val annotationList: FirJavaAnnotationList,
     internal val originalStatus: FirResolvedDeclarationStatusImpl,
     override val classKind: ClassKind,
-    private val declarationList: FirJavaDeclarationList,
+    val declarationList: FirJavaDeclarationList,
     override val scopeProvider: FirScopeProvider,
     override val symbol: FirRegularClassSymbol,
     private val nonEnhancedSuperTypes: List<FirTypeRef>,
@@ -92,6 +92,8 @@ class FirJavaClass @FirImplementationDetail internal constructor(
 
         copy
     }
+
+    val isRecord: Boolean = javaClass?.isRecord ?: false
 
     override val hasLazyNestedClassifiers: Boolean get() = true
     override val controlFlowGraphReference: FirControlFlowGraphReference? get() = null
@@ -191,6 +193,9 @@ class FirJavaClass @FirImplementationDetail internal constructor(
 
     override val companionObjectSymbol: FirRegularClassSymbol?
         get() = null
+
+    override val isLocal: Boolean
+        get() = false
 
     override fun replaceCompanionObjectSymbol(newCompanionObjectSymbol: FirRegularClassSymbol?) {}
 

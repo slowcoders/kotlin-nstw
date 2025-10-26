@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.analysis.api.components.DefaultTypeClassIds
 import org.jetbrains.kotlin.analysis.api.components.combinedDeclaredMemberScope
 import org.jetbrains.kotlin.analysis.api.components.containingModule
 import org.jetbrains.kotlin.analysis.api.components.expandedSymbol
-import org.jetbrains.kotlin.analysis.api.export.utilities.isCloneable
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.api.types.KaClassType
 import org.jetbrains.kotlin.sir.*
@@ -23,11 +22,9 @@ import org.jetbrains.kotlin.sir.providers.sirModule
 import org.jetbrains.kotlin.sir.providers.source.KotlinSource
 import org.jetbrains.kotlin.sir.providers.toSir
 import org.jetbrains.kotlin.sir.providers.utils.KotlinRuntimeModule
-import org.jetbrains.kotlin.sir.providers.utils.KotlinRuntimeSupportModule
 import org.jetbrains.kotlin.sir.providers.utils.containingModule
 import org.jetbrains.kotlin.sir.providers.utils.updateImport
 import org.jetbrains.kotlin.sir.providers.utils.throwsAnnotation
-import org.jetbrains.kotlin.sir.util.SirSwiftModule
 import org.jetbrains.kotlin.sir.util.swiftFqName
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.kotlin.utils.filterIsInstanceAnd
@@ -45,17 +42,10 @@ import kotlin.lazy
 internal fun createSirClassFromKtSymbol(
     ktSymbol: KaNamedClassSymbol,
     sirSession: SirSession,
-): SirAbstractClassFromKtSymbol = when (ktSymbol.classKind) {
-    KaClassKind.ENUM_CLASS ->
-        SirEnumClassFromKtSymbol(
-            ktSymbol,
-            sirSession
-        )
-    else -> SirClassFromKtSymbol(
-        ktSymbol,
-        sirSession
-    )
-}
+): SirAbstractClassFromKtSymbol = SirClassFromKtSymbol(
+    ktSymbol,
+    sirSession
+)
 
 private class SirClassFromKtSymbol(
     ktSymbol: KaNamedClassSymbol,
@@ -73,22 +63,6 @@ internal class SirStubClassFromKtSymbol(
     sirSession
 ) {
     override val declarations: List<SirDeclaration> = emptyList()
-}
-
-internal class SirEnumClassFromKtSymbol(
-    ktSymbol: KaNamedClassSymbol,
-    sirSession: SirSession,
-) : SirAbstractClassFromKtSymbol(
-    ktSymbol,
-    sirSession
-) {
-    override val superClass: SirNominalType? by lazyWithSessions {
-        // TODO: this super class as default will become obsolete with the KT-66855
-        SirNominalType(KotlinRuntimeModule.kotlinBase).also {
-            ktSymbol.containingModule.sirModule()
-        }
-    }
-    override val protocols: List<SirProtocol> = super.protocols + listOf(SirSwiftModule.caseIterable)
 }
 
 internal abstract class SirAbstractClassFromKtSymbol(
@@ -187,7 +161,6 @@ internal abstract class SirAbstractClassFromKtSymbol(
                     it is SirAvailability.Available && it.visibility > SirVisibility.INTERNAL
                 }
             }
-            .filterNot { it.isCloneable }
             .flatMap {
                 it.toSir().allDeclarations.filterIsInstance<SirProtocol>().also {
                     it.forEach {
@@ -226,7 +199,7 @@ internal class SirObjectSyntheticInit(
         )
     }
     override val errorType: SirType get() = SirType.never
-
+    override val isAsync: Boolean get() = false
     override val bridges: List<SirBridge> get() = emptyList()
     override var body: SirFunctionBody?
         get() = null
@@ -245,7 +218,7 @@ internal class SirObjectAccessorVariableFromKtSymbol(
         override val documentation: String? by lazy { ktSymbol.documentation() }
         override val attributes: List<SirAttribute> by lazy { this.translatedAttributes }
         override val errorType: SirType get() = if (ktSymbol.throwsAnnotation != null) SirType.any else SirType.never
-
+        override val isAsync: Boolean get() = false
         override val fqName: List<String>? by lazyWithSessions {
             ktSymbol
                 .classId?.asSingleFqName()
@@ -265,7 +238,7 @@ internal class SirObjectAccessorVariableFromKtSymbol(
     override val visibility: SirVisibility get() = SirVisibility.PUBLIC
 
     override val type: SirType by lazyWithSessions {
-        ktSymbol.toSir().primaryDeclaration?.let { it as? SirNamedDeclaration }?.let { SirNominalType(it) }
+        ktSymbol.toSir().primaryDeclaration?.let { it as? SirScopeDefiningDeclaration }?.let { SirNominalType(it) }
             ?: error("Failed to translate object accessor base type $ktSymbol")
     }
 

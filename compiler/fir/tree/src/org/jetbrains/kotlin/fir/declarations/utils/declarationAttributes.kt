@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.descriptors.SourceFile
 import org.jetbrains.kotlin.fir.FirEvaluatorResult
 import org.jetbrains.kotlin.fir.FirImplementationDetail
-import org.jetbrains.kotlin.fir.contracts.description.ConeBooleanExpression
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyBackingField
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyGetter
@@ -20,7 +19,6 @@ import org.jetbrains.kotlin.fir.references.impl.FirPropertyFromParameterResolved
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
-import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.name.Name
 
 private object IsFromVarargKey : FirDeclarationDataKey()
@@ -191,7 +189,7 @@ val FirPropertySymbol.hasBackingField: Boolean
 fun FirDeclaration.getDanglingTypeConstraintsOrEmpty(): List<DanglingTypeConstraint> {
     return when (this) {
         is FirRegularClass -> danglingTypeConstraints
-        is FirSimpleFunction -> danglingTypeConstraints
+        is FirNamedFunction -> danglingTypeConstraints
         is FirAnonymousFunction -> danglingTypeConstraints
         is FirProperty -> danglingTypeConstraints
         else -> null

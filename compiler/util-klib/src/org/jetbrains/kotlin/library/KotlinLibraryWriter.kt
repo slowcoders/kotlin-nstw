@@ -14,15 +14,11 @@ interface BaseWriter {
     fun commit()
 }
 
-interface MetadataWriter {
-    fun addMetadata(metadata: SerializedMetadata)
-}
-
 interface IrWriter {
     fun addIr(ir: SerializedIrModule)
 }
 
-interface KotlinLibraryWriter : MetadataWriter, BaseWriter, IrWriter
+interface KotlinLibraryWriter : BaseWriter, IrWriter
 
 // TODO: Move SerializedIr here too to eliminate dependency on backend.common.serialization
 class SerializedMetadata(
@@ -44,10 +40,12 @@ class SerializedIrFile(
     val strings: ByteArray,
     val bodies: ByteArray,
     val declarations: ByteArray,
-    val inlineDeclarations: ByteArray,
     val debugInfo: ByteArray?,
     val backendSpecificMetadata: ByteArray?,
     val fileEntries: ByteArray?,
 )
 
-class SerializedIrModule(val files: Collection<SerializedIrFile>)
+class SerializedIrModule(
+    val files: Collection<SerializedIrFile>,
+    val fileWithPreparedInlinableFunctions: SerializedIrFile?,
+)

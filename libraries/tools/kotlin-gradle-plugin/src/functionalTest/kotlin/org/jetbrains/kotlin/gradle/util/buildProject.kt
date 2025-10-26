@@ -7,35 +7,17 @@ package org.jetbrains.kotlin.gradle.util
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.gradle.LibraryExtension
-import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.verification.DependencyVerificationMode
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.ExtraPropertiesExtension
-import org.gradle.api.problems.Problem
-import org.gradle.api.problems.ProblemId
-import org.gradle.api.problems.ProblemReporter
-import org.gradle.api.problems.ProblemSpec
-import org.gradle.api.problems.internal.AdditionalDataBuilderFactory
-import org.gradle.api.problems.internal.InternalProblem
-import org.gradle.api.problems.internal.InternalProblemBuilder
-import org.gradle.api.problems.internal.InternalProblemReporter
-import org.gradle.api.problems.internal.InternalProblemSpec
-import org.gradle.api.problems.internal.InternalProblems
-import org.gradle.api.problems.internal.ProblemsInfrastructure
-import org.gradle.api.problems.internal.ProblemsProgressEventEmitterHolder
-import org.gradle.internal.operations.OperationIdentifier
-import org.gradle.internal.reflect.Instantiator
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testing.base.TestingExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.*
-import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.PropertyNames.KOTLIN_KMP_ISOLATED_PROJECT_SUPPORT
-import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.PropertyNames.KOTLIN_MPP_ENABLE_INTRANSITIVE_METADATA_CONFIGURATION
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
-import org.jetbrains.kotlin.gradle.plugin.getExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KmpIsolatedProjectsSupport
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.swiftexport.SwiftExportExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.uklibs.consumption.KmpResolutionStrategy
@@ -53,8 +35,8 @@ fun buildProject(
     .apply(projectBuilder)
     .build()
     .also {
-        disableDownloadingKonanFromMavenCentral(it)
         it.enableDependencyVerification(false)
+        it.setFunctionalTestMode()
     }
     .apply(configureProject)
     .let { it as ProjectInternal }
@@ -62,7 +44,7 @@ fun buildProject(
 fun buildProjectWithMPP(
     projectBuilder: ProjectBuilder.() -> Unit = { },
     preApplyCode: Project.() -> Unit = {},
-    code: Project.() -> Unit = {}
+    code: Project.() -> Unit = {},
 ) = buildProject(projectBuilder) {
     preApplyCode()
     project.applyMultiplatformPlugin()
@@ -72,21 +54,36 @@ fun buildProjectWithMPP(
 fun buildProjectWithJvm(
     projectBuilder: ProjectBuilder.() -> Unit = {},
     preApplyCode: Project.() -> Unit = {},
-    code: Project.() -> Unit = {}
+    code: Project.() -> Unit = {},
 ) = buildProject(projectBuilder) {
     preApplyCode()
     project.applyKotlinJvmPlugin()
     code()
 }
 
-fun buildProjectWithCocoapods(projectBuilder: ProjectBuilder.() -> Unit = {}, code: Project.() -> Unit = {}) = buildProject(projectBuilder) {
-    project.applyMultiplatformPlugin()
-    project.applyCocoapodsPlugin()
+fun buildProjectWithJs(
+    projectBuilder: ProjectBuilder.() -> Unit = {},
+    preApplyCode: Project.() -> Unit = {},
+    code: Project.() -> Unit = {},
+) = buildProject(projectBuilder) {
+    preApplyCode()
+    project.applyKotlinJsPlugin()
     code()
 }
 
+fun buildProjectWithCocoapods(projectBuilder: ProjectBuilder.() -> Unit = {}, code: Project.() -> Unit = {}) =
+    buildProject(projectBuilder) {
+        project.applyMultiplatformPlugin()
+        project.applyCocoapodsPlugin()
+        code()
+    }
+
 fun Project.applyKotlinJvmPlugin() {
     project.plugins.apply(KotlinPluginWrapper::class.java)
+}
+
+fun Project.applyKotlinJsPlugin() {
+    project.plugins.apply(KotlinJsPluginWrapper::class.java)
 }
 
 fun Project.applyKotlinAndroidPlugin() {
@@ -162,10 +159,6 @@ internal fun Project.setUklibResolutionStrategy(strategy: KmpResolutionStrategy)
     propertiesExtension.set(PropertiesProvider.PropertyNames.KOTLIN_KMP_RESOLUTION_STRATEGY, strategy.propertyName)
 }
 
-fun Project.enableIntransitiveMetadataConfiguration(enabled: Boolean = true) {
-    propertiesExtension.set(KOTLIN_MPP_ENABLE_INTRANSITIVE_METADATA_CONFIGURATION, enabled.toString())
-}
-
 fun Project.enableDefaultStdlibDependency(enabled: Boolean = true) {
     project.propertiesExtension.set(PropertiesProvider.PropertyNames.KOTLIN_STDLIB_DEFAULT_DEPENDENCY, enabled.toString())
 }
@@ -181,6 +174,10 @@ fun Project.setMultiplatformAndroidSourceSetLayoutVersion(version: Int) {
 fun Project.enableDependencyVerification(enabled: Boolean = true) {
     gradle.startParameter.dependencyVerificationMode = if (enabled) DependencyVerificationMode.STRICT
     else DependencyVerificationMode.OFF
+}
+
+fun Project.setFunctionalTestMode() {
+    propertiesExtension.set(PropertiesProvider.PropertyNames.FUNCTIONAL_TEST_MODE_PROPERTY, true)
 }
 
 fun Project.mockXcodeVersion(version: XcodeVersion = XcodeVersion.maxTested) {
@@ -207,7 +204,10 @@ fun Project.enableNonPackedKlibsUsage(enabled: Boolean = true) {
 }
 
 fun Project.enableEagerUnresolvedDependenciesDiagnostic(enabled: Boolean = true) {
-    project.propertiesExtension.set(PropertiesProvider.PropertyNames.KOTLIN_KMP_EAGER_UNRESOLVED_DEPENDENCIES_DIAGNOSTIC, enabled.toString())
+    project.propertiesExtension.set(
+        PropertiesProvider.PropertyNames.KOTLIN_KMP_EAGER_UNRESOLVED_DEPENDENCIES_DIAGNOSTIC,
+        enabled.toString()
+    )
 }
 
 fun Project.enableUnresolvedDependenciesDiagnostic(enabled: Boolean = true) {

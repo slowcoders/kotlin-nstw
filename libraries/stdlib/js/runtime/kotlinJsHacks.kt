@@ -41,8 +41,8 @@ internal fun safePropertySet(self: dynamic, setterName: String, propName: String
  * For that reason, [kotlin.js.JsOutlinedFunction] will forever remain internal.
  */
 @Target(AnnotationTarget.FUNCTION)
+@UsedFromCompilerGeneratedCode
 @PublishedApi
-@Suppress("unused") // used by JsCodeOutliningLowering
 internal annotation class JsOutlinedFunction(val jsFunctionExpression: String, val sourceMap: String)
 
 /**
@@ -51,15 +51,6 @@ internal annotation class JsOutlinedFunction(val jsFunctionExpression: String, v
 @Target(AnnotationTarget.FUNCTION)
 @UsedFromCompilerGeneratedCode
 internal annotation class JsGenerator
-
-/**
- * The annotation is needed for annotating class declarations and type alias which are used inside exported declarations, but
- * doesn't contain @JsExport annotation
- * This information is used for generating special tagged types inside d.ts files, for more strict usage of implicitly exported entities
- */
-@Target(AnnotationTarget.CLASS)
-@UsedFromCompilerGeneratedCode
-internal annotation class JsImplicitExport(val couldBeConvertedToExplicitExport: Boolean)
 
 /**
  * The annotation is needed for annotating function declarations that should not accept any dispatch receiver

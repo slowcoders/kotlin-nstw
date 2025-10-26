@@ -1,4 +1,6 @@
 FILE[kind=Facade[packageFqName=<root>, facadeFqName=BuilderKt]]
+  facadeFqName: BuilderKt
+  partSimpleName: "BuilderKt"
   PACKAGE_DIRECTIVE
   IMPORT_LIST
   PROPERTY[fqName=foo, hasBackingField=null, hasDelegate=false, hasDelegateExpression=false, hasInitializer=true, hasReturnTypeRef=false, isExtension=false, isTopLevel=true, isVar=false, name=foo]
@@ -31,12 +33,12 @@ FILE[kind=Facade[packageFqName=<root>, facadeFqName=BuilderKt]]
                 TYPE_REFERENCE
                   USER_TYPE
                     REFERENCE_EXPRESSION[referencedName=lazy]
-  CLASS[classId=/AntBuilder, fqName=AntBuilder, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=AntBuilder, superNames=[]]
+  CLASS[classId=/AntBuilder, fqName=AntBuilder, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=AntBuilder, superNames=[]]
     CLASS_BODY
-      CLASS[classId=/AntBuilder.ClassPathEntry, fqName=AntBuilder.ClassPathEntry, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=false, name=ClassPathEntry, superNames=[]]
+      CLASS[classId=/AntBuilder.ClassPathEntry, fqName=AntBuilder.ClassPathEntry, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=false, name=ClassPathEntry, superNames=[]]
         MODIFIER_LIST[abstract]
         CLASS_BODY
-      CLASS[classId=/AntBuilder.Module, fqName=AntBuilder.Module, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=false, name=Module, superNames=[ClassPathEntry]]
+      CLASS[classId=/AntBuilder.Module, fqName=AntBuilder.Module, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=false, name=Module, superNames=[ClassPathEntry]]
         SUPER_TYPE_LIST
           SUPER_TYPE_ENTRY
             TYPE_REFERENCE
@@ -59,7 +61,7 @@ FILE[kind=Facade[packageFqName=<root>, facadeFqName=BuilderKt]]
                 TYPE_REFERENCE
                   USER_TYPE
                     REFERENCE_EXPRESSION[referencedName=String]
-      CLASS[classId=/AntBuilder.Library, fqName=AntBuilder.Library, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=false, name=Library, superNames=[ClassPathEntry]]
+      CLASS[classId=/AntBuilder.Library, fqName=AntBuilder.Library, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=false, name=Library, superNames=[ClassPathEntry]]
         SUPER_TYPE_LIST
           SUPER_TYPE_ENTRY
             TYPE_REFERENCE

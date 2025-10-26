@@ -2,7 +2,7 @@ AnnoWithCustomName.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/AnnoWithCustomName, fqName=AnnoWithCustomName, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithCustomName, superNames=[Annotation]]
+    CLASS[classId=/AnnoWithCustomName, fqName=AnnoWithCustomName, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithCustomName, superNames=[Annotation]]
       MODIFIER_LIST[public final annotation]
       PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=AnnoWithCustomName]
         MODIFIER_LIST[public]
@@ -34,7 +34,7 @@ AnnoWithCustomNameAndDefaultValue.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/AnnoWithCustomNameAndDefaultValue, fqName=AnnoWithCustomNameAndDefaultValue, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithCustomNameAndDefaultValue, superNames=[Annotation]]
+    CLASS[classId=/AnnoWithCustomNameAndDefaultValue, fqName=AnnoWithCustomNameAndDefaultValue, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithCustomNameAndDefaultValue, superNames=[Annotation]]
       MODIFIER_LIST[public final annotation]
       PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=AnnoWithCustomNameAndDefaultValue]
         MODIFIER_LIST[public]
@@ -55,6 +55,7 @@ AnnoWithCustomNameAndDefaultValue.class:
               REFERENCE_EXPRESSION[referencedName=Annotation]
       CLASS_BODY
         PROPERTY[fqName=AnnoWithCustomNameAndDefaultValue.string, hasBackingField=false, hasDelegate=false, hasDelegateExpression=false, hasInitializer=true, hasReturnTypeRef=true, isExtension=false, isTopLevel=false, isVar=false, name=string]
+          constantInitializer: "str"
           MODIFIER_LIST[public final]
           TYPE_REFERENCE
             USER_TYPE
@@ -68,7 +69,7 @@ AnnoWithDefaultName.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/AnnoWithDefaultName, fqName=AnnoWithDefaultName, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithDefaultName, superNames=[Annotation]]
+    CLASS[classId=/AnnoWithDefaultName, fqName=AnnoWithDefaultName, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithDefaultName, superNames=[Annotation]]
       MODIFIER_LIST[public final annotation]
       PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=AnnoWithDefaultName]
         MODIFIER_LIST[public]
@@ -100,7 +101,7 @@ AnnoWithDefaultNameAndDefaultValue.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/AnnoWithDefaultNameAndDefaultValue, fqName=AnnoWithDefaultNameAndDefaultValue, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithDefaultNameAndDefaultValue, superNames=[Annotation]]
+    CLASS[classId=/AnnoWithDefaultNameAndDefaultValue, fqName=AnnoWithDefaultNameAndDefaultValue, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithDefaultNameAndDefaultValue, superNames=[Annotation]]
       MODIFIER_LIST[public final annotation]
       PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=AnnoWithDefaultNameAndDefaultValue]
         MODIFIER_LIST[public]
@@ -121,6 +122,7 @@ AnnoWithDefaultNameAndDefaultValue.class:
               REFERENCE_EXPRESSION[referencedName=Annotation]
       CLASS_BODY
         PROPERTY[fqName=AnnoWithDefaultNameAndDefaultValue.value, hasBackingField=false, hasDelegate=false, hasDelegateExpression=false, hasInitializer=true, hasReturnTypeRef=true, isExtension=false, isTopLevel=false, isVar=false, name=value]
+          constantInitializer: 1
           MODIFIER_LIST[public final]
           TYPE_REFERENCE
             USER_TYPE
@@ -134,7 +136,7 @@ AnnoWithVararg.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/AnnoWithVararg, fqName=AnnoWithVararg, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithVararg, superNames=[Annotation]]
+    CLASS[classId=/AnnoWithVararg, fqName=AnnoWithVararg, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithVararg, superNames=[Annotation]]
       MODIFIER_LIST[public final annotation]
       PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=AnnoWithVararg]
         MODIFIER_LIST[public]
@@ -167,7 +169,7 @@ AnnoWithVarargAndDefaultVakue.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/AnnoWithVarargAndDefaultVakue, fqName=AnnoWithVarargAndDefaultVakue, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithVarargAndDefaultVakue, superNames=[Annotation]]
+    CLASS[classId=/AnnoWithVarargAndDefaultVakue, fqName=AnnoWithVarargAndDefaultVakue, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=AnnoWithVarargAndDefaultVakue, superNames=[Annotation]]
       MODIFIER_LIST[public final annotation]
       PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=AnnoWithVarargAndDefaultVakue]
         MODIFIER_LIST[public]
@@ -189,6 +191,7 @@ AnnoWithVarargAndDefaultVakue.class:
               REFERENCE_EXPRESSION[referencedName=Annotation]
       CLASS_BODY
         PROPERTY[fqName=AnnoWithVarargAndDefaultVakue.value, hasBackingField=false, hasDelegate=false, hasDelegateExpression=false, hasInitializer=true, hasReturnTypeRef=true, isExtension=false, isTopLevel=false, isVar=false, name=value]
+          constantInitializer: [0]
           MODIFIER_LIST[public final]
           TYPE_REFERENCE
             USER_TYPE

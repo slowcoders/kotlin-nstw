@@ -6,14 +6,13 @@
 package org.jetbrains.kotlin.fir.resolve.calls.overloads
 
 import org.jetbrains.kotlin.builtins.functions.FunctionTypeKind
-import org.jetbrains.kotlin.builtins.functions.isBasicFunctionOrKFunction
-import org.jetbrains.kotlin.builtins.functions.isSuspendOrKSuspendFunction
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.declarations.utils.modality
+import org.jetbrains.kotlin.fir.disableCompatibilityModeForNewInference
 import org.jetbrains.kotlin.fir.expressions.FirCallableReferenceAccess
 import org.jetbrains.kotlin.fir.expressions.FirNamedArgumentExpression
 import org.jetbrains.kotlin.fir.expressions.FirSpreadArgumentExpression
@@ -35,6 +34,7 @@ import org.jetbrains.kotlin.fir.resolve.substitution.substitutorByMap
 import org.jetbrains.kotlin.fir.scopes.*
 import org.jetbrains.kotlin.fir.scopes.impl.overrides
 import org.jetbrains.kotlin.fir.symbols.ConeTypeParameterLookupTag
+import org.jetbrains.kotlin.fir.symbols.asCone
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
@@ -101,9 +101,7 @@ class ConeOverloadConflictResolver(
 
         // The same logic as at
         val candidatesWithoutOverrides = filterOverrides(fixedCandidates)
-        val noCompatibilityMode = inferenceComponents.session.languageVersionSettings.supportsFeature(
-            LanguageFeature.DisableCompatibilityModeForNewInference
-        )
+        val noCompatibilityMode = with(transformerComponents) { disableCompatibilityModeForNewInference() }
         return chooseMaximallySpecificCandidates(
             candidatesWithoutOverrides,
             DiscriminationFlags(
@@ -477,7 +475,7 @@ class ConeOverloadConflictResolver(
 
     private fun createFlatSignature(call: Candidate): FlatSignature<Candidate> {
         return when (val declaration = call.symbol.fir) {
-            is FirSimpleFunction -> createFlatSignature(call, declaration)
+            is FirNamedFunction -> createFlatSignature(call, declaration)
             is FirConstructor -> createFlatSignature(call, declaration)
             is FirVariable -> createFlatSignature(call, declaration)
             is FirClass -> createFlatSignature(call, declaration)
@@ -519,7 +517,7 @@ class ConeOverloadConflictResolver(
         )
     }
 
-    private fun createFlatSignature(call: Candidate, function: FirSimpleFunction): FlatSignature<Candidate> {
+    private fun createFlatSignature(call: Candidate, function: FirNamedFunction): FlatSignature<Candidate> {
         return FlatSignature(
             origin = call,
             typeParameters = function.typeParameters.map { it.symbol.toLookupTag() },
@@ -601,7 +599,7 @@ class ConeOverloadConflictResolver(
         // on the first one.
         // TODO: Get rid of hacky K1 behavior (KT-67947)
         return candidate.system.buildNotFixedVariablesToStubTypesSubstitutor()
-            .safeSubstitute(session.typeContext, expanded) as ConeKotlinType
+            .safeSubstitute(session.typeContext, expanded).asCone()
     }
 
     private fun FirValueParameter.toFunctionTypeForSamOrNull(call: Candidate): ConeKotlinType? {
@@ -633,7 +631,7 @@ class ConeOverloadConflictResolver(
 class ConeSimpleConstraintSystemImpl(val system: NewConstraintSystemImpl, val session: FirSession) : SimpleConstraintSystem {
     override fun registerTypeVariables(typeParameters: Collection<TypeParameterMarker>): TypeSubstitutorMarker {
         val csBuilder = system.getBuilder()
-        val substitutionMap = typeParameters.associateBy({ (it as ConeTypeParameterLookupTag).typeParameterSymbol }) {
+        val substitutionMap = typeParameters.associateBy({ it.asCone().typeParameterSymbol }) {
             require(it is ConeTypeParameterLookupTag)
             val variable = ConeTypeParameterBasedTypeVariable(it.typeParameterSymbol)
             csBuilder.registerVariable(variable)

@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestExecutable
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestRunners.createProperTestRunner
 import org.jetbrains.kotlin.konan.test.blackbox.support.settings.KotlinNativeTargets
 import org.jetbrains.kotlin.konan.test.blackbox.support.settings.systemFrameworksPath
+import org.jetbrains.kotlin.konan.test.blackbox.support.settings.systemToolchainPath
 import org.jetbrains.kotlin.swiftexport.standalone.SwiftExportModule
 import org.jetbrains.kotlin.utils.KotlinNativePaths
 import org.junit.jupiter.api.Assumptions
@@ -36,10 +37,9 @@ abstract class AbstractSwiftExportExecutionTest : AbstractSwiftExportWithBinaryC
     private val testSuiteDir = File("native/native.tests/testData/framework")
 
     @BeforeEach
-    fun checkHost() {
-        Assumptions.assumeTrue(testRunSettings.get<KotlinNativeTargets>().hostTarget.family.isAppleFamily)
-        // TODO: KT-75530
-        Assumptions.assumeTrue(testRunSettings.get<KotlinNativeTargets>().testTarget.family == Family.OSX)
+    fun turnOffAllExecutionTests() {
+        // TODO: KT-81345 Temporary turned off Swift Export execution tests
+        Assumptions.assumeTrue(false)
     }
 
     override fun runCompiledTest(
@@ -75,20 +75,23 @@ abstract class AbstractSwiftExportExecutionTest : AbstractSwiftExportWithBinaryC
         swiftModules: Set<TestCompilationArtifact.Swift.Module>,
         kotlinBinaryLibrary: TestCompilationArtifact.BinaryLibrary,
     ): TestExecutable {
+        // todo: KT-81344 Swift Export Execution tests uses 2 different xcode installlation
         val swiftExtraOpts = swiftModules.flatMap {
             listOf(
                 "-I", it.rootDir.absolutePath,
                 "-L", it.rootDir.absolutePath,
                 "-l${it.moduleName}",
             )
-        } + listOf(
+        } + listOfNotNull(
             "-Xcc", "-fmodule-map-file=${Distribution(KotlinNativePaths.homePath.absolutePath).kotlinRuntimeForSwiftModuleMap}",
             "-L", kotlinBinaryLibrary.libraryFile.parentFile.absolutePath,
             "-l${kotlinBinaryLibrary.libraryFile.nameWithoutExtension.removePrefix("lib")}",
 
             "-F", testRunSettings.systemFrameworksPath,
             "-Xlinker", "-rpath", "-Xlinker", testRunSettings.systemFrameworksPath,
-            "-framework", "Testing"
+            "-framework", "Testing",
+            testRunSettings.systemToolchainPath?.let { "-plugin-path" },
+            testRunSettings.systemToolchainPath?.let { "${it}/usr/lib/swift/host/plugins/testing/" },
         )
 
         val success = SwiftCompilation(

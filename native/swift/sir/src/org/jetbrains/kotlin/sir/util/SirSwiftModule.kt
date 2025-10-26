@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.sir.util
 
 import org.jetbrains.kotlin.sir.*
+import org.jetbrains.kotlin.sir.SirVisibility
 import org.jetbrains.kotlin.sir.builder.*
 
 /**
@@ -44,16 +45,18 @@ object SirSwiftModule : SirModule() {
     val set = struct("Set")
     val dictionary = struct("Dictionary")
 
-    private val unicode = enum("Unicode")
-    private val utf16 = unicode.enum("UTF16")
+    private val unicode = enumStub("Unicode")
+    private val utf16 = unicode.enumStub("UTF16")
 
     private val utf16Extension = extension(SirNominalType(utf16))
 
     val utf16CodeUnit = utf16Extension.addTypealias("CodeUnit", SirNominalType(utf16))
 
-    val optional = enum("Optional")
+    val optional: SirEnum = enumStub("Optional")
 
     val caseIterable = protocol("CaseIterable")
+    val losslessStringConvertible = protocol("LosslessStringConvertible")
+    val rawRepresentable = protocol("RawRepresentable")
 }
 
 private fun SirMutableDeclarationContainer.struct(typeName: String) = addChild {
@@ -64,12 +67,11 @@ private fun SirMutableDeclarationContainer.struct(typeName: String) = addChild {
     }
 }
 
-private fun SirMutableDeclarationContainer.enum(typeName: String) = addChild {
-    buildEnum {
-        origin = externallyDefined(typeName)
-        visibility = SirVisibility.PUBLIC
+private fun SirMutableDeclarationContainer.enumStub(typeName: String) = addChild {
+    SirEnumStub(
+        origin = externallyDefined(typeName),
         name = typeName
-    }
+    )
 }
 
 private fun SirMutableDeclarationContainer.protocol(typeName: String) = addChild {

@@ -156,6 +156,7 @@ class UklibFromKGPFragmentsTests {
                 js()
                 wasmJs()
                 wasmWasi()
+                @Suppress("DEPRECATION")
                 androidTarget()
             }
         }.runLifecycleAwareTest {
@@ -212,21 +213,6 @@ class UklibFromKGPFragmentsTests {
             KotlinToolingDiagnostics.UklibPublicationWithoutCrossCompilation(
                 if (HostManager.hostIsMac) WARNING else ERROR
             )
-        )
-    }
-
-    @Test
-    fun `project configuration with enabled uklib publication - with cinterops - emits diagnostic`() {
-        buildProjectWithMPP(
-            preApplyCode = {
-                setUklibPublicationStrategy()
-            }
-        ) {
-            kotlin {
-                iosArm64().compilations.getByName("main").cinterops.create("foo")
-            }
-        }.evaluate().assertContainsDiagnostic(
-            KotlinToolingDiagnostics.UklibPublicationWithCinterops
         )
     }
 
@@ -319,6 +305,26 @@ class UklibFromKGPFragmentsTests {
                 linuxArm64()
                 iosArm64()
                 iosX64()
+            }
+        }.evaluate().assertNoDiagnostics(
+            filterDiagnosticIds = defaultFilteredDiagnostics + listOf(
+                KotlinToolingDiagnostics.InternalKotlinGradlePluginPropertiesUsed,
+                KotlinToolingDiagnostics.UnusedSourceSetsWarning,
+            )
+        )
+    }
+
+    @Test
+    fun `project configuration with enabled uklib publication - single target with cinterops`() {
+        buildProjectWithMPP(
+            preApplyCode = {
+                setUklibPublicationStrategy()
+            }
+        ) {
+            kotlin {
+                val main = linuxArm64().compilations.getByName("main")
+                main.cinterops.create("foo")
+                main.cinterops.create("bar")
             }
         }.evaluate().assertNoDiagnostics(
             filterDiagnosticIds = defaultFilteredDiagnostics + listOf(

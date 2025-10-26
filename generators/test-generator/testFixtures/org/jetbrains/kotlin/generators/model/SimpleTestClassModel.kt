@@ -5,53 +5,58 @@
 package org.jetbrains.kotlin.generators.model
 
 import com.intellij.openapi.util.io.FileUtil
+import org.jetbrains.kotlin.generators.MethodGenerator
+import org.jetbrains.kotlin.generators.impl.SimpleTestClassModelTestAllFilesPresentMethodGenerator
 import org.jetbrains.kotlin.generators.util.TestGeneratorUtil.fileNameToJavaIdentifier
 import org.jetbrains.kotlin.generators.util.extractTagsFromDirectory
 import org.jetbrains.kotlin.generators.util.extractTagsFromTestFile
-import org.jetbrains.kotlin.generators.util.methodModelLocator
 import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.util.KtTestUtil
 import java.io.File
 import java.util.regex.Pattern
 
+/**
+ * The main implementation of a class model.
+ * Class structure reflects the testdata directory structure, where
+ * - directory is a class
+ * - subdirectory is a nested/inner class (for JUnit4/JUnit5 respectively)
+ * - a test data file is a test method
+ *
+ * The model encapsulates the logic of traversing the testdata directory,
+ * locating testdata files and generating test method models for them.
+ *
+ * @property recursive if false then subdirectories wouldn't be traversed
+ */
 class SimpleTestClassModel(
     val rootFile: File,
     val recursive: Boolean,
     private val excludeParentDirs: Boolean,
     val filenamePattern: Pattern,
     val excludePattern: Pattern?,
-    private val checkFilenameStartsLowerCase: Boolean?,
     private val doTestMethodName: String,
     private val testClassName: String,
-    val targetBackend: TargetBackend,
+    val targetBackend: TargetBackend?,
     excludeDirs: Collection<String>,
     excludeDirsRecursively: Collection<String>,
-    private val skipIgnored: Boolean,
     private val testRunnerMethodName: String,
-    private val additionalRunnerArguments: List<String>,
-    private val deep: Int?,
     override val annotations: Collection<AnnotationModel>,
     override val tags: List<String>,
-    private val additionalMethods: Collection<MethodModel>,
-    val skipSpecificFile: (File) -> Boolean,
+    private val additionalMethods: Collection<MethodModel<*>>,
     val skipTestAllFilesCheck: Boolean,
-    val generateEmptyTestClasses: Boolean,
-    val nativeTestInNonNativeTestInfra: Boolean,
 ) : TestClassModel() {
     override val name: String
         get() = testClassName
 
-    val excludeDirs: Set<String> = excludeDirs.toSet()
-    val excludeDirsRecursively: Set<String> = excludeDirsRecursively.toSet()
+    val allExcludedDirs: Set<String> = (excludeDirs + excludeDirsRecursively).toSet()
 
     override val innerTestClasses: Collection<TestClassModel> by lazy {
-        if (!rootFile.isDirectory || !recursive || deep != null && deep < 1) {
+        if (!rootFile.isDirectory || !recursive) {
             return@lazy emptyList()
         }
         val children = mutableListOf<TestClassModel>()
         val files = rootFile.listFiles() ?: return@lazy emptyList()
         for (file in files) {
-            if (file.isDirectory && dirHasFilesInside(file) && !excludeDirs.contains(file.name) && !excludeDirsRecursively.contains(file.name)) {
+            if (file.isDirectory && dirHasFilesInside(file) && !allExcludedDirs.contains(file.name)) {
                 val innerTestClassName = fileNameToJavaIdentifier(file)
                 children.add(
                     SimpleTestClassModel(
@@ -60,23 +65,16 @@ class SimpleTestClassModel(
                         excludeParentDirs,
                         filenamePattern,
                         excludePattern,
-                        checkFilenameStartsLowerCase,
                         doTestMethodName,
                         innerTestClassName,
                         targetBackend,
-                        excludesStripOneDirectory(file.name),
+                        excludesStripOneDirectory(excludeDirs, file.name),
                         excludeDirsRecursively,
-                        skipIgnored,
                         testRunnerMethodName,
-                        additionalRunnerArguments,
-                        if (deep != null) deep - 1 else null,
                         annotations,
                         extractTagsFromDirectory(file),
-                        additionalMethods.filter { it.shouldBeGeneratedForInnerTestClass() },
-                        skipSpecificFile,
+                        additionalMethods.filter { it.shouldBeGeneratedForInnerTestClass },
                         skipTestAllFilesCheck,
-                        generateEmptyTestClasses,
-                        nativeTestInNonNativeTestInfra
                     )
                 )
             }
@@ -86,7 +84,7 @@ class SimpleTestClassModel(
     }
 
 
-    private fun excludesStripOneDirectory(directoryName: String): Set<String> {
+    private fun excludesStripOneDirectory(excludeDirs: Collection<String>, directoryName: String): Collection<String> {
         if (excludeDirs.isEmpty()) return excludeDirs
         val result: MutableSet<String> = LinkedHashSet()
         for (excludeDir in excludeDirs) {
@@ -98,32 +96,29 @@ class SimpleTestClassModel(
         return result
     }
 
-    override val methods: Collection<MethodModel> by lazy {
+    override val methods: Collection<MethodModel<*>> by lazy {
         if (!rootFile.isDirectory) {
-            return@lazy methodModelLocator(
-                rootFile,
-                rootFile,
+            val methodModel = SimpleTestMethodModel(
+                rootDir = rootFile,
+                file = rootFile,
                 filenamePattern,
-                checkFilenameStartsLowerCase,
-                targetBackend,
-                skipIgnored,
-                extractTagsFromTestFile(rootFile),
-                nativeTestInNonNativeTestInfra
+                extractTagsFromTestFile(rootFile)
             )
+            return@lazy listOf(methodModel)
         }
-        val result = mutableListOf<MethodModel>()
-        result.add(RunTestMethodModel(targetBackend, doTestMethodName, testRunnerMethodName, additionalRunnerArguments))
+        val result = mutableListOf<MethodModel<*>>()
+        result.add(RunTestMethodModel(targetBackend, doTestMethodName, testRunnerMethodName))
         if (!skipTestAllFilesCheck) {
             result.add(TestAllFilesPresentMethodModel())
         }
         result.addAll(additionalMethods)
         val listFiles = rootFile.listFiles()
-        if (listFiles != null && (deep == null || deep == 0)) {
+        if (listFiles != null) {
             for (file in listFiles) {
                 val excluded = let {
                     val name = file.name
                     val byPattern = excludePattern != null && excludePattern.matcher(name).matches()
-                    val byDirectory = file.isDirectory && (name in excludeDirs || name in excludeDirsRecursively)
+                    val byDirectory = file.isDirectory && (name in allExcludedDirs)
                     return@let byPattern || byDirectory
                 }
                 if (!excluded && filenamePattern.matcher(file.name).matches()) {
@@ -137,22 +132,16 @@ class SimpleTestClassModel(
                                     "Consider removing empty directory or revert removing of its' contents."
                         )
                     }
-                    if (!skipSpecificFile(file)) {
-                        result.addAll(
-                            methodModelLocator(
-                                rootFile, file, filenamePattern,
-                                checkFilenameStartsLowerCase, targetBackend, skipIgnored, extractTagsFromTestFile(file),
-                                nativeTestInNonNativeTestInfra
-                            )
+                    result.add(
+                        SimpleTestMethodModel(
+                            rootFile,
+                            file,
+                            filenamePattern,
+                            extractTagsFromTestFile(file)
                         )
-                    }
+                    )
                 }
             }
-        }
-        if (result.any { it is TransformingTestMethodModel && it.shouldBeGenerated() }) {
-            val additionalRunner =
-                RunTestMethodModel(targetBackend, doTestMethodName, testRunnerMethodName, additionalRunnerArguments, withTransformer = true)
-            result.add(additionalRunner)
         }
         result.sortWith(BY_NAME)
         result
@@ -170,11 +159,13 @@ class SimpleTestClassModel(
     override val dataPathRoot: String
         get() = "\$PROJECT_ROOT"
 
-    object TestAllFilesPresentMethodKind : MethodModel.Kind()
-
-    inner class TestAllFilesPresentMethodModel : MethodModel {
-        override val kind: MethodModel.Kind
-            get() = TestAllFilesPresentMethodKind
+    /**
+     * Test method which ensures that there is a generated test for each testdata file in the
+     *   corresponding directory. Used to validate that generated test is up-to-date.
+     */
+    inner class TestAllFilesPresentMethodModel : MethodModel<TestAllFilesPresentMethodModel>() {
+        override val generator: MethodGenerator<TestAllFilesPresentMethodModel>
+            get() = SimpleTestClassModelTestAllFilesPresentMethodGenerator
 
         override val name: String
             get() = "testAllFilesPresentIn$testClassName"
@@ -184,10 +175,6 @@ class SimpleTestClassModel(
 
         val classModel: SimpleTestClassModel
             get() = this@SimpleTestClassModel
-
-        override fun shouldBeGenerated(): Boolean {
-            return true
-        }
 
         override val tags: List<String>
             get() = emptyList()

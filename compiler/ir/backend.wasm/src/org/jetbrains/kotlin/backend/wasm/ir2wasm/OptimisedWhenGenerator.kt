@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.backend.wasm.ir2wasm
 
 import org.jetbrains.kotlin.backend.common.IrWhenUtils
 import org.jetbrains.kotlin.backend.wasm.WasmSymbols
+import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.isUnit
@@ -22,6 +23,7 @@ private class ExtractedWhenBranchWithIntConditions(val intConditions: List<Int>,
 
 internal fun BodyGenerator.tryGenerateOptimisedWhen(
     expression: IrWhen,
+    irBuiltIns: IrBuiltIns,
     symbols: WasmSymbols,
     functionContext: WasmFunctionCodegenContext,
     wasmModuleTypeTransformer: WasmModuleTypeTransformer
@@ -38,7 +40,7 @@ internal fun BodyGenerator.tryGenerateOptimisedWhen(
         if (isElseBranch(branch)) {
             elseExpression = branch.result
         } else {
-            val conditions = IrWhenUtils.matchConditions<IrCall>(symbols.irBuiltIns.ororSymbol, branch.condition) ?: return false
+            val conditions = IrWhenUtils.matchConditions<IrCall>(irBuiltIns.ororSymbol, branch.condition) ?: return false
             val extractedConditions = tryExtractEqEqNumberConditions(symbols, conditions) ?: return false
             val filteredExtractedConditions = extractedConditions.filter { it.const.value !in seenConditions }
             seenConditions.addAll(extractedConditions.map { it.const.value!! })
@@ -62,15 +64,31 @@ internal fun BodyGenerator.tryGenerateOptimisedWhen(
     }
     if (allConditionsReadsSameValue) return false
 
+    val supportedBasicTypes = setOf(
+        IrConstKind.Char,
+        IrConstKind.Int,
+    )
+
     // Check all kinds are the same
-    for (branch in extractedBranches) {
-        //TODO: Support all primitive types
-        if (!branch.conditions.all { it.const.kind.equals(IrConstKind.Int) }) return false
+    //TODO: Support all primitive types
+    val validBranches = supportedBasicTypes.any { type ->
+        extractedBranches.all { branch ->
+            branch.conditions.all { it.const.kind.equals(type) }
+        }
+    }
+    if (!validBranches) {
+        return false
     }
 
     val intBranches = extractedBranches.map { branch ->
         ExtractedWhenBranchWithIntConditions(
-            branch.conditions.map { it.const.value as Int }, branch.expression
+            branch.conditions.map {
+                when (val v = it.const.value) {
+                    is Int -> v
+                    is Char -> v.code
+                    else -> error("Unreachable branch")
+                }
+            }, branch.expression
         )
     }
 

@@ -3,6 +3,80 @@
 import KotlinRuntime
 import KotlinRuntimeSupport
 
+public enum ENUM: KotlinRuntimeSupport._KotlinBridgeable, Swift.CaseIterable, Swift.LosslessStringConvertible, Swift.RawRepresentable {
+    case A
+    case B
+    case C
+    public final class INSIDE_ENUM: KotlinRuntime.KotlinBase {
+        public init() {
+            if Self.self != main.ENUM.INSIDE_ENUM.self { fatalError("Inheritance from exported Kotlin classes is not supported yet: \(String(reflecting: Self.self)) inherits from main.ENUM.INSIDE_ENUM ") }
+            let __kt = ENUM_INSIDE_ENUM_init_allocate()
+            super.init(__externalRCRefUnsafe: __kt, options: .asBoundBridge)
+            ENUM_INSIDE_ENUM_init_initialize__TypesOfArguments__Swift_UnsafeMutableRawPointer__(__kt)
+        }
+        package override init(
+            __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?,
+            options: KotlinRuntime.KotlinBaseConstructionOptions
+        ) {
+            super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
+        }
+    }
+    public var description: Swift.String {
+        get {
+            switch self {
+            case .A: "A"
+            case .B: "B"
+            case .C: "C"
+            default: fatalError()
+            }
+        }
+    }
+    public var rawValue: Swift.Int32 {
+        get {
+            switch self {
+            case .A: 0
+            case .B: 1
+            case .C: 2
+            default: fatalError()
+            }
+        }
+    }
+    public init?(
+        _ description: Swift.String
+    ) {
+        switch description {
+        case "A": self = .A
+        case "B": self = .B
+        case "C": self = .C
+        default: return nil
+        }
+    }
+    public init?(
+        rawValue: Swift.Int32
+    ) {
+        guard 0..<3 ~= rawValue else { return nil }
+        self = ENUM.allCases[Int(rawValue)]
+    }
+    public init(
+        __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer!,
+        options: KotlinRuntime.KotlinBaseConstructionOptions
+    ) {
+        switch __externalRCRefUnsafe {
+        case ENUM_A(): self = .A
+        case ENUM_B(): self = .B
+        case ENUM_C(): self = .C
+        default: fatalError()
+        }
+    }
+    public func __externalRCRef() -> Swift.UnsafeMutableRawPointer! {
+        return switch self {
+        case .A: ENUM_A()
+        case .B: ENUM_B()
+        case .C: ENUM_C()
+        default: fatalError()
+        }
+    }
+}
 open class ABSTRACT_CLASS: KotlinRuntime.KotlinBase {
     package init() {
         fatalError()
@@ -195,53 +269,6 @@ public final class DATA_CLASS_WITH_REF: KotlinRuntime.KotlinBase {
     }
     public func toString() -> Swift.String {
         return DATA_CLASS_WITH_REF_toString(self.__externalRCRef())
-    }
-}
-public final class ENUM: KotlinRuntime.KotlinBase, Swift.CaseIterable {
-    public final class INSIDE_ENUM: KotlinRuntime.KotlinBase {
-        public init() {
-            if Self.self != main.ENUM.INSIDE_ENUM.self { fatalError("Inheritance from exported Kotlin classes is not supported yet: \(String(reflecting: Self.self)) inherits from main.ENUM.INSIDE_ENUM ") }
-            let __kt = ENUM_INSIDE_ENUM_init_allocate()
-            super.init(__externalRCRefUnsafe: __kt, options: .asBoundBridge)
-            ENUM_INSIDE_ENUM_init_initialize__TypesOfArguments__Swift_UnsafeMutableRawPointer__(__kt)
-        }
-        package override init(
-            __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?,
-            options: KotlinRuntime.KotlinBaseConstructionOptions
-        ) {
-            super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
-        }
-    }
-    public static var A: main.ENUM {
-        get {
-            return main.ENUM.__createClassWrapper(externalRCRef: ENUM_A_get())
-        }
-    }
-    public static var B: main.ENUM {
-        get {
-            return main.ENUM.__createClassWrapper(externalRCRef: ENUM_B_get())
-        }
-    }
-    public static var C: main.ENUM {
-        get {
-            return main.ENUM.__createClassWrapper(externalRCRef: ENUM_C_get())
-        }
-    }
-    public static var allCases: [main.ENUM] {
-        get {
-            return ENUM_entries_get() as! Swift.Array<main.ENUM>
-        }
-    }
-    package override init(
-        __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?,
-        options: KotlinRuntime.KotlinBaseConstructionOptions
-    ) {
-        super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
-    }
-    public static func valueOf(
-        value: Swift.String
-    ) -> main.ENUM {
-        return main.ENUM.__createClassWrapper(externalRCRef: ENUM_valueOf__TypesOfArguments__Swift_String__(value))
     }
 }
 public final class Foo: KotlinRuntime.KotlinBase {

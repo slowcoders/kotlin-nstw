@@ -13,22 +13,21 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.api.targets.LLPartialBody
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.targets.partialBodyAnalysisState
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.withFirDesignationEntry
 import org.jetbrains.kotlin.analysis.low.level.api.fir.element.builder.getNonLocalContainingOrThisDeclaration
+import org.jetbrains.kotlin.analysis.low.level.api.fir.element.builder.isAutonomousElement
+import org.jetbrains.kotlin.analysis.low.level.api.fir.file.structure.FirElementsRecorder.Companion.anchorPsi
 import org.jetbrains.kotlin.analysis.low.level.api.fir.file.structure.LLPartialBodyElementMapper
 import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.llFirSession
-import org.jetbrains.kotlin.analysis.low.level.api.fir.element.builder.isAutonomousElement
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.ContextCollector.Context
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.ContextCollector.ContextKind
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.ContextCollector.FilterResponse
 import org.jetbrains.kotlin.fir.FirElement
+import org.jetbrains.kotlin.fir.SessionAndScopeSessionHolder
 import org.jetbrains.kotlin.fir.declarations.*
-import org.jetbrains.kotlin.fir.declarations.utils.isLocal
+import org.jetbrains.kotlin.fir.declarations.utils.isScriptTopLevelDeclaration
 import org.jetbrains.kotlin.fir.declarations.utils.memberDeclarationNameOrNull
 import org.jetbrains.kotlin.fir.expressions.*
-import org.jetbrains.kotlin.fir.psi
-import org.jetbrains.kotlin.fir.realPsi
-import org.jetbrains.kotlin.fir.SessionAndScopeSessionHolder
-import org.jetbrains.kotlin.fir.declarations.utils.isScriptTopLevelDeclaration
 import org.jetbrains.kotlin.fir.extensions.scriptResolutionHacksComponent
+import org.jetbrains.kotlin.fir.realPsi
 import org.jetbrains.kotlin.fir.resolve.SessionHolderImpl
 import org.jetbrains.kotlin.fir.resolve.calls.ImplicitValue
 import org.jetbrains.kotlin.fir.resolve.dfa.DataFlowAnalyzerContext
@@ -143,7 +142,7 @@ object ContextCollector {
     private fun partiallyResolveTargetElementIfPossible(
         resolutionFacade: LLResolutionFacade,
         designation: FirDesignation?,
-        targetElement: PsiElement
+        targetElement: PsiElement,
     ): Boolean {
         val declaration = designation?.target?.realPsi as? KtDeclaration ?: return false
 
@@ -262,7 +261,8 @@ private class ContextCollectorVisitor(
 
     private val context = BodyResolveContext(
         returnTypeCalculator = ReturnTypeCalculatorForFullBodyResolve.Default,
-        dataFlowAnalyzerContext = DataFlowAnalyzerContext(bodyHolder.session)
+        dataFlowAnalyzerContext = DataFlowAnalyzerContext(bodyHolder.session),
+        isContextCollectorMode = true,
     )
 
     private val result = HashMap<ContextKey, Context>()
@@ -291,7 +291,7 @@ private class ContextCollectorVisitor(
             return
         }
 
-        val psi = fir.psi ?: return
+        val psi = fir.anchorPsi ?: return
 
         val key = ContextKey(psi, kind)
         if (key in result) {
@@ -761,31 +761,31 @@ private class ContextCollectorVisitor(
         }
     }
 
-    override fun visitSimpleFunction(simpleFunction: FirSimpleFunction) = withProcessor(simpleFunction) {
-        dumpContext(simpleFunction, ContextKind.SELF)
+    override fun visitNamedFunction(namedFunction: FirNamedFunction) = withProcessor(namedFunction) {
+        dumpContext(namedFunction, ContextKind.SELF)
 
-        processAnnotations(simpleFunction)
+        processAnnotations(namedFunction)
 
         onActive {
-            simpleFunction.performBodyAnalysis()
+            namedFunction.performBodyAnalysis()
 
-            val holder = getSessionHolder(simpleFunction)
+            val holder = getSessionHolder(namedFunction)
 
-            context.withSimpleFunction(simpleFunction, holder.session) {
-                processList(simpleFunction.typeParameters)
-                process(simpleFunction.receiverParameter)
+            context.withNamedFunction(namedFunction, holder.session) {
+                processList(namedFunction.typeParameters)
+                process(namedFunction.receiverParameter)
 
                 onActive {
-                    context.forFunctionBody(simpleFunction, holder) {
-                        dumpContext(simpleFunction, ContextKind.BODY)
+                    context.forFunctionBody(namedFunction, holder) {
+                        dumpContext(namedFunction, ContextKind.BODY)
 
-                        processList(simpleFunction.contextParameters)
-                        processList(simpleFunction.valueParameters)
-                        processBody(simpleFunction)
+                        processList(namedFunction.contextParameters)
+                        processList(namedFunction.valueParameters)
+                        processBody(namedFunction)
                     }
 
-                    process(simpleFunction.returnTypeRef)
-                    process(simpleFunction.contractDescription)
+                    process(namedFunction.returnTypeRef)
+                    process(namedFunction.contractDescription)
                 }
             }
         }
@@ -1018,7 +1018,6 @@ private class ContextCollectorVisitor(
      *
      * @see processAnnotations
      */
-    @ContextCollectorDsl
     private fun Processor.processRawAnnotations(declaration: FirDeclaration) {
         for (annotation in declaration.annotations) {
             process(annotation)
@@ -1030,7 +1029,6 @@ private class ContextCollectorVisitor(
      *
      * @see org.jetbrains.kotlin.fir.resolve.transformers.plugin.FirAnnotationArgumentsTransformer
      */
-    @ContextCollectorDsl
     private fun Processor.processAnnotations(declaration: FirDeclaration) {
         @OptIn(PrivateForInline::class)
         context.withContainer(declaration) {
@@ -1047,7 +1045,6 @@ private class ContextCollectorVisitor(
     private inner class Processor(private val delegate: FirVisitorVoid) {
         private val elementsToSkip = HashSet<FirElement>()
 
-        @ContextCollectorDsl
         fun process(element: FirElement?) {
             if (isActive && element != null) {
                 element.accept(delegate)
@@ -1055,7 +1052,6 @@ private class ContextCollectorVisitor(
             }
         }
 
-        @ContextCollectorDsl
         fun <T : FirElement?> process(element: T?, customVisit: (T & Any) -> Unit) {
             if (element != null) {
                 customVisit(element)
@@ -1063,7 +1059,6 @@ private class ContextCollectorVisitor(
             }
         }
 
-        @ContextCollectorDsl
         fun processList(elements: Collection<FirElement>) {
             for (element in elements) {
                 if (!isActive) {
@@ -1074,7 +1069,6 @@ private class ContextCollectorVisitor(
             }
         }
 
-        @ContextCollectorDsl
         fun processChildren(element: FirElement, checkIsActive: Boolean = true) {
             if (checkIsActive && !isActive) {
                 return
@@ -1087,7 +1081,7 @@ private class ContextCollectorVisitor(
     private inner class FilteringVisitor(
         val delegate: FirVisitorVoid,
         val elementsToSkip: Set<FirElement>,
-        val checkIsActive: Boolean
+        val checkIsActive: Boolean,
     ) : FirVisitorVoid() {
         override fun visitElement(element: FirElement) {
             if (checkIsActive && !isActive) {
@@ -1168,5 +1162,3 @@ private class ContextCollectorVisitor(
     }
 }
 
-@DslMarker
-private annotation class ContextCollectorDsl

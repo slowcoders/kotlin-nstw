@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.psi
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.fileTypes.FileType
-import com.intellij.openapi.vfs.VirtualFileWithId
 import com.intellij.psi.*
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -23,6 +22,7 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.psiUtil.children
 import org.jetbrains.kotlin.psi.psiUtil.hasExpectModifier
 import org.jetbrains.kotlin.psi.stubs.KotlinFileStub
+import org.jetbrains.kotlin.psi.stubs.KotlinFileStubKind
 import org.jetbrains.kotlin.psi.stubs.KotlinImportDirectiveStub
 import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementType
 
@@ -137,6 +137,10 @@ open class KtCommonFile(viewProvider: FileViewProvider, val isCompiled: Boolean)
 
     override fun toString(): String = "KtFile: $name"
 
+    /** A workaround to provide the proper stub builder for decompiled files until KT-78356 is fixed */
+    @KtImplementationDetail
+    open val customStubBuilder: StubBuilder? get() = null
+
     override fun getDeclarations(): List<KtDeclaration> {
         return greenStub?.getChildrenByType(KtFile.FILE_DECLARATION_TYPES, KtDeclaration.ARRAY_FACTORY)?.toList()
             ?: PsiTreeUtil.getChildrenOfTypeAsList(this, KtDeclaration::class.java)
@@ -158,6 +162,7 @@ open class KtCommonFile(viewProvider: FileViewProvider, val isCompiled: Boolean)
         val stub = greenStub
         if (stub != null) {
             for (stubElement in stub.childrenStubs) {
+                @Suppress("DEPRECATION") // KT-78356
                 val stubType = stubElement.stubType
                 when (stubType) {
                     // Required element found
@@ -201,6 +206,7 @@ open class KtCommonFile(viewProvider: FileViewProvider, val isCompiled: Boolean)
     ): P? {
         val stub = greenStub
         if (stub != null) {
+            @Suppress("DEPRECATION") // KT-78356
             val importListStub = stub.findChildStubByType(elementType)
             return importListStub?.psi
         }
@@ -240,21 +246,12 @@ open class KtCommonFile(viewProvider: FileViewProvider, val isCompiled: Boolean)
         return importDirectives.find { it.importedName == name }?.importedFqName?.pathSegments()?.last()
     }
 
-    override fun getStub(): KotlinFileStub? = getFileStub {
-        super.getStub()
-    }
+    override fun getStub(): KotlinFileStub? = super.getStub()?.let { it as KotlinFileStub }
 
-    protected open val greenStub: KotlinFileStub? get() = getFileStub(this::getGreenStub)
-
-    private fun getFileStub(getter: () -> StubElement<*>?): KotlinFileStub? {
-        if (virtualFile !is VirtualFileWithId) return null
-        val stub = getter()
-        if (stub is KotlinFileStub?) {
-            return stub
-        }
-
-        error("Illegal stub for KtFile: type=${this.javaClass}, stub=${stub.javaClass} name=$name")
-    }
+    protected open val greenStub: KotlinFileStub?
+        get() =
+            @Suppress("DEPRECATION") // KT-78356
+            super.getGreenStub()?.let { it as KotlinFileStub }
 
     override fun clearCaches() {
         @Suppress("RemoveExplicitSuperQualifier")
@@ -270,11 +267,17 @@ open class KtCommonFile(viewProvider: FileViewProvider, val isCompiled: Boolean)
     fun hasTopLevelCallables(): Boolean {
         hasTopLevelCallables?.let { return it }
 
-        val result = declarations.any {
-            (it is KtProperty ||
-                    it is KtNamedFunction ||
-                    it is KtScript ||
-                    it is KtTypeAlias) && !it.hasExpectModifier()
+        val greenStub = greenStub
+        val result = if (greenStub != null) {
+            greenStub.kind is KotlinFileStubKind.WithPackage.Facade
+        } else {
+            node.children().any {
+                val psi = it.psi
+                (psi is KtProperty ||
+                        psi is KtNamedFunction ||
+                        psi is KtScript ||
+                        psi is KtTypeAlias) && !psi.hasExpectModifier()
+            }
         }
 
         hasTopLevelCallables = result
@@ -329,6 +332,7 @@ private fun KtImportList.computeHasImportAlias(): Boolean {
     val stub = greenStub
     if (stub != null) {
         return stub.childrenStubs.any {
+            @Suppress("DEPRECATION") // KT-78356
             it is KotlinImportDirectiveStub && it.findChildStubByType(KtStubBasedElementTypes.IMPORT_ALIAS) != null
         }
     }

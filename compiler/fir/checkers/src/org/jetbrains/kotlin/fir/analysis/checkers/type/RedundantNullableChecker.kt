@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.fir.analysis.checkers.type
 
-import org.jetbrains.kotlin.KtFakeSourceElementKind
+import org.jetbrains.kotlin.KtRealSourceElementKind
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
@@ -24,10 +24,10 @@ object RedundantNullableChecker : FirResolvedTypeRefChecker(MppCheckerKind.Commo
     override fun check(typeRef: FirResolvedTypeRef) {
         if (
             !typeRef.coneType.abbreviatedTypeOrSelf.isMarkedNullable ||
-            typeRef.source?.kind == KtFakeSourceElementKind.ImplicitTypeArgument
+            typeRef.source?.kind !is KtRealSourceElementKind
         ) return
 
-        var symbol = typeRef.coneType.abbreviatedTypeOrSelf.toSymbol(context.session)
+        var symbol = typeRef.coneType.abbreviatedTypeOrSelf.toSymbol()
         if (symbol is FirTypeAliasSymbol) {
             while (symbol is FirTypeAliasSymbol) {
                 val resolvedExpandedTypeRef = symbol.resolvedExpandedTypeRef

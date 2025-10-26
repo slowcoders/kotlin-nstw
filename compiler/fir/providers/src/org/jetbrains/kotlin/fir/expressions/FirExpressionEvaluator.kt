@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.fir.expressions
 
-import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.contracts.description.LogicOperationKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.fir.*
@@ -100,8 +99,7 @@ object FirExpressionEvaluator {
     }
 
     private fun FirExpression?.canBeEvaluated(session: FirSession): Boolean {
-        val intrinsicConstEvaluation = session.languageVersionSettings.supportsFeature(LanguageFeature.IntrinsicConstEvaluation)
-        if (this == null || intrinsicConstEvaluation || this is FirLazyExpression || !isResolved) return false
+        if (this == null  || this is FirLazyExpression || !isResolved) return false
         return canBeEvaluatedAtCompileTime(this, session, allowErrors = false, calledOnCheckerStage = false)
     }
 
@@ -187,12 +185,12 @@ object FirExpressionEvaluator {
         }
 
         @OptIn(UnresolvedExpressionTypeAccess::class)
-        override fun visitArrayLiteral(arrayLiteral: FirArrayLiteral, data: Nothing?): FirEvaluatorResult {
-            return buildArrayLiteral {
-                source = arrayLiteral.source
-                coneTypeOrNull = arrayLiteral.coneTypeOrNull
-                annotations.addAll(arrayLiteral.annotations)
-                argumentList = visitArgumentList(arrayLiteral.argumentList, data).unwrapOr { return it } ?: return NotEvaluated
+        override fun visitCollectionLiteral(collectionLiteral: FirCollectionLiteral, data: Nothing?): FirEvaluatorResult {
+            return buildCollectionLiteral {
+                source = collectionLiteral.source
+                coneTypeOrNull = collectionLiteral.coneTypeOrNull
+                annotations.addAll(collectionLiteral.annotations)
+                argumentList = visitArgumentList(collectionLiteral.argumentList, data).unwrapOr { return it } ?: return NotEvaluated
             }.wrap()
         }
 
@@ -339,10 +337,15 @@ object FirExpressionEvaluator {
                 evaluate(it).unwrapOr<FirLiteralExpression> { return it } ?: return NotEvaluated
             }
             if (evaluatedArgs.size != 2) return NotEvaluated
+            val opr1 = evaluatedArgs[0]
+            val opr2 = evaluatedArgs[1]
+
+            val opr1Value = opr1.kind.convertToGivenKind(opr1.value)
+            val opr2Value = opr2.kind.convertToGivenKind(opr2.value)
 
             val result = when (equalityOperatorCall.operation) {
-                FirOperation.EQ -> evaluatedArgs[0].value == evaluatedArgs[1].value
-                FirOperation.NOT_EQ -> evaluatedArgs[0].value != evaluatedArgs[1].value
+                FirOperation.EQ -> opr1Value == opr2Value
+                FirOperation.NOT_EQ -> opr1Value != opr2Value
                 else -> error("Operation \"${equalityOperatorCall.operation}\" is not supported in compile time evaluation")
             }
 
@@ -423,6 +426,10 @@ private fun ConstantValueKind.toCompileTimeType(): CompileTimeType {
         ConstantValueKind.Short -> CompileTimeType.SHORT
         ConstantValueKind.Int -> CompileTimeType.INT
         ConstantValueKind.Long -> CompileTimeType.LONG
+        ConstantValueKind.UnsignedByte -> CompileTimeType.UBYTE
+        ConstantValueKind.UnsignedShort -> CompileTimeType.USHORT
+        ConstantValueKind.UnsignedInt -> CompileTimeType.UINT
+        ConstantValueKind.UnsignedLong -> CompileTimeType.ULONG
         ConstantValueKind.Double -> CompileTimeType.DOUBLE
         ConstantValueKind.Float -> CompileTimeType.FLOAT
         ConstantValueKind.Char -> CompileTimeType.CHAR

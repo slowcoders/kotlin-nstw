@@ -44,7 +44,6 @@ kotlin {
 
                 runtimeOnly(libs.intellij.fastutil)
                 runtimeOnly(jpsModelImpl())
-                implementation(project(":compiler:backend-common"))
                 implementation(project(":compiler:ir.backend.common"))
                 implementation(project(":compiler:cli"))
                 implementation(project(":compiler:backend.jvm"))
@@ -59,6 +58,7 @@ kotlin {
 
                 // Compose compiler deps
                 implementation(project(":plugins:compose-compiler-plugin:compiler-hosted"))
+                implementation(project(":plugins:compose-compiler-plugin:group-mapping"))
                 implementation(project(":plugins:compose-compiler-plugin:compiler-hosted:integration-tests:protobuf-test-classes"))
 
                 // coroutines for runtime tests

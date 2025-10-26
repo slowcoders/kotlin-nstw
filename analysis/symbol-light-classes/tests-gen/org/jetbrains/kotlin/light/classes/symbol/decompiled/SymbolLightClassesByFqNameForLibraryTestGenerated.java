@@ -229,6 +229,18 @@ public class SymbolLightClassesByFqNameForLibraryTestGenerated extends AbstractS
   }
 
   @Test
+  @TestMetadata("duplicatedNoArg.kt")
+  public void testDuplicatedNoArg() {
+    runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/duplicatedNoArg.kt");
+  }
+
+  @Test
+  @TestMetadata("duplicatedNoArg2.kt")
+  public void testDuplicatedNoArg2() {
+    runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/duplicatedNoArg2.kt");
+  }
+
+  @Test
   @TestMetadata("EnumClass.kt")
   public void testEnumClass() {
     runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/EnumClass.kt");
@@ -262,6 +274,12 @@ public class SymbolLightClassesByFqNameForLibraryTestGenerated extends AbstractS
   @TestMetadata("HiddenDeprecatedInClass.kt")
   public void testHiddenDeprecatedInClass() {
     runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/HiddenDeprecatedInClass.kt");
+  }
+
+  @Test
+  @TestMetadata("HiddenDeprecatedInClassWithJavaLangDeprecated.kt")
+  public void testHiddenDeprecatedInClassWithJavaLangDeprecated() {
+    runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/HiddenDeprecatedInClassWithJavaLangDeprecated.kt");
   }
 
   @Test
@@ -364,6 +382,12 @@ public class SymbolLightClassesByFqNameForLibraryTestGenerated extends AbstractS
   @TestMetadata("OnlySecondaryConstructors.kt")
   public void testOnlySecondaryConstructors() {
     runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/OnlySecondaryConstructors.kt");
+  }
+
+  @Test
+  @TestMetadata("privateInterfaceCallable.kt")
+  public void testPrivateInterfaceCallable() {
+    runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/privateInterfaceCallable.kt");
   }
 
   @Test

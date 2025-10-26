@@ -76,7 +76,7 @@ class IrDeclarationDeserializer(
     private var areFunctionBodiesDeserialized: Boolean =
         settings.deserializeFunctionBodies == DeserializeFunctionBodies.ALL
 
-    private val bodyDeserializer = IrBodyDeserializer(builtIns, irFactory, libraryFile, this, settings)
+    private val bodyDeserializer = IrBodyDeserializer(builtIns, irFactory, libraryFile, this, settings, irInterner)
 
     private fun deserializeName(index: Int): Name = irInterner.name(Name.guessByFirstCharacter(libraryFile.string(index)))
 
@@ -705,7 +705,9 @@ class IrDeclarationDeserializer(
             )
 
             prop.apply {
-                delegate = deserializeIrVariable(proto.delegate)
+                if (proto.hasDelegate()) {
+                    delegate = deserializeIrVariable(proto.delegate)
+                }
                 getter = deserializeIrFunction(proto.getter)
                 if (proto.hasSetter())
                     setter = deserializeIrFunction(proto.setter)

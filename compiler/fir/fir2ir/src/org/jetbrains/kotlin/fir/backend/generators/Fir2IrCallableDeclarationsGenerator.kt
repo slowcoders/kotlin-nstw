@@ -20,8 +20,8 @@ import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.expressions.FirLiteralExpression
 import org.jetbrains.kotlin.fir.expressions.FirQualifiedAccessExpression
 import org.jetbrains.kotlin.fir.expressions.impl.FirExpressionStub
+import org.jetbrains.kotlin.fir.generatedContextParameterName
 import org.jetbrains.kotlin.fir.java.declarations.FirJavaField
-import org.jetbrains.kotlin.fir.java.hasJvmFieldAnnotation
 import org.jetbrains.kotlin.fir.lazy.Fir2IrLazyClass
 import org.jetbrains.kotlin.fir.originalForSubstitutionOverride
 import org.jetbrains.kotlin.fir.references.toResolvedBaseSymbol
@@ -74,7 +74,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
         fakeOverrideOwnerLookupTag: ConeClassLikeLookupTag?,
         allowLazyDeclarationsCreation: Boolean
     ): IrSimpleFunction = convertCatching(function) {
-        val simpleFunction = function as? FirSimpleFunction
+        val namedFunction = function as? FirNamedFunction
         val isLambda = function is FirAnonymousFunction && function.isLambda
         val isBaseInvokeFunction = function.symbol.callableId
             .run { isFunctionInvoke() || isSuspendFunctionInvoke() || isKFunctionInvoke() || isKSuspendFunctionInvoke() }
@@ -82,8 +82,8 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
             isLambda -> IrDeclarationOrigin.LOCAL_FUNCTION_FOR_LAMBDA
             isBaseInvokeFunction -> IrDeclarationOrigin.FUNCTION_INTERFACE_MEMBER
             !predefinedOrigin.isExternal && // we should preserve origin for external enums
-                    simpleFunction?.isStatic == true &&
-                    simpleFunction.name in Fir2IrDeclarationStorage.ENUM_SYNTHETIC_NAMES
+                    namedFunction?.isStatic == true &&
+                    namedFunction.name in Fir2IrDeclarationStorage.ENUM_SYNTHETIC_NAMES
             -> IrDeclarationOrigin.ENUM_CLASS_SPECIAL_MEMBER
 
             // Kotlin built-in class and Java originated method (Collection.forEach, etc.)
@@ -101,7 +101,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 updatedOrigin == IrDeclarationOrigin.ENUM_CLASS_SPECIAL_MEMBER ||
                 updatedOrigin == IrDeclarationOrigin.FUNCTION_INTERFACE_MEMBER
         if (irParent.isExternalParent()) {
-            require(function is FirSimpleFunction)
+            require(function is FirNamedFunction)
             if (!allowLazyDeclarationsCreation) {
                 error("Lazy functions should be processed in Fir2IrDeclarationStorage: ${function.render()}")
             }
@@ -109,9 +109,9 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
             if (symbol.isBound) return symbol.owner
             return lazyDeclarationsGenerator.createIrLazyFunction(function, symbol, irParent, updatedOrigin, isSynthetic)
         }
-        val name = simpleFunction?.name
+        val name = namedFunction?.name
             ?: if (isLambda) SpecialNames.ANONYMOUS else SpecialNames.NO_NAME_PROVIDED
-        val visibility = simpleFunction?.visibility ?: Visibilities.Local
+        val visibility = namedFunction?.visibility ?: Visibilities.Local
         val isSuspend =
             if (isLambda) (function.typeRef as? FirResolvedTypeRef)?.coneType?.isSuspendOrKSuspendFunctionType(session) == true
             else function.isSuspend
@@ -123,17 +123,17 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 origin = updatedOrigin,
                 name = name,
                 visibility = c.visibilityConverter.convertToDescriptorVisibility(visibility),
-                isInline = simpleFunction?.isInline == true,
-                isExpect = simpleFunction?.isExpect == true,
+                isInline = namedFunction?.isInline == true,
+                isExpect = namedFunction?.isExpect == true,
                 returnType = function.returnTypeRef.toIrType(),
-                modality = simpleFunction?.modality ?: Modality.FINAL,
+                modality = namedFunction?.modality ?: Modality.FINAL,
                 symbol = symbol,
-                isTailrec = simpleFunction?.isTailRec == true,
+                isTailrec = namedFunction?.isTailRec == true,
                 isSuspend = isSuspend,
-                isOperator = simpleFunction?.isOperator == true,
-                isInfix = simpleFunction?.isInfix == true,
-                isExternal = isEffectivelyExternal(simpleFunction, irParent),
-                containerSource = simpleFunction?.containerSource,
+                isOperator = namedFunction?.isOperator == true,
+                isInfix = namedFunction?.isInfix == true,
+                isExternal = isEffectivelyExternal(namedFunction, irParent),
+                containerSource = namedFunction?.containerSource,
             ).apply {
                 metadata = FirMetadataSource.Function(function)
                 declarationStorage.withScope(symbol) {
@@ -147,8 +147,8 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                     }
                     declareParameters(
                         function, irParent,
-                        dispatchReceiverType = computeDispatchReceiverType(this, simpleFunction, irParent),
-                        isStatic = simpleFunction?.isStatic == true,
+                        dispatchReceiverType = computeDispatchReceiverType(this, namedFunction, irParent),
+                        isStatic = namedFunction?.isStatic == true,
                         forSetter = false,
                     )
                     convertAnnotationsForNonDeclaredMembers(function, origin)
@@ -652,14 +652,14 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
     ) {
         val containingClass = computeContainingClass(irParent)
         val parent = this
-        if (function is FirSimpleFunction || function is FirConstructor) {
+        if (function is FirNamedFunction || function is FirConstructor) {
             classifiersGenerator.setTypeParameters(this, function)
         }
         parameters = buildList {
             // dispatch receiver
             if (function !is FirConstructor) {
                 // See [LocalDeclarationsLowering]: "local function must not have dispatch receiver."
-                val isLocal = function is FirSimpleFunction && function.isLocal
+                val isLocal = function is FirNamedFunction && function.isLocal
                 if (function !is FirAnonymousFunction && dispatchReceiverType != null && !isStatic && !isLocal) {
                     this += declareThisReceiverParameter(
                         thisType = dispatchReceiverType,
@@ -751,7 +751,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 startOffset = startOffset,
                 endOffset = endOffset,
                 origin = origin,
-                name = valueParameter.name,
+                name = valueParameter.generatedContextParameterName ?: valueParameter.name,
                 type = type,
                 isAssignable = valueParameter.containingDeclarationSymbol.fir.let { it is FirCallableDeclaration && it.shouldParametersBeAssignable(c) },
                 symbol = IrValueParameterSymbolImpl(),
@@ -834,8 +834,9 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                     startOffset, endOffset, IrDeclarationOrigin.PROPERTY_DELEGATE,
                     NameUtils.propertyDelegateName(property.name), property.delegate!!.resolvedType.toIrType(),
                     isVar = false, isConst = false, isLateinit = false
-                )
-                delegate.parent = irParent
+                ).also {
+                    it.parent = irParent
+                }
                 getter = createIrPropertyAccessor(
                     property.getter, property, this, symbols.getterSymbol, type, irParent, false,
                     IrDeclarationOrigin.DELEGATED_PROPERTY_ACCESSOR, startOffset, endOffset
@@ -965,7 +966,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 c.session.typeContext.newTypeCheckerState(errorTypesEqualToAnything = false, stubTypesEqualToAnything = false),
                 containerOfFakeOverride,
                 containerOfOriginalCallable
-            ).firstOrNull() as ConeKotlinType? ?: return defaultType
+            ).firstOrNull()?.asCone() ?: return defaultType
             return correspondingSupertype.toIrType()
         }
 

@@ -72,8 +72,6 @@ internal class CocoapodsBuildDirs(private val layout: ProjectLayout) {
     private fun dir(pathFromRoot: String): Provider<Directory> = root.map { it.dir(pathFromRoot) }
 }
 
-internal fun String.asValidFrameworkName() = replace('-', '_')
-
 internal val Family.platformLiteral: String
     get() = when (this) {
         Family.OSX -> "macos"
@@ -144,7 +142,7 @@ open class KotlinCocoapodsPlugin : Plugin<Project> {
     private fun createDefaultFrameworks(kotlinExtension: KotlinMultiplatformExtension) {
         kotlinExtension.supportedAppleTargets().all { target ->
             target.binaries.framework(POD_FRAMEWORK_PREFIX) {
-                baseName = project.name.asValidFrameworkName()
+                baseName = project.name.asValidFrameworkName
             }
         }
     }
@@ -414,7 +412,7 @@ open class KotlinCocoapodsPlugin : Plugin<Project> {
         }
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     private fun registerPodspecTask(
         project: Project,
         artifact: KotlinNativeArtifact,
@@ -452,7 +450,7 @@ open class KotlinCocoapodsPlugin : Plugin<Project> {
         }
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION_ERROR")
     private fun injectPodspecExtensionToArtifacts(
         project: Project,
         artifactsExtension: KotlinArtifactsExtension,
@@ -872,8 +870,8 @@ open class KotlinCocoapodsPlugin : Plugin<Project> {
  *
  * Only needed in *.kts build files. In Groovy you can use the same syntax but without explicit extension import
  */
-@Suppress("DEPRECATION")
-@Deprecated(KotlinArtifactsExtension.KOTLIN_NATIVE_ARTIFACTS_DEPRECATION)
+@Suppress("DEPRECATION_ERROR")
+@Deprecated(KotlinArtifactsExtension.KOTLIN_NATIVE_ARTIFACTS_DEPRECATION, level = DeprecationLevel.ERROR)
 fun KotlinNativeArtifactConfig.withPodspec(configure: KotlinArtifactsPodspecExtension.() -> Unit) {
     val extension = cast<ExtensionAware>().kotlinArtifactsPodspecExtension
 

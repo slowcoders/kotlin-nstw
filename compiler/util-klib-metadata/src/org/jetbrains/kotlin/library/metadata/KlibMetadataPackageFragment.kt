@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.builtins.BuiltInsPackageFragment
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.library.KotlinLibrary
+import org.jetbrains.kotlin.library.components.KlibMetadataComponent
 import org.jetbrains.kotlin.library.metadataVersion
 import org.jetbrains.kotlin.metadata.ProtoBuf
 import org.jetbrains.kotlin.metadata.deserialization.MetadataVersion
@@ -19,14 +20,15 @@ import org.jetbrains.kotlin.serialization.deserialization.DeserializationCompone
 import org.jetbrains.kotlin.serialization.deserialization.DeserializedPackageFragment
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPackageMemberScope
 import org.jetbrains.kotlin.serialization.deserialization.getClassId
-import org.jetbrains.kotlin.serialization.deserialization.getName
 import org.jetbrains.kotlin.storage.StorageManager
 import java.lang.ref.SoftReference
 
 open class KlibMetadataDeserializedPackageFragment(
     fqName: FqName,
     private val library: KotlinLibrary,
+    private val metadata: KlibMetadataComponent,
     private val packageAccessHandler: PackageAccessHandler?,
+    private val customMetadataProtoLoader: CustomMetadataProtoLoader?,
     storageManager: StorageManager,
     module: ModuleDescriptor,
     private val partName: String,
@@ -42,7 +44,8 @@ open class KlibMetadataDeserializedPackageFragment(
     private fun ensureStorage(): ProtoBuf.PackageFragment {
         var tmp = protoForNamesStorage.get()
         if (tmp == null) {
-            tmp = (packageAccessHandler ?: SimplePackageAccessHandler).loadPackageFragment(library, fqName.asString(), partName)
+            tmp = customMetadataProtoLoader?.loadPackageFragment(library, fqName.asString(), partName)
+                ?: parsePackageFragment(metadata.getPackageFragment(fqName.asString(), partName))
             protoForNamesStorage = SoftReference(tmp)
         }
         return tmp
@@ -50,7 +53,7 @@ open class KlibMetadataDeserializedPackageFragment(
 
     override val proto: ProtoBuf.PackageFragment
         get() {
-            packageAccessHandler?.markNeededForLink(library, fqName.asString())
+            packageAccessHandler?.markNeededForLink(fqName.asString())
             return protoForNames
         }
 }
@@ -58,13 +61,24 @@ open class KlibMetadataDeserializedPackageFragment(
 class BuiltInKlibMetadataDeserializedPackageFragment(
     fqName: FqName,
     library: KotlinLibrary,
+    metadata: KlibMetadataComponent,
     packageAccessHandler: PackageAccessHandler?,
+    customMetadataProtoLoader: CustomMetadataProtoLoader?,
     storageManager: StorageManager,
     module: ModuleDescriptor,
     partName: String,
     containerSource: KlibDeserializedContainerSource
-) : KlibMetadataDeserializedPackageFragment(fqName, library, packageAccessHandler, storageManager, module, partName, containerSource),
-    BuiltInsPackageFragment {
+) : KlibMetadataDeserializedPackageFragment(
+    fqName = fqName,
+    library = library,
+    metadata = metadata,
+    packageAccessHandler = packageAccessHandler,
+    customMetadataProtoLoader = customMetadataProtoLoader,
+    storageManager = storageManager,
+    module = module,
+    partName = partName,
+    containerSource = containerSource,
+), BuiltInsPackageFragment {
 
     override val isFallback: Boolean
         get() = false
@@ -121,15 +135,6 @@ abstract class KlibMetadataPackageFragment(
     }
 
     override fun getMemberScope(): DeserializedPackageMemberScope = _memberScope
-
-    private val classifierNames: Set<Name> by lazy {
-        val result = mutableSetOf<Name>()
-        result.addAll(loadClassNames())
-        protoForNames.getPackage().typeAliasList.mapTo(result) { nameResolver.getName(it.name) }
-        result
-    }
-
-    fun hasTopLevelClassifier(name: Name): Boolean = name in classifierNames
 
     private fun loadClassNames(): Collection<Name> {
 

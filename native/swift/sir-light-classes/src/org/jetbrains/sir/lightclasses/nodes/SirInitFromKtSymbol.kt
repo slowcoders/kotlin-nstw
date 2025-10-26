@@ -40,25 +40,30 @@ import org.jetbrains.sir.lightclasses.utils.translateParameters
 import org.jetbrains.sir.lightclasses.utils.translatedAttributes
 import kotlin.lazy
 
-private val obj = SirParameter("", "__kt",SirNominalType(SirSwiftModule.unsafeMutableRawPointer))
+private val obj = SirParameter(
+    "", "__kt", SirNominalType(SirSwiftModule.unsafeMutableRawPointer)
+)
 
-internal class SirInitFromKtSymbol(
-    override val ktSymbol: KaConstructorSymbol,
+internal sealed class SirInitFromKtSymbol(
+    override val ktSymbol: KaFunctionSymbol,
     override val sirSession: SirSession,
-) : SirInit(), SirFromKtSymbol<KaConstructorSymbol> {
+) : SirInit(), SirFromKtSymbol<KaFunctionSymbol> {
 
     override val visibility: SirVisibility by lazyWithSessions {
         ktSymbol.sirAvailability().visibility ?: error("$ktSymbol shouldn't be exposed to SIR")
     }
 
-    override val isFailable: Boolean = false
-
     override val origin: SirOrigin by lazyWithSessions {
         if (isInner(ktSymbol)) InnerInitSource(ktSymbol) else KotlinSource(ktSymbol)
     }
     override val parameters: List<SirParameter> by lazy {
-        translateParameters() + listOfNotNull(getOuterParameterOfInnerClass())
+        calculateParameters()
     }
+
+    protected fun calculateParameters(): List<SirParameter> {
+        return translateParameters() + listOfNotNull(getOuterParameterOfInnerClass())
+    }
+
     override val documentation: String? by lazyWithSessions {
         ktSymbol.documentation()
     }
@@ -83,15 +88,44 @@ internal class SirInitFromKtSymbol(
 
     override val errorType: SirType get() = if (ktSymbol.throwsAnnotation != null) SirType.any else SirType.never
 
-    private val isBridged: Boolean get() = withSessions {
+    override val isAsync: Boolean get() = false
+
+    protected val isBridged: Boolean
+        get() = withSessions {
             (parent as? SirClass)?.kaSymbolOrNull<KaClassSymbol>()?.let {
                 !it.modality.isAbstract() && !it.defaultType.isArrayOrPrimitiveArray
             } ?: false
         }
+}
+
+private inline fun <reified T : KaFunctionSymbol> SirFromKtSymbol<T>.getOuterParameterOfInnerClass(): SirParameter? {
+    val parameterName = "outer__" //Temporary solution until there is no generic parameter mangling
+    return withSessions {
+        val sirFromKtSymbol = this@getOuterParameterOfInnerClass
+        if (sirFromKtSymbol is SirInitFromKtSymbol && isInner(sirFromKtSymbol)) {
+            val outSymbol = (ktSymbol.containingSymbol?.containingSymbol as? KaNamedClassSymbol)
+            val outType = outSymbol?.defaultType?.translateType(
+                SirTypeVariance.INVARIANT,
+                { error("Error translating type") },
+                { error("Unsupported type") },
+                {})
+            outType?.run {
+                SirParameter(argumentName = parameterName, type = this)
+            }
+        } else null
+    }
+}
+
+internal class SirRegularInitFromKtSymbol(
+    ktSymbol: KaConstructorSymbol,
+    sirSession: SirSession,
+) : SirInitFromKtSymbol(ktSymbol, sirSession) {
+    override val isFailable: Boolean
+        get() = false
 
     override val bridges: List<SirBridge> by lazy {
         val producingType: SirType = SirNominalType(
-            parent as? SirNamedDeclaration ?: error("Encountered an Init that produces non-named type: $parent")
+            parent as? SirScopeDefiningDeclaration ?: error("Encountered an Init that produces non-named type: $parent")
         )
 
         listOfNotNull(
@@ -135,13 +169,13 @@ internal class SirInitFromKtSymbol(
     }
 
     override var body: SirFunctionBody?
-        set(value) {}
+        set(_) {}
         get() {
             val initDescriptor = bridgeInitProxy ?: return null
             val allocDescriptor = bridgeAllocProxy ?: return null
 
             return SirFunctionBody(buildList {
-                (parent as? SirNamedDeclaration)?.let { it ->
+                (parent as? SirScopeDefiningDeclaration)?.let {
                     add("if Self.self != ${it.swiftFqName}.self { fatalError(\"Inheritance from exported Kotlin classes is not supported yet: \\(String(reflecting: Self.self)) inherits from ${it.swiftFqName} \") }")
                 }
 
@@ -174,6 +208,7 @@ internal class SirInitFromKtSymbol(
             selfParameter = null,
             extensionReceiverParameter = null,
             errorParameter = null,
+            isAsync = false,
         )
     }
 
@@ -198,24 +233,7 @@ internal class SirInitFromKtSymbol(
             errorParameter = errorType.takeIf { it != SirType.never }?.let {
                 SirParameter("", "__error", it)
             },
+            isAsync = false,
         )
-    }
-}
-
-private inline fun <reified T : KaFunctionSymbol> SirFromKtSymbol<T>.getOuterParameterOfInnerClass(): SirParameter? {
-    val parameterName = "outer__" //Temporary solution until there is no generic parameter mangling
-    return withSessions {
-        val sirFromKtSymbol = this@getOuterParameterOfInnerClass
-        if (sirFromKtSymbol is SirInitFromKtSymbol && isInner(sirFromKtSymbol)) {
-            val outSymbol = (ktSymbol.containingSymbol?.containingSymbol as? KaNamedClassSymbol)
-            val outType = outSymbol?.defaultType?.translateType(
-                SirTypeVariance.INVARIANT,
-                { error("Error translating type") },
-                { error("Unsupported type") },
-                {})
-            outType?.run {
-                SirParameter(argumentName = parameterName, type = this)
-            }
-        } else null
     }
 }

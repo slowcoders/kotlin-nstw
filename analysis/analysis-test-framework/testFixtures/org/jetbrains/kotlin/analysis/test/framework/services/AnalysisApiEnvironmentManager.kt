@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2022 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2025 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.analysis.api.KaImplementationDetail
 import org.jetbrains.kotlin.analysis.api.impl.base.projectStructure.KaBuiltinsModuleImpl
 import org.jetbrains.kotlin.analysis.api.standalone.base.projectStructure.StandaloneProjectFactory
 import org.jetbrains.kotlin.analysis.decompiler.psi.BuiltinsVirtualFileProvider
-import org.jetbrains.kotlin.analysis.decompiler.psi.KotlinBuiltInDecompilationInterceptor
 import org.jetbrains.kotlin.analysis.test.framework.projectStructure.ktTestModuleStructure
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreApplicationEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreApplicationEnvironmentMode
@@ -59,12 +58,6 @@ class AnalysisApiEnvironmentManagerImpl(
                 if (getServiceIfCreated(BuiltinsVirtualFileProvider::class.java) == null) {
                     registerService(BuiltinsVirtualFileProvider::class.java, BuiltinsVirtualFileProviderTestImpl())
                 }
-                if (getServiceIfCreated(KotlinBuiltInDecompilationInterceptor::class.java) == null) {
-                    registerService(
-                        KotlinBuiltInDecompilationInterceptor::class.java,
-                        KotlinBuiltInDecompilationInterceptorTestImpl::class.java
-                    )
-                }
             }
         }
     }
@@ -73,7 +66,8 @@ class AnalysisApiEnvironmentManagerImpl(
     override fun initializeProjectStructure() {
         val ktTestModuleStructure = testServices.ktTestModuleStructure
         val useSiteModule = testServices.moduleStructure.modules.first()
-        val useSiteCompilerConfiguration = testServices.compilerConfigurationProvider.getCompilerConfiguration(useSiteModule)
+        val useSiteCompilerConfiguration =
+            testServices.compilerConfigurationProvider.getCompilerConfiguration(useSiteModule, CompilationStage.FIRST)
         val builtinsModule = KaBuiltinsModuleImpl(useSiteModule.targetPlatform(testServices), getProject())
 
         val globalLanguageVersionSettings = useSiteModule.languageVersionSettings

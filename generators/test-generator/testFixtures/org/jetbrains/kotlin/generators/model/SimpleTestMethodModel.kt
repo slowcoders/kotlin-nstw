@@ -5,50 +5,31 @@
 package org.jetbrains.kotlin.generators.model
 
 import com.intellij.openapi.util.io.FileUtil
+import org.jetbrains.kotlin.generators.MethodGenerator
+import org.jetbrains.kotlin.generators.impl.SimpleTestMethodGenerator
 import org.jetbrains.kotlin.generators.util.TestGeneratorUtil.escapeForJavaIdentifier
-import org.jetbrains.kotlin.test.InTextDirectivesUtils
 import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.util.KtTestUtil
 import java.io.File
 import java.util.regex.Pattern
 
-open class SimpleTestMethodModel(
+/**
+ * Default model for the test method.
+ */
+class SimpleTestMethodModel(
     private val rootDir: File,
     val file: File,
     private val filenamePattern: Pattern,
-    checkFilenameStartsLowerCase: Boolean?,
-    internal val targetBackend: TargetBackend,
-    private val skipIgnored: Boolean,
     override val tags: List<String>,
-    val nativeTestInNonNativeTestInfra: Boolean,
-) : MethodModel {
-    object Kind : MethodModel.Kind()
-
-    val directives: Map<String, List<String>> by lazy(LazyThreadSafetyMode.NONE) {
-        InTextDirectivesUtils.findLinesByPrefixRemoved(
-            /* fileText = */ InTextDirectivesUtils.textWithDirectives(file),
-            /* trim = */ true,
-            /* strict = */ true,
-            /* separatedValues = */ true,
-            *InTextDirectivesUtils.IGNORE_BACKEND_DIRECTIVE_PREFIXES,
-            InTextDirectivesUtils.TARGET_BACKEND_DIRECTIVE_PREFIX,
-            InTextDirectivesUtils.DORT_TARGET_EXACT_BACKEND_DIRECTIVE_PREFIX,
-            "// WORKS_WHEN_VALUE_CLASS"
-        )
-    }
-
-    override val kind: MethodModel.Kind
-        get() = Kind
+) : MethodModel<SimpleTestMethodModel>() {
+    override val generator: MethodGenerator<SimpleTestMethodModel>
+        get() = SimpleTestMethodGenerator
 
     override val dataString: String
         get() {
             val path = FileUtil.getRelativePath(rootDir, file)!!
             return KtTestUtil.getFilePath(File(path))
         }
-
-    override fun shouldBeGenerated(): Boolean {
-        return InTextDirectivesUtils.isCompatibleTarget(targetBackend, directives)
-    }
 
     override val name: String
         get() {
@@ -67,18 +48,7 @@ open class SimpleTestMethodModel(
                 val relativePath = FileUtil.getRelativePath(rootDir, file.parentFile)
                 relativePath + "-" + extractedName.replaceFirstChar(Char::uppercaseChar)
             }
-            val ignored = skipIgnored && InTextDirectivesUtils.isIgnoredTarget(targetBackend, directives, false)
-            return (if (ignored) "ignore" else "test") + escapeForJavaIdentifier(unescapedName).replaceFirstChar(Char::uppercaseChar)
+            val nameSuffix = escapeForJavaIdentifier(unescapedName).replaceFirstChar(Char::uppercaseChar)
+            return "test$nameSuffix"
         }
-
-    init {
-        if (checkFilenameStartsLowerCase != null) {
-            val c = file.name[0]
-            if (checkFilenameStartsLowerCase) {
-                assert(Character.isLowerCase(c)) { "Invalid file name '$file', file name should start with lower-case letter" }
-            } else {
-                assert(Character.isUpperCase(c)) { "Invalid file name '$file', file name should start with upper-case letter" }
-            }
-        }
-    }
 }

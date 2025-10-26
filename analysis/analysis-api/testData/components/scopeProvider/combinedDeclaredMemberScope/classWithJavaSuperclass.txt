@@ -39,6 +39,8 @@ KaNamedFunctionSymbol:
   canBeOperator: false
   getContainingModule: KaSourceModule "Sources of main"
   deprecationStatus: null
+  returnValueStatus: Unspecified
+  importableFqName: null
 
 KaKotlinPropertySymbol:
   annotations: []
@@ -70,6 +72,7 @@ KaKotlinPropertySymbol:
     getContainingJvmClassName: test.KotlinClass
     getContainingModule: KaSourceModule "Sources of main"
     deprecationStatus: null
+    importableFqName: null
   callableId: test/KotlinClass.bar
   compilerVisibility: Public
   contextParameters: []
@@ -104,6 +107,7 @@ KaKotlinPropertySymbol:
     getContainingJvmClassName: test.KotlinClass
     getContainingModule: KaSourceModule "Sources of main"
     deprecationStatus: null
+    importableFqName: null
   hasBackingField: true
   hasGetter: true
   hasSetter: false
@@ -144,6 +148,7 @@ KaKotlinPropertySymbol:
   javaSetterName: null
   setterDeprecationStatus: null
   isInline: false
+  importableFqName: null
 
 KaNamedClassSymbol:
   annotations: []
@@ -175,6 +180,7 @@ KaNamedClassSymbol:
   getContainingModule: KaSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: test.KotlinClass.C2
 
 KaNamedClassSymbol:
   annotations: []
@@ -206,6 +212,7 @@ KaNamedClassSymbol:
   getContainingModule: KaSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: test.KotlinClass.O2
 
 KaNamedClassSymbol:
   annotations: []
@@ -237,6 +244,7 @@ KaNamedClassSymbol:
   getContainingModule: KaSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null
+  importableFqName: test.KotlinClass.Companion
 
 KaConstructorSymbol:
   annotations: []
@@ -264,3 +272,4 @@ KaConstructorSymbol:
   getContainingJvmClassName: test.KotlinClass
   getContainingModule: KaSourceModule "Sources of main"
   deprecationStatus: null
+  importableFqName: test.KotlinClass

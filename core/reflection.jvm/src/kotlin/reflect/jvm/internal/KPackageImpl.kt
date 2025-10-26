@@ -16,30 +16,35 @@
 
 package kotlin.reflect.jvm.internal
 
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.runtime.components.ReflectKotlinClass
 import org.jetbrains.kotlin.descriptors.runtime.structure.classId
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
-import org.jetbrains.kotlin.metadata.ProtoBuf
 import org.jetbrains.kotlin.metadata.deserialization.TypeTable
 import org.jetbrains.kotlin.metadata.deserialization.getExtensionOrNull
 import org.jetbrains.kotlin.metadata.jvm.JvmProtoBuf
-import org.jetbrains.kotlin.metadata.deserialization.MetadataVersion
-import org.jetbrains.kotlin.metadata.jvm.deserialization.JvmNameResolver
-import org.jetbrains.kotlin.metadata.jvm.deserialization.JvmProtoBufUtil
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
-import org.jetbrains.kotlin.serialization.deserialization.MemberDeserializer
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPackageMemberScope
 import kotlin.LazyThreadSafetyMode.PUBLICATION
+import kotlin.metadata.KmPackage
+import kotlin.metadata.KmProperty
+import kotlin.metadata.internal.toKmPackage
+import kotlin.metadata.jvm.localDelegatedProperties
 import kotlin.reflect.KCallable
-import kotlin.reflect.jvm.internal.KDeclarationContainerImpl.MemberBelonginess.DECLARED
 
 internal class KPackageImpl(
     override val jClass: Class<*>,
 ) : KDeclarationContainerImpl() {
     private inner class Data : KDeclarationContainerImpl.Data() {
+        val kmPackage: KmPackage? by lazy(PUBLICATION) {
+            val scope = scope as? DeserializedPackageMemberScope ?: return@lazy null
+            scope.proto.toKmPackage(scope.c.nameResolver)
+        }
+
         private val kotlinClass: ReflectKotlinClass? by ReflectProperties.lazySoft {
             ReflectKotlinClass.create(jClass)
         }
@@ -61,19 +66,14 @@ internal class KPackageImpl(
             else null
         }
 
-        val metadata: Triple<JvmNameResolver, ProtoBuf.Package, MetadataVersion>? by lazy(PUBLICATION) {
-            kotlinClass?.classHeader?.let { header ->
-                val data = header.data
-                val strings = header.strings
-                if (data != null && strings != null) {
-                    val (nameResolver, proto) = JvmProtoBufUtil.readPackageDataFrom(data, strings)
-                    Triple(nameResolver, proto, header.metadataVersion)
-                } else null
+        val members: Collection<DescriptorKCallable<*>> by ReflectProperties.lazySoft {
+            val visitor = object : CreateKCallableVisitor(this@KPackageImpl) {
+                override fun visitConstructorDescriptor(descriptor: ConstructorDescriptor, data: Unit): DescriptorKCallable<*> =
+                    throw IllegalStateException("No constructors should appear here: $descriptor")
             }
-        }
-
-        val members: Collection<KCallableImpl<*>> by ReflectProperties.lazySoft {
-            getMembers(scope, DECLARED)
+            scope.getContributedDescriptors().mapNotNull { descriptor ->
+                if (descriptor is CallableMemberDescriptor) descriptor.accept(visitor, Unit) else null
+            }.toList()
         }
     }
 
@@ -94,15 +94,21 @@ internal class KPackageImpl(
     override fun getFunctions(name: Name): Collection<FunctionDescriptor> =
         scope.getContributedFunctions(name, NoLookupLocation.FROM_REFLECTION)
 
-    override fun getLocalProperty(index: Int): PropertyDescriptor? {
-        return data.value.metadata?.let { (nameResolver, packageProto, metadataVersion) ->
-            packageProto.getExtensionOrNull(JvmProtoBuf.packageLocalVariable, index)?.let { proto ->
-                deserializeToDescriptor(
-                    jClass, proto, nameResolver, TypeTable(packageProto.typeTable), metadataVersion
-                ) { proto -> loadProperty(proto, loadAnnotationsFromMetadata = true) }
-            }
+    override fun getLocalPropertyDescriptor(index: Int): PropertyDescriptor? {
+        // According to how it's generated in the codegen, containing class of a local delegated property is always either a single file
+        // facade, or a multifile part, but never multifile facade. This means that `scope` is always `DeserializedPackageMemberScope`
+        // (not `ChainedMemberScope` with several deserialized scopes inside, as is for multifile facades).
+        val scope = scope as? DeserializedPackageMemberScope ?: return null
+        val packageProto = scope.proto
+        return packageProto.getExtensionOrNull(JvmProtoBuf.packageLocalVariable, index)?.let { proto ->
+            deserializeToDescriptor(
+                jClass, proto, scope.c.nameResolver, TypeTable(packageProto.typeTable), scope.c.metadataVersion
+            ) { proto -> loadProperty(proto, loadAnnotationsFromMetadata = true) }
         }
     }
+
+    override fun getLocalPropertyMetadata(index: Int): KmProperty? =
+        data.value.kmPackage?.localDelegatedProperties?.getOrNull(index)
 
     override fun equals(other: Any?): Boolean =
         other is KPackageImpl && jClass == other.jClass

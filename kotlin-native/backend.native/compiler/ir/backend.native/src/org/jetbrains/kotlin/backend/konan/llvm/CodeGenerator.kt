@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.ir.objcinterop.*
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.konan.ForeignExceptionMode
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
+import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 
 internal class CodeGenerator(override val generationState: NativeGenerationState) : ContextUtils {
@@ -333,7 +334,8 @@ private fun CodeGenerator.getVirtualFunctionTrampolineImpl(irFunction: IrSimpleF
             val proto = LlvmFunctionProto(
                     name = "$targetName-trampoline",
                     signature = LlvmFunctionSignature(irFunction, this),
-                    origin = null,
+                    // A link-time dependency only: recompilation is not needed if only the trampoline's impl has changed.
+                    origin = FunctionOrigin.OwnedBy(irFunction.parentAsClass, weak = true),
                     linkage = linkageOf(irFunction)
             )
             if (isExternal(irFunction))
@@ -577,6 +579,7 @@ internal abstract class FunctionGenerationContextBuilder<T : FunctionGenerationC
     var switchToRunnable = false
     var needSafePoint = true
     var irFunction: IrSimpleFunction? = null
+    var forceCleanupLandingpad = false
 
     abstract fun build(): T
 }
@@ -588,7 +591,8 @@ internal abstract class FunctionGenerationContext(
         protected val endLocation: LocationInfo?,
         private val switchToRunnable: Boolean,
         private val needSafePoint: Boolean,
-        internal val irFunction: IrSimpleFunction? = null
+        internal val irFunction: IrSimpleFunction? = null,
+        private val forceCleanupLandingpad: Boolean = false,
 ) : ContextUtils {
 
     constructor(builder: FunctionGenerationContextBuilder<*>) : this(
@@ -598,7 +602,8 @@ internal abstract class FunctionGenerationContext(
             endLocation = builder.endLocation,
             switchToRunnable = builder.switchToRunnable,
             needSafePoint = builder.needSafePoint,
-            irFunction = builder.irFunction
+            irFunction = builder.irFunction,
+            forceCleanupLandingpad = builder.forceCleanupLandingpad
     )
 
     override val generationState = codegen.generationState
@@ -627,25 +632,18 @@ internal abstract class FunctionGenerationContext(
     private val localsInitBb = basicBlockInFunction("locals_init", null)
     private val stackLocalsInitBb = basicBlockInFunction("stack_locals_init", null)
     private val entryBb = basicBlockInFunction("entry", startLocation)
-    protected val cleanupLandingpad = basicBlockInFunction("cleanup_landingpad", endLocation)
+    protected val cleanupLandingpad = runIf(needCleanupLandingpadAndLeaveFrame) { basicBlockInFunction("cleanup_landingpad", endLocation) }
 
     // Functions that can be exported and called not only from Kotlin code should have cleanup_landingpad and `LeaveFrame`
     // because there is no guarantee of catching Kotlin exception in Kotlin code.
-    protected open val needCleanupLandingpadAndLeaveFrame: Boolean
-        get() = irFunction?.annotations?.hasAnnotation(RuntimeNames.exportForCppRuntime) == true || switchToRunnable
+    private val needCleanupLandingpadAndLeaveFrame: Boolean
+        get() = forceCleanupLandingpad || irFunction?.annotations?.hasAnnotation(RuntimeNames.exportForCppRuntime) == true || switchToRunnable
 
     private var setCurrentFrameIsCalled: Boolean = false
 
     val stackLocalsManager = StackLocalsManagerImpl(this, stackLocalsInitBb)
 
-    data class FunctionInvokeInformation(
-            val invokeInstruction: LLVMValueRef,
-            val llvmFunction: LlvmCallable,
-            val args: List<LLVMValueRef>,
-            val success: LLVMBasicBlockRef,
-    )
-
-    private val invokeInstructions = mutableListOf<FunctionInvokeInformation>()
+    private var cleanupLangdingpadIsUsed = false
 
     // Whether the generating function needs to initialize Kotlin runtime before execution. Useful for interop bridges,
     // for example.
@@ -865,7 +863,14 @@ internal abstract class FunctionGenerationContext(
             return llvmCallable.buildCall(builder, args)
         } else {
             val unwind = when (exceptionHandler) {
-                ExceptionHandler.Caller -> cleanupLandingpad
+                ExceptionHandler.Caller -> {
+                    if (cleanupLandingpad == null) {
+                        return llvmCallable.buildCall(builder, args)
+                    } else {
+                        cleanupLangdingpadIsUsed = true
+                        cleanupLandingpad
+                    }
+                }
                 is ExceptionHandler.Local -> exceptionHandler.unwind
 
                 ExceptionHandler.None -> {
@@ -883,11 +888,6 @@ internal abstract class FunctionGenerationContext(
             val endLocation = position?.end
             val success = basicBlock("call_success", endLocation)
             val result = llvmCallable.buildInvoke(builder, args, success, unwind)
-            // Store invoke instruction and its success block in reverse order.
-            // Reverse order allows save arguments valid during all work with invokes
-            // because other invokes processed before can be inside arguments list.
-            if (exceptionHandler == ExceptionHandler.Caller)
-                invokeInstructions.add(0, FunctionInvokeInformation(result, llvmCallable, args, success))
             positionAtEnd(success)
 
             return result
@@ -1427,14 +1427,18 @@ internal abstract class FunctionGenerationContext(
             br(stackLocalsInitBb)
         }
 
-        if (needCleanupLandingpadAndLeaveFrame) {
-            appendingTo(cleanupLandingpad) {
-                val landingpad = gxxLandingpad(numClauses = 0)
-                LLVMSetCleanup(landingpad, 1)
+        if (cleanupLandingpad != null) {
+            if (cleanupLangdingpadIsUsed) {
+                appendingTo(cleanupLandingpad) {
+                    val landingpad = gxxLandingpad(numClauses = 0)
+                    LLVMSetCleanup(landingpad, 1)
 
-                releaseVars()
-                handleEpilogueExperimentalMM()
-                LLVMBuildResume(builder, landingpad)
+                    releaseVars()
+                    handleEpilogueExperimentalMM()
+                    LLVMBuildResume(builder, landingpad)
+                }
+            } else {
+                LLVMDeleteBasicBlock(cleanupLandingpad)
             }
         }
 
@@ -1465,22 +1469,6 @@ internal abstract class FunctionGenerationContext(
         }
 
         processReturns()
-
-        // If cleanup landingpad is trivial or unused, remove it.
-        // It would be great not to generate it in the first place in this case,
-        // but this would be complicated without a major refactoring.
-        if (!needCleanupLandingpadAndLeaveFrame || invokeInstructions.isEmpty()) {
-            // Replace invokes with calls and branches.
-            invokeInstructions.forEach { functionInvokeInfo ->
-                positionBefore(functionInvokeInfo.invokeInstruction)
-                val newResult = functionInvokeInfo.llvmFunction.buildCall(builder, functionInvokeInfo.args)
-                // Have to generate `br` instruction because of current scheme of debug info.
-                br(functionInvokeInfo.success)
-                LLVMReplaceAllUsesWith(functionInvokeInfo.invokeInstruction, newResult)
-                LLVMInstructionEraseFromParent(functionInvokeInfo.invokeInstruction)
-            }
-            LLVMDeleteBasicBlock(cleanupLandingpad)
-        }
 
         vars.clear()
         returnSlot = null
@@ -1678,7 +1666,9 @@ internal class DefaultFunctionGenerationContext(
     private val returns: MutableMap<LLVMBasicBlockRef, LLVMValueRef> = mutableMapOf()
 
     private val epilogueBb = basicBlockInFunction("epilogue", endLocation).also {
-        LLVMMoveBasicBlockBefore(it, cleanupLandingpad) // Just to make the produced code a bit more readable.
+        if (cleanupLandingpad != null) {
+            LLVMMoveBasicBlockBefore(it, cleanupLandingpad) // Just to make the produced code a bit more readable.
+        }
     }
 
     override fun ret(value: LLVMValueRef?): LLVMValueRef {

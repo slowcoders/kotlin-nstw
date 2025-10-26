@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.fir.java.scopes
 
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.builtins.StandardNames
-import org.jetbrains.kotlin.config.JvmAnalysisFlags
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fakeElement
@@ -16,7 +15,7 @@ import org.jetbrains.kotlin.fir.caches.FirCache
 import org.jetbrains.kotlin.fir.caches.FirCachesFactory
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
 import org.jetbrains.kotlin.fir.declarations.*
-import org.jetbrains.kotlin.fir.declarations.builder.buildSimpleFunctionCopy
+import org.jetbrains.kotlin.fir.declarations.builder.buildNamedFunctionCopy
 import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyGetter
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertySetter
@@ -32,7 +31,6 @@ import org.jetbrains.kotlin.fir.java.syntheticPropertiesStorage
 import org.jetbrains.kotlin.fir.java.toConeKotlinTypeProbablyFlexible
 import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.resolve.defaultType
-import org.jetbrains.kotlin.fir.resolve.providers.firProvider
 import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.scopes.*
 import org.jetbrains.kotlin.fir.scopes.impl.AbstractFirUseSiteMemberScope
@@ -127,7 +125,7 @@ class JavaClassUseSiteMemberScope(
         }.symbol
     }
 
-    private fun chooseModalityForAccessor(property: FirProperty, getter: FirSimpleFunction): Modality? {
+    private fun chooseModalityForAccessor(property: FirProperty, getter: FirNamedFunction): Modality? {
         val a = property.modality
         val b = getter.modality
 
@@ -282,7 +280,7 @@ class JavaClassUseSiteMemberScope(
         }
     }
 
-    private fun FirPropertySymbol.checkValueParameters(candidate: FirSimpleFunction): Boolean {
+    private fun FirPropertySymbol.checkValueParameters(candidate: FirNamedFunction): Boolean {
         var parameterIndex = 0
         val fakeSource = source?.fakeElement(KtFakeSourceElementKind.Enhancement)
 
@@ -303,7 +301,7 @@ class JavaClassUseSiteMemberScope(
                     .computeJvmDescriptorRepresentation()
     }
 
-    private fun FirSimpleFunction.isAcceptableAsAccessorOverride(): Boolean {
+    private fun FirNamedFunction.isAcceptableAsAccessorOverride(): Boolean {
         // We don't accept here accessors with type parameters from Kotlin to avoid strange cases like KT-59038
         // However, we (temporarily, see below) accept accessors from Kotlin in general to keep K1 compatibility in cases like KT-59550
         // KT-59601: we are going to forbid accessors from Kotlin in general after some investigation and/or deprecation period
@@ -416,7 +414,7 @@ class JavaClassUseSiteMemberScope(
             ?: return this
         if (continuationParameterType.lookupTag.classId.asSingleFqName() != StandardNames.CONTINUATION_INTERFACE_FQ_NAME) return this
 
-        return buildSimpleFunctionCopy(fir) {
+        return buildNamedFunctionCopy(fir) {
             valueParameters.clear()
             valueParameters.addAll(fir.valueParameters.dropLast(1))
             returnTypeRef = buildResolvedTypeRef {
@@ -991,19 +989,8 @@ class JavaClassUseSiteMemberScope(
             this is FirJavaClass -> superConeTypes.any { type ->
                 type.toFir(session)?.hasKotlinSuper(session, visited) == true
             }
-            isInterface || origin.isBuiltIns -> false
-            else -> {
-                if (!session.languageVersionSettings.getFlag(JvmAnalysisFlags.expectBuiltinsAsPartOfStdlib)) {
-                    true
-                } else {
-                    val containingFile = session.firProvider.getFirClassifierContainerFileIfAny(symbol)
-                    if (containingFile == null) {
-                        true
-                    } else {
-                        !containingFile.symbol.hasAnnotation(StandardClassIds.Annotations.JvmBuiltin, session)
-                    }
-                }
-            }
+            isInterface || symbol.isBuiltinClass() -> false
+            else -> true
         }
 
     private fun ConeClassLikeType.toFir(session: FirSession): FirRegularClass? {
@@ -1070,7 +1057,7 @@ class JavaClassUseSiteMemberScope(
                     }
                 }
             } else {
-                buildSimpleFunctionCopy(original) {
+                buildNamedFunctionCopy(original) {
                     name = naturalName
                     symbol = newSymbol
                     dispatchReceiverType = klass.defaultType()
@@ -1124,7 +1111,7 @@ class JavaClassUseSiteMemberScope(
         ): FirNamedFunctionSymbol {
             val newSymbol = FirNamedFunctionSymbol(accidentalOverrideWithDeclaredFunction.callableId)
             val original = accidentalOverrideWithDeclaredFunction.fir
-            val accidentalOverrideWithDeclaredFunctionHiddenCopy = buildSimpleFunctionCopy(original) {
+            val accidentalOverrideWithDeclaredFunctionHiddenCopy = buildNamedFunctionCopy(original) {
                 this.name = name
                 symbol = newSymbol
                 dispatchReceiverType = klass.defaultType()
@@ -1141,7 +1128,7 @@ class JavaClassUseSiteMemberScope(
             klass: FirJavaClass
         ): FirNamedFunctionSymbol {
             val newSymbol = FirNamedFunctionSymbol(relevantFunctionFromSupertypes.callableId)
-            val accidentalOverrideWithDeclaredFunctionHiddenCopy = buildSimpleFunctionCopy(relevantFunctionFromSupertypes.fir) {
+            val accidentalOverrideWithDeclaredFunctionHiddenCopy = buildNamedFunctionCopy(relevantFunctionFromSupertypes.fir) {
                 this.name = name
                 symbol = newSymbol
                 dispatchReceiverType = klass.defaultType()

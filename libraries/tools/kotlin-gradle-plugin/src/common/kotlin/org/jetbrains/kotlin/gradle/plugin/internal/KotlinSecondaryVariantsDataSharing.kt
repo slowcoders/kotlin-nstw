@@ -12,6 +12,7 @@ import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.attributes.Usage
@@ -26,7 +27,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.tasks.locateOrRegisterTask
 import org.jetbrains.kotlin.gradle.utils.JsonUtils
-import org.jetbrains.kotlin.gradle.utils.LazyResolvedConfiguration
+import org.jetbrains.kotlin.gradle.utils.LazyResolvedConfigurationWithArtifacts
 import org.jetbrains.kotlin.gradle.utils.lowerCamelCaseName
 import org.jetbrains.kotlin.gradle.utils.projectStoredProperty
 import org.jetbrains.kotlin.gradle.utils.registerArtifact
@@ -90,11 +91,11 @@ internal class KotlinSecondaryVariantsDataSharing(
         outgoingConfiguration.outgoing.variants.create(key) { variant ->
             variant.registerArtifact(
                 artifactProvider = taskOutputProvider,
-                type = key
+                type = artifactTypeOfProjectSharedDataKey(key)
             ) {
                 builtBy(taskDependencies)
             }
-            variant.attributes.configureAttributes(key)
+            variant.attributes.configureCommonAttributes(key)
         }
     }
 
@@ -104,14 +105,19 @@ internal class KotlinSecondaryVariantsDataSharing(
         clazz: Class<T>,
         componentFilter: ((ComponentIdentifier) -> Boolean)? = null,
     ): KotlinProjectSharedDataProvider<T> {
-        val lazyResolvedConfiguration = LazyResolvedConfiguration(incomingConfiguration, configureArtifactView = {
-            attributes.configureAttributes(key)
+        val lazyResolvedConfiguration = LazyResolvedConfigurationWithArtifacts(incomingConfiguration, configureArtifactView = {
+            attributes.configureCommonAttributes(key)
+            // artifactType is set by gradle on the producer side
+            // Request it explicitly to bypass Artifact Transformations that gradle may apply
+            // see: https://github.com/gradle/gradle/issues/33298
+            attributes.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, artifactTypeOfProjectSharedDataKey(key))
             if (componentFilter != null) this.componentFilter(componentFilter)
         })
         return KotlinProjectSharedDataProvider(key, lazyResolvedConfiguration, clazz)
     }
 
-    private fun AttributeContainer.configureAttributes(key: String) {
+    /** Common attributes between producer and consumer */
+    private fun AttributeContainer.configureCommonAttributes(key: String) {
         val usageValue = project.objects.named(Usage::class.java, "kotlin-project-shared-data")
         attributeProvider(Usage.USAGE_ATTRIBUTE, project.provider { usageValue })
         attributeProvider(kotlinProjectSharedDataAttribute, project.provider { key })
@@ -119,6 +125,9 @@ internal class KotlinSecondaryVariantsDataSharing(
 }
 
 private val kotlinProjectSharedDataAttribute = Attribute.of("org.jetbrains.kotlin.project-shared-data", String::class.java)
+
+/** Adds namespacing prefix to an arbitrary [key] to prevent misunderstanding in outgoing variants */
+private fun artifactTypeOfProjectSharedDataKey(key: String) = "kotlin-project-shared-data-$key"
 
 /**
  * Represents a provider that can extract some [T] that was published by a project in the current build as
@@ -131,7 +140,7 @@ private val kotlinProjectSharedDataAttribute = Attribute.of("org.jetbrains.kotli
  */
 internal class KotlinProjectSharedDataProvider<T : KotlinShareableDataAsSecondaryVariant>(
     private val key: String,
-    private val lazyResolvedConfiguration: LazyResolvedConfiguration,
+    private val lazyResolvedConfiguration: LazyResolvedConfigurationWithArtifacts,
     private val clazz: Class<T>,
 ) {
     val rootComponent: ResolvedComponentResult get() = lazyResolvedConfiguration.root

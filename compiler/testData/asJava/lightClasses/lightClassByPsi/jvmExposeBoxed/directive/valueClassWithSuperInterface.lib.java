@@ -1,11 +1,4 @@
 public abstract interface Interface /* pack.Interface*/ {
-  @kotlin.jvm.JvmExposeBoxed()
-  @org.jetbrains.annotations.NotNull()
-  public abstract pack.ValueClass getPropertyWithValueClass();//  getPropertyWithValueClass()
-
-  @kotlin.jvm.JvmExposeBoxed()
-  public abstract void functionWithValueParam(@org.jetbrains.annotations.NotNull() pack.ValueClass);//  functionWithValueParam(pack.ValueClass)
-
   public abstract int getPropertyWithValueClass-wCez43g();//  getPropertyWithValueClass-wCez43g()
 
   public abstract int getRegularVariable();//  getRegularVariable()
@@ -16,7 +9,10 @@ public abstract interface Interface /* pack.Interface*/ {
 
   public abstract void setRegularVariable(int);//  setRegularVariable(int)
 
-  class DefaultImpls ...
+  public static final class DefaultImpls /* pack.Interface.DefaultImpls*/ {
+    @java.lang.Deprecated()
+    public static void regularFunction(@org.jetbrains.annotations.NotNull() pack.Interface);//  regularFunction(pack.Interface)
+  }
 }
 
 @kotlin.jvm.JvmInline()

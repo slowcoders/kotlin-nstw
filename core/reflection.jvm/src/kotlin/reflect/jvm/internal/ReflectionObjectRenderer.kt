@@ -18,7 +18,6 @@ package kotlin.reflect.jvm.internal
 
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.builtins.isNumberedFunctionClassFqName
-import org.jetbrains.kotlin.builtins.jvm.JavaToKotlinClassMap
 import org.jetbrains.kotlin.name.FqNameUnsafe
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.renderer.render
@@ -27,6 +26,7 @@ import kotlin.reflect.*
 import kotlin.reflect.full.contextParameters
 import kotlin.reflect.full.extensionReceiverParameter
 import kotlin.reflect.full.valueParameters
+import kotlin.reflect.jvm.internal.types.AbstractKType
 import kotlin.reflect.jvm.jvmName
 
 internal object ReflectionObjectRenderer {
@@ -34,7 +34,7 @@ internal object ReflectionObjectRenderer {
         append(renderType(receiver.type)).append(".")
 
     private fun StringBuilder.appendReceivers(callable: KCallable<*>) {
-        val receivers = (callable as KCallableImpl<*>).receiverParameters.filter {
+        val receivers = (callable as ReflectKCallable<*>).receiverParameters.filter {
             it.kind == KParameter.Kind.INSTANCE || it.kind == KParameter.Kind.EXTENSION_RECEIVER
         }
         receivers.getOrNull(0)?.let { appendReceiverType(it) }
@@ -120,7 +120,7 @@ internal object ReflectionObjectRenderer {
             }
 
             append(" of ")
-            append(renderCallable((parameter as KParameterImpl).callable))
+            append(renderCallable((parameter as ReflectKParameter).callable))
         }
     }
 
@@ -178,10 +178,7 @@ internal object ReflectionObjectRenderer {
     private fun getTypeClassFqName(type: AbstractKType, klass: KClass<*>): FqNameUnsafe? {
         if (type.isNothingType)
             return StandardNames.FqNames.nothing
-        val fqName = klass.qualifiedName?.let(::FqNameUnsafe) ?: return null
-        if (type.isMutableCollectionType)
-            return JavaToKotlinClassMap.readOnlyToMutable(fqName)?.toUnsafe()
-        return fqName
+        return (type.mutableCollectionClass ?: klass).qualifiedName?.let(::FqNameUnsafe)
     }
 
     private fun StringBuilder.renderFunctionType(type: AbstractKType) {

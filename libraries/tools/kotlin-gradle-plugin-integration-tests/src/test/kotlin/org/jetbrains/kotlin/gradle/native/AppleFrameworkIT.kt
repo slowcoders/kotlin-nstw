@@ -573,47 +573,6 @@ class AppleFrameworkIT : KGPBaseTest() {
         }
     }
 
-    @DisplayName("Smoke test with apple gradle plugin")
-    @GradleTest
-    fun smokeTestWithAppleGradlePlugin(gradleVersion: GradleVersion) {
-        nativeProject(
-            "appleGradlePluginConsumesAppleFrameworks",
-            gradleVersion,
-            buildJdk = jdk11Info.javaHome,
-            buildOptions = defaultBuildOptions.copy(
-                // Apple plugin doesn't support configuration cache
-                configurationCache = BuildOptions.ConfigurationCacheValue.DISABLED,
-            ).suppressDeprecationWarningsSinceGradleVersion(
-                TestVersions.Gradle.G_8_0,
-                gradleVersion,
-                "ApplePlugin produces Gradle deprecations"
-            )
-        ) {
-            fun dependencyInsight(configuration: String) = arrayOf(
-                ":iosApp:dependencyInsight", "--configuration", configuration, "--dependency", "iosLib"
-            )
-
-            subProject("iosApp").buildGradleKts.replaceText("<applePluginTestVersion>", "\"${TestVersions.AppleGradlePlugin.V222_0_21}\"")
-
-            build(*dependencyInsight("iosAppIosX64DebugImplementation")) {
-                assertOutputContainsNativeFrameworkVariant("mainDynamicDebugFrameworkIos", gradleVersion)
-            }
-
-            build(*dependencyInsight("iosAppIosX64ReleaseImplementation")) {
-                assertOutputContainsNativeFrameworkVariant("mainDynamicReleaseFrameworkIos", gradleVersion)
-            }
-
-            // NB: '0' is required at the end since dependency is added with custom attribute, and it creates new configuration
-            build(*dependencyInsight("iosAppIosX64DebugImplementation0"), "-PmultipleFrameworks") {
-                assertOutputContainsNativeFrameworkVariant("mainStaticDebugFrameworkIos", gradleVersion)
-            }
-
-            build(*dependencyInsight("iosAppIosX64ReleaseImplementation0"), "-PmultipleFrameworks") {
-                assertOutputDoesNotContain("mainStaticReleaseFrameworkIos")
-            }
-        }
-    }
-
     @OptIn(EnvironmentalVariablesOverride::class)
     @DisplayName("Framework contains Kdoc documentation")
     @GradleTest

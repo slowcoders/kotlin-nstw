@@ -15,7 +15,6 @@ import org.junit.jupiter.api.assertAll
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -32,57 +31,9 @@ abstract class AbstractRecognizerTests<OldT, NewT, OldSyntaxElement : TestSyntax
     open val oldRecognizerSuffix: String = ""
     abstract val recognizerSyntaxElementName: String
 
-    abstract val expectedExampleDump: String
-    abstract val expectedExampleSyntaxElementsNumber: Long
-    open val expectedExampleContainsSyntaxError: Boolean = true
-    open val expectedEmptySyntaxElementsNumber: Long = 0
-    abstract val expectedDumpOnWindowsNewLine: String
-
     // It doesn't make sense to print the total time of an old PSI parser because it needs the entire document to be parsed
     // even if only KDoc nodes are needed
     open val printOldRecognizerTimeInfo: Boolean = true
-
-    @Test
-    fun testSimple() {
-        val (_, _, _, oldSyntaxElement, _, linesCount) = checkOnKotlinCode(
-            """fun main() {
-    println("Hello, World!")
-}
-
-class C(val x: Int)
-
-/**
- * @param [C.x] Some parameter.
- * @return [Exception]
- */
-fun test(p: String) {
-    val badCharacter = ^
-    throw Exception()
-}""",
-            expectedExampleDump
-        )
-        assertEquals(14, linesCount)
-        val (syntaxElementsNumber, containsErrorElement) = oldSyntaxElement.countSyntaxElements()
-        assertEquals(expectedExampleSyntaxElementsNumber, syntaxElementsNumber)
-        assertEquals(expectedExampleContainsSyntaxError, containsErrorElement)
-    }
-
-    @Test
-    fun testEmpty() {
-        val (_, _, _, oldSyntaxElement, _, linesCount) = checkOnKotlinCode("")
-        assertEquals(1, linesCount)
-        val (syntaxElementsNumber, _) = oldSyntaxElement.countSyntaxElements()
-        assertEquals(expectedEmptySyntaxElementsNumber, syntaxElementsNumber)
-    }
-
-    /**
-     * Current lexers tokenize `\r` as `BAD_CHARACTER`, it also causes creating of `ERROR_ELEMENT` in parse trees.
-     * Adhere to the old behavior in the new lexer and parser.
-     */
-    @Test
-    open fun testWindowsLineEnding() {
-        checkOnKotlinCode("\r\n", expectedDumpOnWindowsNewLine)
-    }
 
     /**
      * PSI at first place parse blocks and lambdas lazily and expands them later if needed.
@@ -161,31 +112,11 @@ fun test(p: String) {
         }
 
         comparisonFailures.add {
-            val approximateNumberOfTestDataFiles = 31800
+            val approximateNumberOfTestDataFiles = 33400
             assertTrue(filesCounter > approximateNumberOfTestDataFiles, "Number of tested files (kt, kts) should be more than $approximateNumberOfTestDataFiles")
         }
 
         assertAll(comparisonFailures)
-    }
-
-    protected fun checkOnKotlinCode(text: String, expectedDump: String? = null, isScript: Boolean = false): ComparisonResult {
-        val comparisonResult = getComparisonResult(
-            text,
-            Path("sample." + (if (isScript) "kts" else "kt"))
-        )
-
-        val assertionFailures = mutableListOf<() -> Unit>()
-
-        if (expectedDump != null) {
-            // Assume old tree representation is reference.
-            assertionFailures.add { assertEquals(expectedDump, comparisonResult.oldSyntaxElement.dump(text.toSourceLinesMapping(), text)) }
-        }
-
-        assertionFailures.addIfNotNull(comparisonResult.failure)
-
-        assertAll(assertionFailures)
-
-        return comparisonResult
     }
 
     private fun getComparisonResult(kotlinCodeSample: String, path: Path? = null): ComparisonResult {

@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.fir.contracts.description.ConeConditionalReturnsDecl
 import org.jetbrains.kotlin.fir.contracts.description.ConeHoldsInEffectDeclaration
 import org.jetbrains.kotlin.fir.contracts.description.ConeReturnsEffectDeclaration
 import org.jetbrains.kotlin.fir.declarations.*
+import org.jetbrains.kotlin.fir.declarations.utils.hasExplicitBackingField
 import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.FirUnitExpression
@@ -248,6 +249,7 @@ class TagsGeneratorChecker(testServices: TestServices) : FirAnalysisHandler(test
         const val CONTRACT_CONDITIONAL_EFFECT = "contractConditionalEffect"
         const val CONTRACT_HOLDSIN_EFFECT = "contractHoldsInEffect"
         const val CONTRACT_IMPLIES_RETURN_EFFECT = "contractImpliesReturnEffect"
+        const val EXPLICIT_BACKING_FIELD = "explicitBackingField"
     }
 }
 
@@ -279,16 +281,16 @@ private class TagsCollectorVisitor(private val session: FirSession) : FirVisitor
         checkRegularClassStatus(regularClass.status)
     }
 
-    override fun visitSimpleFunction(simpleFunction: FirSimpleFunction) {
-        if (skipSyntheticDeclaration(simpleFunction.source)) return
-        visitElement(simpleFunction)
+    override fun visitNamedFunction(namedFunction: FirNamedFunction) {
+        if (skipSyntheticDeclaration(namedFunction.source)) return
+        visitElement(namedFunction)
         tags += FirTags.FUNCTION
 
-        if (simpleFunction.receiverParameter != null) tags += FirTags.FUN_WITH_EXTENSION_RECEIVER
-        if (simpleFunction.contextParameters.isNotEmpty()) tags += FirTags.FUNCTION_WITH_CONTEXT
-        if (simpleFunction.symbol.isLocal) tags += FirTags.LOCAL_FUNCTION
+        if (namedFunction.receiverParameter != null) tags += FirTags.FUN_WITH_EXTENSION_RECEIVER
+        if (namedFunction.contextParameters.isNotEmpty()) tags += FirTags.FUNCTION_WITH_CONTEXT
+        if (namedFunction.symbol.isLocal) tags += FirTags.LOCAL_FUNCTION
 
-        checkSimpleFunctionStatus(simpleFunction.status)
+        checkSimpleFunctionStatus(namedFunction.status)
     }
 
     override fun visitEnumEntry(enumEntry: FirEnumEntry) {
@@ -310,7 +312,7 @@ private class TagsCollectorVisitor(private val session: FirSession) : FirVisitor
         if (property.contextParameters.isNotEmpty()) tags += FirTags.PROPERTY_WITH_CONTEXT
         if (property.isLocal) tags += FirTags.LOCAL_PROPERTY
         if (property.name == SpecialNames.UNDERSCORE_FOR_UNUSED_VAR) tags += FirTags.UNNAMED_LOCAL_VARIABLE
-
+        if (property.hasExplicitBackingField) tags += FirTags.EXPLICIT_BACKING_FIELD
         checkPropertyStatus(property.status)
     }
 
@@ -538,8 +540,8 @@ private class TagsCollectorVisitor(private val session: FirSession) : FirVisitor
         tags += FirTags.CALLABLE_REFERENCE
     }
 
-    override fun visitArrayLiteral(arrayLiteral: FirArrayLiteral) {
-        visitElement(arrayLiteral)
+    override fun visitCollectionLiteral(collectionLiteral: FirCollectionLiteral) {
+        visitElement(collectionLiteral)
         tags += FirTags.COLLECTION_LITERAL
     }
 

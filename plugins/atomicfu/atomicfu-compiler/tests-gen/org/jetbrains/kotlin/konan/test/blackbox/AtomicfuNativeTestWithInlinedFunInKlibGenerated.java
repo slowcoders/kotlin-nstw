@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.test.util.KtTestUtil;
 import org.junit.jupiter.api.Tag;
 import org.jetbrains.kotlin.konan.test.blackbox.support.EnforcedHostTarget;
 import org.jetbrains.kotlin.konan.test.blackbox.support.group.UseExtTestCaseGroupProvider;
-import org.jetbrains.kotlin.test.TargetBackend;
 import org.jetbrains.kotlin.test.TestMetadata;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,7 @@ import java.util.regex.Pattern;
 public class AtomicfuNativeTestWithInlinedFunInKlibGenerated extends AbstractNativeCodegenBoxTest {
   @Test
   public void testAllFilesPresentInBox() {
-    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box"), Pattern.compile("^(.+)\\.kt$"), null, true);
   }
 
   @Nested
@@ -42,7 +41,7 @@ public class AtomicfuNativeTestWithInlinedFunInKlibGenerated extends AbstractNat
   public class Atomic_extensions {
     @Test
     public void testAllFilesPresentInAtomic_extensions() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/atomic_extensions"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/atomic_extensions"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -116,7 +115,7 @@ public class AtomicfuNativeTestWithInlinedFunInKlibGenerated extends AbstractNat
   public class Atomics_basic {
     @Test
     public void testAllFilesPresentInAtomics_basic() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/atomics_basic"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/atomics_basic"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -220,7 +219,13 @@ public class AtomicfuNativeTestWithInlinedFunInKlibGenerated extends AbstractNat
   public class Context_parameters {
     @Test
     public void testAllFilesPresentInContext_parameters() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/context_parameters"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/context_parameters"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("ContextReceiverParametersTest.kt")
+    public void testContextReceiverParametersTest() {
+      runTest("plugins/atomicfu/atomicfu-compiler/testData/box/context_parameters/ContextReceiverParametersTest.kt");
     }
   }
 
@@ -234,7 +239,7 @@ public class AtomicfuNativeTestWithInlinedFunInKlibGenerated extends AbstractNat
   public class Delegated {
     @Test
     public void testAllFilesPresentInDelegated() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/delegated"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/delegated"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -254,7 +259,7 @@ public class AtomicfuNativeTestWithInlinedFunInKlibGenerated extends AbstractNat
   public class Locks {
     @Test
     public void testAllFilesPresentInLocks() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/locks"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/locks"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -280,7 +285,7 @@ public class AtomicfuNativeTestWithInlinedFunInKlibGenerated extends AbstractNat
   public class Top_level {
     @Test
     public void testAllFilesPresentInTop_level() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/top-level"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/top-level"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -306,7 +311,7 @@ public class AtomicfuNativeTestWithInlinedFunInKlibGenerated extends AbstractNat
   public class Trace {
     @Test
     public void testAllFilesPresentInTrace() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/trace"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/atomicfu/atomicfu-compiler/testData/box/trace"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test

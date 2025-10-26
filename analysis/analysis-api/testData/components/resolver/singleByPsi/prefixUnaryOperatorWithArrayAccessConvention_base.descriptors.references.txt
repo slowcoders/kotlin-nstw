@@ -1,6 +1,12 @@
 KtNameReferenceExpression(130,131): 'm'
   KtSimpleNameReference:
-    m: MyMap<kotlin.String, kotlin.Int>
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      m: MyMap<kotlin.String, kotlin.Int>
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.isJavaOrEnhancement
+import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.references.toResolvedCallableSymbol
 import org.jetbrains.kotlin.fir.resolve.*
@@ -33,6 +34,12 @@ internal object CheckArguments : ResolutionStage() {
         val contextArgumentsOfInvoke = candidate.expectedContextParameterCountForInvoke ?: 0
         for ((index, argument) in candidate.arguments.withIndex()) {
             if (index < contextArgumentsOfInvoke) continue
+
+            val expression = argument.expression
+            if (expression.isInaccessibleFromStaticNestedClass()) {
+                sink.reportDiagnostic(expression.toInaccessibleReceiverDiagnostic())
+            }
+
             val parameter = argumentMapping[argument]
             candidate.resolveArgument(
                 candidate.callInfo,
@@ -53,7 +60,7 @@ internal object CheckArguments : ResolutionStage() {
                         val coneType = it.returnTypeRef.coneType
                         context.bodyResolveComponents.samResolver.isSamType(coneType) &&
                                 // Candidate is not from Java, so no flexible types are possible here
-                                coneType.toRegularClassSymbol(context.session)?.isJavaOrEnhancement == true
+                                coneType.toRegularClassSymbol()?.isJavaOrEnhancement == true
                     }
                 ) {
                     sink.markCandidateForCompatibilityResolve()
@@ -102,7 +109,10 @@ private fun Candidate.prepareExpectedType(
     val expectedType =
         getExpectedTypeWithSAMConversion(session, argument, basicExpectedType)?.also {
             session.lookupTracker?.let { lookupTracker ->
-                parameter.returnTypeRef.coneType.lowerBoundIfFlexible().classId?.takeIf { !it.isLocal }?.let { classId ->
+                parameter.returnTypeRef.coneType.classLikeLookupTagIfAny?.takeIf {
+                    it.toSymbol()?.isLocal == false
+                }?.let { lookupTag ->
+                    val classId = lookupTag.classId
                     lookupTracker.recordClassMemberLookup(
                         SAM_LOOKUP_NAME.asString(),
                         classId,
@@ -249,6 +259,6 @@ private fun FirExpression.namedReferenceWithCandidate(): FirNamedReferenceWithCa
 
 context(context: ResolutionContext)
 private fun CheckerSink.markCandidateForCompatibilityResolve() {
-    if (LanguageFeature.DisableCompatibilityModeForNewInference.isEnabled()) return
+    if (disableCompatibilityModeForNewInference()) return
     reportDiagnostic(LowerPriorityToPreserveCompatibilityDiagnostic)
 }

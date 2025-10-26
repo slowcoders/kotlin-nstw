@@ -1,6 +1,12 @@
 KtNameReferenceExpression(51,60): 'JavaClass'
   KtSimpleNameReference:
-    (in JavaClass) constructor(s: kotlin.String)
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in JavaClass) constructor(s: kotlin.String)
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

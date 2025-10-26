@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.descriptors.ValueClassRepresentation
 import org.jetbrains.kotlin.generators.tree.ImplementationKind
+import org.jetbrains.kotlin.generators.tree.StandardTypes
 import org.jetbrains.kotlin.generators.tree.imports.ArbitraryImportable
 import org.jetbrains.kotlin.generators.tree.printer.FunctionParameter
 import org.jetbrains.kotlin.generators.tree.printer.VariableKind
@@ -48,6 +49,7 @@ import org.jetbrains.kotlin.ir.generator.model.ListField.Mutability.MutableList
 import org.jetbrains.kotlin.ir.generator.model.ListField.Mutability.Var
 import org.jetbrains.kotlin.ir.generator.model.SimpleField
 import org.jetbrains.kotlin.ir.generator.model.symbol.Symbol
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
@@ -450,7 +452,20 @@ object IrTree : AbstractTreeBuilder() {
         +declaredSymbol(localDelegatedPropertySymbol)
         +field("type", irTypeType)
         +field("isVar", boolean)
-        +field("delegate", variable)
+        +field("delegate", variable, nullable = true) {
+            kDoc = """
+                 Normally, all local delegated properties have non-null value in [delegate].
+                 
+                 The `null` value can happen only in a very special case:
+                 * The local delegated property was used inside an inlinable lambda argument of an inline function.
+                 * A KLIB-based compiler (Kotlin/Native, Kotlin/JS, Kotlin/Wasm) with the enabled IR inliner on
+                   the first stage pre-processed the call site of the inliner function, so that the [delegate]
+                   variable was "detached" from the local delegated property and left inside the lambda while
+                   the property itself was extracted to the same level as the call site.
+                 
+                 This is called a "soft-extraction" of local delegated properties. It was implemented in KT-78856.
+            """.trimIndent()
+        }
         +field("getter", simpleFunction)
         +field("setter", simpleFunction, nullable = true)
     }
@@ -556,8 +571,8 @@ object IrTree : AbstractTreeBuilder() {
                 Stores implicit receiver parameters configured for the snippet.
             """.trimIndent()
         }
-        +listField("variablesFromOtherSnippets", variable, mutability = MutableList)
-        +listField("declarationsFromOtherSnippets", declaration, mutability = MutableList)
+        +listField("variablesFromOtherSnippets", variable, mutability = MutableList, isChild = false)
+        +listField("declarationsFromOtherSnippets", declaration, mutability = MutableList, isChild = false)
         +referencedSymbol("stateObject", classSymbol, nullable = true) {
             kDoc = """
                 Contains link to the static state object for this compilation session.
@@ -726,6 +741,13 @@ object IrTree : AbstractTreeBuilder() {
         +referencedSymbol(constructorSymbol)
         +field("source", type<SourceElement>())
         +field("constructorTypeArgumentsCount", int)
+    }
+    val annotation: Element by element(Other) {
+        parent(constructorCall)
+        parent(type<AnnotationMarker>())
+
+        +field("classId", type<ClassId>())
+        +field("argumentMapping", StandardTypes.map.withArgs(type<Name>(), expression))
     }
     val getSingletonValue: Element by element(Expression) {
         nameInVisitorMethod = "SingletonReference"

@@ -1,6 +1,12 @@
 KtNameReferenceExpression(55,61): 'values'
   KtSimpleNameReference:
-    (in test.E) fun values(): kotlin.Array<test.E>
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in test.E) fun values(): kotlin.Array<test.E>
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

@@ -1,6 +1,12 @@
 KtNameReferenceExpression(68,76): 'Conflict'
   KtSimpleNameReference:
-    (in test) object Conflict
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in test) object Conflict
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

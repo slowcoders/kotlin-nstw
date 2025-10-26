@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.ir.visitors.IrTransformer
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.utils.filterIsInstanceAnd
 
-val EXTERNAL_SUPER_ACCESSORS_ORIGIN by IrDeclarationOriginImpl
+val EXTERNAL_SUPER_ACCESSORS_ORIGIN by IrDeclarationOriginImpl.Regular
 
 /**
  * The lowering saves external properties access with the super qualifier
@@ -135,7 +135,7 @@ class ExternalPropertyOverridingLowering(private val context: JsIrBackendContext
 
             val accessExpression = with(externalPropertyAccessorsTransformer) { it.createExternalSuperFieldAccess() } ?: return@forEach
             externalPropertyAccessorsTransformer.primaryConstructorBody.statements.add(
-                JsIrBuilder.buildCall(context.intrinsics.jsDelete).apply { arguments[0] = accessExpression }
+                JsIrBuilder.buildCall(context.symbols.jsDelete).apply { arguments[0] = accessExpression }
             )
         }
 

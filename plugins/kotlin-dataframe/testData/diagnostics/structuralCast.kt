@@ -2,6 +2,7 @@ package org.jetbrains.kotlinx.dataframe
 
 import org.jetbrains.kotlinx.dataframe.annotations.DataSchema
 import org.jetbrains.kotlinx.dataframe.api.cast
+import org.jetbrains.kotlinx.dataframe.api.*
 
 @DataSchema
 interface A {
@@ -15,9 +16,14 @@ interface B {
 }
 
 fun check(df: DataFrame<A>) {
-    <!CAST_ERROR!>df.cast<B>()<!>
+    df.<!CAST_ERROR!>cast<!><B>()
 }
 
 fun checkAny(df: DataFrame<*>) {
     df.cast<B>()
+}
+
+fun checkEmptySchema() {
+    val pair = ("a" + "b") to columnOf(123)
+    dataFrameOf(pair).cast<A>()
 }

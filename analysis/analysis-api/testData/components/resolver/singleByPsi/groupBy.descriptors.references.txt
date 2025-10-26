@@ -1,6 +1,12 @@
 KtNameReferenceExpression(263,267): 'nums'
   KtSimpleNameReference:
-    nums: kotlin.IntArray
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      nums: kotlin.IntArray
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

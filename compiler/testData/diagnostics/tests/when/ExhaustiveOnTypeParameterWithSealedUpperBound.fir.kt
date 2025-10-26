@@ -1,3 +1,4 @@
+// LATEST_LV_DIFFERENCE
 // RUN_PIPELINE_TILL: FRONTEND
 // LANGUAGE: +ImprovedExhaustivenessChecksIn21
 sealed class Bird
@@ -23,17 +24,17 @@ fun <T : Bird> simple(value: T) {
 
 fun <T> oneSealedOneUnrelated(value: T) where T : Bird, T : I {
     val v = when (value) {
-        <!USELESS_IS_CHECK!>is Penguin<!> -> "Snow sledding on your belly sounds fun"
-        <!USELESS_IS_CHECK!>is Ostrich<!> -> "ostentatious and rich"
-        <!USELESS_IS_CHECK!>is Kiwi<!> -> "kiwiwiwiwi"
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is Penguin<!> -> "Snow sledding on your belly sounds fun"
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is Ostrich<!> -> "ostentatious and rich"
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is Kiwi<!> -> "kiwiwiwiwi"
     }
 }
 
 fun <T> twoSealed(value: T) where T : Bird, T : <!ONLY_ONE_CLASS_BOUND_ALLOWED!>Vehicle<!> {
     val v = when (value) {
-        <!USELESS_IS_CHECK!>is Penguin<!> -> "Snow sledding on your belly sounds fun"
-        <!USELESS_IS_CHECK!>is Ostrich<!> -> "ostentatious and rich"
-        <!USELESS_IS_CHECK!>is Kiwi<!> -> "kiwiwiwiwi"
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is Penguin<!> -> "Snow sledding on your belly sounds fun"
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is Ostrich<!> -> "ostentatious and rich"
+        <!IMPOSSIBLE_IS_CHECK_WARNING!>is Kiwi<!> -> "kiwiwiwiwi"
     }
 }
 

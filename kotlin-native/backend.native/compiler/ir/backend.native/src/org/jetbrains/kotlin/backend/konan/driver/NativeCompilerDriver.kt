@@ -15,13 +15,15 @@ import org.jetbrains.kotlin.backend.common.phaser.PhaseEngine
 import org.jetbrains.kotlin.backend.konan.*
 import org.jetbrains.kotlin.backend.konan.driver.phases.*
 import org.jetbrains.kotlin.backend.konan.llvm.parseBitcodeFile
+import org.jetbrains.kotlin.backend.konan.serialization.SerializerOutput
 import org.jetbrains.kotlin.builtins.konan.KonanBuiltIns
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
-import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.nativeBinaryOptions.CInterfaceGenerationMode
 import org.jetbrains.kotlin.konan.file.File
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
+import org.jetbrains.kotlin.native.FirOutput
+import org.jetbrains.kotlin.native.FirSerializerInput
 import org.jetbrains.kotlin.util.PerformanceManager
 import org.jetbrains.kotlin.util.PerformanceManagerImpl
 import org.jetbrains.kotlin.util.PhaseType
@@ -61,7 +63,7 @@ internal class NativeCompilerDriver(private val performanceManager: PerformanceM
      * - Info.plist
      * - Binary (if -Xomit-framework-binary is not passed).
      */
-    private fun produceObjCFramework(engine: PhaseEngine<PhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
+    private fun produceObjCFramework(engine: PhaseEngine<NativeBackendPhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
         val frontendOutput = performanceManager.tryMeasurePhaseTime(PhaseType.Analysis) { engine.runFrontend(config, environment) } ?: return
 
         val (objCExportedInterface, linkKlibsOutput, objCCodeSpec) = performanceManager.tryMeasurePhaseTime(PhaseType.TranslationToIr) {
@@ -83,7 +85,7 @@ internal class NativeCompilerDriver(private val performanceManager: PerformanceM
         engine.runBackend(backendContext, linkKlibsOutput.irModule, performanceManager)
     }
 
-    private fun produceCLibrary(engine: PhaseEngine<PhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
+    private fun produceCLibrary(engine: PhaseEngine<NativeBackendPhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
         val frontendOutput = performanceManager.tryMeasurePhaseTime(PhaseType.Analysis) { engine.runFrontend(config, environment) } ?: return
 
         val (linkKlibsOutput, cAdapterElements) = performanceManager.tryMeasurePhaseTime(PhaseType.TranslationToIr) {
@@ -101,11 +103,8 @@ internal class NativeCompilerDriver(private val performanceManager: PerformanceM
         engine.runBackend(backendContext, linkKlibsOutput.irModule, performanceManager)
     }
 
-    private fun produceKlib(engine: PhaseEngine<PhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
-        val serializerOutput = if (environment.configuration.getBoolean(CommonConfigurationKeys.USE_FIR))
-            serializeKLibK2(engine, config, environment)
-        else
-            serializeKlibK1(engine, config, environment)
+    private fun <T : PhaseContext> produceKlib(engine: PhaseEngine<T>, config: NativeKlibCompilationConfig, environment: KotlinCoreEnvironment) {
+        val serializerOutput = serializeKLibK2(engine, config, environment)
         serializerOutput?.let {
             performanceManager.tryMeasurePhaseTime(PhaseType.KlibWriting) {
                 engine.writeKlib(it)
@@ -113,9 +112,9 @@ internal class NativeCompilerDriver(private val performanceManager: PerformanceM
         }
     }
 
-    private fun serializeKLibK2(
-            engine: PhaseEngine<PhaseContext>,
-            config: KonanConfig,
+    private fun <T : PhaseContext> serializeKLibK2(
+            engine: PhaseEngine<T>,
+            config: NativeKlibCompilationConfig,
             environment: KotlinCoreEnvironment
     ): SerializerOutput? {
         val frontendOutput = performanceManager.tryMeasurePhaseTime(PhaseType.Analysis) { engine.runFirFrontend(environment) }
@@ -138,9 +137,7 @@ internal class NativeCompilerDriver(private val performanceManager: PerformanceM
             val headerKlibPath = config.headerKlibPath
             if (!headerKlibPath.isNullOrEmpty()) {
                 // Child performance manager is needed since otherwise the phase ordering is broken
-                PerformanceManagerImpl.createAndEnableChildIfNeeded(performanceManager).let {
-                    it?.notifyPhaseFinished(PhaseType.Initialization)
-
+                PerformanceManagerImpl.createChildIfNeeded(performanceManager, start = false).let {
                     val headerKlib = it.tryMeasurePhaseTime(PhaseType.IrSerialization) {
                         engine.runFir2IrSerializer(FirSerializerInput(loweredIr, produceHeaderKlib = true))
                     }
@@ -160,46 +157,10 @@ internal class NativeCompilerDriver(private val performanceManager: PerformanceM
         }
     }
 
-    private fun serializeKlibK1(
-            engine: PhaseEngine<PhaseContext>,
-            config: KonanConfig,
-            environment: KotlinCoreEnvironment
-    ): SerializerOutput? {
-        val frontendOutput = performanceManager.tryMeasurePhaseTime(PhaseType.Analysis) { engine.runFrontend(config, environment) } ?: return null
-        val psiToIrOutput = performanceManager.tryMeasurePhaseTime(PhaseType.TranslationToIr) {
-            if (config.metadataKlib) {
-                null
-            } else {
-                engine.runPsiToIr(frontendOutput)
-            }
-        }
-        val headerKlibPath = config.headerKlibPath
-        if (!headerKlibPath.isNullOrEmpty()) {
-            // Child performance manager is needed since otherwise the phase ordering is broken
-            PerformanceManagerImpl.createAndEnableChildIfNeeded(performanceManager).let {
-                it?.notifyPhaseFinished(PhaseType.Initialization)
-
-                val headerKlib = it.tryMeasurePhaseTime(PhaseType.IrSerialization) {
-                    engine.runSerializer(frontendOutput.moduleDescriptor, psiToIrOutput, produceHeaderKlib = true)
-                }
-                it.tryMeasurePhaseTime(PhaseType.KlibWriting) {
-                    engine.writeKlib(headerKlib, headerKlibPath, produceHeaderKlib = true)
-                }
-                performanceManager?.addOtherUnitStats(it?.unitStats)
-            }
-            // Don't overwrite the header klib with the full klib and stop compilation here.
-            // By providing the same path for both regular output and header klib we can skip emitting the full klib.
-            if (File(config.outputPath).canonicalPath == File(headerKlibPath).canonicalPath) return null
-        }
-        return performanceManager.tryMeasurePhaseTime(PhaseType.IrSerialization) {
-            engine.runSerializer(frontendOutput.moduleDescriptor, psiToIrOutput)
-        }
-    }
-
     /**
      * Produce a single binary artifact.
      */
-    private fun produceBinary(engine: PhaseEngine<PhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
+    private fun produceBinary(engine: PhaseEngine<NativeBackendPhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
         val frontendOutput = performanceManager.tryMeasurePhaseTime(PhaseType.Analysis) { engine.runFrontend(config, environment) } ?: return
 
         val linkKlibsOutput = performanceManager.tryMeasurePhaseTime(PhaseType.TranslationToIr) { engine.linkKlibs(frontendOutput) }
@@ -207,7 +168,7 @@ internal class NativeCompilerDriver(private val performanceManager: PerformanceM
         engine.runBackend(backendContext, linkKlibsOutput.irModule, performanceManager)
     }
 
-    private fun produceBinaryFromBitcode(engine: PhaseEngine<PhaseContext>, config: KonanConfig, bitcodeFilePath: String) {
+    private fun produceBinaryFromBitcode(engine: PhaseEngine<NativeBackendPhaseContext>, config: KonanConfig, bitcodeFilePath: String) {
         val llvmContext = LLVMContextCreate()!!
         var llvmModule: CPointer<LLVMOpaqueModule>? = null
         try {
@@ -232,7 +193,7 @@ internal class NativeCompilerDriver(private val performanceManager: PerformanceM
      *
      * See https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/AboutBundles/AboutBundles.html
      */
-    private fun produceBundle(engine: PhaseEngine<PhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
+    private fun produceBundle(engine: PhaseEngine<NativeBackendPhaseContext>, config: KonanConfig, environment: KotlinCoreEnvironment) {
         require(config.target.family.isAppleFamily)
         require(config.produce == CompilerOutputKind.TEST_BUNDLE)
 

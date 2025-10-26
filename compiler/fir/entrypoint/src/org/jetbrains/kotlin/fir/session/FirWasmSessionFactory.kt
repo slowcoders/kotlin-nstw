@@ -9,11 +9,12 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.SessionConfiguration
 import org.jetbrains.kotlin.fir.checkers.registerWasmCheckers
-import org.jetbrains.kotlin.fir.scopes.FirDefaultImportProviderHolder
+import org.jetbrains.kotlin.fir.scopes.FirDefaultImportsProviderHolder
+import org.jetbrains.kotlin.fir.scopes.impl.FirEnumEntriesSupport
 import org.jetbrains.kotlin.platform.wasm.WasmTarget
 import org.jetbrains.kotlin.wasm.config.wasmTarget
-import org.jetbrains.kotlin.wasm.resolve.WasmPlatformAnalyzerServices
-import org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformAnalyzerServices
+import org.jetbrains.kotlin.wasm.resolve.WasmJsDefaultImportsProvider
+import org.jetbrains.kotlin.wasm.resolve.WasmWasiDefaultImportsProvider
 
 @OptIn(SessionConfiguration::class)
 object FirWasmSessionFactory : AbstractFirKlibSessionFactory<FirWasmSessionFactory.Context, FirWasmSessionFactory.Context>() {
@@ -25,7 +26,6 @@ object FirWasmSessionFactory : AbstractFirKlibSessionFactory<FirWasmSessionFacto
     }
 
     override fun FirSession.registerLibrarySessionComponents(c: Context) {
-        registerDefaultComponents()
         registerWasmComponents(c.wasmTarget)
     }
 
@@ -42,17 +42,17 @@ object FirWasmSessionFactory : AbstractFirKlibSessionFactory<FirWasmSessionFacto
     override fun FirSessionConfigurator.registerExtraPlatformCheckers(c: Context) {}
 
     override fun FirSession.registerSourceSessionComponents(c: Context) {
-        registerDefaultComponents()
         registerWasmComponents(c.wasmTarget)
     }
 
     @OptIn(SessionConfiguration::class)
     fun FirSession.registerWasmComponents(wasmTarget: WasmTarget) {
-        val analyzerServices = when (wasmTarget) {
-            WasmTarget.JS -> WasmPlatformAnalyzerServices
-            WasmTarget.WASI -> WasmWasiPlatformAnalyzerServices
+        register(FirEnumEntriesSupport(this))
+        val defaultImportsProvider = when (wasmTarget) {
+            WasmTarget.JS -> WasmJsDefaultImportsProvider
+            WasmTarget.WASI -> WasmWasiDefaultImportsProvider
         }
-        register(FirDefaultImportProviderHolder::class, FirDefaultImportProviderHolder(analyzerServices))
+        register(FirDefaultImportsProviderHolder.of(defaultImportsProvider))
     }
 
     // ==================================== Utilities ====================================

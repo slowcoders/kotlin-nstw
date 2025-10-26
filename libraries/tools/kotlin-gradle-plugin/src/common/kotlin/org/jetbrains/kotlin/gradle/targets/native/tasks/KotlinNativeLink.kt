@@ -14,19 +14,13 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.cli.common.arguments.K2NativeCompilerArguments
 import org.jetbrains.kotlin.commonizer.KonanDistribution
-import org.jetbrains.kotlin.compilerRunner.ArgumentUtils
-import org.jetbrains.kotlin.compilerRunner.KotlinCompilerArgumentsLogLevel
-import org.jetbrains.kotlin.compilerRunner.addBuildMetricsForTaskAction
-import org.jetbrains.kotlin.compilerRunner.getKonanCacheKind
-import org.jetbrains.kotlin.compilerRunner.getKonanCacheOrchestration
-import org.jetbrains.kotlin.compilerRunner.getKonanParallelThreads
-import org.jetbrains.kotlin.compilerRunner.isKonanIncrementalCompilationEnabled
+import org.jetbrains.kotlin.compilerRunner.*
 import org.jetbrains.kotlin.gradle.InternalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.internal.UsesClassLoadersCachingBuildService
@@ -34,23 +28,23 @@ import org.jetbrains.kotlin.gradle.internal.properties.nativeProperties
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext.Companion.create
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
-import org.jetbrains.kotlin.gradle.plugin.cocoapods.asValidFrameworkName
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.useXcodeMessageStyle
 import org.jetbrains.kotlin.gradle.plugin.statistics.UsesBuildFusService
 import org.jetbrains.kotlin.gradle.report.UsesBuildMetricsService
 import org.jetbrains.kotlin.gradle.targets.native.UsesKonanPropertiesBuildService
-import org.jetbrains.kotlin.gradle.targets.native.internal.getOriginalPlatformLibrariesFor
+import org.jetbrains.kotlin.gradle.targets.native.internal.getOriginalPlatformLibrariesForTargetWithKonanDistribution
 import org.jetbrains.kotlin.gradle.targets.native.tasks.CompilerPluginData
 import org.jetbrains.kotlin.gradle.targets.native.toolchain.KotlinNativeFromToolchainProvider
-import org.jetbrains.kotlin.gradle.targets.native.toolchain.NoopKotlinNativeProvider
 import org.jetbrains.kotlin.gradle.targets.native.toolchain.KotlinNativeProvider
+import org.jetbrains.kotlin.gradle.targets.native.toolchain.NoopKotlinNativeProvider
 import org.jetbrains.kotlin.gradle.targets.native.toolchain.UsesKotlinNativeBundleBuildService
 import org.jetbrains.kotlin.gradle.utils.*
 import org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeCompilerRunner
 import org.jetbrains.kotlin.internal.compilerRunner.native.KotlinNativeToolRunner
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
 import org.jetbrains.kotlin.project.model.LanguageSettings
+import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 import java.io.File
 import javax.inject.Inject
@@ -99,10 +93,11 @@ constructor(
     internal val konanTarget = compilation.konanTarget
 
     private val objects = project.objects
+    private val simpleKotlinNativeVersion = project.nativeProperties.kotlinNativeVersion
 
     @get:Internal
     internal val excludeDependencies
-        get() = objects.getOriginalPlatformLibrariesFor(actualNativeHomeDirectory.map {
+        get() = objects.getOriginalPlatformLibrariesForTargetWithKonanDistribution(actualNativeHomeDirectory.map {
             KonanDistribution(it)
         }, konanTarget)
 
@@ -136,9 +131,23 @@ constructor(
     @get:Internal
     val languageSettings: LanguageSettings = compilation.defaultSourceSet.languageSettings
 
-    @Suppress("unused")
     @get:Input
-    internal val konanCacheKind: Provider<NativeCacheKind> = project.getKonanCacheKind(konanTarget)
+    internal val disableCache: Provider<Boolean> = objects.propertyWithConvention(
+        simpleKotlinNativeVersion.map { version ->
+            binary.disableCacheSettings.any { disableSetting ->
+                disableSetting.version == KotlinToolingVersion(version)
+            }
+        }
+    )
+
+    @get:Input
+    internal val konanCacheKind: Provider<NativeCacheKind> = konanPropertiesService.zip(disableCache) { service, isCacheDisabled ->
+        if (isCacheDisabled) {
+            NativeCacheKind.NONE
+        } else {
+            service.defaultCacheKindForTarget(konanTarget)
+        }
+    }
 
     @Suppress("unused", "UNCHECKED_CAST")
     @Deprecated(
@@ -199,7 +208,7 @@ constructor(
     val exportLibraries: FileCollection get() = exportLibrariesResolvedConfiguration?.files ?: objectFactory.fileCollection()
 
     private val exportLibrariesResolvedConfiguration = if (binary is AbstractNativeLibrary) {
-        LazyResolvedConfiguration(project.configurations.maybeCreateResolvable(binary.exportConfigurationName))
+        LazyResolvedConfigurationWithArtifacts(project.configurations.maybeCreateResolvable(binary.exportConfigurationName))
     } else {
         null
     }
@@ -217,17 +226,6 @@ constructor(
     @get:Input
     val target: String = compilation.konanTarget.name
 
-    @Suppress("DEPRECATION_ERROR")
-    @Deprecated(BITCODE_EMBEDDING_DEPRECATION_MESSAGE, level = DeprecationLevel.ERROR)
-    @get:Internal
-    val embedBitcode: BitcodeEmbeddingMode
-        get() = embedBitcodeMode.get()
-
-    @get:Input
-    @get:Optional
-    @Suppress("DEPRECATION_ERROR")
-    @Deprecated(BITCODE_EMBEDDING_DEPRECATION_MESSAGE, level = DeprecationLevel.ERROR)
-    val embedBitcodeMode: Provider<BitcodeEmbeddingMode> = objectFactory.property()
 
     @get:Internal
     val apiFiles: ConfigurableFileCollection = objectFactory.fileCollection()
@@ -235,12 +233,11 @@ constructor(
     @get:Internal
     internal val externalDependenciesBuildCompilerArgs: ListProperty<String> = objectFactory.listProperty<String>().empty()
 
-    private val konanCacheDir = project.getKonanCacheKind(konanTarget)
     private val gradleUserHomeDir = project.gradle.gradleUserHomeDir
     private val cacheBuilderSettings by lazy {
         CacheBuilder.Settings(
             konanHome = kotlinNativeProvider.flatMap { it.bundleDirectory }.map { File(it) },
-            konanCacheKind = konanCacheDir,
+            konanCacheKind = konanCacheKind,
             gradleUserHomeDir = gradleUserHomeDir,
             konanTarget = konanTarget,
             toolOptions = toolOptions,
@@ -255,7 +252,6 @@ constructor(
 
     private class CacheSettings(
         val orchestration: NativeCacheOrchestration,
-        val kind: NativeCacheKind,
         val icEnabled: Boolean,
         val threads: Int,
         val gradleUserHomeDir: File,
@@ -264,7 +260,6 @@ constructor(
 
     private val cacheSettings = CacheSettings(
         project.getKonanCacheOrchestration(),
-        project.getKonanCacheKind(konanTarget).get(),
         project.isKonanIncrementalCompilationEnabled(),
         project.getKonanParallelThreads(),
         project.gradle.gradleUserHomeDir,
@@ -357,7 +352,7 @@ constructor(
     protected val friendModule: FileCollection = objectFactory.fileCollection().from({ compilation.friendPaths })
 
     @Suppress("DEPRECATION_ERROR")
-    private val resolvedConfiguration = LazyResolvedConfiguration(
+    private val resolvedConfiguration = LazyResolvedConfigurationWithArtifacts(
         project.configurations.getByName(compilation.compileDependencyConfigurationName)
     )
 
@@ -369,7 +364,7 @@ constructor(
             val filename = "$prefix${baseName}$suffix".let {
                 when {
                     outputKind == CompilerOutputKind.FRAMEWORK ->
-                        it.asValidFrameworkName()
+                        it.asValidFrameworkName
                     outputKind in listOf(CompilerOutputKind.STATIC, CompilerOutputKind.DYNAMIC) ->
                         it.replace('-', '_')
                     else -> it
@@ -421,7 +416,6 @@ constructor(
     private val runnerJvmArgs = project.nativeProperties.jvmArgs
     private val forceDisableRunningInProcess = project.nativeProperties.forceDisableRunningInProcess
     private val useXcodeMessageStyle = project.useXcodeMessageStyle
-    private val simpleKotlinNativeVersion = project.nativeProperties.kotlinNativeVersion
 
     @get:Internal
     internal val nativeCompilerRunner
@@ -451,7 +445,7 @@ constructor(
                 addAll(externalDependenciesBuildCompilerArgs.get())
                 when (cacheSettings.orchestration) {
                     NativeCacheOrchestration.Compiler -> {
-                        if (cacheSettings.kind != NativeCacheKind.NONE
+                        if (konanCacheKind.get() != NativeCacheKind.NONE
                             && !optimized
                             && konanPropertiesService.get().cacheWorksFor(konanTarget)
                         ) {
@@ -500,3 +494,5 @@ constructor(
         return objectFactory.providerWithLazyConvention(lazyConventionValue)
     }
 }
+
+internal val String.asValidFrameworkName get() = replace('-', '_')

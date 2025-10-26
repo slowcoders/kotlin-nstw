@@ -24,7 +24,6 @@ import org.jetbrains.kotlin.fir.references.builder.buildResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.resolve.toRegularClassSymbol
-import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.serialization.FirAdditionalMetadataProvider
 import org.jetbrains.kotlin.fir.serialization.providedDeclarationsForMetadataService
 import org.jetbrains.kotlin.fir.symbols.impl.*
@@ -57,25 +56,28 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
         data class TypeParameter(val name: Name) : ChildDeclarationKind()
     }
 
-    override fun addMetadataVisibleAnnotationsToElement(declaration: IrDeclaration, annotations: List<IrConstructorCall>) {
+    override fun getMetadataVisibleAnnotationsForElement(declaration: IrDeclaration): MutableList<IrConstructorCall> {
         require(declaration.origin != IrDeclarationOrigin.FAKE_OVERRIDE) {
             "FAKE_OVERRIDE declarations are not preserved in metadata and should not be marked with annotations: ${declaration.render()}"
         }
+        val (firDeclaration, kind) = findFirDeclaration(declaration)
+        return when (kind) {
+            null -> annotationsStorage.getOrPut(firDeclaration) { mutableListOf() }
+            else -> {
+                val storageForDeclaration = annotationsOnParametersStorage.getOrPut(firDeclaration) { mutableMapOf() }
+                storageForDeclaration.getOrPut(kind) { mutableListOf() }
+            }
+        }
+    }
+
+    override fun addMetadataVisibleAnnotationsToElement(declaration: IrDeclaration, annotations: List<IrConstructorCall>) {
         require(annotations.all { it.typeArguments.isEmpty() }) {
             "Saving annotations with type arguments from IR to metadata is not supported: ${declaration.render()}"
         }
         annotations.forEach {
             require(it.symbol.owner.constructedClass.isAnnotationClass) { "${it.render()} is not an annotation constructor call" }
         }
-        val (firDeclaration, kind) = findFirDeclaration(declaration)
-
-        when (kind) {
-            null -> annotationsStorage.getOrPut(firDeclaration) { mutableListOf() } += annotations
-            else -> {
-                val storageForDeclaration = annotationsOnParametersStorage.getOrPut(firDeclaration) { mutableMapOf() }
-                storageForDeclaration.getOrPut(kind) { mutableListOf() } += annotations
-            }
-        }
+        getMetadataVisibleAnnotationsForElement(declaration) += annotations
         declaration.annotations += annotations
     }
 
@@ -94,7 +96,7 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
 
     override fun registerFunctionAsMetadataVisible(irFunction: IrSimpleFunction) {
         if (irFunction.isLocal || irFunction.parentClassOrNull?.isLocal == true) return
-        val firFunction = buildSimpleFunction {
+        val firFunction = buildNamedFunction {
             moduleData = session.moduleData
             origin = GeneratedForMetadata.origin
             status = FirResolvedDeclarationStatusImpl(
@@ -124,7 +126,7 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
                     origin = GeneratedForMetadata.origin
                     name = it.name
                     symbol = FirTypeParameterSymbol()
-                    containingDeclarationSymbol = this@buildSimpleFunction.symbol
+                    containingDeclarationSymbol = this@buildNamedFunction.symbol
                     variance = it.variance
                     isReified = it.isReified
                     resolvePhase = FirResolvePhase.BODY_RESOLVE

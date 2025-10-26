@@ -3,6 +3,7 @@ plugins {
     id("jps-compatible")
     id("java-test-fixtures")
     id("project-tests-convention")
+    id("test-inputs-check")
 }
 
 dependencies {
@@ -20,6 +21,7 @@ dependencies {
     compileOnly(project(":compiler:fir:fir-deserialization"))
     compileOnly(project(":compiler:frontend.common.jvm"))
     compileOnly(project(":compiler:config.jvm"))
+    compileOnly(project(":compiler:frontend"))
 
     compileOnly(intellijCore())
 
@@ -29,6 +31,8 @@ dependencies {
     testFixturesApi(testFixtures(project(":compiler:tests-compiler-utils")))
     testFixturesApi(testFixtures(project(":compiler:tests-common-new")))
     testFixturesApi(testFixtures(project(":compiler:fir:analysis-tests")))
+    testFixturesImplementation(testFixtures(project(":generators:test-generator")))
+    testFixturesImplementation(testFixtures(project(":compiler:tests-spec")))
 
     testApi(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter.api)
@@ -57,18 +61,22 @@ optInToObsoleteDescriptorBasedAPI()
 
 sourceSets {
     "main" { projectDefault() }
-    "test" { generatedTestDir() }
     "testFixtures" { projectDefault() }
 }
 
 fun Test.configure(configureJUnit: JUnitPlatformOptions.() -> Unit = {}) {
-    dependsOn(":dist")
-    workingDir = rootDir
     useJUnitPlatform {
         configureJUnit()
     }
 }
+
 projectTests {
+    testData(project(":compiler").isolated, "testData/codegen")
+    testData(project(":compiler").isolated, "testData/diagnostics")
+    testData(project(":compiler").isolated, "testData/ir")
+    testData(project(":compiler").isolated, "testData/klib")
+    testData(project(":compiler").isolated, "testData/debug")
+    testData(project(":compiler:tests-spec").isolated, "testData/codegen")
     testTask(
         jUnitMode = JUnitMode.JUnit5,
         defineJDKEnvVariables = listOf(JdkMajorVersion.JDK_1_8, JdkMajorVersion.JDK_11_0, JdkMajorVersion.JDK_17_0, JdkMajorVersion.JDK_21_0),
@@ -82,13 +90,25 @@ projectTests {
         }
 
     }
+
     testTask("nightlyTests", jUnitMode = JUnitMode.JUnit5, skipInLocalBuild = true) {
         configure {
             includeTags("FirPsiCodegenTest")
         }
     }
 
+    testGenerator("org.jetbrains.kotlin.test.TestGeneratorForFir2IrTestsKt", generateTestsInBuildDirectory = true)
+
     withJvmStdlibAndReflect()
+    withScriptRuntime()
+    withMockJdkAnnotationsJar()
+    withTestJar()
+    withScriptingPlugin()
+    withMockJdkRuntime()
+    withStdlibCommon()
+    withAnnotations()
+    withThirdPartyAnnotations()
+    withThirdPartyJsr305()
 }
 
 testsJarToBeUsedAlongWithFixtures()

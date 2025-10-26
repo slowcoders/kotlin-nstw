@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.test.runners.AbstractDiagnosticTest
 import org.jetbrains.kotlin.test.runners.AbstractFirPsiDiagnosticTest
 import org.jetbrains.kotlin.test.runners.codegen.*
 import org.jetbrains.kotlin.test.configuration.configurationForClassicAndFirTestsAlongside
+import org.jetbrains.kotlin.test.runners.AbstractPhasedJvmDiagnosticLightTreeTest
 import org.jetbrains.kotlin.test.services.EnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.TestServices
 
@@ -59,7 +60,7 @@ abstract class AbstractDiagnosticsTestForNoArg : AbstractDiagnosticTest() {
     }
 }
 
-abstract class AbstractFirPsiDiagnosticsTestForNoArg : AbstractFirPsiDiagnosticTest() {
+abstract class AbstractFirPsiDiagnosticsTestForNoArg : AbstractPhasedJvmDiagnosticLightTreeTest() {
     override fun configure(builder: TestConfigurationBuilder) {
         super.configure(builder)
         builder.configurationForClassicAndFirTestsAlongside()
@@ -84,7 +85,7 @@ class NoArgEnvironmentConfigurator(testServices: TestServices) : EnvironmentConf
         module: TestModule,
         configuration: CompilerConfiguration
     ) {
-        NoArgComponentRegistrar.registerNoArgComponents(this, NOARG_ANNOTATIONS, NoArgDirectives.INVOKE_INITIALIZERS in module.directives)
+        NoArgComponentRegistrar.registerNoArgComponents(this, configuration, NOARG_ANNOTATIONS, NoArgDirectives.INVOKE_INITIALIZERS in module.directives)
     }
 }
 

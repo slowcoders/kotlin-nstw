@@ -118,6 +118,10 @@ object CodegenTestDirectives : SimpleDirectivesContainer() {
         description = "Dumps generated backend IR after inlining (enables ${IrTextDumpHandler::class} after inlining)"
     )
 
+    val DUMP_IR_OF_PREPROCESSED_INLINE_FUNCTIONS by directive(
+        description = "Dumps generated backend IR of preprocessed inline functions (enables ${IrPreprocessedInlineFunctionDumpHandler::class})"
+    )
+
     val DUMP_EXTERNAL_CLASS by stringDirective(
         description = "Specifies names of external classes which IR should be dumped"
     )
@@ -233,6 +237,11 @@ object CodegenTestDirectives : SimpleDirectivesContainer() {
 
     val JVM_ABI_K1_K2_DIFF by stringDirective(
         description = "Expect difference in JVM ABI between K1 and K2",
+        applicability = Global
+    )
+
+    val IGNORE_JVM_ABI_K1_K2 by stringDirective(
+        description = "Ignore failures when running pipelines when computing difference in JVM ABI between K1 and K2",
         applicability = Global
     )
 

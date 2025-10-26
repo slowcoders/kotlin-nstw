@@ -1,6 +1,12 @@
 KtNameReferenceExpression(58,64): 'sample'
   KtSimpleNameReference:
-    package my.sample
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      package my.sample
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

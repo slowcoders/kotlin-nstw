@@ -8,10 +8,10 @@ package org.jetbrains.kotlin.fir.plugin
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.FirTypeParameter
 import org.jetbrains.kotlin.fir.declarations.builder.buildReceiverParameter
-import org.jetbrains.kotlin.fir.declarations.builder.buildSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.builder.buildNamedFunction
 import org.jetbrains.kotlin.fir.declarations.origin
 import org.jetbrains.kotlin.fir.declarations.utils.fileNameForPluginGeneratedCallable
 import org.jetbrains.kotlin.fir.declarations.utils.isExpect
@@ -34,7 +34,7 @@ public class SimpleFunctionBuildingContext(
     callableId: CallableId,
     private val returnTypeProvider: (List<FirTypeParameter>) -> ConeKotlinType,
     private val containingFileName: String?,
-) : FunctionBuildingContext<FirSimpleFunction>(callableId, session, key, owner) {
+) : FunctionBuildingContext<FirNamedFunction>(callableId, session, key, owner) {
     private var extensionReceiverTypeProvider: ((List<FirTypeParameter>) -> ConeKotlinType)? = null
 
     /**
@@ -54,8 +54,8 @@ public class SimpleFunctionBuildingContext(
         extensionReceiverTypeProvider = typeProvider
     }
 
-    override fun build(): FirSimpleFunction {
-        return buildSimpleFunction {
+    override fun build(): FirNamedFunction {
+        return buildNamedFunction {
             resolvePhase = FirResolvePhase.BODY_RESOLVE
             moduleData = session.moduleData
             origin = key.origin
@@ -85,7 +85,7 @@ public class SimpleFunctionBuildingContext(
                     symbol = FirReceiverParameterSymbol()
                     moduleData = session.moduleData
                     origin = key.origin
-                    containingDeclarationSymbol = this@buildSimpleFunction.symbol
+                    containingDeclarationSymbol = this@buildNamedFunction.symbol
                 }
             }
         }.also {
@@ -110,7 +110,7 @@ public fun FirExtension.createMemberFunction(
     name: Name,
     returnType: ConeKotlinType,
     config: SimpleFunctionBuildingContext.() -> Unit = {}
-): FirSimpleFunction {
+): FirNamedFunction {
     return createMemberFunction(owner, key, name, { returnType }, config)
 }
 
@@ -126,7 +126,7 @@ public fun FirExtension.createMemberFunction(
     name: Name,
     returnTypeProvider: (List<FirTypeParameter>) -> ConeKotlinType,
     config: SimpleFunctionBuildingContext.() -> Unit = {}
-): FirSimpleFunction {
+): FirNamedFunction {
     val callableId = CallableId(owner.classId, name)
     return SimpleFunctionBuildingContext(session, key, owner, callableId, returnTypeProvider, containingFileName = null)
         .apply(config)
@@ -153,7 +153,7 @@ public fun FirExtension.createTopLevelFunction(
     returnType: ConeKotlinType,
     containingFileName: String? = null,
     config: SimpleFunctionBuildingContext.() -> Unit = {}
-): FirSimpleFunction {
+): FirNamedFunction {
     return createTopLevelFunction(key, callableId, { returnType }, containingFileName, config)
 }
 
@@ -174,7 +174,7 @@ public fun FirExtension.createTopLevelFunction(
     returnTypeProvider: (List<FirTypeParameter>) -> ConeKotlinType,
     containingFileName: String? = null,
     config: SimpleFunctionBuildingContext.() -> Unit = {}
-): FirSimpleFunction {
+): FirNamedFunction {
     require(callableId.classId == null)
     return SimpleFunctionBuildingContext(
         session, key, owner = null, callableId,

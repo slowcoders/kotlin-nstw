@@ -249,7 +249,7 @@ public final class InTextDirectivesUtils {
     }
 
     public static boolean isCompatibleTarget(@NotNull TargetBackend targetBackend, @NotNull File file) {
-        return isCompatibleTarget(targetBackend, file, /*separatedDirectiveValues=*/false);
+        return isCompatibleTarget(targetBackend, file, /*separatedDirectiveValues=*/true);
     }
 
     public static boolean isCompatibleTarget(@NotNull TargetBackend targetBackend, @NotNull File file, boolean separatedDirectiveValues) {
@@ -277,6 +277,19 @@ public final class InTextDirectivesUtils {
 
         List<String> backends = directives.getOrDefault("TARGET_BACKEND: ", Collections.emptyList());
         return isCompatibleTargetExceptAny(targetBackend, backends);
+    }
+
+    public static boolean isCompatibleTarget(
+            @NotNull TargetBackend targetBackend,
+            @NotNull List<TargetBackend> backends,
+            @NotNull List<TargetBackend> doNotTarget
+    ) {
+        if (targetBackend == TargetBackend.ANY) return true;
+
+        if (doNotTarget.contains(targetBackend))
+            return false;
+
+        return isCompatibleTargetExceptAny(targetBackend, backends.stream().map(TargetBackend::name).collect(Collectors.toList()));
     }
 
     private static boolean isCompatibleTargetExceptAny(@NotNull TargetBackend targetBackend, @NotNull List<String> backends) {

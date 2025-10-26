@@ -5,10 +5,9 @@
 
 package org.jetbrains.kotlin.analysis.decompiler.stub.file
 
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.compiled.ClsStubBuilder
-import com.intellij.psi.impl.compiled.ClassFileStubBuilder
 import com.intellij.psi.stubs.PsiFileStub
 import com.intellij.util.indexing.FileContent
 import org.jetbrains.kotlin.SpecialJvmAnnotations
@@ -29,6 +28,7 @@ import org.jetbrains.kotlin.metadata.deserialization.NameResolver
 import org.jetbrains.kotlin.metadata.deserialization.TypeTable
 import org.jetbrains.kotlin.metadata.jvm.deserialization.JvmProtoBufUtil
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.ClassIdBasedLocality
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtFile
@@ -39,8 +39,8 @@ import org.jetbrains.kotlin.serialization.deserialization.getClassId
 import org.jetbrains.kotlin.serialization.deserialization.getName
 import org.jetbrains.kotlin.storage.LockBasedStorageManager
 
-open class KotlinClsStubBuilder : ClsStubBuilder() {
-    override fun getStubVersion() = ClassFileStubBuilder.STUB_VERSION + KotlinStubVersions.CLASSFILE_STUB_VERSION
+object KotlinClsStubBuilder : ClsStubBuilder() {
+    override fun getStubVersion(): Int = KotlinStubVersions.CLASSFILE_STUB_VERSION
 
     override fun buildFileStub(content: FileContent): PsiFileStub<*>? {
         val virtualFile = content.file
@@ -90,6 +90,7 @@ open class KotlinClsStubBuilder : ClsStubBuilder() {
             LOG.error("String table not found in file ${file.name}")
             return null
         }
+        @OptIn(ClassIdBasedLocality::class)
         return when (header.kind) {
             KotlinClassHeader.Kind.CLASS -> {
                 if (classId.isLocal) return null
@@ -132,16 +133,12 @@ open class KotlinClsStubBuilder : ClsStubBuilder() {
         return ClsStubBuilderComponents(classDataFinder, annotationLoader, file, BuiltInSerializerProtocol, classFinder, metadataVersion)
     }
 
-    companion object {
-        val LOG = Logger.getInstance(KotlinClsStubBuilder::class.java)
+    private val LOG = logger<KotlinClsStubBuilder>()
 
-        // Archive separator + META-INF + versions
-        private val VERSIONED_PATH_MARKER = "!/META-INF/versions/"
+    // Archive separator + META-INF + versions
+    private const val VERSIONED_PATH_MARKER = "!/META-INF/versions/"
 
-        fun isVersioned(virtualFile: VirtualFile): Boolean {
-            return virtualFile.path.contains(VERSIONED_PATH_MARKER)
-        }
-    }
+    fun isVersioned(virtualFile: VirtualFile): Boolean = VERSIONED_PATH_MARKER in virtualFile.path
 }
 
 private class AnnotationLoaderForClassFileStubBuilder(

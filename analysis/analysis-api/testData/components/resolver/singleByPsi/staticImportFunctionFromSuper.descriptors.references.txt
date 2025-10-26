@@ -1,6 +1,12 @@
 KtNameReferenceExpression(97,100): 'foo'
   KtSimpleNameReference:
-    (in one.two.BaseClass) fun foo()
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in one.two.BaseClass) fun foo()
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

@@ -65,6 +65,7 @@ abstract class AbstractDiagnosticsNativeTestBase(
 
         defaultDirectives {
             LANGUAGE + "+EnableDfaWarningsInK2"
+            +FirDiagnosticsDirectives.FIR_IDENTICAL
         }
     }
 
@@ -107,7 +108,10 @@ abstract class AbstractNativeDiagnosticsWithBackendWithInlinedFunInKlibTestBase 
     override fun configure(builder: TestConfigurationBuilder) = with(builder) {
         super.configure(builder)
         defaultDirectives {
-            LANGUAGE with "+${LanguageFeature.IrInlinerBeforeKlibSerialization.name}"
+            LANGUAGE with listOf(
+                "+${LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization.name}",
+                "+${LanguageFeature.IrCrossModuleInlinerBeforeKlibSerialization.name}"
+            )
         }
     }
 }

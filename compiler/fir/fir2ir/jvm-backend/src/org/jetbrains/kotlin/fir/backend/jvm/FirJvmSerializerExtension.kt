@@ -221,14 +221,14 @@ open class FirJvmSerializerExtension(
 
     override fun serializeTypeAnnotations(annotations: List<FirAnnotation>, proto: ProtoBuf.Type.Builder) {
         for (annotation in annotations) {
-            proto.addExtensionOrNull(JvmProtoBuf.typeAnnotation, annotationSerializer.serializeAnnotation(annotation))
+            annotationSerializer.serializeAnnotation(annotation)?.let { proto.addAnnotation(it) }
         }
     }
 
 
     override fun serializeTypeParameter(typeParameter: FirTypeParameter, proto: ProtoBuf.TypeParameter.Builder) {
         for (annotation in typeParameter.nonSourceAnnotations(session)) {
-            proto.addExtensionOrNull(JvmProtoBuf.typeParameterAnnotation, annotationSerializer.serializeAnnotation(annotation))
+            annotationSerializer.serializeAnnotation(annotation)?.let { proto.addAnnotation(it) }
         }
     }
 
@@ -254,7 +254,7 @@ open class FirJvmSerializerExtension(
     ) {
         val method = getBinding(METHOD_FOR_FIR_FUNCTION, function)
         if (method != null) {
-            val signature = signatureSerializer.methodSignature(function, (function as? FirSimpleFunction)?.name, method)
+            val signature = signatureSerializer.methodSignature(function, (function as? FirNamedFunction)?.name, method)
             if (signature != null) {
                 proto.setExtension(JvmProtoBuf.methodSignature, signature)
             }
@@ -277,7 +277,7 @@ open class FirJvmSerializerExtension(
     }
 
     private fun FirFunction.needsInlineParameterNullCheckRequirement(): Boolean =
-        this is FirSimpleFunction && isInline && !isSuspend && !isParamAssertionsDisabled &&
+        this is FirNamedFunction && isInline && !isSuspend && !isParamAssertionsDisabled &&
                 !Visibilities.isPrivate(visibility) &&
                 (valueParameters.any { it.returnTypeRef.coneType.isSomeFunctionType(session) } ||
                         receiverParameter?.typeRef?.coneType?.isSomeFunctionType(session) == true)

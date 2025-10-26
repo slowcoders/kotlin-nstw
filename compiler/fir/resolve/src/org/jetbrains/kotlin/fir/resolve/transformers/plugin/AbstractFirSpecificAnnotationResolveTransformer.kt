@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.fir.references.builder.buildResolvedNamedReference
 import org.jetbrains.kotlin.fir.references.impl.FirSimpleNamedReference
 import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.transformers.FirSpecificTypeResolverTransformer
+import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.BodyResolveContext
 import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.FirAbstractBodyResolveTransformerDispatcher
 import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.FirDeclarationsResolveTransformer
 import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.FirExpressionsResolveTransformer
@@ -45,7 +46,8 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
     @property:PrivateForInline val session: FirSession,
     @property:PrivateForInline val scopeSession: ScopeSession,
     @property:PrivateForInline val computationSession: CompilerRequiredAnnotationsComputationSession,
-    containingDeclarations: List<FirDeclaration> = emptyList()
+    containingDeclarations: List<FirDeclaration> = emptyList(),
+    private val outerBodyResolveContext: BodyResolveContext? = null,
 ) : FirDefaultTransformer<Nothing?>() {
     inner class FirEnumAnnotationArgumentsTransformerDispatcher : FirAbstractBodyResolveTransformerDispatcher(
         session,
@@ -55,6 +57,7 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
         // This transformer is only used for COMPILER_REQUIRED_ANNOTATIONS, which is <=SUPER_TYPES,
         // so we can't yet expand typealiases.
         expandTypeAliases = false,
+        outerBodyResolveContext = outerBodyResolveContext
     ) {
         override val expressionsTransformer: FirExpressionsResolveTransformer = FirEnumAnnotationArgumentsTransformer(this)
         override val declarationsTransformer: FirDeclarationsResolveTransformer? = null
@@ -156,9 +159,9 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
             return indexedAccessAugmentedAssignment
         }
 
-        override fun transformArrayLiteral(arrayLiteral: FirArrayLiteral, data: ResolutionMode): FirStatement {
-            arrayLiteral.transformChildren(transformer, data)
-            return arrayLiteral
+        override fun transformCollectionLiteral(collectionLiteral: FirCollectionLiteral, data: ResolutionMode): FirStatement {
+            collectionLiteral.transformChildren(transformer, data)
+            return collectionLiteral
         }
 
         override fun transformAnonymousObjectExpression(
@@ -259,6 +262,8 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
             calleeReference: FirSimpleNamedReference,
             calleeSymbol: FirEnumEntrySymbol
         ) {
+            @Suppress("SENSELESS_COMPARISON")
+            assert(context.file != null) { "File should be initialized in the context" }
             session.lookupTracker?.recordNameLookup(
                 calleeReference.name,
                 calleeSymbol.dispatchReceiverType?.classId?.asFqNameString() ?: calleeSymbol.callableId.packageName.asString(),
@@ -373,7 +378,7 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
 
 
     override fun transformRegularClass(regularClass: FirRegularClass, data: Nothing?): FirStatement {
-        resolveRegularClass(
+        resolveClass(
             regularClass,
             transformChildren = {
                 regularClass.transformDeclarations(this, data)
@@ -383,24 +388,39 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
         return regularClass
     }
 
-    inline fun resolveRegularClass(
-        regularClass: FirRegularClass,
+    override fun transformAnonymousObject(
+        anonymousObject: FirAnonymousObject,
+        data: Nothing?,
+    ): FirStatement {
+        resolveClass(
+            anonymousObject,
+            transformChildren = {
+                anonymousObject.transformDeclarations(this, data)
+            }
+        )
+        return anonymousObject
+    }
+
+    inline fun resolveClass(
+        klass: FirClass,
         transformChildren: () -> Unit,
     ) {
-        withRegularClass(regularClass) {
-            if (!shouldTransformDeclaration(regularClass)) return
-            if (!computationSession.annotationResolutionWasAlreadyStarted(regularClass)) {
-                computationSession.recordThatAnnotationResolutionStarted(regularClass)
-                transformDeclaration(regularClass, null)
-                computationSession.recordThatAnnotationsAreResolved(regularClass)
+        withClass(klass) {
+            if (!shouldTransformDeclaration(klass)) return
+            if (!computationSession.annotationResolutionWasAlreadyStarted(klass)) {
+                computationSession.recordThatAnnotationResolutionStarted(klass)
+                transformDeclaration(klass, null)
+                computationSession.recordThatAnnotationsAreResolved(klass)
             }
 
-            transformChildren(regularClass) {
-                regularClass.transformContextParameters(this, null)
+            transformChildren(klass) {
+                if (klass is FirRegularClass) {
+                    klass.transformContextParameters(this, null)
+                }
                 transformChildren()
             }
 
-            calculateDeprecations(regularClass)
+            calculateDeprecations(klass)
         }
     }
 
@@ -429,11 +449,11 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
         return script
     }
 
-    inline fun withRegularClass(
-        regularClass: FirRegularClass,
+    inline fun withClass(
+        klass: FirClass,
         action: () -> Unit
     ) {
-        withClassDeclarationCleanup(classDeclarationsStack, regularClass) {
+        withClassDeclarationCleanup(classDeclarationsStack, klass) {
             action()
         }
     }
@@ -596,10 +616,10 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
         backingField?.replaceAnnotations(newPosition.backingFieldAnnotations)
     }
 
-    override fun transformSimpleFunction(
-        simpleFunction: FirSimpleFunction,
+    override fun transformNamedFunction(
+        namedFunction: FirNamedFunction,
         data: Nothing?
-    ): FirSimpleFunction = transformFunctionDeclarationForDeprecations(simpleFunction, data)
+    ): FirNamedFunction = transformFunctionDeclarationForDeprecations(namedFunction, data)
 
     override fun transformConstructor(
         constructor: FirConstructor,

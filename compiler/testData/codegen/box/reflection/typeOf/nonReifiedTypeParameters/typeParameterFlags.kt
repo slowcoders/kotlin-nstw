@@ -1,9 +1,10 @@
 // WITH_REFLECT
-// KJS_WITH_FULL_RUNTIME
+// WITH_STDLIB
+
+// FILE: lib.kt
 package test
 
 import kotlin.reflect.*
-import kotlin.test.assertEquals
 
 class Container<T>
 
@@ -15,6 +16,11 @@ class C<INV, in IN, out OUT> {
 
 inline fun <reified X, Y : X> getY() = typeOf<Container<Y>>().arguments.single().type!!.classifier as KTypeParameter
 
+// FILE: main.kt
+package test
+import kotlin.reflect.*
+import kotlin.test.assertEquals
+
 fun box(): String {
     val c = C<Any, Any, Any>()
     assertEquals(KVariance.INVARIANT, c.getInv().variance)
@@ -22,22 +28,16 @@ fun box(): String {
     assertEquals(KVariance.OUT, c.getOut().variance)
     assertEquals(false, c.getInv().isReified)
 
-    if (!isJS) {
-        val y = getY<Any, Any>()
-        assertEquals(false, y.isReified)
-        val x = y.upperBounds.single().classifier as KTypeParameter
-        assertEquals(true, x.isReified)
-        assertEquals(KVariance.INVARIANT, x.variance)
-        assertEquals("X", x.toString())
-    }
+    val y = getY<Any, Any>()
+    assertEquals(false, y.isReified)
+    val x = y.upperBounds.single().classifier as KTypeParameter
+    assertEquals(true, x.isReified)
+    assertEquals(KVariance.INVARIANT, x.variance)
+    assertEquals("X", x.toString())
 
     assertEquals("INV", c.getInv().toString())
-    if (!isJS) {
-        assertEquals("in IN", c.getIn().toString())
-        assertEquals("out OUT", c.getOut().toString())
-    }
+    assertEquals("in IN", c.getIn().toString())
+    assertEquals("out OUT", c.getOut().toString())
 
     return "OK"
 }
-
-val isJS = 1 as Any is Double

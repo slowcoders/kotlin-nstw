@@ -2,7 +2,7 @@ FILE[kind=File[packageFqName=test]]
   PACKAGE_DIRECTIVE
     REFERENCE_EXPRESSION[referencedName=test]
   IMPORT_LIST
-  CLASS[classId=test/Modifiers, fqName=test.Modifiers, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=true, name=Modifiers, superNames=[]]
+  CLASS[classId=test/Modifiers, fqName=test.Modifiers, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=true, name=Modifiers, superNames=[]]
     MODIFIER_LIST[public final data]
     PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=Modifiers]
       MODIFIER_LIST[public]
@@ -182,7 +182,7 @@ FILE[kind=File[packageFqName=test]]
               REFERENCE_EXPRESSION[referencedName=test]
             REFERENCE_EXPRESSION[referencedName=Modifiers]
       FUN[fqName=test.Modifiers.hashCode, hasBody=true, hasNoExpressionBody=true, hasTypeParameterListBeforeFunctionName=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=hashCode]
-        MODIFIER_LIST[public open]
+        MODIFIER_LIST[public open MustUseReturnValue]
         VALUE_PARAMETER_LIST
         TYPE_REFERENCE
           USER_TYPE
@@ -190,14 +190,14 @@ FILE[kind=File[packageFqName=test]]
               REFERENCE_EXPRESSION[referencedName=kotlin]
             REFERENCE_EXPRESSION[referencedName=Int]
       FUN[fqName=test.Modifiers.toString, hasBody=true, hasNoExpressionBody=true, hasTypeParameterListBeforeFunctionName=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=toString]
-        MODIFIER_LIST[public open]
+        MODIFIER_LIST[public open MustUseReturnValue]
         VALUE_PARAMETER_LIST
         TYPE_REFERENCE
           USER_TYPE
             USER_TYPE
               REFERENCE_EXPRESSION[referencedName=kotlin]
             REFERENCE_EXPRESSION[referencedName=String]
-      CLASS[classId=test/Modifiers.Ann, fqName=test.Modifiers.Ann, isClsStubCompiledToJvmDefaultImplementation=false, isEnumEntry=false, isInterface=false, isLocal=false, isTopLevel=false, name=Ann, superNames=[Annotation]]
+      CLASS[classId=test/Modifiers.Ann, fqName=test.Modifiers.Ann, isClsStubCompiledToJvmDefaultImplementation=false, isInterface=false, isLocal=false, isTopLevel=false, name=Ann, superNames=[Annotation]]
         MODIFIER_LIST[public final annotation]
         PRIMARY_CONSTRUCTOR[fqName=null, hasBody=false, hasNoExpressionBody=true, isDelegatedCallToThis=false, isExplicitDelegationCall=false, isExtension=false, isTopLevel=false, mayHaveContract=false, name=Ann]
           MODIFIER_LIST[public]

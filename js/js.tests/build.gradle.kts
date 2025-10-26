@@ -19,7 +19,7 @@ val cacheRedirectorEnabled = findProperty("cacheRedirectorEnabled")?.toString()?
 
 node {
     download.set(true)
-    version.set(nodejsVersion)
+    version.set(nodejsLtsVersion)
     nodeProjectDir.set(layout.buildDirectory.dir("node"))
     if (cacheRedirectorEnabled) {
         distBaseUrl.set("https://cache-redirector.jetbrains.com/nodejs.org/dist")
@@ -48,6 +48,7 @@ dependencies {
     testFixturesApi(testFixtures(project(":compiler:tests-compiler-utils")))
     testFixturesApi(testFixtures(project(":compiler:tests-common-new")))
     testFixturesApi(testFixtures(project(":compiler:fir:analysis-tests")))
+    testFixturesApi(testFixtures(project(":kotlin-util-klib")))
 
     testCompileOnly(project(":compiler:frontend"))
     testCompileOnly(project(":compiler:cli"))
@@ -75,7 +76,7 @@ dependencies {
         testJsRuntime(kotlinTest("js")) // to be sure that kotlin-test-js built before tests run
     }
     testRuntimeOnly(project(":kotlin-preloader")) // it's required for ant tests
-    testRuntimeOnly(project(":compiler:backend-common"))
+    testRuntimeOnly(project(":compiler:ir.backend.common"))
     testRuntimeOnly(project(":kotlin-util-klib-abi"))
     testRuntimeOnly(commonDependency("org.fusesource.jansi", "jansi"))
 
@@ -93,6 +94,11 @@ dependencies {
     testRuntimeOnly(libs.ktor.client.cio)
     testRuntimeOnly(libs.ktor.client.core)
     testRuntimeOnly(libs.ktor.client.websockets)
+
+    implicitDependencies("org.nodejs:node:$nodejsLtsVersion:win-x64@zip")
+    implicitDependencies("org.nodejs:node:$nodejsLtsVersion:linux-x64@tar.gz")
+    implicitDependencies("org.nodejs:node:$nodejsLtsVersion:darwin-x64@tar.gz")
+    implicitDependencies("org.nodejs:node:$nodejsLtsVersion:darwin-arm64@tar.gz")
 }
 
 optInToExperimentalCompilerApi()
@@ -124,14 +130,21 @@ val installTsDependencies by task<NpmTask> {
 
 fun generateTypeScriptTestFor(dir: String): TaskProvider<NpmTask> = tasks.register<NpmTask>("generate-ts-for-$dir") {
     val baseDir = jsTestsDir.resolve(dir)
-    val mainTsFile = fileTree(baseDir).files.find { it.name.endsWith("__main.ts") } ?: return@register
+    val mainTsFile = fileTree(baseDir).files.find {
+        it.name.endsWith("__main.ts") || it.name.endsWith("__main.mts")
+    } ?: return@register
+
     val mainJsFile = baseDir.resolve("${mainTsFile.nameWithoutExtension}.js")
+    val mainMjsFile = baseDir.resolve("${mainTsFile.nameWithoutExtension}.mjs")
 
     workingDir.set(testDataDir)
 
     inputs.file(mainTsFile)
     outputs.file(mainJsFile)
-    outputs.upToDateWhen { mainJsFile.exists() }
+    outputs.file(mainMjsFile)
+    outputs.upToDateWhen {
+        mainJsFile.exists() || mainMjsFile.exists()
+    }
 
     args.set(listOf("run", "generateTypeScriptTests", "--", "./typescript-export/js/$dir/tsconfig.json"))
 }
@@ -241,20 +254,17 @@ projectTests {
         configureTestDistribution()
     }
 
-    testTask("jsIrTest", jUnitMode = JUnitMode.JUnit5, skipInLocalBuild = true) {
-        setUpJsBoxTests("legacy-frontend & !es6")
+    testTask("jsTest", jUnitMode = JUnitMode.JUnit5, skipInLocalBuild = true) {
+        setUpJsBoxTests("!es6")
     }
 
-    testTask("jsIrES6Test", jUnitMode = JUnitMode.JUnit5, skipInLocalBuild = true) {
-        setUpJsBoxTests("legacy-frontend & es6")
-    }
-
-    testTask("jsFirTest", jUnitMode = JUnitMode.JUnit5, skipInLocalBuild = true) {
-        setUpJsBoxTests("!legacy-frontend & !es6")
+    testTask("jsES6Test", jUnitMode = JUnitMode.JUnit5, skipInLocalBuild = true) {
+        setUpJsBoxTests("es6")
     }
 
     testTask("jsFirES6Test", jUnitMode = JUnitMode.JUnit5, skipInLocalBuild = true) {
-        setUpJsBoxTests("!legacy-frontend & es6")
+        // TODO(KTI-2710): Drop this task when we reconfigure TeamCity to run `jsES6Test`
+        setUpJsBoxTests("es6")
     }
 
     testTask("invalidationTest", jUnitMode = JUnitMode.JUnit5, skipInLocalBuild = true) {
@@ -266,9 +276,7 @@ projectTests {
         forwardProperties()
     }
 
-    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateJsTestsKt") {
-        dependsOn(":compiler:generateTestData")
-    }
+    testGenerator("org.jetbrains.kotlin.generators.tests.GenerateJsTestsKt")
 }
 
 testsJar {}
@@ -298,3 +306,10 @@ val npmInstall by tasks.getting(NpmTask::class) {
     npmCommand.set(listOf("ci"))
 }
 
+tasks.processTestFixturesResources.configure {
+    from(project.layout.projectDirectory.dir("_additionalFilesForTests"))
+    from(project(":compiler").layout.projectDirectory.dir("testData/debug")) {
+        into("debugTestHelpers")
+        include("jsTestHelpers/")
+    }
+}

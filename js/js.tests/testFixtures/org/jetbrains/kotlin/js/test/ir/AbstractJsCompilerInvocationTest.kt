@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.klib.KlibCompilerInvocationTestUtils.MAIN_MODULE_NAM
 import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.utils.mapToSetOrEmpty
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assumptions
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
@@ -59,7 +60,7 @@ private class ModuleDetails(val name: ModuleName, val outputDir: File) {
 }
 
 private fun customCompilerCall(): (PrintStream, Array<String>) -> ExitCode = { printStream: PrintStream, args: Array<String> ->
-    customJsCompilerSettings.customCompiler.callCompiler(printStream, args)
+    customJsCompilerSettings.customCompiler.callCompiler(printStream, *args)
 }
 
 private fun currentCompilerCall() = { printStream: PrintStream, args: Array<String> ->
@@ -74,7 +75,7 @@ internal class JsCompilerInvocationTestConfiguration(
     override val targetBackend get() = if (compilerType.es6Mode) TargetBackend.JS_IR_ES6 else TargetBackend.JS_IR
 
     override fun onIgnoredTest() {
-        /* Do nothing specific. JUnit 3 does not support programmatic tests muting. */
+        Assumptions.abort<Unit>()
     }
 }
 

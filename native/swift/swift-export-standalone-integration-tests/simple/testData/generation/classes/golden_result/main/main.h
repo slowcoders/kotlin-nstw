@@ -45,19 +45,15 @@ int32_t DATA_CLASS_hashCode(void * self);
 
 NSString * DATA_CLASS_toString(void * self);
 
-void * ENUM_A_get();
+void * ENUM_A();
 
-void * ENUM_B_get();
+void * ENUM_B();
 
-void * ENUM_C_get();
+void * ENUM_C();
 
 void * ENUM_INSIDE_ENUM_init_allocate();
 
 void ENUM_INSIDE_ENUM_init_initialize__TypesOfArguments__Swift_UnsafeMutableRawPointer__(void * __kt);
-
-NSArray<id> * ENUM_entries_get();
-
-void * ENUM_valueOf__TypesOfArguments__Swift_String__(NSString * value);
 
 void * Foo_Companion_get();
 

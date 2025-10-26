@@ -15,6 +15,7 @@ dependencies {
 
     testRuntimeOnly(project(":core:descriptors.runtime"))
     testRuntimeOnly(project(":compiler:fir:fir-serialization"))
+    testRuntimeOnly(project(":compiler:fir:plugin-utils"))
 
     testRuntimeOnly(commonDependency("org.lz4:lz4-java"))
     testRuntimeOnly(commonDependency("org.jetbrains.intellij.deps.jna:jna"))
@@ -38,6 +39,8 @@ projectTests {
         dependsOn(":plugins:plugin-sandbox:jar")
         dependsOn(":plugins:plugin-sandbox:plugin-annotations:distAnnotations")
     }
+
+    testGenerator("org.jetbrains.kotlin.incremental.TestGeneratorForPluginSandboxICTestsKt")
 
     withJvmStdlibAndReflect()
 }

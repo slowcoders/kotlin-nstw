@@ -5,17 +5,25 @@
 
 package org.jetbrains.kotlin.gradle
 
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import org.gradle.api.logging.LogLevel
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.util.GradleVersion
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 import org.jetbrains.kotlin.gradle.testbase.*
 import org.jetbrains.kotlin.test.TestMetadata
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import java.security.MessageDigest
+import kotlin.io.path.Path
 import kotlin.io.path.appendText
 import kotlin.io.path.createFile
 import kotlin.io.path.writeText
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @DisplayName("Compose compiler Gradle plugin")
 class ComposeIT : KGPBaseTest() {
@@ -195,9 +203,10 @@ class ComposeIT : KGPBaseTest() {
     ) {
         var buildOptions = defaultBuildOptions.copy(androidVersion = agpVersion)
             .suppressDeprecationWarningsOn(
-                "JB Compose produces deprecation warning: https://github.com/JetBrains/compose-multiplatform/issues/3945"
+                "JB Compose produces deprecation warning: CMP-3945"
             ) {
-                gradleVersion >= GradleVersion.version(TestVersions.Gradle.G_8_4)
+                gradleVersion >= GradleVersion.version(TestVersions.Gradle.G_8_4) &&
+                        gradleVersion < GradleVersion.version(TestVersions.Gradle.G_9_0)
             }
         if (OS.WINDOWS.isCurrentOs) {
             // CMP-8375 Compose Gradle Plugin is not compatible with Gradle isolated projects on Windows
@@ -398,6 +407,7 @@ class ComposeIT : KGPBaseTest() {
     @DisplayName("Run test against older versions of open @Composable function")
     @GradleAndroidTest
     @AndroidTestVersions(minVersion = TestVersions.AGP.MAX_SUPPORTED)
+    @GradleTestVersions(maxVersion = TestVersions.Gradle.G_8_14) // Kotlin 1.9.2x is not compatible with Gradle 9+
     @OtherGradlePluginTests
     @TestMetadata("composeMultiModule")
     fun testComposeDefaultParamsInOpenFunctionK1ToK2(
@@ -623,6 +633,124 @@ class ComposeIT : KGPBaseTest() {
             build("testReleaseUnitTest") {
                 assertTasksExecuted(":testReleaseUnitTest")
                 assertOutputDoesNotContain("org.junit.ComparisonFailure")
+            }
+        }
+    }
+
+    @DisplayName("Minified app contains Compose mapping file")
+    @AndroidGradlePluginTests
+    @GradleAndroidTest
+    @DisabledOnOs(
+        OS.WINDOWS, disabledReason = "AGP contains a bug that prevents test output files from being cleaned up on Windows. " +
+                "See: https://issuetracker.google.com/issues/445967244"
+    )
+    @TestMetadata("AndroidSimpleComposeApp")
+    fun testMinifyWithCompose(
+        gradleVersion: GradleVersion,
+        agpVersion: String,
+        providedJdk: JdkVersions.ProvidedJdk
+    ) {
+        project(
+            projectName = "AndroidSimpleComposeApp",
+            gradleVersion = gradleVersion,
+            buildJdk = providedJdk.location,
+            buildOptions = defaultBuildOptions.copy(androidVersion = agpVersion)
+        ) {
+            buildScriptInjection {
+                val appExtension = project.extensions.getByType<ApplicationAndroidComponentsExtension>()
+                appExtension.beforeVariants {
+                    if (it.name == "release") {
+                        it.isMinifyEnabled = true
+                    }
+                }
+            }
+
+            build("assembleRelease") {
+                assertTasksExecuted(":produceReleaseComposeMapping")
+                assertOutputDoesNotContain("warning: Compose mapping: ")
+                val mappingDir = projectPath.resolve(Path("build/intermediates/compose_mapping/release/")).toFile()
+                assertFileExists(mappingDir.resolve("compose-mapping.txt"), "Expected Compose mapping file")
+                val errorsFile = mappingDir.resolve("compose-mapping-errors.txt")
+                assertFileExists(mappingDir.resolve("compose-mapping-errors.txt"), "Expected Compose mapping error file")
+                assertEquals("", errorsFile.readText())
+
+                assertTasksExecuted(":mergeReleaseComposeMapping")
+
+                // validate mapping is present
+                val outputMapping = projectPath.resolve(Path("build/outputs/mapping/release/mapping.txt")).toFile()
+                var hasComposeMapping = false
+                outputMapping.useLines { lines ->
+                    for (line in lines) {
+                        if (line == $$"ComposeStackTrace -> \$$compose:") {
+                            hasComposeMapping = true
+                            break
+                        }
+                    }
+                }
+                assertTrue(hasComposeMapping, "Expected compose mapping added to the mapping.txt")
+
+                // validate mapping hash recorded in the file
+                var recordedHash = ""
+                outputMapping.useLines { lines ->
+                    for (line in lines) {
+                        if (line.startsWith("# pg_map_hash: SHA-256")) {
+                            recordedHash = line.substringAfter("SHA-256 ")
+                            break
+                        }
+                    }
+                }
+
+                var calculatedHash = ""
+                outputMapping.useLines { lines ->
+                    val digest = MessageDigest.getInstance("SHA-256")
+                    lines.dropWhile { it.startsWith("#") }.forEach { line ->
+                        digest.update(line.toByteArray())
+                        digest.update("\n".toByteArray())
+                    }
+                    calculatedHash = digest.digest().joinToString("") { "%02x".format(it) }
+                }
+
+                assertEquals(calculatedHash, recordedHash)
+            }
+        }
+    }
+
+    @DisplayName("Minified app with disabled mapping does not run Compose tasks.")
+    @AndroidGradlePluginTests
+    @GradleAndroidTest
+    @DisabledOnOs(
+        OS.WINDOWS, disabledReason = "AGP contains a bug that prevents test output files from being cleaned up on Windows. " +
+                "See: https://issuetracker.google.com/issues/445967244"
+    )
+    @TestMetadata("AndroidSimpleComposeApp")
+    fun testMinifyWithComposeDisabled(
+        gradleVersion: GradleVersion,
+        agpVersion: String,
+        providedJdk: JdkVersions.ProvidedJdk
+    ) {
+        project(
+            projectName = "AndroidSimpleComposeApp",
+            gradleVersion = gradleVersion,
+            buildJdk = providedJdk.location,
+            buildOptions = defaultBuildOptions
+                .copy(androidVersion = agpVersion)
+        ) {
+            buildScriptInjection {
+                val appExtension = project.extensions.getByType<ApplicationAndroidComponentsExtension>()
+                appExtension.beforeVariants {
+                    if (it.name == "release") {
+                        it.isMinifyEnabled = true
+                    }
+                }
+                val composeExtension = project.extensions.getByType<ComposeCompilerGradlePluginExtension>()
+                composeExtension.includeComposeMappingFile.set(false)
+            }
+
+            build("assembleRelease") {
+                assertTasksAreNotInTaskGraph(
+                    ":produceReleaseComposeMapping",
+                    ":mergeReleaseComposeMapping"
+                )
             }
         }
     }

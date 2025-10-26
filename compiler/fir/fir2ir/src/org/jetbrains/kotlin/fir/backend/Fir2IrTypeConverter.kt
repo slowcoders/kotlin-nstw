@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.fir.backend
 import org.jetbrains.kotlin.fir.backend.utils.ConversionTypeOrigin
 import org.jetbrains.kotlin.fir.backend.utils.toIrSymbol
 import org.jetbrains.kotlin.fir.declarations.getAnnotationsByClassId
-import org.jetbrains.kotlin.fir.declarations.utils.isLocalClassOrAnonymousObject
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.expressions.unexpandedConeClassLikeType
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnresolvedError
@@ -116,7 +115,7 @@ class Fir2IrTypeConverter(
 
                 val irSymbol =
                     getBuiltInClassSymbol(type.classId)
-                        ?: type.lookupTag.toSymbol(session)?.let { firSymbol ->
+                        ?: type.lookupTag.toSymbol()?.let { firSymbol ->
                             approximateTypeForLocalClassIfNeeded(firSymbol)?.let { return it }
                             firSymbol.toIrSymbol(typeOrigin) {
                                 typeAnnotations += with(annotationGenerator) { it.toIrAnnotations() }
@@ -196,14 +195,14 @@ class Fir2IrTypeConverter(
                 return IrDynamicTypeImpl(typeAnnotations, Variance.INVARIANT)
             }
             is ConeFlexibleType -> with(session.typeContext) {
-                if (type.upperBound is ConeClassLikeType) {
-                    val upper = type.upperBound as ConeClassLikeType
+                val upper = type.upperBound
+                if (upper is ConeClassLikeType) {
                     val lower = type.lowerBound
                     val isRaw = type.attributes.contains(CompilerConeAttributes.RawType)
                     val intermediate = if (lower is ConeClassLikeType && lower.lookupTag == upper.lookupTag && !isRaw) {
                         lower.replaceArguments(upper.getArguments())
                     } else lower
-                    (intermediate.withNullability(upper.isMarkedNullable) as ConeKotlinType)
+                    intermediate.withNullability(upper.isMarkedNullable).asCone()
                         .withAttributes(type.attributes)
                         .toIrType(
                             typeOrigin,
@@ -214,7 +213,7 @@ class Fir2IrTypeConverter(
                             addRawTypeAnnotation = isRaw,
                         )
                 } else {
-                    type.upperBound.toIrType(
+                    upper.toIrType(
                         typeOrigin,
                         annotations,
                         hasFlexibleNullability = type.lowerBound.isMarkedNullable != type.upperBound.isMarkedNullable,
@@ -351,7 +350,7 @@ class Fir2IrTypeConverter(
 
         if (symbol !is FirClassSymbol) return null
         val firClass = symbol.fir
-        if (!firClass.isLocalClassOrAnonymousObject()) return null
+        if (!firClass.isLocal) return null
         return firClass.superTypeRefs.firstOrNull {
             // Skip Enum supertype because otherwise, translating local enums will lead to stack overflow error
             // (since a local enum `L` has `kotlin/Enum<L>` as a supertype).

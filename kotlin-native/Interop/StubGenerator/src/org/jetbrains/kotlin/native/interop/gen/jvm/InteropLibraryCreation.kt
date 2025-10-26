@@ -4,21 +4,18 @@
  */
 package org.jetbrains.kotlin.native.interop.gen.jvm
 
-import kotlinx.metadata.klib.*
-import kotlin.metadata.*
-import kotlin.metadata.internal.common.KmModuleFragment
+import org.jetbrains.kotlin.config.KlibAbiCompatibilityLevel
 import org.jetbrains.kotlin.config.KotlinCompilerVersion
-import org.jetbrains.kotlin.konan.file.File
-import org.jetbrains.kotlin.konan.library.impl.KonanLibraryLayoutForWriter
-import org.jetbrains.kotlin.konan.library.impl.KonanLibraryWriterImpl
+import org.jetbrains.kotlin.konan.library.impl.buildLibrary
 import org.jetbrains.kotlin.konan.target.KonanTarget
-import org.jetbrains.kotlin.library.*
-import org.jetbrains.kotlin.library.impl.BuiltInsPlatform
-import org.jetbrains.kotlin.metadata.deserialization.MetadataVersion
+import org.jetbrains.kotlin.library.KotlinLibrary
+import org.jetbrains.kotlin.library.KotlinLibraryVersioning
+import org.jetbrains.kotlin.library.SerializedMetadata
+import org.jetbrains.kotlin.util.toCInteropKlibMetadataVersion
 import java.util.*
 
 fun createInteropLibrary(
-    metadata: KlibModuleMetadata,
+    serializedMetadata: SerializedMetadata,
     outputPath: String,
     moduleName: String,
     nativeBitcodeFiles: List<String>,
@@ -27,31 +24,25 @@ fun createInteropLibrary(
     dependencies: List<KotlinLibrary>,
     nopack: Boolean,
     shortName: String?,
-    staticLibraries: List<String>
+    staticLibraries: List<String>,
+    klibAbiCompatibilityLevel: KlibAbiCompatibilityLevel,
 ) {
-    val version = KotlinLibraryVersioning(
-            abiVersion = KotlinAbiVersion.CURRENT,
-            compilerVersion = KotlinCompilerVersion.VERSION,
-            metadataVersion = MetadataVersion.INSTANCE,
-    )
-    val libFile = File(outputPath)
-    val unzippedDir = if (nopack) libFile else org.jetbrains.kotlin.konan.file.createTempDir("klib")
-    val layout = KonanLibraryLayoutForWriter(libFile, unzippedDir, target)
-    KonanLibraryWriterImpl(
-            moduleName,
-            version,
-            listOf(target.visibleName),
-            BuiltInsPlatform.NATIVE,
+    buildLibrary(
+            natives = nativeBitcodeFiles,
+            included = staticLibraries,
+            linkDependencies = dependencies,
+            metadata = serializedMetadata,
+            ir = null,
+            versions = KotlinLibraryVersioning(
+                    abiVersion = klibAbiCompatibilityLevel.toAbiVersionForManifest(),
+                    compilerVersion = KotlinCompilerVersion.VERSION,
+                    metadataVersion = klibAbiCompatibilityLevel.toCInteropKlibMetadataVersion(),
+            ),
+            target = target,
+            output = outputPath,
+            moduleName = moduleName,
             nopack = nopack,
             shortName = shortName,
-            layout = layout
-    ).apply {
-        val serializedMetadata = metadata.write(ChunkedKlibModuleFragmentWriteStrategy(topLevelClassifierDeclarationsPerFile = 128))
-        addMetadata(SerializedMetadata(serializedMetadata.header, serializedMetadata.fragments, serializedMetadata.fragmentNames))
-        nativeBitcodeFiles.forEach(this::addNativeBitcode)
-        addManifestAddend(manifest)
-        addLinkDependencies(dependencies)
-        staticLibraries.forEach(this::addIncludedBinary)
-        commit()
-    }
+            manifestProperties = manifest,
+    )
 }

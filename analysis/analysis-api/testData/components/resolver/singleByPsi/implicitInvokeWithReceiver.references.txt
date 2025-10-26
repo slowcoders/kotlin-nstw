@@ -1,3 +1,6 @@
 KtNameReferenceExpression(107,108): 'a'
   KtSimpleNameReference:
-    a: A
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      a: A

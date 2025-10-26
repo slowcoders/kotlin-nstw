@@ -7,7 +7,6 @@ dependencies {
     api(project(":compiler:cli-base"))
     api(project(":compiler:util"))
     api(project(":compiler:frontend"))
-    api(project(":compiler:backend-common"))
     api(project(":compiler:ir.tree"))
     api(project(":compiler:ir.backend.common"))
     api(project(":compiler:ir.inline"))
@@ -19,6 +18,11 @@ dependencies {
 
     implementation(project(":wasm:wasm.frontend"))
     implementation(project(":wasm:wasm.config"))
+    implementation(project(":core:compiler.common.wasm"))
+
+    // TODO(KT-79631): Remove these dependencies when we rewrite TS export to Analysis API
+    api(project(":js:typescript-export-model"))
+    api(project(":js:typescript-printer"))
 
     compileOnly(intellijCore())
 }

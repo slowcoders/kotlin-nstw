@@ -149,8 +149,8 @@ abstract class FirVisitor<out R, in D> {
     open fun visitIntegerLiteralOperatorCall(integerLiteralOperatorCall: FirIntegerLiteralOperatorCall, data: D): R =
         visitElement(integerLiteralOperatorCall, data)
 
-    open fun visitArrayLiteral(arrayLiteral: FirArrayLiteral, data: D): R =
-        visitElement(arrayLiteral, data)
+    open fun visitCollectionLiteral(collectionLiteral: FirCollectionLiteral, data: D): R =
+        visitElement(collectionLiteral, data)
 
     open fun visitCheckNotNullCall(checkNotNullCall: FirCheckNotNullCall, data: D): R =
         visitElement(checkNotNullCall, data)
@@ -206,8 +206,8 @@ abstract class FirVisitor<out R, in D> {
     open fun visitOuterClassTypeParameterRef(outerClassTypeParameterRef: FirOuterClassTypeParameterRef, data: D): R =
         visitElement(outerClassTypeParameterRef, data)
 
-    open fun visitSimpleFunction(simpleFunction: FirSimpleFunction, data: D): R =
-        visitElement(simpleFunction, data)
+    open fun visitNamedFunction(namedFunction: FirNamedFunction, data: D): R =
+        visitElement(namedFunction, data)
 
     open fun visitContractDescriptionOwner(contractDescriptionOwner: FirContractDescriptionOwner, data: D): R =
         visitElement(contractDescriptionOwner, data)

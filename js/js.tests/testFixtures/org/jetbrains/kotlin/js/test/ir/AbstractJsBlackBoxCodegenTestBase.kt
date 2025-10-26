@@ -6,9 +6,7 @@
 package org.jetbrains.kotlin.js.test.ir
 
 import org.jetbrains.kotlin.js.test.JsAdditionalSourceProvider
-import org.jetbrains.kotlin.js.test.converters.JsIrDeserializerFacade
-import org.jetbrains.kotlin.js.test.converters.JsIrPreSerializationLoweringFacade
-import org.jetbrains.kotlin.js.test.converters.JsUnifiedIrDeserializerAndLoweringFacade
+import org.jetbrains.kotlin.js.test.converters.*
 import org.jetbrains.kotlin.js.test.converters.incremental.RecompileModuleJsIrBackendFacade
 import org.jetbrains.kotlin.js.test.handlers.*
 import org.jetbrains.kotlin.js.test.ir.AbstractJsBlackBoxCodegenTestBase.JsBackendFacades
@@ -23,26 +21,24 @@ import org.jetbrains.kotlin.test.backend.BlackBoxCodegenSuppressor
 import org.jetbrains.kotlin.test.backend.handlers.*
 import org.jetbrains.kotlin.test.backend.ir.IrBackendInput
 import org.jetbrains.kotlin.test.builders.*
-import org.jetbrains.kotlin.test.configuration.commonClassicFrontendHandlersForCodegenTest
 import org.jetbrains.kotlin.test.directives.DiagnosticsDirectives
 import org.jetbrains.kotlin.test.directives.DiagnosticsDirectives.DIAGNOSTICS
 import org.jetbrains.kotlin.test.directives.JsEnvironmentConfigurationDirectives
 import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.LANGUAGE
 import org.jetbrains.kotlin.test.directives.model.ValueDirective
-import org.jetbrains.kotlin.test.frontend.classic.handlers.ClassicDiagnosticsHandler
 import org.jetbrains.kotlin.test.frontend.fir.handlers.FirDiagnosticsHandler
 import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.test.runners.AbstractKotlinCompilerWithTargetBackendTest
 import org.jetbrains.kotlin.test.services.AbstractEnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.configuration.CommonEnvironmentConfigurator
-import org.jetbrains.kotlin.test.services.configuration.JsEnvironmentConfigurator
+import org.jetbrains.kotlin.test.services.configuration.JsFirstStageEnvironmentConfigurator
+import org.jetbrains.kotlin.test.services.configuration.JsSecondStageEnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.sourceProviders.AdditionalDiagnosticsSourceFilesProvider
 import org.jetbrains.kotlin.test.services.sourceProviders.CoroutineHelpersSourceFilesProvider
 import org.jetbrains.kotlin.utils.bind
 import java.lang.Boolean.getBoolean
 
-abstract class AbstractJsBlackBoxCodegenTestBase<FO : ResultingArtifact.FrontendOutput<FO>>(
-    val targetFrontend: FrontendKind<FO>,
+abstract class AbstractJsBlackBoxCodegenTestBase(
     targetBackend: TargetBackend,
     private val pathToTestDir: String,
     private val testGroupOutputDirPrefix: String,
@@ -86,9 +82,6 @@ abstract class AbstractJsBlackBoxCodegenTestBase<FO : ResultingArtifact.Frontend
         }
     }
 
-    abstract val frontendFacade: Constructor<FrontendFacade<FO>>
-    abstract val frontendToIrConverter: Constructor<Frontend2BackendConverter<FO, IrBackendInput>>
-    abstract val serializerFacade: Constructor<BackendFacade<IrBackendInput, BinaryArtifacts.KLib>>
     abstract val backendFacades: JsBackendFacades
 
     protected open val customIgnoreDirective: ValueDirective<TargetBackend>?
@@ -109,10 +102,6 @@ abstract class AbstractJsBlackBoxCodegenTestBase<FO : ResultingArtifact.Frontend
 
     protected fun TestConfigurationBuilder.commonConfigurationForJsBlackBoxCodegenTest() {
         commonConfigurationForJsBackendFirstStageTest(
-            targetFrontend = targetFrontend,
-            frontendFacade = frontendFacade,
-            frontendToIrConverter = frontendToIrConverter,
-            serializerFacade = serializerFacade,
             customIgnoreDirective = customIgnoreDirective,
             additionalIgnoreDirectives = additionalIgnoreDirectives,
         )
@@ -155,15 +144,11 @@ abstract class AbstractJsBlackBoxCodegenTestBase<FO : ResultingArtifact.Frontend
  * Sets up full configuration for the JS tests for the first compilation phase (compilation to KLib).
  * The configuration includes all minimally required services, handlers and defaults for such tests.
  */
-fun <FO : ResultingArtifact.FrontendOutput<FO>> TestConfigurationBuilder.commonConfigurationForJsBackendFirstStageTest(
-    targetFrontend: FrontendKind<FO>,
-    frontendFacade: Constructor<FrontendFacade<FO>>,
-    frontendToIrConverter: Constructor<Frontend2BackendConverter<FO, IrBackendInput>>,
-    serializerFacade: Constructor<BackendFacade<IrBackendInput, BinaryArtifacts.KLib>>,
+fun TestConfigurationBuilder.commonConfigurationForJsBackendFirstStageTest(
     customIgnoreDirective: ValueDirective<TargetBackend>? = null,
     additionalIgnoreDirectives: List<ValueDirective<TargetBackend>>? = null,
 ) {
-    commonConfigurationForJsTest(targetFrontend, frontendFacade, frontendToIrConverter, serializerFacade)
+    commonConfigurationForJsTest()
     setupCommonHandlersForJsTest(customIgnoreDirective, additionalIgnoreDirectives)
 }
 
@@ -225,17 +210,16 @@ fun TestConfigurationBuilder.configureJsBoxHandlers() {
 }
 
 /**
- * Setups the base test configuration for JVM backend tests, including
+ * Sets up the base test configuration for JS backend tests, including
  * - global defaults
  * - environment configurators
  * - additional source providers
  */
 fun TestConfigurationBuilder.commonServicesConfigurationForJsCodegenTest(
-    targetFrontend: FrontendKind<*>,
     customConfigurators: List<Constructor<AbstractEnvironmentConfigurator>>? = null,
 ) {
     globalDefaults {
-        frontend = targetFrontend
+        frontend = FrontendKinds.FIR
         targetPlatform = JsPlatforms.defaultJsPlatform
         dependencyKind = DependencyKind.Binary
     }
@@ -247,7 +231,8 @@ fun TestConfigurationBuilder.commonServicesConfigurationForJsCodegenTest(
     if (customConfigurators == null) {
         useConfigurators(
             ::CommonEnvironmentConfigurator,
-            ::JsEnvironmentConfigurator,
+            ::JsFirstStageEnvironmentConfigurator,
+            ::JsSecondStageEnvironmentConfigurator,
         )
     } else {
         useConfigurators(*customConfigurators.toTypedArray())
@@ -261,33 +246,28 @@ fun TestConfigurationBuilder.commonServicesConfigurationForJsCodegenTest(
 }
 
 /**
- * Setups the pipeline for all JVM backend tests
+ * Sets up the pipeline for all JS backend tests
  *
  * Steps:
  * - FIR frontend
  * - FIR2IR
- * - JVM backend
+ * - JS pre-serialization lowerings
+ * - IR serialization
  *
  * There are handler steps after each facade step.
  */
-fun <FO : ResultingArtifact.FrontendOutput<FO>> TestConfigurationBuilder.commonConfigurationForJsTest(
-    targetFrontend: FrontendKind<FO>,
-    frontendFacade: Constructor<FrontendFacade<FO>>,
-    frontendToIrConverter: Constructor<Frontend2BackendConverter<FO, IrBackendInput>>,
-    serializerFacade: Constructor<BackendFacade<IrBackendInput, BinaryArtifacts.KLib>>,
-) {
-    commonServicesConfigurationForJsCodegenTest(targetFrontend)
-    facadeStep(frontendFacade)
-    classicFrontendHandlersStep()
+fun TestConfigurationBuilder.commonConfigurationForJsTest() {
+    commonServicesConfigurationForJsCodegenTest()
+    facadeStep(::FirCliWebFacade)
     firHandlersStep()
 
-    facadeStep(frontendToIrConverter)
+    facadeStep(::Fir2IrCliWebFacade)
     irHandlersStep()
 
     facadeStep(::JsIrPreSerializationLoweringFacade)
     loweredIrHandlersStep()
 
-    facadeStep(serializerFacade)
+    facadeStep(::FirKlibSerializerCliWebFacade)
     klibArtifactsHandlersStep()
 }
 
@@ -295,23 +275,18 @@ fun TestConfigurationBuilder.setupCommonHandlersForJsTest(
     customIgnoreDirective: ValueDirective<TargetBackend>? = null,
     additionalIgnoreDirectives: List<ValueDirective<TargetBackend>>? = null
 ) {
-    configureClassicFrontendHandlersStep(skipMissingStep = true) {
-        commonClassicFrontendHandlersForCodegenTest()
-        useHandlers(::ClassicDiagnosticsHandler)
-    }
-
     configureFirHandlersStep {
         useHandlers(::FirDiagnosticsHandler)
     }
 
     configureIrHandlersStep {
         useHandlers(::FirJsKlibAbiDumpBeforeInliningSavingHandler)
-        useHandlers(::NoFir2IrCompilationErrorsHandler)
+        useHandlers(::NoIrCompilationErrorsHandler)
         useHandlers(::IrMangledNameAndSignatureDumpHandler)
     }
 
     configureLoweredIrHandlersStep {
-        useHandlers(::NoFir2IrCompilationErrorsHandler)
+        useHandlers(::NoIrCompilationErrorsHandler)
     }
 
     configureKlibArtifactsHandlersStep {

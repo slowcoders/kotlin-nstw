@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.fir.declarations.utils.isExpect
 import org.jetbrains.kotlin.fir.declarations.utils.isJava
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.resolve.*
-import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutor
+import org.jetbrains.kotlin.fir.resolve.substitution.asCone
 import org.jetbrains.kotlin.fir.scopes.*
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.*
@@ -109,6 +109,19 @@ class FirExpectActualMatchingContextImpl private constructor(
     override val CallableSymbolMarker.visibility: Visibility
         get() = asSymbol().resolvedStatus.visibility
 
+    override val mustUseMatcher: ExpectActualMatchingContext.MustUseMatcher = object : ExpectActualMatchingContext.MustUseMatcher {
+        override fun matches(
+            expectCallable: CallableSymbolMarker,
+            actualCallable: CallableSymbolMarker,
+            containingExpectClass: RegularClassSymbolMarker?,
+        ): Boolean = actualSession.mustUseReturnValueStatusComponent.isExpectActualIgnorabilityCompatible(
+            actualSession,
+            expectCallable.asSymbol(),
+            actualCallable.asSymbol(),
+            containingExpectClass?.asSymbol()
+        )
+    }
+
     override val CallableSymbolMarker.isExpect: Boolean
         get() = asSymbol().resolvedStatus.isExpect
     override val CallableSymbolMarker.isInline: Boolean
@@ -148,7 +161,7 @@ class FirExpectActualMatchingContextImpl private constructor(
         return createExpectActualTypeParameterSubstitutor(
             expectActualTypeParameters as List<Pair<FirTypeParameterSymbol, FirTypeParameterSymbol>>,
             actualSession,
-            parentSubstitutor as ConeSubstitutor?
+            parentSubstitutor?.asCone()
         )
     }
 
@@ -340,8 +353,8 @@ class FirExpectActualMatchingContextImpl private constructor(
                 return false
             }
         }
-        val actualizedExpectType = (expectType as ConeKotlinType).actualize()
-        val actualizedActualType = (actualType as ConeKotlinType).actualize()
+        val actualizedExpectType = expectType.asCone().actualize()
+        val actualizedActualType = actualType.asCone().actualize()
 
         if (parameterOfAnnotationComparisonMode && actualizedExpectType is ConeClassLikeType && actualizedExpectType.isArrayType &&
             actualizedActualType is ConeClassLikeType && actualizedActualType.isArrayType

@@ -18,20 +18,25 @@ import org.jetbrains.kotlin.codegen.coroutines.SuspensionPointKind
 import org.jetbrains.kotlin.codegen.coroutines.generateCoroutineSuspendedCheck
 import org.jetbrains.kotlin.codegen.inline.*
 import org.jetbrains.kotlin.codegen.inline.ReifiedTypeInliner.Companion.putNeedClassReificationMarker
+import org.jetbrains.kotlin.codegen.inline.ReifiedTypeInliner.Companion.putReifiedOperationMarker
+import org.jetbrains.kotlin.codegen.inline.ReifiedTypeInliner.OperationKind
 import org.jetbrains.kotlin.codegen.inline.ReifiedTypeInliner.OperationKind.*
 import org.jetbrains.kotlin.codegen.intrinsics.TypeIntrinsics
 import org.jetbrains.kotlin.codegen.pseudoInsns.fakeAlwaysFalseIfeq
 import org.jetbrains.kotlin.codegen.pseudoInsns.fixStackAndJump
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.codegen.state.JvmBackendConfig
+import org.jetbrains.kotlin.config.AnalysisFlags
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.config.languageVersionSettings
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.VariableAccessorDescriptor
 import org.jetbrains.kotlin.diagnostics.BackendErrors
 import org.jetbrains.kotlin.ir.IrElement
+import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.descriptors.toIrBasedDescriptor
 import org.jetbrains.kotlin.ir.descriptors.toIrBasedKotlinType
@@ -50,13 +55,12 @@ import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
 import org.jetbrains.kotlin.load.java.JvmAbi
-import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.jvm.AsmTypes
 import org.jetbrains.kotlin.resolve.jvm.AsmTypes.JAVA_STRING_TYPE
 import org.jetbrains.kotlin.resolve.jvm.AsmTypes.OBJECT_TYPE
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.JvmMethodSignature
-import org.jetbrains.kotlin.types.TypeSystemCommonBackendContext
 import org.jetbrains.kotlin.types.computeExpandedTypeForInlineClass
+import org.jetbrains.kotlin.types.model.KotlinTypeMarker
 import org.jetbrains.kotlin.types.model.TypeParameterMarker
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.org.objectweb.asm.Label
@@ -136,12 +140,12 @@ class VariableInfo(val declaration: IrVariable, val index: Int, val type: Type, 
 class ExpressionCodegen(
     val irFunction: IrFunction,
     val signature: JvmMethodSignature,
-    override val frameMap: IrFrameMap,
+    val frameMap: IrFrameMap,
     val mv: InstructionAdapter,
     val classCodegen: ClassCodegen,
     val smap: SourceMapper,
     val reifiedTypeParametersUsages: ReifiedTypeParametersUsages,
-) : IrVisitor<PromisedValue, BlockInfo>(), BaseExpressionCodegen {
+) : IrVisitor<PromisedValue, BlockInfo>() {
     override fun toString(): String = signature.toString()
 
     var finallyDepth = 0
@@ -156,24 +160,19 @@ class ExpressionCodegen(
     val state: GenerationState = context.state
     val config: JvmBackendConfig = context.config
 
-    override val inlineScopesGenerator =
-        if (state.configuration.getBoolean(JVMConfigurationKeys.USE_INLINE_SCOPES_NUMBERS)) {
+    val inlineScopesGenerator: InlineScopesGenerator? =
+        if (state.configuration.getBoolean(JVMConfigurationKeys.USE_INLINE_SCOPES_NUMBERS))
             InlineScopesGenerator()
-        } else {
-            null
-        }
+        else null
 
-    override val visitor: InstructionAdapter
+    val visitor: InstructionAdapter
         get() = mv
 
-    override val inlineNameGenerator: NameGenerator = classCodegen.getRegeneratedObjectNameGenerator(irFunction)
-
-    override val typeSystem: TypeSystemCommonBackendContext
-        get() = typeMapper.typeSystem
+    val inlineNameGenerator: NameGenerator = classCodegen.getRegeneratedObjectNameGenerator(irFunction)
 
     private val lineNumberMapper = LineNumberMapper(this)
 
-    override val lastLineNumber: Int
+    val lastLineNumber: Int
         get() = lineNumberMapper.getLineNumber()
 
     var isInsideCondition: Boolean = false
@@ -207,7 +206,7 @@ class ExpressionCodegen(
         lineNumberMapper.noLineNumberScope(block)
     }
 
-    override fun markLineNumberAfterInlineIfNeeded(registerLineNumberAfterwards: Boolean) {
+    fun markLineNumberAfterInlineIfNeeded(registerLineNumberAfterwards: Boolean) {
         lineNumberMapper.markLineNumberAfterInlineIfNeeded(registerLineNumberAfterwards)
     }
 
@@ -219,7 +218,7 @@ class ExpressionCodegen(
         mv.visitCode()
         val startLabel = markNewLabel()
         val info = BlockInfo()
-        if (state.classBuilderMode.generateBodies) {
+        if (state.classBuilderMode.generateBodies && !state.configuration.languageVersionSettings.getFlag(AnalysisFlags.headerMode)) {
             if (irFunction.isMultifileBridge()) {
                 // Multifile bridges need to have line number 1 to be filtered out by the intellij debugging filters.
                 mv.visitLineNumber(1, startLabel)
@@ -391,8 +390,6 @@ class ExpressionCodegen(
         // then generate name accordingly.
         val name = if (param.origin == BOUND_RECEIVER_PARAMETER || useReceiverNaming) {
             getNameForReceiverParameter(irFunction.toIrBasedDescriptor(), context.config.languageVersionSettings)
-        } else if (param.kind == IrParameterKind.Context) {
-            irFunction.anonymousContextParameterName(param) ?: param.name.asString()
         } else {
             param.name.asString()
         }
@@ -522,6 +519,12 @@ class ExpressionCodegen(
         val callable = methodSignatureMapper.mapToCallableMethod(expression, irFunction)
         val callGenerator = getOrCreateCallGenerator(expression, data, callable.signature)
 
+        // Generate LINENUMBER instruction before any stack spilling - otherwise, the spilling will have previous instruction's LINENUMBER
+        // See KT-66413.
+        if (callee.isSuspend) {
+            expression.markLineNumber(true)
+        }
+
         val suspensionPointKind = expression.getSuspensionPointKind()
         if (suspensionPointKind != SuspensionPointKind.NEVER) {
             addInlineMarker(mv, isStartNotEnd = true)
@@ -546,7 +549,13 @@ class ExpressionCodegen(
             handleParameter(parameter, argument, type)
         }
 
-        expression.markLineNumber(true)
+        if (expression.startOffset == UNDEFINED_OFFSET && lastLineNumber < 0 && callee.isGeneratedCodeMarker(config, context.symbols)) {
+            // Do not generate negative line numbers in SMAP for generated code markers,
+            // which happens when suspend function is the first in the file.
+            irFunction.markLineNumber(true)
+        } else {
+            expression.markLineNumber(true)
+        }
 
         if (suspensionPointKind != SuspensionPointKind.NEVER) {
             addSuspendMarker(mv, isStartNotEnd = true, suspensionPointKind == SuspensionPointKind.NOT_INLINE)
@@ -1075,6 +1084,13 @@ class ExpressionCodegen(
         }
     }
 
+    fun putReifiedOperationMarkerIfTypeIsReifiedParameter(type: KotlinTypeMarker, operationKind: OperationKind): Boolean {
+        val (typeParameter, second) = typeMapper.typeSystem.extractReificationArgument(type) ?: return false
+        consumeReifiedOperationMarker(typeParameter)
+        putReifiedOperationMarker(operationKind, second, visitor)
+        return true
+    }
+
     override fun visitWhileLoop(loop: IrWhileLoop, data: BlockInfo): PromisedValue {
         // Spill the stack in case the loop contains inline functions that break/continue
         // out of it. (The case where a loop is entered with a non-empty stack is rare, but
@@ -1532,7 +1548,7 @@ class ExpressionCodegen(
         return IrInlineCodegen(this, state, callee, signature, mappings, sourceCompiler, reifiedTypeInliner)
     }
 
-    override fun consumeReifiedOperationMarker(typeParameter: TypeParameterMarker) {
+    private fun consumeReifiedOperationMarker(typeParameter: TypeParameterMarker) {
         require(typeParameter is IrTypeParameterSymbol)
         // For type parameter captured in code fragment, IR of method declaring it might be not built.
         // Thus, we first check if we are inside the evaluator-generated method and avoid accessing non-existing typeParameter.owner.parent
@@ -1541,7 +1557,7 @@ class ExpressionCodegen(
         }
     }
 
-    override fun propagateChildReifiedTypeParametersUsages(reifiedTypeParametersUsages: ReifiedTypeParametersUsages) {
+    fun propagateChildReifiedTypeParametersUsages(reifiedTypeParametersUsages: ReifiedTypeParametersUsages) {
         this.reifiedTypeParametersUsages.propagateChildUsagesWithinContext(reifiedTypeParametersUsages) {
             irFunction.typeParameters.filter { it.isReified }.map { it.name.asString() }.toSet()
         }

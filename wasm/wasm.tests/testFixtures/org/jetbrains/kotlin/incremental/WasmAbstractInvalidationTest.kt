@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.incremental
 
 
+import org.jetbrains.kotlin.K1Deprecation
 import org.jetbrains.kotlin.backend.wasm.compileWasm
 import org.jetbrains.kotlin.backend.wasm.ic.WasmICContextForTesting
 import org.jetbrains.kotlin.backend.wasm.ir2wasm.WasmCompiledFileFragment
@@ -17,10 +18,15 @@ import org.jetbrains.kotlin.codegen.ModuleInfo
 import org.jetbrains.kotlin.codegen.ProjectInfo
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.ir.backend.js.ic.CacheUpdater
+import org.jetbrains.kotlin.js.config.ModuleKind
 import org.jetbrains.kotlin.js.config.wasmCompilation
-import org.jetbrains.kotlin.serialization.js.ModuleKind
+import org.jetbrains.kotlin.klib.KlibCompilerInvocationTestUtils
+import org.jetbrains.kotlin.platform.wasm.WasmTarget
 import org.jetbrains.kotlin.test.TargetBackend
+import org.jetbrains.kotlin.test.services.configuration.WasmEnvironmentConfigurator
 import org.jetbrains.kotlin.test.utils.TestDisposable
+import org.jetbrains.kotlin.wasm.test.AbstractWasmPartialLinkageTestCase
+import org.jetbrains.kotlin.wasm.test.WasmCompilerInvocationTestConfiguration
 import org.jetbrains.kotlin.wasm.test.tools.WasmVM
 import java.io.File
 import kotlin.test.assertEquals
@@ -35,16 +41,20 @@ abstract class WasmAbstractInvalidationTest(
     override val outputDirPath = System.getProperty("kotlin.wasm.test.root.out.dir") ?: error("'kotlin.wasm.test.root.out.dir' is not set")
 
     override val stdlibKLib: String =
-        File(System.getProperty("kotlin.wasm-js.stdlib.path") ?: error("Please set stdlib path")).canonicalPath
+        File(WasmEnvironmentConfigurator.stdlibPath(WasmTarget.JS)).canonicalPath
 
     override val kotlinTestKLib: String =
-        File(System.getProperty("kotlin.wasm-js.kotlin.test.path") ?: error("Please set kotlin.test path")).canonicalPath
+        File(WasmEnvironmentConfigurator.kotlinTestPath(WasmTarget.JS)).canonicalPath
 
     final override val rootDisposable: TestDisposable =
         TestDisposable("${WasmAbstractInvalidationTest::class.simpleName}.rootDisposable")
 
+    @OptIn(K1Deprecation::class)
     override val environment: KotlinCoreEnvironment =
         KotlinCoreEnvironment.createForParallelTests(rootDisposable, CompilerConfiguration(), EnvironmentConfigFiles.JS_CONFIG_FILES)
+
+    override fun testConfiguration(buildDir: File): KlibCompilerInvocationTestUtils.TestConfiguration =
+        WasmCompilerInvocationTestConfiguration(buildDir, AbstractWasmPartialLinkageTestCase.CompilerType.WITH_IC)
 
     override fun createConfiguration(
         moduleName: String,

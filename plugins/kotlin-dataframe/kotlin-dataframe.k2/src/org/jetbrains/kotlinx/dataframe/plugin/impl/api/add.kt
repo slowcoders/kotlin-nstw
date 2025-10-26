@@ -32,7 +32,8 @@ class Into : AbstractInterpreter<Unit>() {
     val Arguments.name: String by arg()
 
     override fun Arguments.interpret() {
-        dsl.columns += simpleColumnOf(name, receiver.type)
+        val valuesType = extractBaseColumnValuesType(receiver.type) ?: session.builtinTypes.nullableAnyType.coneType
+        dsl.columns += simpleColumnOf(name, valuesType)
     }
 }
 
@@ -70,5 +71,25 @@ class AddDslNamedGroup : AbstractInterpreter<Unit>() {
         val addDsl = AddDslApproximation(mutableListOf())
         body(addDsl, emptyMap())
         dsl.columns.add(SimpleColumnGroup(name, addDsl.columns))
+    }
+}
+
+class AddDslAddGroup : AbstractInterpreter<AddDslApproximation>() {
+    val Arguments.body by dsl()
+
+    override fun Arguments.interpret(): AddDslApproximation {
+        val addDsl = AddDslApproximation(mutableListOf())
+        body(addDsl, emptyMap())
+        return addDsl
+    }
+}
+
+class AddDslAddGroupInto : AbstractInterpreter<Unit>() {
+    val Arguments.dsl: AddDslApproximation by arg()
+    val Arguments.receiver: AddDslApproximation by arg()
+    val Arguments.groupName: String by arg()
+
+    override fun Arguments.interpret() {
+        dsl.columns.add(SimpleColumnGroup(groupName, receiver.columns))
     }
 }

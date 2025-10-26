@@ -6,22 +6,16 @@
 package org.jetbrains.sir.lightclasses.nodes
 
 import org.jetbrains.kotlin.analysis.api.KaSession
-import org.jetbrains.kotlin.analysis.api.components.containingModule
-import org.jetbrains.kotlin.analysis.api.components.render
 import org.jetbrains.kotlin.analysis.api.symbols.*
-import org.jetbrains.kotlin.analysis.api.types.KaClassType
 import org.jetbrains.kotlin.sir.*
 import org.jetbrains.kotlin.sir.providers.SirSession
 import org.jetbrains.kotlin.sir.providers.generateFunctionBridge
 import org.jetbrains.kotlin.sir.providers.getSirParent
 import org.jetbrains.kotlin.sir.providers.impl.BridgeProvider.BridgeFunctionProxy
 import org.jetbrains.kotlin.sir.providers.sirDeclarationName
-import org.jetbrains.kotlin.sir.providers.sirModule
 import org.jetbrains.kotlin.sir.providers.source.KotlinSource
 import org.jetbrains.kotlin.sir.providers.source.kaSymbolOrNull
-import org.jetbrains.kotlin.sir.providers.translateType
 import org.jetbrains.kotlin.sir.providers.utils.throwsAnnotation
-import org.jetbrains.kotlin.sir.providers.utils.updateImports
 import org.jetbrains.kotlin.sir.providers.withSessions
 import org.jetbrains.kotlin.sir.util.SirSwiftModule
 import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
@@ -118,37 +112,6 @@ internal class SirVariableFromKtSymbol(
         get() = !ktSymbol.isTopLevel && !(ktSymbol is KaPropertySymbol && ktSymbol.isStatic)
 }
 
-internal class SirEnumEntriesStaticPropertyFromKtSymbol(
-    ktSymbol: KaPropertySymbol,
-    sirSession: SirSession,
-) : SirAbstractVariableFromKtSymbol(ktSymbol, sirSession) {
-    override val isInstance: Boolean
-        get() = false
-
-    override val name: String
-        get() = "allCases"
-
-    override val type: SirType by lazyWithSessions {
-        SirArrayType(
-            (ktSymbol.returnType as KaClassType)
-                .typeArguments.first().type!!
-                .translateType(
-                    SirTypeVariance.INVARIANT,
-                    reportErrorType = { error("Can't translate return type in ${ktSymbol.render()}: ${it}") },
-                    reportUnsupportedType = { error("Can't translate return type in ${ktSymbol.render()}: type is not supported") },
-                    processTypeImports = ktSymbol.containingModule.sirModule()::updateImports
-                ),
-        )
-    }
-}
-
-internal class SirEnumCaseFromKtSymbol(
-    ktSymbol: KaEnumEntrySymbol,
-    sirSession: SirSession,
-) : SirAbstractVariableFromKtSymbol(ktSymbol, sirSession) {
-    override val isInstance: Boolean = false
-}
-
 internal abstract class SirAbstractGetter(
     val sirSession: SirSession,
 ) : SirGetter() {
@@ -157,7 +120,7 @@ internal abstract class SirAbstractGetter(
     override val documentation: String? get() = null
     override val attributes: List<SirAttribute> get() = emptyList()
     override val errorType: SirType get() = SirType.never
-
+    override val isAsync: Boolean get() = false
     private val variable get() = parent as? SirVariable
 
     open val fqName: List<String>? by lazyWithSessions {
@@ -184,6 +147,7 @@ internal abstract class SirAbstractGetter(
             errorParameter = errorType.takeIf { it != SirType.never }?.let {
                 SirParameter("", "_out_error", it)
             },
+            isAsync = false,
         )
     }
 
@@ -224,7 +188,7 @@ internal abstract class SirAbstractSetter(
     override val parameterName: String = "newValue"
     override val attributes: List<SirAttribute> get() = emptyList()
     override val errorType: SirType get() = SirType.never
-
+    override val isAsync: Boolean get() = false
     private val variable get() = parent as? SirVariable
 
     open val fqName: List<String>? by lazyWithSessions {
@@ -251,6 +215,7 @@ internal abstract class SirAbstractSetter(
             errorParameter = errorType.takeIf { it != SirType.never }?.let {
                 SirParameter("", "_out_error", it)
             },
+            isAsync = false,
         )
     }
 

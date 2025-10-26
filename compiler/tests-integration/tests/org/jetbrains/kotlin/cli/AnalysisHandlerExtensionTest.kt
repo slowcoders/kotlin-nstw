@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package org.jetbrains.kotlin.cli
 
@@ -83,16 +83,8 @@ class AnalysisHandlerExtensionTest : TestCaseWithTmpdir() {
         runTest(K2JVMCompiler(), classNotFound, CustomComponentRegistrar::class)
     }
 
-    fun testShouldNotGenerateCodeMetadata() {
-        runTest(KotlinMetadataCompiler(), classNotFound, CustomComponentRegistrar::class)
-    }
-
     fun testRepeatedAnalysisJVM() {
         runTest(K2JVMCompiler(), repeatedAnalysis, CustomComponentRegistrar::class)
-    }
-
-    fun testRepeatedAnalysisMetadata() {
-        runTest(KotlinMetadataCompiler(), repeatedAnalysis, CustomComponentRegistrar::class)
     }
 
     fun testAnalysisError() {

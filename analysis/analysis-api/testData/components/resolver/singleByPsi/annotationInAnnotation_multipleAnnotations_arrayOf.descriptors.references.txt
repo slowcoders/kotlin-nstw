@@ -1,6 +1,12 @@
 KtNameReferenceExpression(138,143): 'annos'
   KtSimpleNameReference:
-    vararg annos: Annotation
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      vararg annos: Annotation
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

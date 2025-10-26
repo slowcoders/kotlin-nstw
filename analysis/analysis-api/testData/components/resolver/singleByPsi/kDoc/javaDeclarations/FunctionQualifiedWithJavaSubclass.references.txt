@@ -1,3 +1,6 @@
 KDocName(54,69): 'JavaChild.myFun'
   KDocReference:
-    (in dependency.JavaBase) open fun myFun()
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in dependency.JavaBase) open fun myFun()

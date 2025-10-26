@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCodegenBoxInlineTest {
   @Test
   public void testAllFilesPresentInBoxInline() {
-    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline"), Pattern.compile("^(.+)\\.kt$"), null, true);
   }
 
   @Nested
@@ -31,7 +31,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Annotations {
     @Test
     public void testAllFilesPresentInAnnotations() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/annotations"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/annotations"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class AnonymousObject {
     @Test
     public void testAllFilesPresentInAnonymousObject() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -135,6 +135,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("capturedLocalFunReflectionCrossModule.kt")
+    public void testCapturedLocalFunReflectionCrossModule() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/capturedLocalFunReflectionCrossModule.kt");
+    }
+
+    @Test
     @TestMetadata("capturedLocalFunTwice.kt")
     public void testCapturedLocalFunTwice() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/capturedLocalFunTwice.kt");
@@ -189,12 +195,6 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
-    @TestMetadata("fakeOverrideLocalGenericBase.kt")
-    public void testFakeOverrideLocalGenericBase() {
-      runTest("compiler/testData/codegen/boxInline/anonymousObject/fakeOverrideLocalGenericBase.kt");
-    }
-
-    @Test
     @TestMetadata("fakeOverrideMultiModule.kt")
     public void testFakeOverrideMultiModule() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/fakeOverrideMultiModule.kt");
@@ -216,6 +216,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("inlineCallInsideInlineLambda.kt")
     public void testInlineCallInsideInlineLambda() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/inlineCallInsideInlineLambda.kt");
+    }
+
+    @Test
+    @TestMetadata("kt13133.kt")
+    public void testKt13133() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt13133.kt");
     }
 
     @Test
@@ -252,6 +258,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("kt15751.kt")
     public void testKt15751() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/kt15751.kt");
+    }
+
+    @Test
+    @TestMetadata("kt16193.kt")
+    public void testKt16193() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt16193.kt");
     }
 
     @Test
@@ -315,9 +327,33 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("kt19434.kt")
+    public void testKt19434() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt19434.kt");
+    }
+
+    @Test
+    @TestMetadata("kt19434_2.kt")
+    public void testKt19434_2() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt19434_2.kt");
+    }
+
+    @Test
     @TestMetadata("kt19723.kt")
     public void testKt19723() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/kt19723.kt");
+    }
+
+    @Test
+    @TestMetadata("kt29595.kt")
+    public void testKt29595() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt29595.kt");
+    }
+
+    @Test
+    @TestMetadata("kt30696.kt")
+    public void testKt30696() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt30696.kt");
     }
 
     @Test
@@ -330,6 +366,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("kt38197.kt")
     public void testKt38197() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/kt38197.kt");
+    }
+
+    @Test
+    @TestMetadata("kt41174.kt")
+    public void testKt41174() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt41174.kt");
     }
 
     @Test
@@ -453,6 +495,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("nestedTypeRemapping.kt")
+    public void testNestedTypeRemapping() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/nestedTypeRemapping.kt");
+    }
+
+    @Test
     @TestMetadata("objectInLambdaCapturesAnotherObject.kt")
     public void testObjectInLambdaCapturesAnotherObject() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/objectInLambdaCapturesAnotherObject.kt");
@@ -468,6 +516,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("safeCall_2.kt")
     public void testSafeCall_2() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/safeCall_2.kt");
+    }
+
+    @Test
+    @TestMetadata("sam.kt")
+    public void testSam() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/sam.kt");
     }
 
     @Test
@@ -506,7 +560,31 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class EnumEntries {
       @Test
       public void testAllFilesPresentInEnumEntries() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/enumEntries"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/enumEntries"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("callSite.kt")
+      public void testCallSite() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/enumEntries/callSite.kt");
+      }
+
+      @Test
+      @TestMetadata("declSite.kt")
+      public void testDeclSite() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/enumEntries/declSite.kt");
+      }
+
+      @Test
+      @TestMetadata("declSiteSeveralMappings.kt")
+      public void testDeclSiteSeveralMappings() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/enumEntries/declSiteSeveralMappings.kt");
+      }
+
+      @Test
+      @TestMetadata("declSiteSeveralMappingsDifOrder.kt")
+      public void testDeclSiteSeveralMappingsDifOrder() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/enumEntries/declSiteSeveralMappingsDifOrder.kt");
       }
     }
 
@@ -516,7 +594,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class EnumWhen {
       @Test
       public void testAllFilesPresentInEnumWhen() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/enumWhen"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/enumWhen"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -550,7 +628,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class ProperRecapturing {
       @Test
       public void testAllFilesPresentInProperRecapturing() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/properRecapturing"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/properRecapturing"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -596,7 +674,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class ProperRecapturingInClass {
       @Test
       public void testAllFilesPresentInProperRecapturingInClass() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/properRecapturingInClass"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/properRecapturingInClass"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -678,7 +756,49 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Sam {
       @Test
       public void testAllFilesPresentInSam() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/sam"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/sam"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("anonymousObjectToSam.kt")
+      public void testAnonymousObjectToSam() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/sam/anonymousObjectToSam.kt");
+      }
+
+      @Test
+      @TestMetadata("kt17091.kt")
+      public void testKt17091() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/sam/kt17091.kt");
+      }
+
+      @Test
+      @TestMetadata("kt21671.kt")
+      public void testKt21671() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/sam/kt21671.kt");
+      }
+
+      @Test
+      @TestMetadata("kt21671_2.kt")
+      public void testKt21671_2() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/sam/kt21671_2.kt");
+      }
+
+      @Test
+      @TestMetadata("kt21671_3.kt")
+      public void testKt21671_3() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/sam/kt21671_3.kt");
+      }
+
+      @Test
+      @TestMetadata("kt22304.kt")
+      public void testKt22304() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/sam/kt22304.kt");
+      }
+
+      @Test
+      @TestMetadata("samOnCallSite.kt")
+      public void testSamOnCallSite() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/sam/samOnCallSite.kt");
       }
     }
 
@@ -688,7 +808,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class TwoCapturedReceivers {
       @Test
       public void testAllFilesPresentInTwoCapturedReceivers() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/twoCapturedReceivers"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/anonymousObject/twoCapturedReceivers"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -741,7 +861,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class ArgumentOrder {
     @Test
     public void testAllFilesPresentInArgumentOrder() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/argumentOrder"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/argumentOrder"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -823,7 +943,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class ArrayConvention {
     @Test
     public void testAllFilesPresentInArrayConvention() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/arrayConvention"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/arrayConvention"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -869,7 +989,91 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Assert {
     @Test
     public void testAllFilesPresentInAssert() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/assert"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/assert"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("jvmAssertInlineFunctionAssertionsDisabled.kt")
+    public void testJvmAssertInlineFunctionAssertionsDisabled() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmAssertInlineFunctionAssertionsDisabled.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmAssertInlineFunctionAssertionsEnabled.kt")
+    public void testJvmAssertInlineFunctionAssertionsEnabled() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmAssertInlineFunctionAssertionsEnabled.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmAssertInlineLambda.kt")
+    public void testJvmAssertInlineLambda() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmAssertInlineLambda.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmClassInitializer.kt")
+    public void testJvmClassInitializer() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmClassInitializer.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmCompanion.kt")
+    public void testJvmCompanion() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmCompanion.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmCrossinlineLambda.kt")
+    public void testJvmCrossinlineLambda() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmCrossinlineLambda.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmCrossinlineLambda2.kt")
+    public void testJvmCrossinlineLambda2() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmCrossinlineLambda2.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmCrossinlineLambdaDeclarationSite.kt")
+    public void testJvmCrossinlineLambdaDeclarationSite() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmCrossinlineLambdaDeclarationSite.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmCrossinlineLambdaDeclarationSiteOnly.kt")
+    public void testJvmCrossinlineLambdaDeclarationSiteOnly() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmCrossinlineLambdaDeclarationSiteOnly.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmCrossinlineRedundant.kt")
+    public void testJvmCrossinlineRedundant() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmCrossinlineRedundant.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmCrossinlineSAMDeclarationSite.kt")
+    public void testJvmCrossinlineSAMDeclarationSite() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmCrossinlineSAMDeclarationSite.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmDoubleInline.kt")
+    public void testJvmDoubleInline() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmDoubleInline.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmInlineIntoTwoMethods.kt")
+    public void testJvmInlineIntoTwoMethods() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmInlineIntoTwoMethods.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmInlineUsedAsNoinline.kt")
+    public void testJvmInlineUsedAsNoinline() {
+      runTest("compiler/testData/codegen/boxInline/assert/jvmInlineUsedAsNoinline.kt");
     }
   }
 
@@ -879,7 +1083,19 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Builders {
     @Test
     public void testAllFilesPresentInBuilders() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/builders"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/builders"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("builders.kt")
+    public void testBuilders() {
+      runTest("compiler/testData/codegen/boxInline/builders/builders.kt");
+    }
+
+    @Test
+    @TestMetadata("buildersAndLambdaCapturing.kt")
+    public void testBuildersAndLambdaCapturing() {
+      runTest("compiler/testData/codegen/boxInline/builders/buildersAndLambdaCapturing.kt");
     }
   }
 
@@ -889,7 +1105,19 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class BytecodePreprocessing {
     @Test
     public void testAllFilesPresentInBytecodePreprocessing() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/bytecodePreprocessing"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/bytecodePreprocessing"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("apiVersionAtLeast1.kt")
+    public void testApiVersionAtLeast1() {
+      runTest("compiler/testData/codegen/boxInline/bytecodePreprocessing/apiVersionAtLeast1.kt");
+    }
+
+    @Test
+    @TestMetadata("inlineApiVersionAtLeastInStdlibInlineFunction.kt")
+    public void testInlineApiVersionAtLeastInStdlibInlineFunction() {
+      runTest("compiler/testData/codegen/boxInline/bytecodePreprocessing/inlineApiVersionAtLeastInStdlibInlineFunction.kt");
     }
   }
 
@@ -905,7 +1133,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
 
     @Test
     public void testAllFilesPresentInCallableReference() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/callableReference"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/callableReference"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -942,6 +1170,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("intrinsic.kt")
     public void testIntrinsic() {
       runTest("compiler/testData/codegen/boxInline/callableReference/intrinsic.kt");
+    }
+
+    @Test
+    @TestMetadata("jvmFieldProperty.kt")
+    public void testJvmFieldProperty() {
+      runTest("compiler/testData/codegen/boxInline/callableReference/jvmFieldProperty.kt");
     }
 
     @Test
@@ -1016,7 +1250,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class AdaptedReferences {
       @Test
       public void testAllFilesPresentInAdaptedReferences() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/callableReference/adaptedReferences"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/callableReference/adaptedReferences"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -1068,7 +1302,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Bound {
       @Test
       public void testAllFilesPresentInBound() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/callableReference/bound"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/callableReference/bound"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -1135,6 +1369,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       @TestMetadata("intrinsic.kt")
       public void testIntrinsic() {
         runTest("compiler/testData/codegen/boxInline/callableReference/bound/intrinsic.kt");
+      }
+
+      @Test
+      @TestMetadata("jvmFieldProperty.kt")
+      public void testJvmFieldProperty() {
+        runTest("compiler/testData/codegen/boxInline/callableReference/bound/jvmFieldProperty.kt");
       }
 
       @Test
@@ -1235,7 +1475,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Capture {
     @Test
     public void testAllFilesPresentInCapture() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/capture"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/capture"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -1311,7 +1551,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Complex {
     @Test
     public void testAllFilesPresentInComplex() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/complex"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/complex"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -1321,9 +1561,27 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("forEachLine.kt")
+    public void testForEachLine() {
+      runTest("compiler/testData/codegen/boxInline/complex/forEachLine.kt");
+    }
+
+    @Test
     @TestMetadata("kt44429.kt")
     public void testKt44429() {
       runTest("compiler/testData/codegen/boxInline/complex/kt44429.kt");
+    }
+
+    @Test
+    @TestMetadata("kt44429MustFail.kt")
+    public void testKt44429MustFail() {
+      runTest("compiler/testData/codegen/boxInline/complex/kt44429MustFail.kt");
+    }
+
+    @Test
+    @TestMetadata("lambdaInLambda.kt")
+    public void testLambdaInLambda() {
+      runTest("compiler/testData/codegen/boxInline/complex/lambdaInLambda.kt");
     }
 
     @Test
@@ -1369,7 +1627,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class ComplexStack {
     @Test
     public void testAllFilesPresentInComplexStack() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/complexStack"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/complexStack"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -1433,7 +1691,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class ContextParameters {
     @Test
     public void testAllFilesPresentInContextParameters() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/contextParameters"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/contextParameters"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -1467,7 +1725,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Contracts {
     @Test
     public void testAllFilesPresentInContracts() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/contracts"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/contracts"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -1579,7 +1837,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
 
     @Test
     public void testAllFilesPresentInDefaultValues() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/defaultValues"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/defaultValues"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -1696,7 +1954,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class LambdaInlining {
       @Test
       public void testAllFilesPresentInLambdaInlining() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/defaultValues/lambdaInlining"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/defaultValues/lambdaInlining"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -1778,6 +2036,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       }
 
       @Test
+      @TestMetadata("jvmStaticDefault.kt")
+      public void testJvmStaticDefault() {
+        runTest("compiler/testData/codegen/boxInline/defaultValues/lambdaInlining/jvmStaticDefault.kt");
+      }
+
+      @Test
       @TestMetadata("kt21827.kt")
       public void testKt21827() {
         runTest("compiler/testData/codegen/boxInline/defaultValues/lambdaInlining/kt21827.kt");
@@ -1799,6 +2063,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       @TestMetadata("kt25106.kt")
       public void testKt25106() {
         runTest("compiler/testData/codegen/boxInline/defaultValues/lambdaInlining/kt25106.kt");
+      }
+
+      @Test
+      @TestMetadata("kt26636.kt")
+      public void testKt26636() {
+        runTest("compiler/testData/codegen/boxInline/defaultValues/lambdaInlining/kt26636.kt");
       }
 
       @Test
@@ -1903,7 +2173,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class CallableReferences {
         @Test
         public void testAllFilesPresentInCallableReferences() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/defaultValues/lambdaInlining/callableReferences"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/defaultValues/lambdaInlining/callableReferences"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -2100,7 +2370,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
 
       @Test
       public void testAllFilesPresentInMaskElimination() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/defaultValues/maskElimination"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/defaultValues/maskElimination"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -2141,7 +2411,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class DelegatedProperty {
     @Test
     public void testAllFilesPresentInDelegatedProperty() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/delegatedProperty"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/delegatedProperty"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2187,7 +2457,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class DontReify {
     @Test
     public void testAllFilesPresentInDontReify() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/dontReify"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/dontReify"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2257,7 +2527,55 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class EnclosingInfo {
     @Test
     public void testAllFilesPresentInEnclosingInfo() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/enclosingInfo"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/enclosingInfo"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("anonymousInLambda.kt")
+    public void testAnonymousInLambda() {
+      runTest("compiler/testData/codegen/boxInline/enclosingInfo/anonymousInLambda.kt");
+    }
+
+    @Test
+    @TestMetadata("inlineChain.kt")
+    public void testInlineChain() {
+      runTest("compiler/testData/codegen/boxInline/enclosingInfo/inlineChain.kt");
+    }
+
+    @Test
+    @TestMetadata("inlineChain2.kt")
+    public void testInlineChain2() {
+      runTest("compiler/testData/codegen/boxInline/enclosingInfo/inlineChain2.kt");
+    }
+
+    @Test
+    @TestMetadata("kt52417.kt")
+    public void testKt52417() {
+      runTest("compiler/testData/codegen/boxInline/enclosingInfo/kt52417.kt");
+    }
+
+    @Test
+    @TestMetadata("objectInInlineFun.kt")
+    public void testObjectInInlineFun() {
+      runTest("compiler/testData/codegen/boxInline/enclosingInfo/objectInInlineFun.kt");
+    }
+
+    @Test
+    @TestMetadata("transformedConstructor.kt")
+    public void testTransformedConstructor() {
+      runTest("compiler/testData/codegen/boxInline/enclosingInfo/transformedConstructor.kt");
+    }
+
+    @Test
+    @TestMetadata("transformedConstructorWithAdditionalObject.kt")
+    public void testTransformedConstructorWithAdditionalObject() {
+      runTest("compiler/testData/codegen/boxInline/enclosingInfo/transformedConstructorWithAdditionalObject.kt");
+    }
+
+    @Test
+    @TestMetadata("transformedConstructorWithNestedInline.kt")
+    public void testTransformedConstructorWithNestedInline() {
+      runTest("compiler/testData/codegen/boxInline/enclosingInfo/transformedConstructorWithNestedInline.kt");
     }
   }
 
@@ -2267,7 +2585,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Enum {
     @Test
     public void testAllFilesPresentInEnum() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/enum"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/enum"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2280,6 +2598,18 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("enumEntriesChainCapturedType.kt")
     public void testEnumEntriesChainCapturedType() {
       runTest("compiler/testData/codegen/boxInline/enum/enumEntriesChainCapturedType.kt");
+    }
+
+    @Test
+    @TestMetadata("javaEnumEntries.kt")
+    public void testJavaEnumEntries() {
+      runTest("compiler/testData/codegen/boxInline/enum/javaEnumEntries.kt");
+    }
+
+    @Test
+    @TestMetadata("javaEnumEntriesChainCapturedType.kt")
+    public void testJavaEnumEntriesChainCapturedType() {
+      runTest("compiler/testData/codegen/boxInline/enum/javaEnumEntriesChainCapturedType.kt");
     }
 
     @Test
@@ -2367,7 +2697,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class FunctionExpression {
     @Test
     public void testAllFilesPresentInFunctionExpression() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/functionExpression"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/functionExpression"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2389,7 +2719,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class FunctionReference {
     @Test
     public void testAllFilesPresentInFunctionReference() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/functionReference"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/functionReference"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2417,7 +2747,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class InlineArgsInplace {
     @Test
     public void testAllFilesPresentInInlineArgsInplace() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineArgsInplace"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineArgsInplace"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2433,7 +2763,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class InlineClasses {
     @Test
     public void testAllFilesPresentInInlineClasses() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2467,6 +2797,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("withReturnTypeManglingFunJvmName.kt")
+    public void testWithReturnTypeManglingFunJvmName() {
+      runTest("compiler/testData/codegen/boxInline/inlineClasses/withReturnTypeManglingFunJvmName.kt");
+    }
+
+    @Test
     @TestMetadata("withReturnTypeManglingVal.kt")
     public void testWithReturnTypeManglingVal() {
       runTest("compiler/testData/codegen/boxInline/inlineClasses/withReturnTypeManglingVal.kt");
@@ -2478,7 +2814,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class UnboxGenericParameter {
       @Test
       public void testAllFilesPresentInUnboxGenericParameter() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses/unboxGenericParameter"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses/unboxGenericParameter"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Nested
@@ -2487,7 +2823,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class FunInterface {
         @Test
         public void testAllFilesPresentInFunInterface() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses/unboxGenericParameter/funInterface"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses/unboxGenericParameter/funInterface"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -2533,7 +2869,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class Lambda {
         @Test
         public void testAllFilesPresentInLambda() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses/unboxGenericParameter/lambda"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses/unboxGenericParameter/lambda"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -2579,7 +2915,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class ObjectLiteral {
         @Test
         public void testAllFilesPresentInObjectLiteral() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses/unboxGenericParameter/objectLiteral"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/inlineClasses/unboxGenericParameter/objectLiteral"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -2627,7 +2963,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class InnerClasses {
     @Test
     public void testAllFilesPresentInInnerClasses() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/innerClasses"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/innerClasses"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2673,6 +3009,18 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("innerLambda.kt")
+    public void testInnerLambda() {
+      runTest("compiler/testData/codegen/boxInline/innerClasses/innerLambda.kt");
+    }
+
+    @Test
+    @TestMetadata("kt10259.kt")
+    public void testKt10259() {
+      runTest("compiler/testData/codegen/boxInline/innerClasses/kt10259.kt");
+    }
+
+    @Test
     @TestMetadata("kt12126.kt")
     public void testKt12126() {
       runTest("compiler/testData/codegen/boxInline/innerClasses/kt12126.kt");
@@ -2685,7 +3033,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Invokedynamic {
     @Test
     public void testAllFilesPresentInInvokedynamic() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/invokedynamic"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/invokedynamic"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Nested
@@ -2694,7 +3042,31 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Lambdas {
       @Test
       public void testAllFilesPresentInLambdas() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/invokedynamic/lambdas"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/invokedynamic/lambdas"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("crossinlineLambda1.kt")
+      public void testCrossinlineLambda1() {
+        runTest("compiler/testData/codegen/boxInline/invokedynamic/lambdas/crossinlineLambda1.kt");
+      }
+
+      @Test
+      @TestMetadata("crossinlineLambda2.kt")
+      public void testCrossinlineLambda2() {
+        runTest("compiler/testData/codegen/boxInline/invokedynamic/lambdas/crossinlineLambda2.kt");
+      }
+
+      @Test
+      @TestMetadata("inlineFunInDifferentPackage.kt")
+      public void testInlineFunInDifferentPackage() {
+        runTest("compiler/testData/codegen/boxInline/invokedynamic/lambdas/inlineFunInDifferentPackage.kt");
+      }
+
+      @Test
+      @TestMetadata("inlineLambda1.kt")
+      public void testInlineLambda1() {
+        runTest("compiler/testData/codegen/boxInline/invokedynamic/lambdas/inlineLambda1.kt");
       }
     }
 
@@ -2704,7 +3076,31 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Sam {
       @Test
       public void testAllFilesPresentInSam() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/invokedynamic/sam"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/invokedynamic/sam"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("crossinlineLambda1.kt")
+      public void testCrossinlineLambda1() {
+        runTest("compiler/testData/codegen/boxInline/invokedynamic/sam/crossinlineLambda1.kt");
+      }
+
+      @Test
+      @TestMetadata("crossinlineLambda2.kt")
+      public void testCrossinlineLambda2() {
+        runTest("compiler/testData/codegen/boxInline/invokedynamic/sam/crossinlineLambda2.kt");
+      }
+
+      @Test
+      @TestMetadata("inlineFunInDifferentPackage.kt")
+      public void testInlineFunInDifferentPackage() {
+        runTest("compiler/testData/codegen/boxInline/invokedynamic/sam/inlineFunInDifferentPackage.kt");
+      }
+
+      @Test
+      @TestMetadata("inlineLambda1.kt")
+      public void testInlineLambda1() {
+        runTest("compiler/testData/codegen/boxInline/invokedynamic/sam/inlineLambda1.kt");
       }
     }
   }
@@ -2715,7 +3111,13 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class JvmName {
     @Test
     public void testAllFilesPresentInJvmName() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/jvmName"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/jvmName"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("simple.kt")
+    public void testSimple() {
+      runTest("compiler/testData/codegen/boxInline/jvmName/simple.kt");
     }
   }
 
@@ -2725,7 +3127,13 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class JvmPackageName {
     @Test
     public void testAllFilesPresentInJvmPackageName() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/jvmPackageName"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/jvmPackageName"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("simple.kt")
+    public void testSimple() {
+      runTest("compiler/testData/codegen/boxInline/jvmPackageName/simple.kt");
     }
   }
 
@@ -2735,7 +3143,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class LambdaClassClash {
     @Test
     public void testAllFilesPresentInLambdaClassClash() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/lambdaClassClash"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/lambdaClassClash"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2757,13 +3165,19 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class LambdaTransformation {
     @Test
     public void testAllFilesPresentInLambdaTransformation() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/lambdaTransformation"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/lambdaTransformation"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
     @TestMetadata("lambdaCloning.kt")
     public void testLambdaCloning() {
       runTest("compiler/testData/codegen/boxInline/lambdaTransformation/lambdaCloning.kt");
+    }
+
+    @Test
+    @TestMetadata("lambdaInLambda2.kt")
+    public void testLambdaInLambda2() {
+      runTest("compiler/testData/codegen/boxInline/lambdaTransformation/lambdaInLambda2.kt");
     }
 
     @Test
@@ -2797,7 +3211,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class LocalFunInLambda {
     @Test
     public void testAllFilesPresentInLocalFunInLambda() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/localFunInLambda"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/localFunInLambda"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2822,12 +3236,6 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("localDelegatedPropertyUsedInsideAnonymousObject.kt")
     public void testLocalDelegatedPropertyUsedInsideAnonymousObject() {
       runTest("compiler/testData/codegen/boxInline/localFunInLambda/localDelegatedPropertyUsedInsideAnonymousObject.kt");
-    }
-
-    @Test
-    @TestMetadata("localDelegatedPropertyUsedInsideAnonymousObjectWithInlinedFunInKlib.kt")
-    public void testLocalDelegatedPropertyUsedInsideAnonymousObjectWithInlinedFunInKlib() {
-      runTest("compiler/testData/codegen/boxInline/localFunInLambda/localDelegatedPropertyUsedInsideAnonymousObjectWithInlinedFunInKlib.kt");
     }
 
     @Test
@@ -2873,7 +3281,13 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class MultiModule {
     @Test
     public void testAllFilesPresentInMultiModule() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/multiModule"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/multiModule"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("notInlinedFunFromKlib.kt")
+    public void testNotInlinedFunFromKlib() {
+      runTest("compiler/testData/codegen/boxInline/multiModule/notInlinedFunFromKlib.kt");
     }
 
     @Test
@@ -2889,7 +3303,25 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class MultifileClasses {
     @Test
     public void testAllFilesPresentInMultifileClasses() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/multifileClasses"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/multifileClasses"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("defaultArguments.kt")
+    public void testDefaultArguments() {
+      runTest("compiler/testData/codegen/boxInline/multifileClasses/defaultArguments.kt");
+    }
+
+    @Test
+    @TestMetadata("inlineFromOptimizedMultifileClass.kt")
+    public void testInlineFromOptimizedMultifileClass() {
+      runTest("compiler/testData/codegen/boxInline/multifileClasses/inlineFromOptimizedMultifileClass.kt");
+    }
+
+    @Test
+    @TestMetadata("inlineFromOtherPackage.kt")
+    public void testInlineFromOtherPackage() {
+      runTest("compiler/testData/codegen/boxInline/multifileClasses/inlineFromOtherPackage.kt");
     }
   }
 
@@ -2899,7 +3331,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Multiplatform {
     @Test
     public void testAllFilesPresentInMultiplatform() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/multiplatform"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/multiplatform"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Nested
@@ -2908,7 +3340,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class DefaultArguments {
       @Test
       public void testAllFilesPresentInDefaultArguments() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/multiplatform/defaultArguments"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/multiplatform/defaultArguments"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -2925,7 +3357,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class NestedInline {
     @Test
     public void testAllFilesPresentInNestedInline() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nestedInline"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nestedInline"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -2947,7 +3379,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class NoInline {
     @Test
     public void testAllFilesPresentInNoInline() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/noInline"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/noInline"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -3005,7 +3437,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class NonLocalReturns {
     @Test
     public void testAllFilesPresentInNonLocalReturns() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -3152,7 +3584,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Deparenthesize {
       @Test
       public void testAllFilesPresentInDeparenthesize() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/deparenthesize"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/deparenthesize"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -3174,7 +3606,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class TryFinally {
       @Test
       public void testAllFilesPresentInTryFinally() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -3261,7 +3693,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class CallSite {
         @Test
         public void testAllFilesPresentInCallSite() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/callSite"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/callSite"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -3307,7 +3739,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class Chained {
         @Test
         public void testAllFilesPresentInChained() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/chained"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/chained"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -3365,7 +3797,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class DeclSite {
         @Test
         public void testAllFilesPresentInDeclSite() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/declSite"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/declSite"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -3447,7 +3879,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class ExceptionTable {
         @Test
         public void testAllFilesPresentInExceptionTable() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/exceptionTable"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/exceptionTable"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -3577,7 +4009,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public class Variables {
         @Test
         public void testAllFilesPresentInVariables() {
-          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/variables"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/nonLocalReturns/tryFinally/variables"), Pattern.compile("^(.+)\\.kt$"), null, true);
         }
 
         @Test
@@ -3595,7 +4027,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Optimizations {
     @Test
     public void testAllFilesPresentInOptimizations() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/optimizations"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/optimizations"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -3629,7 +4061,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
 
     @Test
     public void testAllFilesPresentInPrivate() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/private"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/private"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -3657,9 +4089,39 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("nestedInPrivateClass.kt")
+    public void testNestedInPrivateClass() {
+      runTest("compiler/testData/codegen/boxInline/private/nestedInPrivateClass.kt");
+    }
+
+    @Test
+    @TestMetadata("nestedInPrivateClass2.kt")
+    public void testNestedInPrivateClass2() {
+      runTest("compiler/testData/codegen/boxInline/private/nestedInPrivateClass2.kt");
+    }
+
+    @Test
+    @TestMetadata("privateClass.kt")
+    public void testPrivateClass() {
+      runTest("compiler/testData/codegen/boxInline/private/privateClass.kt");
+    }
+
+    @Test
+    @TestMetadata("privateClassExtensionLambda.kt")
+    public void testPrivateClassExtensionLambda() {
+      runTest("compiler/testData/codegen/boxInline/private/privateClassExtensionLambda.kt");
+    }
+
+    @Test
     @TestMetadata("privateFakeOverride.kt")
     public void testPrivateFakeOverride() {
       runTest("compiler/testData/codegen/boxInline/private/privateFakeOverride.kt");
+    }
+
+    @Test
+    @TestMetadata("privateInInlineInMultiFileFacade.kt")
+    public void testPrivateInInlineInMultiFileFacade() {
+      runTest("compiler/testData/codegen/boxInline/private/privateInInlineInMultiFileFacade.kt");
     }
 
     @Test
@@ -3675,7 +4137,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Property {
     @Test
     public void testAllFilesPresentInProperty() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/property"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/property"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -3715,6 +4177,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("crossinlineFunctional.kt")
+    public void testCrossinlineFunctional() {
+      runTest("compiler/testData/codegen/boxInline/property/crossinlineFunctional.kt");
+    }
+
+    @Test
     @TestMetadata("fromObject.kt")
     public void testFromObject() {
       runTest("compiler/testData/codegen/boxInline/property/fromObject.kt");
@@ -3724,6 +4192,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("kt22649.kt")
     public void testKt22649() {
       runTest("compiler/testData/codegen/boxInline/property/kt22649.kt");
+    }
+
+    @Test
+    @TestMetadata("noinlineFunctional.kt")
+    public void testNoinlineFunctional() {
+      runTest("compiler/testData/codegen/boxInline/property/noinlineFunctional.kt");
     }
 
     @Test
@@ -3769,7 +4243,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Reified {
     @Test
     public void testAllFilesPresentInReified() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/reified"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/reified"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -3800,6 +4274,36 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("dontSubstituteNonReified.kt")
     public void testDontSubstituteNonReified() {
       runTest("compiler/testData/codegen/boxInline/reified/dontSubstituteNonReified.kt");
+    }
+
+    @Test
+    @TestMetadata("kt11081.kt")
+    public void testKt11081() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt11081.kt");
+    }
+
+    @Test
+    @TestMetadata("kt11677.kt")
+    public void testKt11677() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt11677.kt");
+    }
+
+    @Test
+    @TestMetadata("kt15956.kt")
+    public void testKt15956() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt15956.kt");
+    }
+
+    @Test
+    @TestMetadata("kt15997.kt")
+    public void testKt15997() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt15997.kt");
+    }
+
+    @Test
+    @TestMetadata("kt15997_2.kt")
+    public void testKt15997_2() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt15997_2.kt");
     }
 
     @Test
@@ -3839,6 +4343,18 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("kt44770.kt")
+    public void testKt44770() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt44770.kt");
+    }
+
+    @Test
+    @TestMetadata("kt44770_2.kt")
+    public void testKt44770_2() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt44770_2.kt");
+    }
+
+    @Test
     @TestMetadata("kt46584.kt")
     public void testKt46584() {
       runTest("compiler/testData/codegen/boxInline/reified/kt46584.kt");
@@ -3848,6 +4364,30 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("kt46584_2.kt")
     public void testKt46584_2() {
       runTest("compiler/testData/codegen/boxInline/reified/kt46584_2.kt");
+    }
+
+    @Test
+    @TestMetadata("kt55398.kt")
+    public void testKt55398() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt55398.kt");
+    }
+
+    @Test
+    @TestMetadata("kt6988.kt")
+    public void testKt6988() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt6988.kt");
+    }
+
+    @Test
+    @TestMetadata("kt6988_2.kt")
+    public void testKt6988_2() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt6988_2.kt");
+    }
+
+    @Test
+    @TestMetadata("kt6990.kt")
+    public void testKt6990() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt6990.kt");
     }
 
     @Test
@@ -3869,6 +4409,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("kt9637.kt")
+    public void testKt9637() {
+      runTest("compiler/testData/codegen/boxInline/reified/kt9637.kt");
+    }
+
+    @Test
     @TestMetadata("kt9637_2.kt")
     public void testKt9637_2() {
       runTest("compiler/testData/codegen/boxInline/reified/kt9637_2.kt");
@@ -3887,6 +4433,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("packages.kt")
+    public void testPackages() {
+      runTest("compiler/testData/codegen/boxInline/reified/packages.kt");
+    }
+
+    @Test
     @TestMetadata("singletonLambda.kt")
     public void testSingletonLambda() {
       runTest("compiler/testData/codegen/boxInline/reified/singletonLambda.kt");
@@ -3898,7 +4450,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class CheckCast {
       @Test
       public void testAllFilesPresentInCheckCast() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/reified/checkCast"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/reified/checkCast"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -3954,6 +4506,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public void testSimpleSafe() {
         runTest("compiler/testData/codegen/boxInline/reified/checkCast/simpleSafe.kt");
       }
+
+      @Test
+      @TestMetadata("simple_1_3.kt")
+      public void testSimple_1_3() {
+        runTest("compiler/testData/codegen/boxInline/reified/checkCast/simple_1_3.kt");
+      }
     }
 
     @Nested
@@ -3962,7 +4520,55 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class DefaultLambda {
       @Test
       public void testAllFilesPresentInDefaultLambda() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/reified/defaultLambda"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/reified/defaultLambda"), Pattern.compile("^(.+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("chain.kt")
+      public void testChain() {
+        runTest("compiler/testData/codegen/boxInline/reified/defaultLambda/chain.kt");
+      }
+
+      @Test
+      @TestMetadata("nested.kt")
+      public void testNested() {
+        runTest("compiler/testData/codegen/boxInline/reified/defaultLambda/nested.kt");
+      }
+
+      @Test
+      @TestMetadata("nested2.kt")
+      public void testNested2() {
+        runTest("compiler/testData/codegen/boxInline/reified/defaultLambda/nested2.kt");
+      }
+
+      @Test
+      @TestMetadata("nested2Static.kt")
+      public void testNested2Static() {
+        runTest("compiler/testData/codegen/boxInline/reified/defaultLambda/nested2Static.kt");
+      }
+
+      @Test
+      @TestMetadata("nestedStatic.kt")
+      public void testNestedStatic() {
+        runTest("compiler/testData/codegen/boxInline/reified/defaultLambda/nestedStatic.kt");
+      }
+
+      @Test
+      @TestMetadata("simple.kt")
+      public void testSimple() {
+        runTest("compiler/testData/codegen/boxInline/reified/defaultLambda/simple.kt");
+      }
+
+      @Test
+      @TestMetadata("transitiveChain.kt")
+      public void testTransitiveChain() {
+        runTest("compiler/testData/codegen/boxInline/reified/defaultLambda/transitiveChain.kt");
+      }
+
+      @Test
+      @TestMetadata("transitiveChainStatic.kt")
+      public void testTransitiveChainStatic() {
+        runTest("compiler/testData/codegen/boxInline/reified/defaultLambda/transitiveChainStatic.kt");
       }
     }
 
@@ -3972,7 +4578,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class IsCheck {
       @Test
       public void testAllFilesPresentInIsCheck() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/reified/isCheck"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/reified/isCheck"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4001,7 +4607,73 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Signature {
     @Test
     public void testAllFilesPresentInSignature() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/signature"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/signature"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("byteIteratorWithForLoop.kt")
+    public void testByteIteratorWithForLoop() {
+      runTest("compiler/testData/codegen/boxInline/signature/byteIteratorWithForLoop.kt");
+    }
+
+    @Test
+    @TestMetadata("byteIteratorWithWhileLoop.kt")
+    public void testByteIteratorWithWhileLoop() {
+      runTest("compiler/testData/codegen/boxInline/signature/byteIteratorWithWhileLoop.kt");
+    }
+
+    @Test
+    @TestMetadata("inProjectionSubstitution.kt")
+    public void testInProjectionSubstitution() {
+      runTest("compiler/testData/codegen/boxInline/signature/inProjectionSubstitution.kt");
+    }
+
+    @Test
+    @TestMetadata("outProjectionSubstitution.kt")
+    public void testOutProjectionSubstitution() {
+      runTest("compiler/testData/codegen/boxInline/signature/outProjectionSubstitution.kt");
+    }
+
+    @Test
+    @TestMetadata("recursion.kt")
+    public void testRecursion() {
+      runTest("compiler/testData/codegen/boxInline/signature/recursion.kt");
+    }
+
+    @Test
+    @TestMetadata("sameFormalParameterName.kt")
+    public void testSameFormalParameterName() {
+      runTest("compiler/testData/codegen/boxInline/signature/sameFormalParameterName.kt");
+    }
+
+    @Test
+    @TestMetadata("sameReifiedFormalParameterName.kt")
+    public void testSameReifiedFormalParameterName() {
+      runTest("compiler/testData/codegen/boxInline/signature/sameReifiedFormalParameterName.kt");
+    }
+
+    @Test
+    @TestMetadata("starProjectionSubstitution.kt")
+    public void testStarProjectionSubstitution() {
+      runTest("compiler/testData/codegen/boxInline/signature/starProjectionSubstitution.kt");
+    }
+
+    @Test
+    @TestMetadata("typeParameterInLambda.kt")
+    public void testTypeParameterInLambda() {
+      runTest("compiler/testData/codegen/boxInline/signature/typeParameterInLambda.kt");
+    }
+
+    @Test
+    @TestMetadata("typeParametersSubstitution.kt")
+    public void testTypeParametersSubstitution() {
+      runTest("compiler/testData/codegen/boxInline/signature/typeParametersSubstitution.kt");
+    }
+
+    @Test
+    @TestMetadata("typeParametersSubstitution2.kt")
+    public void testTypeParametersSubstitution2() {
+      runTest("compiler/testData/codegen/boxInline/signature/typeParametersSubstitution2.kt");
     }
   }
 
@@ -4011,7 +4683,31 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class SignatureMangling {
     @Test
     public void testAllFilesPresentInSignatureMangling() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/signatureMangling"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/signatureMangling"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("flexibleType.kt")
+    public void testFlexibleType() {
+      runTest("compiler/testData/codegen/boxInline/signatureMangling/flexibleType.kt");
+    }
+
+    @Test
+    @TestMetadata("indices.kt")
+    public void testIndices() {
+      runTest("compiler/testData/codegen/boxInline/signatureMangling/indices.kt");
+    }
+
+    @Test
+    @TestMetadata("inheritFromJava.kt")
+    public void testInheritFromJava() {
+      runTest("compiler/testData/codegen/boxInline/signatureMangling/inheritFromJava.kt");
+    }
+
+    @Test
+    @TestMetadata("rawType.kt")
+    public void testRawType() {
+      runTest("compiler/testData/codegen/boxInline/signatureMangling/rawType.kt");
     }
   }
 
@@ -4021,7 +4717,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Simple {
     @Test
     public void testAllFilesPresentInSimple() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/simple"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/simple"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -4067,6 +4763,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("importedJavaStaticField.kt")
+    public void testImportedJavaStaticField() {
+      runTest("compiler/testData/codegen/boxInline/simple/importedJavaStaticField.kt");
+    }
+
+    @Test
     @TestMetadata("inlineCallInInlineLambda.kt")
     public void testInlineCallInInlineLambda() {
       runTest("compiler/testData/codegen/boxInline/simple/inlineCallInInlineLambda.kt");
@@ -4094,6 +4796,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("params.kt")
     public void testParams() {
       runTest("compiler/testData/codegen/boxInline/simple/params.kt");
+    }
+
+    @Test
+    @TestMetadata("propImportedFromObject.kt")
+    public void testPropImportedFromObject() {
+      runTest("compiler/testData/codegen/boxInline/simple/propImportedFromObject.kt");
     }
 
     @Test
@@ -4169,7 +4877,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Smap {
     @Test
     public void testAllFilesPresentInSmap() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -4257,6 +4965,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("multiFileFacade.kt")
+    public void testMultiFileFacade() {
+      runTest("compiler/testData/codegen/boxInline/smap/multiFileFacade.kt");
+    }
+
+    @Test
     @TestMetadata("oneFile.kt")
     public void testOneFile() {
       runTest("compiler/testData/codegen/boxInline/smap/oneFile.kt");
@@ -4287,9 +5001,21 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("trivialSmap.kt")
+    public void testTrivialSmap() {
+      runTest("compiler/testData/codegen/boxInline/smap/trivialSmap.kt");
+    }
+
+    @Test
     @TestMetadata("tryFinally1.kt")
     public void testTryFinally1() {
       runTest("compiler/testData/codegen/boxInline/smap/tryFinally1.kt");
+    }
+
+    @Test
+    @TestMetadata("tryFinally2.kt")
+    public void testTryFinally2() {
+      runTest("compiler/testData/codegen/boxInline/smap/tryFinally2.kt");
     }
 
     @Nested
@@ -4298,7 +5024,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Anonymous {
       @Test
       public void testAllFilesPresentInAnonymous() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/anonymous"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/anonymous"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4368,7 +5094,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class DefaultLambda {
       @Test
       public void testAllFilesPresentInDefaultLambda() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/defaultLambda"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/defaultLambda"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4432,7 +5158,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class InlineOnly {
       @Test
       public void testAllFilesPresentInInlineOnly() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/inlineOnly"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/inlineOnly"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4445,6 +5171,18 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       @TestMetadata("noSmapWithProperty.kt")
       public void testNoSmapWithProperty() {
         runTest("compiler/testData/codegen/boxInline/smap/inlineOnly/noSmapWithProperty.kt");
+      }
+
+      @Test
+      @TestMetadata("reified.kt")
+      public void testReified() {
+        runTest("compiler/testData/codegen/boxInline/smap/inlineOnly/reified.kt");
+      }
+
+      @Test
+      @TestMetadata("reifiedProperty.kt")
+      public void testReifiedProperty() {
+        runTest("compiler/testData/codegen/boxInline/smap/inlineOnly/reifiedProperty.kt");
       }
 
       @Test
@@ -4466,7 +5204,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Newsmap {
       @Test
       public void testAllFilesPresentInNewsmap() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/newsmap"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/newsmap"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4500,7 +5238,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Resolve {
       @Test
       public void testAllFilesPresentInResolve() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/resolve"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/resolve"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4523,7 +5261,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Special {
     @Test
     public void testAllFilesPresentInSpecial() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/special"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/special"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -4569,6 +5307,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("monitorEnterExit.kt")
+    public void testMonitorEnterExit() {
+      runTest("compiler/testData/codegen/boxInline/special/monitorEnterExit.kt");
+    }
+
+    @Test
     @TestMetadata("plusAssign.kt")
     public void testPlusAssign() {
       runTest("compiler/testData/codegen/boxInline/special/plusAssign.kt");
@@ -4593,7 +5337,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class StackOnReturn {
     @Test
     public void testAllFilesPresentInStackOnReturn() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/stackOnReturn"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/stackOnReturn"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -4699,7 +5443,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Suspend {
     @Test
     public void testAllFilesPresentInSuspend() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -4715,6 +5459,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("debugMetadataCrossinline.kt")
+    public void testDebugMetadataCrossinline() {
+      runTest("compiler/testData/codegen/boxInline/suspend/debugMetadataCrossinline.kt");
+    }
+
+    @Test
     @TestMetadata("delegatedProperties.kt")
     public void testDelegatedProperties() {
       runTest("compiler/testData/codegen/boxInline/suspend/delegatedProperties.kt");
@@ -4724,6 +5474,18 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("doubleRegenerationWithNonSuspendingLambda.kt")
     public void testDoubleRegenerationWithNonSuspendingLambda() {
       runTest("compiler/testData/codegen/boxInline/suspend/doubleRegenerationWithNonSuspendingLambda.kt");
+    }
+
+    @Test
+    @TestMetadata("enclodingMethod.kt")
+    public void testEnclodingMethod() {
+      runTest("compiler/testData/codegen/boxInline/suspend/enclodingMethod.kt");
+    }
+
+    @Test
+    @TestMetadata("fileNameInMetadata.kt")
+    public void testFileNameInMetadata() {
+      runTest("compiler/testData/codegen/boxInline/suspend/fileNameInMetadata.kt");
     }
 
     @Test
@@ -4748,6 +5510,18 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("inlinePassthroughWithSuspendConversion.kt")
     public void testInlinePassthroughWithSuspendConversion() {
       runTest("compiler/testData/codegen/boxInline/suspend/inlinePassthroughWithSuspendConversion.kt");
+    }
+
+    @Test
+    @TestMetadata("inlineSuspendContinuation.kt")
+    public void testInlineSuspendContinuation() {
+      runTest("compiler/testData/codegen/boxInline/suspend/inlineSuspendContinuation.kt");
+    }
+
+    @Test
+    @TestMetadata("inlineSuspendInMultifileClass.kt")
+    public void testInlineSuspendInMultifileClass() {
+      runTest("compiler/testData/codegen/boxInline/suspend/inlineSuspendInMultifileClass.kt");
     }
 
     @Test
@@ -4787,9 +5561,27 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     }
 
     @Test
+    @TestMetadata("jvmName.kt")
+    public void testJvmName() {
+      runTest("compiler/testData/codegen/boxInline/suspend/jvmName.kt");
+    }
+
+    @Test
     @TestMetadata("kt26658.kt")
     public void testKt26658() {
       runTest("compiler/testData/codegen/boxInline/suspend/kt26658.kt");
+    }
+
+    @Test
+    @TestMetadata("kt52198.kt")
+    public void testKt52198() {
+      runTest("compiler/testData/codegen/boxInline/suspend/kt52198.kt");
+    }
+
+    @Test
+    @TestMetadata("linenumberZero.kt")
+    public void testLinenumberZero() {
+      runTest("compiler/testData/codegen/boxInline/suspend/linenumberZero.kt");
     }
 
     @Test
@@ -4808,6 +5600,12 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("multipleSuspensionPoints.kt")
     public void testMultipleSuspensionPoints() {
       runTest("compiler/testData/codegen/boxInline/suspend/multipleSuspensionPoints.kt");
+    }
+
+    @Test
+    @TestMetadata("nestedMethodWith2XParameter.kt")
+    public void testNestedMethodWith2XParameter() {
+      runTest("compiler/testData/codegen/boxInline/suspend/nestedMethodWith2XParameter.kt");
     }
 
     @Test
@@ -4858,7 +5656,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class CallableReference {
       @Test
       public void testAllFilesPresentInCallableReference() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/callableReference"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/callableReference"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4898,7 +5696,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class DefaultParameter {
       @Test
       public void testAllFilesPresentInDefaultParameter() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/defaultParameter"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/defaultParameter"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4944,7 +5742,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class InlineClass {
       @Test
       public void testAllFilesPresentInInlineClass() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/inlineClass"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/inlineClass"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4978,7 +5776,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class InlineUsedAsNoinline {
       @Test
       public void testAllFilesPresentInInlineUsedAsNoinline() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/inlineUsedAsNoinline"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/inlineUsedAsNoinline"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -4992,6 +5790,18 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
       public void testSimpleNamed() {
         runTest("compiler/testData/codegen/boxInline/suspend/inlineUsedAsNoinline/simpleNamed.kt");
       }
+
+      @Test
+      @TestMetadata("withCapturedInlineLambda.kt")
+      public void testWithCapturedInlineLambda() {
+        runTest("compiler/testData/codegen/boxInline/suspend/inlineUsedAsNoinline/withCapturedInlineLambda.kt");
+      }
+
+      @Test
+      @TestMetadata("withCapturedInlineLambda2.kt")
+      public void testWithCapturedInlineLambda2() {
+        runTest("compiler/testData/codegen/boxInline/suspend/inlineUsedAsNoinline/withCapturedInlineLambda2.kt");
+      }
     }
 
     @Nested
@@ -5000,7 +5810,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class Receiver {
       @Test
       public void testAllFilesPresentInReceiver() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/receiver"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/receiver"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -5058,7 +5868,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class StateMachine {
       @Test
       public void testAllFilesPresentInStateMachine() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/stateMachine"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/suspend/stateMachine"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -5207,7 +6017,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class SyntheticAccessors {
     @Test
     public void testAllFilesPresentInSyntheticAccessors() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/syntheticAccessors"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/syntheticAccessors"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -5234,7 +6044,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     public class WithinInlineLambda {
       @Test
       public void testAllFilesPresentInWithinInlineLambda() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/syntheticAccessors/withinInlineLambda"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/syntheticAccessors/withinInlineLambda"), Pattern.compile("^(.+)\\.kt$"), null, true);
       }
 
       @Test
@@ -5293,7 +6103,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Trait {
     @Test
     public void testAllFilesPresentInTrait() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/trait"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/trait"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -5309,7 +6119,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class TryCatchFinally {
     @Test
     public void testAllFilesPresentInTryCatchFinally() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/tryCatchFinally"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/tryCatchFinally"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -5343,7 +6153,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class TypeParameters {
     @Test
     public void testAllFilesPresentInTypeParameters() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/typeParameters"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/typeParameters"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -5389,7 +6199,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Varargs {
     @Test
     public void testAllFilesPresentInVarargs() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/varargs"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/varargs"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -5417,7 +6227,7 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
   public class Wasm_new_exception_handling {
     @Test
     public void testAllFilesPresentInWasm_new_exception_handling() {
-      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/wasm-new-exception-handling"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.WASM, true);
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/wasm-new-exception-handling"), Pattern.compile("^(.+)\\.kt$"), null, true);
     }
 
     @Test
@@ -5442,6 +6252,40 @@ public class FirWasmJsCodegenBoxInlineTestGenerated extends AbstractFirWasmJsCod
     @TestMetadata("tryCatchFinally.kt")
     public void testTryCatchFinally() {
       runTest("compiler/testData/codegen/boxInline/wasm-new-exception-handling/tryCatchFinally.kt");
+    }
+  }
+
+  @Nested
+  @TestMetadata("compiler/testData/codegen/boxInline/wasm-old-exception-handling")
+  @TestDataPath("$PROJECT_ROOT")
+  public class Wasm_old_exception_handling {
+    @Test
+    public void testAllFilesPresentInWasm_old_exception_handling() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/wasm-old-exception-handling"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("kt5863.kt")
+    public void testKt5863() {
+      runTest("compiler/testData/codegen/boxInline/wasm-old-exception-handling/kt5863.kt");
+    }
+
+    @Test
+    @TestMetadata("tryCatch.kt")
+    public void testTryCatch() {
+      runTest("compiler/testData/codegen/boxInline/wasm-old-exception-handling/tryCatch.kt");
+    }
+
+    @Test
+    @TestMetadata("tryCatch2.kt")
+    public void testTryCatch2() {
+      runTest("compiler/testData/codegen/boxInline/wasm-old-exception-handling/tryCatch2.kt");
+    }
+
+    @Test
+    @TestMetadata("tryCatchFinally.kt")
+    public void testTryCatchFinally() {
+      runTest("compiler/testData/codegen/boxInline/wasm-old-exception-handling/tryCatchFinally.kt");
     }
   }
 }

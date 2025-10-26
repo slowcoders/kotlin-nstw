@@ -166,8 +166,9 @@ class CacheBuilder(
                             is DependenciesTracker.DependencyKind.WholeModule ->
                                 reversedWholeLibraryDependencies.getOrPut(dependentLibrary) { mutableListOf() }.add(libraryFile)
                             is DependenciesTracker.DependencyKind.CertainFiles ->
-                                kind.files.forEach {
-                                    reversedPerFileDependencies.getOrPut(LibraryFile(dependentLibrary, it)) { mutableListOf() }.add(libraryFile)
+                                kind.files.forEach { (name, weak) ->
+                                    if (!weak)
+                                        reversedPerFileDependencies.getOrPut(LibraryFile(dependentLibrary, name)) { mutableListOf() }.add(libraryFile)
                                 }
                         }
                     }
@@ -435,12 +436,12 @@ class CacheBuilder(
             val libraryPath = library.libraryFile.absolutePath
             val libraries = dependencies.filter { !it.isDefault }.map { it.libraryFile.absolutePath }
             val cachedLibraries = dependencies.zip(dependencyCaches).associate { it.first.libraryFile.absolutePath to it.second }
-            configuration.report(CompilerMessageSeverity.LOGGING, "    dependencies:\n        " +
-                    libraries.joinToString("\n        "))
-            configuration.report(CompilerMessageSeverity.LOGGING, "    caches used:\n        " +
-                    cachedLibraries.entries.joinToString("\n        ") { "${it.key}: ${it.value}" })
-            configuration.report(CompilerMessageSeverity.LOGGING, "    cache dir: " +
-                    libraryCacheDirectory.absolutePath)
+            configuration.report(CompilerMessageSeverity.LOGGING,
+                    "-p static_cache -Xadd-cache=${library.libraryName} \\\n" +
+                            libraries.joinToString("\n") { "-library $it \\" } + "\n" +
+                            cachedLibraries.entries.joinToString("\n") { "-Xcached-library=${it.key},${it.value} \\" } + "\n" +
+                            "-Xcache-directory=${libraryCacheDirectory.absolutePath}\n"
+            )
 
             setupCommonOptionsForCaches(konanConfig)
             put(KonanConfigKeys.PRODUCE, CompilerOutputKind.STATIC_CACHE)

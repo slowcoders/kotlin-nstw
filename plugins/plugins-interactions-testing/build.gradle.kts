@@ -62,27 +62,7 @@ projectTests {
         addClasspathProperty(afterPluginClasspath, "plugin.classpath.after")
     }
 
+    testGenerator("org.jetbrains.kotlin.compiler.plugins.TestGeneratorKt")
+
     withJvmStdlibAndReflect()
-}
-
-fun Test.addClasspathProperty(configuration: Configuration, property: String) {
-    val classpathProvider = objects.newInstance<SystemPropertyClasspathProvider>()
-    classpathProvider.classpath.from(configuration)
-    classpathProvider.property.set(property)
-    jvmArgumentProviders.add(classpathProvider)
-}
-
-abstract class SystemPropertyClasspathProvider : CommandLineArgumentProvider {
-    @get:InputFiles
-    @get:Classpath
-    abstract val classpath: ConfigurableFileCollection
-
-    @get:Input
-    abstract val property: Property<String>
-
-    override fun asArguments(): Iterable<String> {
-        return listOf(
-            "-D${property.get()}=${classpath.asPath}"
-        )
-    }
 }

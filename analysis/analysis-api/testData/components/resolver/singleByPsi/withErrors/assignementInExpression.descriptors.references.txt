@@ -1,9 +1,18 @@
 KtNameReferenceExpression(76,77): 'x'
   KtSimpleNameReference:
-    (in <local>: main) var x: ERROR(Not found recorded type for listOf(1,2,"three"))
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      (in <local>: main) var x: ERROR(Not found recorded type for listOf(1,2,"three"))
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

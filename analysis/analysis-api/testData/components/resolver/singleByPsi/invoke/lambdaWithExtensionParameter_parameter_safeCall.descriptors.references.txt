@@ -1,6 +1,12 @@
 KtNameReferenceExpression(81,87): 'action'
   KtSimpleNameReference:
-    action: test.Foo.() -> kotlin.Unit
-  
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      action: test.Foo.() -> kotlin.Unit
+
   SyntheticPropertyAccessorReference:
-    Nothing (Unresolved reference)
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      Nothing (Unresolved reference)

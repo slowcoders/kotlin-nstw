@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.backend.common.extensions
 
-import org.jetbrains.kotlin.backend.common.ir.BuiltinSymbolsBase
+import org.jetbrains.kotlin.backend.common.ir.Symbols
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -59,7 +59,7 @@ open class IrPluginContextImpl(
     diagnosticReporter: DiagnosticReporter = DiagnosticReporterFactory.createReporter(messageCollector),
 ) : IrPluginContext {
     @Deprecated("This API is deprecated. Use `irBuiltIns` instead.", level = DeprecationLevel.ERROR)
-    override val symbols: BuiltinSymbolsBase
+    override val symbols: Symbols
         get() = error("`symbols` are deprecated")
 
     override val afterK2: Boolean = false
@@ -214,6 +214,8 @@ open class IrPluginContextImpl(
     }
 
     private object DummyIrGeneratedDeclarationsRegistrar : IrGeneratedDeclarationsRegistrar() {
+        override fun getMetadataVisibleAnnotationsForElement(declaration: IrDeclaration): MutableList<IrConstructorCall> = mutableListOf()
+
         override fun addMetadataVisibleAnnotationsToElement(declaration: IrDeclaration, annotations: List<IrConstructorCall>) {
             declaration.annotations += annotations
         }

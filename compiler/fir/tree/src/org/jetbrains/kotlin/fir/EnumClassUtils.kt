@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.FirRegularClassBuilder
 import org.jetbrains.kotlin.fir.declarations.builder.buildProperty
-import org.jetbrains.kotlin.fir.declarations.builder.buildSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.builder.buildNamedFunction
 import org.jetbrains.kotlin.fir.declarations.builder.buildValueParameter
 import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyGetter
@@ -66,9 +66,9 @@ fun generateValuesFunction(
     classFqName: FqName,
     makeExpect: Boolean = false,
     origin: FirDeclarationOrigin = FirDeclarationOrigin.Source,
-): FirSimpleFunction {
+): FirNamedFunction {
     val sourceElement = classSource?.fakeElement(KtFakeSourceElementKind.EnumGeneratedDeclaration)
-    return buildSimpleFunction {
+    return buildNamedFunction {
         source = sourceElement
         this.origin = origin
         this.moduleData = moduleData
@@ -133,9 +133,9 @@ fun generateValueOfFunction(
     classFqName: FqName,
     makeExpect: Boolean = false,
     origin: FirDeclarationOrigin = FirDeclarationOrigin.Source,
-): FirSimpleFunction {
+): FirNamedFunction {
     val sourceElement = classSource?.fakeElement(KtFakeSourceElementKind.EnumGeneratedDeclaration)
-    return buildSimpleFunction {
+    return buildNamedFunction {
         source = sourceElement
         this.origin = origin
         this.moduleData = moduleData
@@ -157,7 +157,7 @@ fun generateValueOfFunction(
         symbol = FirNamedFunctionSymbol(CallableId(packageFqName, classFqName, ENUM_VALUE_OF))
         valueParameters += buildValueParameter vp@{
             source = sourceElement
-            containingDeclarationSymbol = this@buildSimpleFunction.symbol
+            containingDeclarationSymbol = this@buildNamedFunction.symbol
             this.origin = origin
             this.moduleData = moduleData
             this.returnTypeRef = buildResolvedTypeRef {

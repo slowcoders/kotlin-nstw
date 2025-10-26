@@ -5,6 +5,54 @@ import KotlinRuntimeSupport
 import dep
 import flattened
 
+public enum EnumWithFactory: KotlinRuntimeSupport._KotlinBridgeable, Swift.CaseIterable, Swift.LosslessStringConvertible, Swift.RawRepresentable {
+    case ONE
+    public var description: Swift.String {
+        get {
+            switch self {
+            case .ONE: "ONE"
+            default: fatalError()
+            }
+        }
+    }
+    public var rawValue: Swift.Int32 {
+        get {
+            switch self {
+            case .ONE: 0
+            default: fatalError()
+            }
+        }
+    }
+    public init?(
+        _ description: Swift.String
+    ) {
+        switch description {
+        case "ONE": self = .ONE
+        default: return nil
+        }
+    }
+    public init?(
+        rawValue: Swift.Int32
+    ) {
+        guard 0..<1 ~= rawValue else { return nil }
+        self = EnumWithFactory.allCases[Int(rawValue)]
+    }
+    public init(
+        __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer!,
+        options: KotlinRuntime.KotlinBaseConstructionOptions
+    ) {
+        switch __externalRCRefUnsafe {
+        case EnumWithFactory_ONE(): self = .ONE
+        default: fatalError()
+        }
+    }
+    public func __externalRCRef() -> Swift.UnsafeMutableRawPointer! {
+        return switch self {
+        case .ONE: EnumWithFactory_ONE()
+        default: fatalError()
+        }
+    }
+}
 public protocol InterfaceWithFactory: KotlinRuntime.KotlinBase {
 }
 @objc(_InterfaceWithFactory)
@@ -29,29 +77,6 @@ public final class ClassWithFactoryWithoutParameters: KotlinRuntime.KotlinBase {
         options: KotlinRuntime.KotlinBaseConstructionOptions
     ) {
         super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
-    }
-}
-public final class EnumWithFactory: KotlinRuntime.KotlinBase, Swift.CaseIterable {
-    public static var ONE: main.EnumWithFactory {
-        get {
-            return main.EnumWithFactory.__createClassWrapper(externalRCRef: EnumWithFactory_ONE_get())
-        }
-    }
-    public static var allCases: [main.EnumWithFactory] {
-        get {
-            return EnumWithFactory_entries_get() as! Swift.Array<main.EnumWithFactory>
-        }
-    }
-    package override init(
-        __externalRCRefUnsafe: Swift.UnsafeMutableRawPointer?,
-        options: KotlinRuntime.KotlinBaseConstructionOptions
-    ) {
-        super.init(__externalRCRefUnsafe: __externalRCRefUnsafe, options: options)
-    }
-    public static func valueOf(
-        value: Swift.String
-    ) -> main.EnumWithFactory {
-        return main.EnumWithFactory.__createClassWrapper(externalRCRef: EnumWithFactory_valueOf__TypesOfArguments__Swift_String__(value))
     }
 }
 public final class ObjectWithFactory: KotlinRuntime.KotlinBase {
@@ -100,7 +125,7 @@ public func classWithFactoryWithoutParameters() -> main.ClassWithFactoryWithoutP
 public func enumWithFactory(
     x: Swift.Int32
 ) -> main.EnumWithFactory {
-    return main.EnumWithFactory.__createClassWrapper(externalRCRef: __root___EnumWithFactory__TypesOfArguments__Swift_Int32__(x))
+    return main.EnumWithFactory(__externalRCRefUnsafe: __root___EnumWithFactory__TypesOfArguments__Swift_Int32__(x), options: .asBestFittingWrapper)
 }
 public func interfaceWithFactory() -> any main.InterfaceWithFactory {
     return KotlinRuntime.KotlinBase.__createProtocolWrapper(externalRCRef: __root___InterfaceWithFactory()) as! any main.InterfaceWithFactory
@@ -119,6 +144,8 @@ public func utcOffset(
     return main.UtcOffset.__createClassWrapper(externalRCRef: __root___UtcOffset__TypesOfArguments__Swift_Int32__(x))
 }
 extension main.InterfaceWithFactory where Self : KotlinRuntimeSupport._KotlinBridgeable {
+}
+extension main.InterfaceWithFactory {
 }
 extension KotlinRuntimeSupport._KotlinExistential: main.InterfaceWithFactory where Wrapped : main._InterfaceWithFactory {
 }

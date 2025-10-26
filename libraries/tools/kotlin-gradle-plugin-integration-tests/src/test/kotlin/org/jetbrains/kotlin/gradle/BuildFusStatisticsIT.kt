@@ -15,7 +15,12 @@ class BuildFusStatisticsIT : KGPDaemonsBaseTest() {
     @DisplayName("works for project with buildSrc and kotlinDsl plugin")
     @GradleTest
     @GradleTestVersions(
-        additionalVersions = [TestVersions.Gradle.G_8_0, TestVersions.Gradle.G_8_2, TestVersions.Gradle.G_8_3],
+        additionalVersions = [
+            TestVersions.Gradle.G_8_0,
+            TestVersions.Gradle.G_8_2,
+            TestVersions.Gradle.G_8_3,
+            TestVersions.Gradle.G_8_11
+        ],
     )
     fun testCompatibilityBuildSrcWithKotlinDsl(gradleVersion: GradleVersion) {
         project(
@@ -80,7 +85,7 @@ class BuildFusStatisticsIT : KGPDaemonsBaseTest() {
 
                     }
                     // Since Gradle 8.11 Kotlin version 2.0.20 is used which contains only one service
-                    else -> {
+                    gradleVersion < GradleVersion.version(TestVersions.Gradle.G_9_0) -> {
                         assertOutputContainsExactlyTimes(
                             "class org.jetbrains.kotlin.gradle.plugin.statistics.KotlinBuildStatsBeanService_v2 is already instantiated in another classpath",
                             1
@@ -96,9 +101,38 @@ class BuildFusStatisticsIT : KGPDaemonsBaseTest() {
                             1
                         )
 
-                        //from main project
+                        //from the main project
+                        assertOutputContainsExactlyTimes(
+                            "[KOTLIN] Initialize build service FlowActionBuildFusService${'$'}Inject",
+                            1
+                        )
+                    }
+                    // Since Gradle 9.0 TBA
+                    else -> {
+                        assertOutputContainsExactlyTimes(
+                            "class org.jetbrains.kotlin.gradle.plugin.statistics.KotlinBuildStatsBeanService_v2 is already instantiated in another classpath",
+                            1
+                        )
+                        assertOutputContainsExactlyTimes(
+                            "class org.jetbrains.kotlin.gradle.plugin.statistics.KotlinBuildStatsBeanService is already instantiated in another classpath",
+                            1
+                        )
+
+                        // Old service is not registered neither by main or buildSrc builds
+                        assertOutputContainsExactlyTimes(
+                            "[KOTLIN] Initialize BuildFusService${'$'}Inject",
+                            0
+                        )
+
+                        //from buildSrc project
                         assertOutputContainsExactlyTimes(
                             "[KOTLIN] Initialize FlowActionBuildFusService${'$'}Inject",
+                            1
+                        )
+
+                        //from  main project
+                        assertOutputContainsExactlyTimes(
+                            "[KOTLIN] Initialize build service FlowActionBuildFusService${'$'}Inject",
                             1
                         )
                     }

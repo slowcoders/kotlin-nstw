@@ -15,13 +15,12 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.copyNativeHomeProperty
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.dumpIr
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.dumpMetadata
 import org.jetbrains.kotlin.konan.test.converters.NativePreSerializationLoweringFacade
-import org.jetbrains.kotlin.konan.test.klib.ManifestWritingTest.Companion.readManifestAndSanitize
 import org.jetbrains.kotlin.platform.konan.NativePlatforms
 import org.jetbrains.kotlin.test.FirParser
 import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.backend.BlackBoxCodegenSuppressor
 import org.jetbrains.kotlin.test.backend.handlers.KlibArtifactHandler
-import org.jetbrains.kotlin.test.backend.handlers.NoFir2IrCompilationErrorsHandler
+import org.jetbrains.kotlin.test.backend.handlers.NoIrCompilationErrorsHandler
 import org.jetbrains.kotlin.test.backend.handlers.NoFirCompilationErrorsHandler
 import org.jetbrains.kotlin.test.backend.ir.IrDiagnosticsHandler
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
@@ -48,6 +47,7 @@ import org.jetbrains.kotlin.utils.bind
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Tag
 import java.io.File
+import java.nio.file.Paths
 
 /**
  * This test works in the following way:
@@ -68,7 +68,10 @@ open class AbstractKlibCrossCompilationIdentityWithPreSerializationLoweringTest 
         super.configure(builder)
         with(builder) {
             defaultDirectives {
-                LANGUAGE with "+${LanguageFeature.IrInlinerBeforeKlibSerialization.name}"
+                LANGUAGE with listOf(
+                    "+${LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization.name}",
+                    "+${LanguageFeature.IrCrossModuleInlinerBeforeKlibSerialization.name}"
+                )
             }
         }
     }
@@ -100,7 +103,10 @@ open class AbstractFirKlibCrossCompilationIdentityTestBase(val irFileSuffix: Str
 
             DiagnosticsDirectives.DIAGNOSTICS with "-warnings"
 
-            LANGUAGE with "-${LanguageFeature.IrInlinerBeforeKlibSerialization.name}"
+            LANGUAGE with listOf(
+                "-${LanguageFeature.IrIntraModuleInlinerBeforeKlibSerialization.name}",
+                "-${LanguageFeature.IrCrossModuleInlinerBeforeKlibSerialization.name}"
+            )
         }
 
         useAfterAnalysisCheckers(::BlackBoxCodegenSuppressor)
@@ -120,14 +126,14 @@ open class AbstractFirKlibCrossCompilationIdentityTestBase(val irFileSuffix: Str
         irHandlersStep {
             useHandlers(
                 ::IrDiagnosticsHandler,
-                ::NoFir2IrCompilationErrorsHandler,
+                ::NoIrCompilationErrorsHandler,
             )
         }
         facadeStep(::NativePreSerializationLoweringFacade)
         loweredIrHandlersStep{
             useHandlers(
                 ::IrDiagnosticsHandler,
-                ::NoFir2IrCompilationErrorsHandler,
+                ::NoIrCompilationErrorsHandler,
             )
         }
         facadeStep(::NativeKlibSerializerFacade)
@@ -164,7 +170,7 @@ private class NativeKlibCrossCompilationIdentityHandler(testServices: TestServic
         val klibFile = info.outputFile
 
         metadataDumper[module] += klibFile.dumpMetadata(kotlinNativeClassLoader, printSignatures = false, signatureVersion = null)
-        irDumper[module] += klibFile.dumpIr(kotlinNativeClassLoader)
+        irDumper[module] += klibFile.dumpIrAndSanitizePathsInFileEntries(kotlinNativeClassLoader)
         manifestDumper[module] += readManifestAndSanitize(klibFile, singleTargetInManifestToBeReplacedByTheAlias = null)
     }
 
@@ -207,3 +213,28 @@ private class NativeKlibCrossCompilationIdentityHandler(testServices: TestServic
     }
 }
 
+private fun File.dumpIrAndSanitizePathsInFileEntries(
+    kotlinNativeClassLoader: ClassLoader,
+): String {
+    val rawIrDump = dumpIr(kotlinNativeClassLoader)
+
+    // There can be absolute paths in IR file entries in `IrInlinedFunctionBlock`s coming from dependency libraries (stdlib, kotlin-test).
+    // Let's truncate them to the last 5 path segments to make tests more stable.
+    val sanitizedIrDump = rawIrDump.lineSequence().map { line ->
+        val prefixStartIndex = line.indexOf(INLINED_FUNCTION_BLOCK_FILE_ENTRY_PREFIX)
+        if (prefixStartIndex < 0) return@map line
+
+        val prefixEndIndex = prefixStartIndex + INLINED_FUNCTION_BLOCK_FILE_ENTRY_PREFIX.length
+
+        val prefix = line.substring(0, prefixEndIndex)
+        val maybeAbsolutePath = line.substring(prefixEndIndex)
+
+        val relativePath = Paths.get(maybeAbsolutePath).toList().takeLast(5).joinToString(File.separator)
+
+        prefix + relativePath
+    }.joinToString("\n")
+
+    return sanitizedIrDump
+}
+
+private const val INLINED_FUNCTION_BLOCK_FILE_ENTRY_PREFIX = "inlinedFunctionFileEntry: FILE_ENTRY path:"

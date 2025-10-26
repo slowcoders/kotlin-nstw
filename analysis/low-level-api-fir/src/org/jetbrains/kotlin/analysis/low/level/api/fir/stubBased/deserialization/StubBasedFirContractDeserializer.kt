@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2025 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.fir.contracts.FirContractDescription
 import org.jetbrains.kotlin.fir.contracts.builder.buildEffectDeclaration
 import org.jetbrains.kotlin.fir.contracts.builder.buildResolvedContractDescription
 import org.jetbrains.kotlin.fir.contracts.description.*
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.diagnostics.ConeDiagnostic
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -19,11 +19,11 @@ import org.jetbrains.kotlin.psi.stubs.impl.KotlinFunctionStubImpl
 import org.jetbrains.kotlin.psi.stubs.impl.KotlinTypeBean
 
 internal class StubBasedFirContractDeserializer(
-    private val simpleFunction: FirSimpleFunction,
+    private val simpleFunction: FirNamedFunction,
     private val typeDeserializer: StubBasedFirTypeDeserializer,
 ) {
     fun loadContract(function: KtNamedFunction): FirContractDescription? {
-        val functionStub = function.stub as? KotlinFunctionStubImpl ?: loadStubByElement(function) ?: return null
+        val functionStub: KotlinFunctionStubImpl = function.compiledStub
         val effects = functionStub.contract?.map {
             it.accept(ContractDescriptionConvertingVisitor(), null)
         }

@@ -8,70 +8,20 @@ package org.jetbrains.kotlin.analysis.decompiler.psi
 import com.intellij.ide.highlighter.JavaClassFileType
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.annotations.TestOnly
+import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.KotlinMetadataStubBuilder
-import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.load.kotlin.JvmPackagePartSource
-import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
 import org.jetbrains.kotlin.metadata.ProtoBuf
 import org.jetbrains.kotlin.metadata.builtins.BuiltInsBinaryVersion
 import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.psi.stubs.KotlinStubVersions
-import org.jetbrains.kotlin.resolve.jvm.JvmClassName
-import org.jetbrains.kotlin.serialization.deserialization.FlexibleTypeDeserializer
 import org.jetbrains.kotlin.serialization.deserialization.METADATA_FILE_EXTENSION
 import org.jetbrains.kotlin.serialization.deserialization.builtins.BuiltInSerializerProtocol
 import org.jetbrains.kotlin.serialization.deserialization.getClassId
 import java.io.ByteArrayInputStream
 
-class KotlinBuiltInDecompiler : KotlinMetadataDecompiler<BuiltInsBinaryVersion>(
-    fileType = KotlinBuiltInFileType,
-    serializerProtocol = { BuiltInSerializerProtocol },
-    flexibleTypeDeserializer = FlexibleTypeDeserializer.ThrowException,
-    expectedBinaryVersion = { BuiltInsBinaryVersion.INSTANCE },
-    invalidBinaryVersion = { BuiltInsBinaryVersion.INVALID_VERSION },
-    stubVersion = stubVersionForStubBuilderAndDecompiler,
-) {
-    override val metadataStubBuilder: KotlinMetadataStubBuilder =
-        KotlinBuiltInMetadataStubBuilder(::readFileSafely)
-
-    override fun readFile(bytes: ByteArray, file: VirtualFile): KotlinMetadataStubBuilder.FileWithMetadata? {
-        return KotlinBuiltInDecompilationInterceptor.readFile(bytes, file) ?: BuiltInDefinitionFile.read(bytes, file)
-    }
+class KotlinBuiltInDecompiler : KotlinMetadataDecompiler() {
+    override fun getStubBuilder(): KotlinMetadataStubBuilder = KotlinBuiltInMetadataStubBuilder
+    override fun createFile(viewProvider: KotlinDecompiledFileViewProvider): KtDecompiledFile = KotlinBuiltinsDecompiledFile(viewProvider)
 }
-
-private class KotlinBuiltInMetadataStubBuilder(
-    readFile: (VirtualFile, ByteArray) -> FileWithMetadata?,
-) : KotlinMetadataStubBuilder(
-    version = stubVersionForStubBuilderAndDecompiler,
-    fileType = KotlinBuiltInFileType,
-    serializerProtocol = { BuiltInSerializerProtocol },
-    readFile = readFile,
-    expectedBinaryVersion = { BuiltInsBinaryVersion.INSTANCE },
-) {
-    override fun createCallableSource(file: FileWithMetadata.Compatible, filename: String): SourceElement? {
-        val fileNameForFacade = when (val withoutExtension = filename.removeSuffix(BuiltInSerializerProtocol.DOT_DEFAULT_EXTENSION)) {
-            // this is the filename used in stdlib, others should match
-            "kotlin" -> "library"
-            else -> withoutExtension
-        }
-
-        val facadeFqName = PackagePartClassUtils.getPackagePartFqName(file.packageFqName, fileNameForFacade)
-        return JvmPackagePartSource(
-            JvmClassName.byClassId(ClassId.topLevel(facadeFqName)),
-            facadeClassName = null,
-            jvmClassName = null,
-            file.proto.`package`,
-            file.nameResolver
-        )
-    }
-}
-
-/**
- * This version is used for .kotlin_builtins and is not used for .kotlin_metadata files:
- * K1 IDE and K2 IDE produce different decompiled files and stubs for .kotlin_builtins, but not for .kotlin_metadata
- */
-private val stubVersionForStubBuilderAndDecompiler: Int
-    get() = KotlinStubVersions.BUILTIN_STUB_VERSION + KotlinBuiltInStubVersionOffsetProvider.getVersionOffset()
 
 class BuiltInDefinitionFile(
     proto: ProtoBuf.PackageFragment,

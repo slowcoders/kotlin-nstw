@@ -10,7 +10,6 @@ import org.gradle.api.logging.configuration.WarningMode
 import org.gradle.internal.logging.LoggingConfigurationBuildOptions.StacktraceOption
 import org.gradle.util.GradleVersion
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.dsl.NativeCacheKind
 import org.jetbrains.kotlin.gradle.plugin.mpp.KmpIsolatedProjectsSupport
 import org.jetbrains.kotlin.gradle.report.BuildReportType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilerExecutionStrategy
@@ -57,8 +56,6 @@ data class BuildOptions(
     val languageApiVersion: String? = null,
     val freeArgs: List<String> = emptyList(),
     val statisticsForceValidation: Boolean = true,
-    val usePreciseOutputsBackup: Boolean? = null,
-    val keepIncrementalCompilationCachesInMemory: Boolean? = null,
     val enableUnsafeIncrementalCompilationForMultiplatform: Boolean? = null,
     val enableMonotonousIncrementalCompileSetExpansion: Boolean? = null,
     val useDaemonFallbackStrategy: Boolean = false,
@@ -160,7 +157,6 @@ data class BuildOptions(
     )
 
     data class NativeOptions(
-        val cacheKind: NativeCacheKind? = NativeCacheKind.NONE,
         val cocoapodsGenerateWrapper: Boolean? = null,
         val cocoapodsPlatform: String? = null,
         val cocoapodsConfiguration: String? = null,
@@ -281,18 +277,11 @@ data class BuildOptions(
             arguments.add("-Pkotlin_performance_profile_force_validation=true")
         }
 
-        if (usePreciseOutputsBackup != null) {
-            arguments.add("-Pkotlin.compiler.preciseCompilationResultsBackup=$usePreciseOutputsBackup")
-        }
         if (languageApiVersion != null) {
             arguments.add("-Pkotlin.test.apiVersion=$languageApiVersion")
         }
         if (languageVersion != null) {
             arguments.add("-Pkotlin.test.languageVersion=$languageVersion")
-        }
-
-        if (keepIncrementalCompilationCachesInMemory != null) {
-            arguments.add("-Pkotlin.compiler.keepIncrementalCompilationCachesInMemory=$keepIncrementalCompilationCachesInMemory")
         }
 
         if (enableUnsafeIncrementalCompilationForMultiplatform != null) {
@@ -353,11 +342,6 @@ data class BuildOptions(
     private fun addNativeOptionsToArguments(
         arguments: MutableList<String>,
     ) {
-
-        nativeOptions.cacheKind?.let {
-            arguments.add("-Pkotlin.native.cacheKind=${nativeOptions.cacheKind.name.lowercase()}")
-        }
-
         nativeOptions.cocoapodsGenerateWrapper?.let {
             arguments.add("-Pkotlin.native.cocoapods.generate.wrapper=${it}")
         }
@@ -443,9 +427,6 @@ fun BuildOptions.disableConfigurationCacheForGradle7(
     this
 }
 
-// TODO: KT-70416 :resolveIdeDependencies doesn't support Configuration Cache & Project Isolation
-fun BuildOptions.disableConfigurationCache_KT70416() = copy(configurationCache = BuildOptions.ConfigurationCacheValue.DISABLED)
-
 fun BuildOptions.disableKlibsCrossCompilation() = copy(
     nativeOptions = nativeOptions.copy(enableKlibsCrossCompilation = false)
 )
@@ -482,15 +463,18 @@ fun BuildOptions.suppressWarningForOldKotlinVersion(
 // Fixed in AGP 8.12-alpha06
 fun BuildOptions.suppressAgpWarningSinceGradle814(
     currentGradleVersion: GradleVersion,
+    currentAgpVersion: TestVersions.AgpCompatibilityMatrix,
     warningMode: WarningMode = WarningMode.Summary,
 ): BuildOptions {
     return when {
-        warningMode == WarningMode.Summary -> suppressDeprecationWarningsSinceGradleVersion(
+        warningMode == WarningMode.Summary &&
+                currentAgpVersion < TestVersions.AgpCompatibilityMatrix.AGP_812 -> suppressDeprecationWarningsSinceGradleVersion(
             gradleVersion = TestVersions.Gradle.G_8_14,
             currentGradleVersion = currentGradleVersion,
             reason = "AGP produces deprecation warning on resolve: https://issuetracker.google.com/issues/408334529"
         )
-        currentGradleVersion >= GradleVersion.version(TestVersions.Gradle.G_8_14) -> copy(warningMode = warningMode)
+        currentGradleVersion >= GradleVersion.version(TestVersions.Gradle.G_8_14) &&
+                currentAgpVersion < TestVersions.AgpCompatibilityMatrix.AGP_812-> copy(warningMode = warningMode)
         else -> this
     }
 }

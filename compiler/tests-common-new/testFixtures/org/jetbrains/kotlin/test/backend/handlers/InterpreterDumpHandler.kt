@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.fir.types.FirResolvedTypeRef
 import org.jetbrains.kotlin.fir.unwrapOr
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
 import org.jetbrains.kotlin.ir.declarations.IrFile
-import org.jetbrains.kotlin.ir.declarations.nameWithPackage
+import org.jetbrains.kotlin.ir.declarations.evaluatedConstTrackerKey
 import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives.IGNORE_BACKEND_K2
 import org.jetbrains.kotlin.test.frontend.fir.FirOutputArtifact
@@ -66,6 +66,7 @@ interface EvaluatorHandlerTrait {
 }
 
 interface IrInterpreterDumpHandlerTrait : EvaluatorHandlerTrait {
+    context(_: AnalysisHandler<*>)
     fun processModule(module: TestModule) {
         val irMetaInfo = processIrModule(module)
         val firMetaInfo = testServices.firInterpreterResultsStorage[module] ?: irMetaInfo
@@ -108,6 +109,8 @@ interface IrInterpreterDumpHandlerTrait : EvaluatorHandlerTrait {
             globalMetadataInfoHandler.addMetadataInfosForFile(testFile, metaInfo.map { it.copy().apply { attributes.add("FIR") } })
         }
     }
+
+    context(_: AnalysisHandler<*>)
     fun processIrModule(module: TestModule): Map<TestFile, List<ParsedCodeMetaInfo>> {
         if (!module.isSuppressedForK2() && testServices.defaultsProvider.frontendKind == FrontendKinds.ClassicFrontend) {
             return module.files.associateWith { testFile -> testFile.getExpectedResult() }
@@ -134,7 +137,7 @@ interface IrInterpreterDumpHandlerTrait : EvaluatorHandlerTrait {
     private fun EvaluatedConstTracker.processFile(testFile: TestFile, irFile: IrFile): Map<TestFile, List<ParsedCodeMetaInfo>> {
         val resultMap = mutableMapOf<TestFile, MutableList<ParsedCodeMetaInfo>>()
         val rangesThatAreNotSupposedToBeRendered = testFile.extractRangesWithoutRender()
-        this.load(irFile.nameWithPackage)?.forEach { (pair, constantValue) ->
+        this.loadAllForTests(irFile.evaluatedConstTrackerKey)?.forEach { (pair, constantValue) ->
             if (constantValue is AnnotationValue) return@forEach
 
             val (start, end) = pair
@@ -163,12 +166,7 @@ class FirInterpreterDumpHandler(testServices: TestServices) : FirAnalysisHandler
         val results = buildMap {
             info.partsForDependsOnModules.forEach {
                 it.firFiles.forEach { (testFile, firFile) ->
-                    val intrinsicConstEvaluation = it.session.languageVersionSettings.supportsFeature(LanguageFeature.IntrinsicConstEvaluation)
-                    if (intrinsicConstEvaluation) {
-                        put(testFile, testFile.getExpectedResult())
-                    } else {
-                        putAll(processFile(testFile, firFile, it.session))
-                    }
+                    putAll(processFile(testFile, firFile, it.session))
                 }
             }
         }

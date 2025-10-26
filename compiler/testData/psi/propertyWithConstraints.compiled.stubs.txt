@@ -1,8 +1,11 @@
 FooKt.class:
   FILE[kind=Facade[packageFqName=<root>, facadeFqName=FooKt]]
+    facadeFqName: FooKt
+    partSimpleName: "FooKt"
     PACKAGE_DIRECTIVE
     IMPORT_LIST
     PROPERTY[fqName=foo, hasBackingField=false, hasDelegate=false, hasDelegateExpression=false, hasInitializer=false, hasReturnTypeRef=true, isExtension=true, isTopLevel=true, isVar=false, name=foo]
+      origin: Facade(className=FooKt, jvmClassName=null)
       MODIFIER_LIST[public]
       TYPE_PARAMETER_LIST
         TYPE_PARAMETER[fqName=null, name=T]
@@ -33,7 +36,7 @@ I1.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/I1, fqName=I1, isClsStubCompiledToJvmDefaultImplementation=true, isEnumEntry=false, isInterface=true, isLocal=false, isTopLevel=true, name=I1, superNames=[]]
+    CLASS[classId=/I1, fqName=I1, isClsStubCompiledToJvmDefaultImplementation=true, isInterface=true, isLocal=false, isTopLevel=true, name=I1, superNames=[]]
       MODIFIER_LIST[public]
       CLASS_BODY
 
@@ -42,6 +45,6 @@ I2.class:
   FILE[kind=File[packageFqName=<root>]]
     PACKAGE_DIRECTIVE
     IMPORT_LIST
-    CLASS[classId=/I2, fqName=I2, isClsStubCompiledToJvmDefaultImplementation=true, isEnumEntry=false, isInterface=true, isLocal=false, isTopLevel=true, name=I2, superNames=[]]
+    CLASS[classId=/I2, fqName=I2, isClsStubCompiledToJvmDefaultImplementation=true, isInterface=true, isLocal=false, isTopLevel=true, name=I2, superNames=[]]
       MODIFIER_LIST[public]
       CLASS_BODY

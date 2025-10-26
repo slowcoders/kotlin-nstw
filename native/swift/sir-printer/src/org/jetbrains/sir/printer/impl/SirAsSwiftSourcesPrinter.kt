@@ -91,6 +91,7 @@ internal class SirAsSwiftSourcesPrinter private constructor(
         when (this) {
             is SirClass -> printDeclaration()
             is SirEnum -> printDeclaration()
+            is SirEnumCase -> "case $name"
             is SirExtension -> printDeclaration()
             is SirStruct -> printDeclaration()
             is SirProtocol -> printDeclaration()
@@ -156,6 +157,11 @@ internal class SirAsSwiftSourcesPrinter private constructor(
         printer.withContext(Context(this)) {
             println(" {")
             withIndent {
+                if (this is SirEnum) {
+                    for (case in cases) {
+                        println("case ${case.name}")
+                    }
+                }
                 printChildren()
             }
             println("}")
@@ -318,6 +324,7 @@ internal class SirAsSwiftSourcesPrinter private constructor(
             is SirClass -> superClass to protocols
             is SirProtocol -> superClass to protocols
             is SirExtension -> null to protocols
+            is SirEnum -> null to protocols
             else -> null to emptyList()
         }
 
@@ -345,7 +352,7 @@ internal class SirAsSwiftSourcesPrinter private constructor(
 
     private fun SirElement.printName() = print(
         when (this@printName) {
-            is SirNamed -> name.swiftIdentifier
+            is SirScopeDefiningElement -> name.swiftIdentifier
             is SirExtension -> extendedType.swiftRender
             else -> error("There is no printable name for SirElement: ${this@printName}")
         }
@@ -492,6 +499,10 @@ internal class SirAsSwiftSourcesPrinter private constructor(
     }
 
     private fun SirCallable.printEffects() {
+        if (this !is SirSetter && isAsync) {
+            print(" async")
+        }
+
         if (this !is SirSetter && errorType != SirType.never) {
             print(" throws")
             if (errorType != SirType.any) {
@@ -537,6 +548,9 @@ internal class SirAsSwiftSourcesPrinter private constructor(
     private val SirType.swiftRender: String
         get() = "Self".takeIf { currentContext.declaration.let { it is SirExtension && it.extendedType == this && it.extendedType.isBivariantSelf == true } }
             ?: when (this) {
+                is SirImplicitlyUnwrappedOptionalType if wrappedType !is SirWrappedType -> {
+                    wrappedType.swiftRender.let { if (it.any { it.isWhitespace() }) "($it)" else it } + "!"
+                }
                 is SirOptionalType -> wrappedType.swiftRender.let { if (it.any { it.isWhitespace() }) "($it)" else it } + "?"
                 is SirArrayType -> "[${elementType.swiftRender}]"
                 is SirDictionaryType -> "[${keyType.swiftRender}: ${valueType.swiftRender}]"
@@ -554,8 +568,8 @@ internal class SirAsSwiftSourcesPrinter private constructor(
         get() = (argumentName?.swiftIdentifier ?: "_") +
                 (parameterName?.swiftIdentifier?.let { " $it" } ?: "") + ": " +
                 (type.attributes.render().takeUnless { it.isBlank() }?.let { "$it " } ?: "") +
-                type.swiftRender
-
+                type.swiftRender +
+                if (isVariadic) "..." else ""
 }
 
 private val SirVisibility.swift

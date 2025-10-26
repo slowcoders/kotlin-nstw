@@ -63,23 +63,10 @@ internal abstract class AbstractKotlinCompileConfig<TASK : AbstractKotlinCompile
             task.suppressKotlinOptionsFreeArgsModificationWarning
                 .convention(propertiesProvider.kotlinOptionsSuppressFreeArgsModificationWarning)
                 .finalizeValueOnRead()
-
-            task.preciseCompilationResultsBackup
-                .convention(propertiesProvider.preciseCompilationResultsBackup)
-                .finalizeValueOnRead()
-            task.taskOutputsBackupExcludes.addAll(task.preciseCompilationResultsBackup.map {
-                if (it) listOf(task.destinationDirectory.get().asFile, task.taskBuildLocalStateDirectory.get().asFile) else emptyList()
-            })
-            task.keepIncrementalCompilationCachesInMemory
-                .convention(
-                    task.preciseCompilationResultsBackup.zip(propertiesProvider.keepIncrementalCompilationCachesInMemory) { thisTaskPreciseCompilationResultsBackup, defaultKeepIncrementalCompilationCachesInMemory ->
-                        thisTaskPreciseCompilationResultsBackup && defaultKeepIncrementalCompilationCachesInMemory
-                    }
-                )
-                .finalizeValueOnRead()
-            task.taskOutputsBackupExcludes.addAll(task.keepIncrementalCompilationCachesInMemory.map {
-                if (it) listOf(task.taskBuildCacheableOutputDirectory.get().asFile) else emptyList()
-            })
+            // those are covered by precise outputs backups and in-memory IC caches
+            task.taskOutputsBackupExcludes.add(task.destinationDirectory.asFile)
+            task.taskOutputsBackupExcludes.add(task.taskBuildLocalStateDirectory.asFile)
+            task.taskOutputsBackupExcludes.add(task.taskBuildCacheableOutputDirectory.asFile)
             task.enableUnsafeIncrementalCompilationForMultiplatform
                 .convention(propertiesProvider.enableUnsafeOptimizationsForMultiplatform)
                 .finalizeValueOnRead()
@@ -91,6 +78,7 @@ internal abstract class AbstractKotlinCompileConfig<TASK : AbstractKotlinCompile
             task.incremental = false
             task.useModuleDetection.convention(false)
             task.runViaBuildToolsApi.convention(propertiesProvider.runKotlinCompilerViaBuildToolsApi).finalizeValueOnRead()
+            task.generateCompilerRefIndex.convention(propertiesProvider.generateCompilerRefIndex).finalizeValueOnRead()
 
             task.explicitApiMode
                 .value(explicitApiMode)

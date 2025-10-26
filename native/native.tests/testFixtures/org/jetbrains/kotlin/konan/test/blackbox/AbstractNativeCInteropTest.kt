@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.konan.test.blackbox
 
-import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.testFramework.TestDataFile
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
@@ -18,7 +17,6 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.util.getAbsoluteFile
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.dumpMetadata
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.has32BitPointers
 import org.jetbrains.kotlin.konan.util.CInteropHints
-import org.jetbrains.kotlin.test.services.JUnit5Assertions.assertEquals
 import org.jetbrains.kotlin.test.services.JUnit5Assertions.assertEqualsToFile
 import org.jetbrains.kotlin.test.services.JUnit5Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions
@@ -98,7 +96,15 @@ abstract class AbstractNativeCInteropTest : AbstractNativeCInteropBaseTest() {
         else
             TestCInteropArgs("-compiler-option", "-I${includeFolder.canonicalPath}")
 
-        val testCompilationResult = cinteropToLibrary(targets, defFile, buildDir, includeArgs + fmodulesArgs)
+        val additionalArgs = testPathFull.resolve("args.txt").let {
+            if (it.exists()) {
+                TestCInteropArgs(it.readLines())
+            } else {
+                TestCompilerArgs.EMPTY
+            }
+        }
+
+        val testCompilationResult = cinteropToLibrary(defFile, buildDir, includeArgs + fmodulesArgs + additionalArgs)
         // If we are running fmodules-specific test without -fmodules then we want to be sure that cinterop fails the way we want it to.
         if (!fmodules && testPath.endsWith("FModules/")) {
             val loggedData = (testCompilationResult as TestCompilationResult.CompilationToolFailure).loggedData
@@ -109,6 +115,18 @@ abstract class AbstractNativeCInteropTest : AbstractNativeCInteropBaseTest() {
         } else {
             val metadata = testCompilationResult.assertSuccess().resultingArtifact
                 .dumpMetadata(kotlinNativeClassLoader.classLoader, false, null)
+                .let {
+                    // Remove '_' prefix from @CCall.Direct name value on Apple targets.
+                    // It is added to symbol names there by default, unlike all other targets.
+                    // This little hack allows us to keep using the same "golden file" for all targets.
+                    if (targets.testTarget.family.isAppleFamily)
+                        it.replace(
+                            "@kotlinx/cinterop/internal/CCall.Direct(name = \"_",
+                            "@kotlinx/cinterop/internal/CCall.Direct(name = \""
+                        )
+                    else
+                        it
+                }
 
             val filteredMetadata = if (ignoreExperimentalForeignApi)
                 metadata.lineSequence().filterNot { it.trim() == "@kotlinx/cinterop/ExperimentalForeignApi" }.joinToString("\n")

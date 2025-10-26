@@ -1,6 +1,5 @@
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.ideaExt.idea
 
 plugins {
@@ -32,8 +31,10 @@ dependencies {
 
     implementation(project(":jps:jps-common"))
     compileOnly(libs.intellij.fastutil)
+    compileOnly(intellijPlatformUtil())
     compileOnly(jpsModel())
     compileOnly(jpsBuild())
+    compileOnly(jpsBuildJavacRt())
     compileOnly(jpsModelSerialization())
     compileOnly(intellijJDom())
     testRuntimeOnly(jpsModel())
@@ -51,12 +52,14 @@ dependencies {
     testRuntimeOnly("com.jetbrains.intellij.platform:code-style:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:ide-impl:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:ide:$intellijVersion") { isTransitive = false }
+    testRuntimeOnly("com.jetbrains.intellij.platform:ide-bootstrap:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:ide-core:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:ide-core-impl:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:execution:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:util-ui:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:concurrency:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:editor:$intellijVersion") { isTransitive = false }
+    testRuntimeOnly("com.jetbrains.intellij.platform:editor-ui:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:core-ui:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:lang:$intellijVersion") { isTransitive = false }
     testRuntimeOnly("com.jetbrains.intellij.platform:lang-impl:$intellijVersion") { isTransitive = false }
@@ -64,9 +67,11 @@ dependencies {
     testRuntimeOnly(libs.gson)
     testRuntimeOnly(intellijJDom())
     testRuntimeOnly(libs.kotlinx.coroutines.core.jvm)
+    testRuntimeOnly(libs.rwmutex.idea)
 
     testImplementation(testFixtures(project(":compiler:incremental-compilation-impl")))
     testImplementation(jpsBuild())
+    testImplementation(jpsBuildJavacRt())
 
     compilerModules.forEach {
         testRuntimeOnly(project(it))
@@ -131,6 +136,7 @@ projectTests {
             "--add-opens=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED",
             // the minimal required set of modules to be opened for the intellij platform itself
             "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
+            "--add-opens=java.desktop/java.awt.event=ALL-UNNAMED",
             "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
             "--add-opens=java.base/java.lang=ALL-UNNAMED",
             "--add-opens=java.desktop/javax.swing=ALL-UNNAMED",
@@ -138,7 +144,7 @@ projectTests {
         )
     }
 
-    testGenerator("org.jetbrains.kotlin.jps.GenerateJpsPluginTestsKt") {
+    testGenerator("org.jetbrains.kotlin.jps.GenerateJpsPluginTestsKt", doNotSetFixturesSourceSetDependency = true) {
         javaLauncher.set(
             javaToolchains.launcherFor {
                 languageVersion.set(JavaLanguageVersion.of(17))
@@ -158,8 +164,8 @@ testsJar {}
  *
  * Affected Library:
  * └── io.netty
- *    ├── netty-buffer:* → 4.1.118.Final
- *    └── netty-codec-http2:* → 4.1.118.Final
+ *    ├── netty-buffer:* → 4.1.127.Final
+ *    └── netty-codec-http2:* → 4.1.127.Final
  *
  * Mitigated Vulnerabilities:
  * - CVE-2025-25193: Denial of Service Vulnerability
@@ -167,6 +173,9 @@ testsJar {}
  * - CVE-2024-29025: Remote code execution risk
  * - CVE-2023-4586: Information disclosure vulnerability
  * - CVE-2023-34462: Potential denial of service
+ * - CVE-2025-55163: Resource exhaustion and DDoS
+ * - CVE-2025-58056: Inconsistent Interpretation of HTTP Requests
+ * - CVE-2025-58057: Improper Handling of Highly Compressed Data
  *
  * This configuration overrides versions regardless of the declaring dependency.
  */
@@ -178,8 +187,8 @@ configurations.all {
                 "netty-codec-http2",
             ).contains(requested.name)
         ) {
-            useVersion("4.1.118.Final")
-            because("CVE-2025-25193, CVE-2024-47535, CVE-2024-29025, CVE-2023-4586, CVE-2023-34462")
+            useVersion("4.1.127.Final")
+            because("CVE-2025-25193, CVE-2024-47535, CVE-2024-29025, CVE-2023-4586, CVE-2023-34462, CVE-2025-55163, CVE-2025-58056, CVE-2025-58057")
         }
     }
 }

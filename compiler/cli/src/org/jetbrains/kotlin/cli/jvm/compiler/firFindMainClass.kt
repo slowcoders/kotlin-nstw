@@ -10,10 +10,9 @@ import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.utils.classId
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
-import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.isMaybeMainFunction
 import org.jetbrains.kotlin.fir.java.findJvmNameValue
 import org.jetbrains.kotlin.fir.java.findJvmStaticAnnotation
@@ -30,7 +29,7 @@ import org.jetbrains.kotlin.name.FqName
  * Otherwise, if many main functions are found in one or several files, no one is chosen and the function returns "null"
  */
 fun findMainClass(fir: List<FirFile>): FqName? {
-    val groupedMainFunctions = mutableMapOf<FirDeclaration, MutableList<FirSimpleFunction>>()
+    val groupedMainFunctions = mutableMapOf<FirDeclaration, MutableList<FirNamedFunction>>()
     val visitor = FirMainClassFinder(groupedMainFunctions)
     fir.forEach { it.accept(visitor, it to null) }
 
@@ -56,7 +55,7 @@ fun findMainClass(fir: List<FirFile>): FqName? {
 
 @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
 private class FirMainClassFinder(
-    private var groupedMainFunctions: MutableMap<FirDeclaration, MutableList<FirSimpleFunction>>
+    private var groupedMainFunctions: MutableMap<FirDeclaration, MutableList<FirNamedFunction>>
 ) : FirVisitor<Unit, Pair<FirDeclaration, FirRegularClass?>>() {
 
     override fun visitElement(element: FirElement, parents: Pair<FirDeclaration, FirRegularClass?>) {}
@@ -71,9 +70,9 @@ private class FirMainClassFinder(
         }
     }
 
-    override fun visitSimpleFunction(simpleFunction: FirSimpleFunction, parents: Pair<FirDeclaration, FirRegularClass?>) {
+    override fun visitNamedFunction(namedFunction: FirNamedFunction, parents: Pair<FirDeclaration, FirRegularClass?>) {
 
-        if (!simpleFunction.isMaybeMainFunction(
+        if (!namedFunction.isMaybeMainFunction(
                 getPlatformName = { findJvmNameValue() },
                 isPlatformStatic = { findJvmStaticAnnotation() != null },
             )
@@ -82,6 +81,6 @@ private class FirMainClassFinder(
         val (parent, grandparent) = parents
         if (parent is FirRegularClass && parent.classKind != ClassKind.OBJECT) return
 
-        groupedMainFunctions.getOrPut(grandparent ?: parent, defaultValue = { mutableListOf() }).add(simpleFunction)
+        groupedMainFunctions.getOrPut(grandparent ?: parent, defaultValue = { mutableListOf() }).add(namedFunction)
     }
 }

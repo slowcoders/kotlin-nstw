@@ -1,3 +1,6 @@
 KtNameReferenceExpression(357,364): 'oldItem'
   KtSimpleNameReference:
-    oldItem: T
+    isImplicitReferenceToCompanion: false
+    usesContextSensitiveResolution: false
+    symbols:
+      oldItem: T

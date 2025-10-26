@@ -8,11 +8,12 @@ package org.jetbrains.kotlin.backend.konan.lower
 import org.jetbrains.kotlin.backend.common.ErrorReportingContext
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
 import org.jetbrains.kotlin.backend.common.getCompilerMessageLocation
-import org.jetbrains.kotlin.backend.common.ir.Symbols
+import org.jetbrains.kotlin.backend.common.ir.PreSerializationSymbols
 import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
 import org.jetbrains.kotlin.backend.konan.NativeGenerationState
 import org.jetbrains.kotlin.backend.konan.ir.KonanSymbols
 import org.jetbrains.kotlin.backend.konan.reportCompilationError
+import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrDeclaration
@@ -24,19 +25,27 @@ import org.jetbrains.kotlin.ir.visitors.IrTransformer
 
 internal class TypeOfProcessingLowering(val generationState: NativeGenerationState) : FileLoweringPass {
     override fun lower(irFile: IrFile) {
-        Transformer(generationState.context.symbols, generationState.context).visitFile(irFile, null)
+        Transformer(
+                generationState.context.irBuiltIns,
+                generationState.context.symbols,
+                generationState.context
+        ).visitFile(irFile, null)
     }
 }
 
-private class Transformer(private val symbols: KonanSymbols, private val errorContext: ErrorReportingContext) : IrTransformer<IrDeclaration?>() {
+private class Transformer(
+        private val irBuiltIns: IrBuiltIns,
+        private val symbols: KonanSymbols,
+        private val errorContext: ErrorReportingContext
+) : IrTransformer<IrDeclaration?>() {
     override fun visitDeclaration(declaration: IrDeclarationBase, data: IrDeclaration?): IrStatement {
         return super.visitDeclaration(declaration, declaration)
     }
 
     override fun visitCall(expression: IrCall, data: IrDeclaration?): IrElement {
-        if (Symbols.isTypeOfIntrinsic(expression.symbol)) {
+        if (PreSerializationSymbols.isTypeOfIntrinsic(expression.symbol)) {
             val symbol = data?.symbol ?: error("\"typeOf\" call in unexpected position")
-            val builder = symbols.irBuiltIns
+            val builder = irBuiltIns
                     .createIrBuilder(symbol, expression.startOffset, expression.endOffset)
                     .toNativeRuntimeReflectionBuilder(symbols) { message ->
                         errorContext.reportCompilationError(message, expression.getCompilerMessageLocation(data.file))

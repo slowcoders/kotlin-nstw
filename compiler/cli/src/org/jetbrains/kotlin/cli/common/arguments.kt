@@ -32,6 +32,12 @@ fun CompilerConfiguration.setupCommonArguments(
     put(CommonConfigurationKeys.DISABLE_INLINE, arguments.noInline)
     put(CommonConfigurationKeys.USE_FIR_EXTRA_CHECKERS, arguments.extraWarnings)
     put(CommonConfigurationKeys.METADATA_KLIB, arguments.metadataKlib)
+
+    // Important! Uncomment the reading from the environment below only for non-public builds, the environment reading should not be part of any public release.
+    val modelDumpDirString = arguments.dumpArgumentsDir // ?: System.getenv("KOTLIN_DUMP_MODEL")
+    val modelDumpDir = modelDumpDirString?.takeIf { it.isNotEmpty() && File(it).let { it.isDirectory && it.canWrite() } }
+
+    putIfNotNull(CommonConfigurationKeys.DUMP_MODEL, modelDumpDir)
     putIfNotNull(CLIConfigurationKeys.INTELLIJ_PLUGIN_ROOT, arguments.intellijPluginRoot)
     put(CommonConfigurationKeys.REPORT_OUTPUT_FILES, arguments.reportOutputFiles)
     put(CommonConfigurationKeys.INCREMENTAL_COMPILATION, incrementalCompilationIsEnabled(arguments))
@@ -79,6 +85,8 @@ fun CompilerConfiguration.setupCommonArguments(
         FlexibleTypeImpl.RUN_SLOW_ASSERTIONS = true
         AbstractTypeChecker.RUN_SLOW_ASSERTIONS = true
     }
+
+    put(CommonConfigurationKeys.DONT_SORT_SOURCE_FILES, arguments.dontSortSourceFiles)
 }
 
 fun CompilerConfiguration.setupMetadataVersion(
@@ -155,7 +163,7 @@ fun MessageCollector.reportArgumentParseProblems(arguments: CommonToolArguments)
 private fun MessageCollector.reportUnsafeInternalArgumentsIfAny(arguments: CommonToolArguments) {
     val unsafeArguments = arguments.internalArguments.filterNot {
         // -XXLanguage which turns on BUG_FIX considered safe
-        it is ManualLanguageFeatureSetting && it.languageFeature.actuallyEnabledInProgressiveMode && it.state == LanguageFeature.State.ENABLED
+        it.languageFeature.actuallyEnabledInProgressiveMode && it.state == LanguageFeature.State.ENABLED
     }
 
     if (unsafeArguments.isNotEmpty()) {
@@ -179,6 +187,7 @@ private val FRAGMENTS_ARG_NAME = CommonCompilerArguments::fragments.cliArgument
 private val FRAGMENT_REFINES_ARG_NAME = CommonCompilerArguments::fragmentRefines.cliArgument
 private val FRAGMENT_SOURCES_ARG_NAME = CommonCompilerArguments::fragmentSources.cliArgument
 private val FRAGMENT_DEPENDENCIES_ARG_NAME = CommonCompilerArguments::fragmentDependencies.cliArgument
+private val FRAGMENT_FRIEND_DEPENDENCIES_ARG_NAME = CommonCompilerArguments::fragmentFriendDependencies.cliArgument
 
 private fun CompilerConfiguration.buildHmppModuleStructure(arguments: CommonCompilerArguments): HmppCliModuleStructure? {
     val rawFragments = arguments.fragments
@@ -275,7 +284,7 @@ private fun CompilerConfiguration.buildHmppModuleStructure(arguments: CommonComp
         if (rawFragmentRefines?.isNotEmpty() == true) {
             reportError("$FRAGMENT_REFINES_ARG_NAME flag is specified but there is only one module declared")
         }
-        return HmppCliModuleStructure(modules, sourceDependencies = emptyMap(), moduleDependencies = emptyMap())
+        return HmppCliModuleStructure(modules, sourceDependencies = emptyMap(), moduleDependencies = emptyMap(), friendDependencies = emptyMap())
     }
 
     val duplicatedModules = modules.filter { module -> modules.count { it.name == module.name } > 1 }
@@ -329,26 +338,34 @@ private fun CompilerConfiguration.buildHmppModuleStructure(arguments: CommonComp
     if (arguments.fragmentDependencies != null && !arguments.separateKmpCompilationScheme) {
         reportError("$FRAGMENT_DEPENDENCIES_ARG_NAME flag could be used only with ${CommonCompilerArguments::separateKmpCompilationScheme.cliArgument}")
     }
+    if (arguments.fragmentFriendDependencies != null && !arguments.separateKmpCompilationScheme) {
+        reportError("$FRAGMENT_FRIEND_DEPENDENCIES_ARG_NAME flag could be used only with ${CommonCompilerArguments::separateKmpCompilationScheme.cliArgument}")
+    }
 
-    val moduleDependencies = buildMap<HmppCliModule, MutableList<String>> {
-        for (argument in arguments.fragmentDependencies.orEmpty()) {
-            val splitArg = argument.split(":", limit = 2)
-            if (splitArg.size != 2) {
-                reportError(
-                    "Incorrect syntax for $FRAGMENT_DEPENDENCIES_ARG_NAME argument. " +
-                            "Expected <moduleName>:<path> but got `$argument`"
-                )
-                continue
+    fun buildFragmentDependencyMap(arguments: Array<String>?, argumentName: String): Map<HmppCliModule, MutableList<String>> {
+        return buildMap {
+            for (argument in arguments.orEmpty()) {
+                val splitArg = argument.split(":", limit = 2)
+                if (splitArg.size != 2) {
+                    reportError(
+                        "Incorrect syntax for $argumentName argument. " +
+                                "Expected <moduleName>:<path> but got `$argument`"
+                    )
+                    continue
+                }
+                val (moduleName, dependency) = splitArg
+                val module = moduleByName[moduleName] ?: run {
+                    reportError("Module `$moduleName` not found in $FRAGMENTS_ARG_NAME arguments")
+                    continue
+                }
+                val dependencies = getOrPut(module) { mutableListOf() }
+                dependencies += dependency
             }
-            val (moduleName, dependency) = splitArg
-            val module = moduleByName[moduleName] ?: run {
-                reportError("Module `$moduleName` not found in $FRAGMENTS_ARG_NAME arguments")
-                continue
-            }
-            val dependencies = getOrPut(module) { mutableListOf() }
-            dependencies += dependency
         }
     }
 
-    return HmppCliModuleStructure(modules, sourceDependencies, moduleDependencies)
+    val moduleDependencies = buildFragmentDependencyMap(arguments.fragmentDependencies, FRAGMENT_DEPENDENCIES_ARG_NAME)
+    val friendDependencies = buildFragmentDependencyMap(arguments.fragmentFriendDependencies, FRAGMENT_FRIEND_DEPENDENCIES_ARG_NAME)
+
+    return HmppCliModuleStructure(modules, sourceDependencies, moduleDependencies, friendDependencies)
 }

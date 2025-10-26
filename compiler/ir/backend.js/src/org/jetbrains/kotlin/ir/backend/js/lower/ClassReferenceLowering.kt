@@ -8,7 +8,7 @@ package org.jetbrains.kotlin.ir.backend.js.lower
 import org.jetbrains.kotlin.backend.common.BodyLoweringPass
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.compilationException
-import org.jetbrains.kotlin.backend.common.ir.Symbols
+import org.jetbrains.kotlin.backend.common.ir.PreSerializationSymbols
 import org.jetbrains.kotlin.backend.common.ir.createArrayOfExpression
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.backend.js.*
@@ -27,8 +27,9 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.types.*
 
 class JsClassReferenceLowering(context: JsIrBackendContext) : ClassReferenceLowering(context) {
-    private val getClassData = context.intrinsics.jsClass
-    private val primitiveClassesObject = context.intrinsics.primitiveClassesObject
+    private val getClassData = context.symbols.jsClass
+    private val primitiveClassesObject = context.symbols.primitiveClassesObject
+    private val longArrayClassSymbol = context.symbols.longArrayClass
 
     private val primitiveClassProperties by lazy(LazyThreadSafetyMode.NONE) {
         primitiveClassesObject.owner.declarations.filterIsInstance<IrProperty>()
@@ -61,7 +62,6 @@ class JsClassReferenceLowering(context: JsIrBackendContext) : ClassReferenceLowe
             IrType::isByteArray to "byteArrayClass",
             IrType::isShortArray to "shortArrayClass",
             IrType::isIntArray to "intArrayClass",
-            IrType::isLongArray to "longArrayClass",
             IrType::isFloatArray to "floatArrayClass",
             IrType::isDoubleArray to "doubleArrayClass"
         ).mapValues {
@@ -89,6 +89,9 @@ class JsClassReferenceLowering(context: JsIrBackendContext) : ClassReferenceLowe
         }
 
     override fun getFinalPrimitiveKClass(returnType: IrType, typeArgument: IrType): IrCall? {
+        if (typeArgument.isLongArray()) {
+            return JsIrBuilder.buildCall(longArrayClassSymbol, returnType)
+        }
         for ((typePredicate, v) in finalPrimitiveClasses) {
             if (typePredicate(typeArgument))
                 return getPrimitiveClass(v, returnType)
@@ -276,7 +279,7 @@ abstract class ClassReferenceLowering(val context: JsCommonBackendContext) : Bod
                 )
 
             override fun visitCall(expression: IrCall): IrExpression =
-                if (Symbols.isTypeOfIntrinsic(expression.symbol)) {
+                if (PreSerializationSymbols.isTypeOfIntrinsic(expression.symbol)) {
                     createKType(expression.typeArguments[0]!!, hashSetOf())
                 } else {
                     super.visitCall(expression)

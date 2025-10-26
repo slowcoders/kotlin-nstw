@@ -131,6 +131,7 @@ val exhaustivenessStatusType = generatedType("expressions", "ExhaustivenessStatu
 val callableReferenceMappedArgumentsType = type("fir.resolve.calls", "CallableReferenceMappedArguments")
 
 val functionCallOrigin = type("fir.expressions", "FirFunctionCallOrigin")
+val resolvedSymbolOrigin = type("fir.resolve", "FirResolvedSymbolOrigin")
 
 val resolvedDeclarationStatusImplType = type("fir.declarations.impl", "FirResolvedDeclarationStatusImpl")
 
@@ -159,3 +160,5 @@ val firBuilderDslAnnotation = type("fir.builder", "FirBuilderDsl", kind = TypeKi
 val firResolvedArgumentListType = type("fir.expressions.impl", "FirResolvedArgumentList", kind = TypeKind.Class)
 
 val toSymbolUtilityFunction = type("fir.types", "toLookupTag")
+
+val inaccessibleReceiverKindType = type("fir.expressions", "InaccessibleReceiverKind")

@@ -5,6 +5,7 @@ plugins {
     id("jps-compatible")
     id("java-test-fixtures")
     id("project-tests-convention")
+    id("test-inputs-check")
 }
 
 dependencies {
@@ -24,9 +25,11 @@ dependencies {
     testFixturesApi(testFixtures(project(":compiler:tests-common-new")))
     testFixturesApi(testFixtures(project(":compiler:test-infrastructure")))
     testFixturesApi(testFixtures(project(":compiler:test-infrastructure-utils")))
+    testFixturesImplementation(testFixtures(project(":generators:test-generator")))
 
     testRuntimeOnly(project(":core:descriptors.runtime"))
     testRuntimeOnly(project(":compiler:fir:fir-serialization"))
+    testRuntimeOnly(project(":compiler:fir:plugin-utils"))
 
     testFixturesApi(intellijCore())
     testRuntimeOnly(commonDependency("org.codehaus.woodstox:stax2-api"))
@@ -38,7 +41,6 @@ optInToExperimentalCompilerApi()
 
 sourceSets {
     "main" { none() }
-    "test" { generatedTestDir() }
     "testFixtures" { projectDefault() }
 }
 
@@ -52,10 +54,15 @@ javadocJar()
 testsJar()
 
 projectTests {
-    testTask(jUnitMode = JUnitMode.JUnit5) {
-        dependsOn(":dist")
-        workingDir = rootDir
-    }
+    testTask(jUnitMode = JUnitMode.JUnit5)
+
+    testGenerator("org.jetbrains.kotlin.noarg.TestGeneratorKt", generateTestsInBuildDirectory = true)
 
     withJvmStdlibAndReflect()
+    withScriptRuntime()
+    withTestJar()
+    withMockJdkAnnotationsJar()
+    withMockJdkRuntime()
+
+    testData(project.isolated, "testData")
 }

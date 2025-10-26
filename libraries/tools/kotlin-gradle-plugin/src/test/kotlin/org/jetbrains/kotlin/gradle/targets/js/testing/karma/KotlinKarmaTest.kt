@@ -114,11 +114,13 @@ class KotlinKarmaTest {
         ) {}
 
         outputResult.toFile().readText().let {
-            assertContains(it, "\"singleRun\": false")
-            assertContains(it, "\"autoWatch\": true")
+            assertContains(it, "\"singleRun\": true")
+            assertContains(it, "\"autoWatch\": false")
             assertContains(it, "\"basePath\": ${testDir.absolutePathString().jsQuoted()}")
             assertContains(it, "\"port\": 12345")
             assertContains(it, "\"browsers\": []")
+
+            assertContains(it, "config.plugins.push('kotlin-web-helpers/dist/karma-kotlin-debug-plugin.js');")
 
             additionalCheck(it, testDir)
         }

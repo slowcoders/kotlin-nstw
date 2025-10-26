@@ -12,57 +12,6 @@ import java.io.Serializable
 
 abstract class CommonToolArguments : Freezable(), Serializable {
     @Argument(
-        value = "-help",
-        shortName = "-h",
-        description = "Print a synopsis of standard options.",
-    )
-    var help: Boolean = false
-        set(value) {
-            checkFrozen()
-            field = value
-        }
-
-    @Argument(
-        value = "-X",
-        description = "Print a synopsis of advanced options.",
-    )
-    var extraHelp: Boolean = false
-        set(value) {
-            checkFrozen()
-            field = value
-        }
-
-    @Argument(
-        value = "-version",
-        description = "Display the compiler version.",
-    )
-    var version: Boolean = false
-        set(value) {
-            checkFrozen()
-            field = value
-        }
-
-    @Argument(
-        value = "-verbose",
-        description = "Enable verbose logging output.",
-    )
-    var verbose: Boolean = false
-        set(value) {
-            checkFrozen()
-            field = value
-        }
-
-    @Argument(
-        value = "-nowarn",
-        description = "Don't generate any warnings.",
-    )
-    var suppressWarnings: Boolean = false
-        set(value) {
-            checkFrozen()
-            field = value
-        }
-
-    @Argument(
         value = "-Werror",
         description = "Report an error if there are any warnings.",
     )
@@ -82,13 +31,64 @@ abstract class CommonToolArguments : Freezable(), Serializable {
             field = value
         }
 
+    @Argument(
+        value = "-X",
+        description = "Print a synopsis of advanced options.",
+    )
+    var extraHelp: Boolean = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
+    @Argument(
+        value = "-help",
+        shortName = "-h",
+        description = "Print a synopsis of standard options.",
+    )
+    var help: Boolean = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
+    @Argument(
+        value = "-nowarn",
+        description = "Don't generate any warnings.",
+    )
+    var suppressWarnings: Boolean = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
+    @Argument(
+        value = "-verbose",
+        description = "Enable verbose logging output.",
+    )
+    var verbose: Boolean = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
+    @Argument(
+        value = "-version",
+        description = "Display the compiler version.",
+    )
+    var version: Boolean = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
     var freeArgs: List<String> = emptyList()
         set(value) {
             checkFrozen()
             field = value
         }
 
-    var internalArguments: List<InternalArgument> = emptyList()
+    var internalArguments: List<ManualLanguageFeatureSetting> = emptyList()
         set(value) {
             checkFrozen()
             field = value

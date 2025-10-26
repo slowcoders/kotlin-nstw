@@ -14,13 +14,13 @@ fun main() {
         override fun add(index: Int, element: String) = TODO()
     }
 
-    <!RETURN_VALUE_NOT_USED!>myList.size<!>
-    <!RETURN_VALUE_NOT_USED!>myList.get(0)<!>
+    myList.<!RETURN_VALUE_NOT_USED!>size<!>
+    myList.<!RETURN_VALUE_NOT_USED!>get<!>(0)
     myList.set(0, "")
 }
 
 fun main2() {
-    val myList = @MustUseReturnValue object : AbstractMutableList<String>() {
+    val myList = @MustUseReturnValues object : AbstractMutableList<String>() {
         override val size: Int get() = TODO("Not yet implemented")
 
         @IgnorableReturnValue override fun get(index: Int): String = TODO()
@@ -31,9 +31,9 @@ fun main2() {
 
         override fun add(index: Int, element: String) = TODO()
     }
-    <!RETURN_VALUE_NOT_USED!>myList.size<!>
+    myList.<!RETURN_VALUE_NOT_USED!>size<!>
     myList.get(0)
-    <!RETURN_VALUE_NOT_USED!>myList.set(0, "")<!>
+    myList.<!RETURN_VALUE_NOT_USED!>set<!>(0, "")
 }
 
 /* GENERATED_FIR_TAGS: anonymousObjectExpression, functionDeclaration, getter, integerLiteral, localProperty, operator,

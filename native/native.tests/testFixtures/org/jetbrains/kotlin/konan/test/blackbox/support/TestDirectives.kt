@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.ASSERTION
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.ENTRY_POINT
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.EXIT_CODE
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.EXPECTED_TIMEOUT_FAILURE
-import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.FIR_IDENTICAL
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.FREE_CINTEROP_ARGS
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.FREE_COMPILER_ARGS
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.INPUT_DATA_FILE
@@ -21,8 +20,8 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.TEST_RUNN
 import org.jetbrains.kotlin.konan.test.blackbox.support.TestDirectives.WITH_PLATFORM_LIBS
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestRunCheck
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestRunCheck.OutputDataFile
-import org.jetbrains.kotlin.konan.test.blackbox.support.settings.PipelineType
 import org.jetbrains.kotlin.konan.test.blackbox.support.settings.Settings
+import org.jetbrains.kotlin.konan.test.blackbox.support.settings.withPlatformLibs
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.LLDBSessionSpec
 import org.jetbrains.kotlin.test.directives.model.*
 import org.jetbrains.kotlin.test.services.JUnit5Assertions.assertTrue
@@ -151,15 +150,8 @@ object TestDirectives : SimpleDirectivesContainer() {
         description = "Specify free CInterop tool arguments"
     )
 
-    // TODO "MUTED_WHEN" directive should be supported not only in AbstractNativeSimpleTest, but also in other hierarchies
-    val MUTED_WHEN by enumDirective<MutedOption>(
-        description = """
-        Usage: // MUTED_WHEN: [K1, K2]
-        In native simple tests, specify the pipeline types to mute the test""".trimIndent(),
-    )
-
-    val FIR_IDENTICAL by directive(
-        description = "Test behavior should be identical for FIR testing"
+    val MUTED by stringDirective(
+        description = "In native simple tests, mute the test",
     )
 
     val FILECHECK_STAGE by stringDirective(
@@ -167,35 +159,13 @@ object TestDirectives : SimpleDirectivesContainer() {
     )
 
     val DISABLE_NATIVE by stringDirective(
-        description = "Test is not compiled/run with neither K1 nor K2 frontend and marked as disabled(GRAY)."
-    )
-
-    val DISABLE_NATIVE_K1 by stringDirective(
-        description = "Test is not compiled/run with K1 frontend and marked as disabled(GRAY)."
-    )
-
-    val DISABLE_NATIVE_K2 by stringDirective(
-        description = "Test is not compiled/run with K2 frontend and marked as disabled(GRAY)."
+        description = "Test is not compiled/run with and marked as disabled(GRAY)."
     )
 
     val IGNORE_NATIVE by stringDirective(
         """
             Usage: // IGNORE_NATIVE: property1=value1[ && property2=value2][ && property3=value3]
-            Declares this test is expected to fail in described run configuration on both K1 and K2 frontends.
-        """.trimIndent()
-    )
-
-    val IGNORE_NATIVE_K1 by stringDirective(
-        """
-            Usage: // IGNORE_NATIVE_K1: property1=value1[ && property2=value2][ && property3=value3]
-            Declares this test is expected to fail in described run configuration on K1 frontend.
-        """.trimIndent()
-    )
-
-    val IGNORE_NATIVE_K2 by stringDirective(
-        """
-            Usage: // IGNORE_NATIVE_K2: property1=value1[ && property2=value2][ && property3=value3]
-            Declares this test is expected to fail in described run configuration on K2 frontend.
+            Declares this test is expected to fail in described run configuration
         """.trimIndent()
     )
 
@@ -247,12 +217,6 @@ enum class TestRunnerType {
     DEFAULT,
     WORKER,
     NO_EXIT
-}
-
-enum class MutedOption {
-    DEFAULT,
-    K1,
-    K2
 }
 
 internal val CINTEROP_SOURCE_EXTENSIONS = setOf("c", "cpp", "m", "mm")
@@ -355,11 +319,9 @@ internal fun parseEntryPoint(registeredDirectives: RegisteredDirectives, locatio
     return entryPoint
 }
 
-internal fun parseLLDBSpec(testDataFile: File, registeredDirectives: RegisteredDirectives, settings: Settings): LLDBSessionSpec {
-    val firIdentical = FIR_IDENTICAL in registeredDirectives
-    val firSpecificExt = if (settings.get<PipelineType>() == PipelineType.K2 && !firIdentical) "fir." else ""
+internal fun parseLLDBSpec(testDataFile: File): LLDBSessionSpec {
     val specFilePathWithoutExtension = testDataFile.absolutePath.removeSuffix(testDataFile.extension)
-    val specFileLocation = "$specFilePathWithoutExtension${firSpecificExt}txt"
+    val specFileLocation = "${specFilePathWithoutExtension}txt"
     val specFile = File(specFileLocation)
     return try {
         LLDBSessionSpec.parse(specFile.readText())
@@ -444,7 +406,7 @@ internal fun parseExpectedExitCode(registeredDirectives: RegisteredDirectives, l
     }
 }
 
-internal fun parseFreeCompilerArgs(registeredDirectives: RegisteredDirectives, location: Location): TestCompilerArgs {
+internal fun parseFreeCompilerArgs(registeredDirectives: RegisteredDirectives, location: Location, settings: Settings): TestCompilerArgs {
     val assertionsMode = registeredDirectives.singleOrZeroValue(ASSERTIONS_MODE) ?: AssertionsMode.DEFAULT
     val freeCInteropArgs = registeredDirectives[FREE_CINTEROP_ARGS]
     val freeCompilerArgs = registeredDirectives[FREE_COMPILER_ARGS]
@@ -457,7 +419,8 @@ internal fun parseFreeCompilerArgs(registeredDirectives: RegisteredDirectives, l
         """.trimIndent()
         }
     }
-    val noDefaultLibsArgs = if (WITH_PLATFORM_LIBS in registeredDirectives) emptyList() else listOf("-no-default-libs")
+    val noDefaultLibsArgs =
+        if (settings.withPlatformLibs || WITH_PLATFORM_LIBS in registeredDirectives) emptyList() else listOf("-no-default-libs")
     return TestCompilerArgs(freeCompilerArgs + noDefaultLibsArgs, freeCInteropArgs, assertionsMode)
 }
 
@@ -507,6 +470,7 @@ internal class Location(private val testDataFile: File, val lineNumber: Int? = n
     }
 }
 
+fun TestModule.shouldBeExportedToSwift(): Boolean = (this as? TestModule.Exclusive)?.shouldBeExportedToSwift() ?: false
 fun TestModule.Exclusive.shouldBeExportedToSwift(): Boolean = markedExportedToSwift() || swiftExportConfigMap() != null
 
 fun TestModule.Exclusive.swiftExportConfigMap(): Map<String, String>? = @Suppress("UNCHECKED_CAST") (directives

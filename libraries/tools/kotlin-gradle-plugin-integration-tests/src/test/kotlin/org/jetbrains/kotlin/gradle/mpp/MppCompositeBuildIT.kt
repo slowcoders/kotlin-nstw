@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinSourceDependency
 import org.jetbrains.kotlin.gradle.idea.tcs.IdeaKotlinSourceDependency.Type.Regular
 import org.jetbrains.kotlin.gradle.idea.testFixtures.tcs.*
 import org.jetbrains.kotlin.gradle.testbase.*
+import org.jetbrains.kotlin.gradle.testbase.BuildOptions.ConfigurationCacheValue
 import org.jetbrains.kotlin.gradle.util.*
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.test.TestMetadata
@@ -27,7 +28,8 @@ import kotlin.test.assertIs
 @DisplayName("Tests for multiplatform with composite builds")
 class MppCompositeBuildIT : KGPBaseTest() {
     override val defaultBuildOptions: BuildOptions
-        get() = super.defaultBuildOptions.disableConfigurationCache_KT70416()
+        // FIXME: KT-81095 these tests fail with OOM when CC is enabled
+        get() = super.defaultBuildOptions.copy(configurationCache = ConfigurationCacheValue.DISABLED)
 
     @GradleTest
     fun `test - sample0 - ide dependencies`(gradleVersion: GradleVersion) {
@@ -173,9 +175,15 @@ class MppCompositeBuildIT : KGPBaseTest() {
 
     @GradleTest
     fun `test - sample1 - assemble and execute`(gradleVersion: GradleVersion) {
+        var buildOptions = defaultBuildOptions.disableConfigurationCacheForGradle7(gradleVersion)
+        if (gradleVersion < GradleVersion.version("9.1")) {
+            // FIXME: KT-74795
+            buildOptions = buildOptions.disableIsolatedProjects()
+        }
         project(
             "mpp-composite-build/sample1",
             gradleVersion,
+            buildOptions = buildOptions,
         ) {
             projectPath.resolve("included-build").addDefaultSettingsToSettingsGradle(gradleVersion)
             buildGradleKts.replaceText("<kgp_version>", KOTLIN_VERSION)
@@ -200,6 +208,7 @@ class MppCompositeBuildIT : KGPBaseTest() {
         }
     }
 
+    @GradleTestVersions(maxVersion = TestVersions.Gradle.G_8_14) // Used old Kotlin version is not compatible with Gradle 9.+
     @GradleTest
     fun `test - sample1 - assemble and execute - included build using older version of Kotlin`(gradleVersion: GradleVersion) {
         project(
@@ -210,6 +219,7 @@ class MppCompositeBuildIT : KGPBaseTest() {
                 .suppressDeprecationWarningsOn(
                     reason = "KGP 1.7.21 produces deprecation warnings with Gradle 8.4"
                 ) { gradleVersion >= GradleVersion.version(TestVersions.Gradle.G_8_4) }
+                .copy(configurationCache = ConfigurationCacheValue.DISABLED)
         ) {
             projectPath.resolve("included-build").addDefaultSettingsToSettingsGradle(gradleVersion)
             buildGradleKts.replaceText("<kgp_version>", KOTLIN_VERSION)
@@ -276,7 +286,8 @@ class MppCompositeBuildIT : KGPBaseTest() {
             gradleProperties.append("kotlin.mpp.enableCInteropCommonization=true")
 
             build("cleanNativeDistributionCommonization")
-            build(":consumerA:transformNativeMainCInteropDependenciesMetadataForIde") {
+
+            resolveIdeDependencies("consumerA") {
                 assertTasksAreNotInTaskGraph(
                     ":producerBuild:producerA:iosArm64MetadataJar",
                     ":producerBuild:producerA:iosX64MetadataJar",
@@ -408,7 +419,9 @@ class MppCompositeBuildIT : KGPBaseTest() {
 
         project(
             "mpp-composite-build/sample6-KT-56712-umbrella-composite/composite", gradleVersion,
-            buildOptions = defaultBuildOptions.copy(androidVersion = agpVersion), buildJdk = jdkVersion.location
+            buildOptions = defaultBuildOptions.copy(
+                androidVersion = agpVersion,
+            ), buildJdk = jdkVersion.location
         ) {
             settingsGradleKts.toFile().replaceText("<producer_path>", producer.projectPath.toUri().path)
             settingsGradleKts.toFile().replaceText("<consumerA_path>", consumerA.projectPath.toUri().path)
@@ -460,6 +473,7 @@ class MppCompositeBuildIT : KGPBaseTest() {
     }
 
     @TestMetadata("mpp-composite-build/kt65315_with_resources_in_metadata_klib")
+    @GradleTestVersions(maxVersion = TestVersions.Gradle.G_8_14)
     @GradleTest
     fun `KT-65315 composite project with resources in metadata klib`(gradleVersion: GradleVersion) {
         val defaultKotlinNativeVersion = defaultBuildOptions.nativeOptions.version
@@ -470,7 +484,7 @@ class MppCompositeBuildIT : KGPBaseTest() {
                 version = null,
                 enableKlibsCrossCompilation = false
             )
-        )
+        ).disableIsolatedProjects()
 
         val producer = project("mpp-composite-build/kt65315_with_resources_in_metadata_klib/producer", gradleVersion) {
             settingsGradleKts.modify {
@@ -539,7 +553,7 @@ class MppCompositeBuildIT : KGPBaseTest() {
     @GradleTest
     fun `test included build of older version works correctly`(gradleVersion: GradleVersion) {
         val defaultKotlinNativeVersion = defaultBuildOptions.nativeOptions.version
-        val oldKotlinVersion = "1.9.24"
+        val oldKotlinVersion = TestVersions.Kotlin.STABLE_RELEASE
 
         val buildOptions = defaultBuildOptions.copy(
             nativeOptions = defaultBuildOptions.nativeOptions.copy(version = null)
@@ -559,7 +573,7 @@ class MppCompositeBuildIT : KGPBaseTest() {
         project(
             "mpp-composite-build/sample0/consumerBuild",
             gradleVersion,
-            buildOptions = buildOptions.suppressWarningForOldKotlinVersion(gradleVersion),
+            buildOptions = buildOptions,
         ) {
             settingsGradleKts.toFile().replaceText("<producer_path>", producer.projectPath.toUri().path)
             defaultKotlinNativeVersion?.let { gradleProperties.appendText("\nkotlin.native.version=$it") }

@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.ir.validation.temporarilyPushing
 import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
+import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import org.jetbrains.kotlin.utils.mapToSetOrEmpty
 
 /**
@@ -93,6 +94,7 @@ object DumpSyntheticAccessors {
         val expression = when (body) {
             is IrExpressionBody -> body.expression
             is IrBlockBody -> (body.statements.singleOrNull() as? IrReturn)?.value
+                ?: body.statements.singleOrNull() as? IrDelegatingConstructorCall
                 ?: compilationException("${id()} is expected to have exactly the single expression in block body", this)
             is IrSyntheticBody -> syntheticBodyIsNotSupported(this)
         }
@@ -288,11 +290,16 @@ private class SyntheticAccessorsDumper(
                     bodyPrintingStrategy = BodyPrintingStrategy.NO_BODIES,
                     visibilityPrintingStrategy = VisibilityPrintingStrategy.ALWAYS,
                     printMemberDeclarations = false,
-                    collapseObjectLiteralBlock = true
+                    collapseObjectLiteralBlock = true,
+                    printVariableInitializers = false
                 )
             ).substringBefore('{').trimEnd()
 
-            return appendLine(dump)
+            val oneLineDump = runIf((element as? IrFunction)?.parameters?.any { it.kind == IrParameterKind.Context } == true) {
+                dump.lineSequence().joinToString(separator = " ")
+            } ?: dump
+
+            return appendLine(oneLineDump)
         }
 
         private fun StringBuilder.appendIndent(indent: Int): StringBuilder {

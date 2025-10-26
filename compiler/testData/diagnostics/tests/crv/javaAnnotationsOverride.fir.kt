@@ -84,7 +84,7 @@ class List1: JavaList() {
     override fun notAListMember(): Int = 42
 }
 
-@MustUseReturnValue
+@MustUseReturnValues
 class List2: JavaList() {
     override fun get(index: Int): String = ""
     // Not sure why K1 reports parameter name change, probably some quirk in handling java list as supertype
@@ -96,16 +96,18 @@ class List2: JavaList() {
     }
 }
 
+// Due to enhancements, UnnanotatedList.get/size/add get @MURV from kotlin.collections.List :
+
 class List3: UnannotatedList() {
     override fun get(index: Int) = ""
     override fun notAListMember(): Int = 42
 }
 
-@MustUseReturnValue
+@MustUseReturnValues
 class List4: UnannotatedList() {
     override fun get(index: Int): String = ""
     // Not sure why K1 reports parameter name change, probably some quirk in handling java list as supertype
-    override fun add(s: String?): Boolean = true
+    override fun <!OVERRIDING_IGNORABLE_WITH_MUST_USE!>add<!>(s: String?): Boolean = true
 
     @IgnorableReturnValue
     override fun set(index: Int, element: String?): String {
@@ -114,35 +116,35 @@ class List4: UnannotatedList() {
 }
 
 fun test1(l: List1) {
-    <!RETURN_VALUE_NOT_USED!>l.get(0)<!>
-    <!RETURN_VALUE_NOT_USED!>l.notAListMember()<!>
-    <!RETURN_VALUE_NOT_USED!>l.size<!>
+    l.<!RETURN_VALUE_NOT_USED!>get<!>(0)
+    l.<!RETURN_VALUE_NOT_USED!>notAListMember<!>()
+    l.<!RETURN_VALUE_NOT_USED!>size<!>
     l.set(0, "")
     l.add("")
 }
 
 fun test2(l: List2) {
-    <!RETURN_VALUE_NOT_USED!>l.get(0)<!>
-    <!RETURN_VALUE_NOT_USED!>l.notAListMember()<!>
-    <!RETURN_VALUE_NOT_USED!>l.size<!>
+    l.<!RETURN_VALUE_NOT_USED!>get<!>(0)
+    l.<!RETURN_VALUE_NOT_USED!>notAListMember<!>()
+    l.<!RETURN_VALUE_NOT_USED!>size<!>
     l.set(0, "")
-    <!RETURN_VALUE_NOT_USED!>l.add("")<!>
+    l.<!RETURN_VALUE_NOT_USED!>add<!>("")
 }
 
 fun test3(l: List3) {
-    l.get(0)
+    l.<!RETURN_VALUE_NOT_USED!>get<!>(0)
     l.notAListMember()
-    l.size
+    l.<!RETURN_VALUE_NOT_USED!>size<!>
     l.set(0, "")
     l.add("")
 }
 
 fun test4(l: List4) {
-    <!RETURN_VALUE_NOT_USED!>l.get(0)<!>
+    l.<!RETURN_VALUE_NOT_USED!>get<!>(0)
     l.notAListMember()
-    l.size
+    l.<!RETURN_VALUE_NOT_USED!>size<!>
     l.set(0, "")
-    <!RETURN_VALUE_NOT_USED!>l.add("")<!>
+    l.<!RETURN_VALUE_NOT_USED!>add<!>("")
 }
 
 /* GENERATED_FIR_TAGS: classDeclaration, flexibleType, functionDeclaration, integerLiteral, javaFunction, javaProperty,

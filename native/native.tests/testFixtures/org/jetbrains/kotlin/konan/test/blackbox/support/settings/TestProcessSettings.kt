@@ -15,7 +15,6 @@ import org.jetbrains.kotlin.konan.properties.resolvablePropertyList
 import org.jetbrains.kotlin.konan.target.Distribution
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.test.blackbox.support.ClassLevelProperty
-import org.jetbrains.kotlin.konan.test.blackbox.support.MutedOption
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.RunnerWithExecutor
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.NoopTestRunner
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.Runner
@@ -189,6 +188,11 @@ class ExplicitBinaryOptions(private val rawOptions: List<String>) {
 
 enum class Allocator(val compilerFlag: String?) {
     UNSPECIFIED(null),
+
+    NOT_PAGED("-Xbinary=pagedAllocator=false"),
+    PAGED("-Xbinary=pagedAllocator=true"),
+
+    // TODO remove (KT-75914)
     STD("-Xallocator=std"),
     CUSTOM("-Xallocator=custom");
 
@@ -275,23 +279,6 @@ sealed class CacheMode {
     }
 }
 
-enum class PipelineType(val mutedOption: MutedOption, val compilerFlags: List<String>) {
-    DEFAULT(
-        MutedOption.DEFAULT,
-        emptyList()
-    ),
-    K1(
-        MutedOption.K1,
-        listOf("-language-version", "1.9")
-    ),
-    K2(
-        MutedOption.K2,
-        listOf("-language-version", if (LanguageVersion.LATEST_STABLE.major < 2) "2.0" else LanguageVersion.LATEST_STABLE.toString())
-    );
-
-    override fun toString() = if (compilerFlags.isEmpty()) "" else compilerFlags.joinToString(prefix = "(", postfix = ")", separator = " ")
-}
-
 enum class CompilerOutputInterceptor {
     DEFAULT,
     NONE
@@ -334,6 +321,20 @@ internal class XCTestRunner(val isEnabled: Boolean, private val nativeTargets: K
         "${targetPlatform()}/Developer/Library/Frameworks/"
     }
 
+    // absent on xcode pre 26, we can drop the optionality as soon as we drop xcode 16
+    val toolchainPath: String? by lazy {
+        val result = try {
+            runProcess(
+                "/usr/bin/xcrun",
+                "--show-toolchain-path"
+            )
+        } catch (_: Throwable) {
+            return@lazy null
+        }
+
+        result.stdout.trim()
+    }
+
     private fun targetPlatform(): String {
         val xcodeTarget = when (val target = nativeTargets.testTarget) {
             KonanTarget.MACOS_X64, KonanTarget.MACOS_ARM64 -> "macosx"
@@ -358,6 +359,7 @@ internal class XCTestRunner(val isEnabled: Boolean, private val nativeTargets: K
 }
 
 val Settings.systemFrameworksPath: String get() = get<XCTestRunner>().frameworksPath
+val Settings.systemToolchainPath: String? get() = get<XCTestRunner>().toolchainPath
 
 /**
  * A custom (i.e., the second, an alternative) distribution of the Kotlin/Native compiler.

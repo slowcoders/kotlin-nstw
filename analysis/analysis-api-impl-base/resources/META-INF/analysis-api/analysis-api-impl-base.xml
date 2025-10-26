@@ -31,6 +31,7 @@
 
     <psi.classFileDecompiler implementation="org.jetbrains.kotlin.analysis.decompiler.psi.KotlinClassFileDecompiler"/>
     <psi.classFileDecompiler implementation="org.jetbrains.kotlin.analysis.decompiler.psi.KotlinBuiltInDecompiler"/>
+    <psi.classFileDecompiler implementation="org.jetbrains.kotlin.analysis.decompiler.konan.KotlinKlibMetadataDecompiler"/>
 
     <projectService
         serviceInterface="org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade"
@@ -93,6 +94,7 @@
     />
 
     <applicationService serviceImplementation="org.jetbrains.kotlin.analysis.decompiled.light.classes.origin.KotlinDeclarationInCompiledFileSearcher" />
+    <applicationService serviceImplementation="org.jetbrains.kotlin.analysis.decompiler.konan.KlibLoadingMetadataCache" />
 
     <java.elementFinder implementation="org.jetbrains.kotlin.asJava.finder.JavaElementFinder"/>
 
@@ -108,13 +110,6 @@
         description="Validate PsiElements passed to the Analysis API"
         key="kotlin.analysis.validate.psi.input"
         restartRequired="false"
-    />
-
-    <registryKey
-        defaultValue="true"
-        description="Enables stub-based Kotlin decompiler"
-        key="kotlin.analysis.stub.based.decompiler"
-        restartRequired="true"
     />
   </extensions>
 

@@ -18,13 +18,11 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.api.throwUnexpectedFirEle
 import org.jetbrains.kotlin.analysis.utils.errors.unexpectedElementError
 import org.jetbrains.kotlin.fir.FirPackageDirective
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.buildImport
 import org.jetbrains.kotlin.fir.declarations.builder.buildResolvedImport
 import org.jetbrains.kotlin.fir.declarations.utils.classId
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
-import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.declarations.utils.isStatic
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.psi
@@ -32,6 +30,7 @@ import org.jetbrains.kotlin.fir.references.*
 import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeOperatorAmbiguityError
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnmatchedTypeArgumentsError
+import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.resolve.toRegularClassSymbol
 import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.scopes.impl.FirExplicitSimpleImportingScope
@@ -49,7 +48,6 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
-import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementTypes
 import org.jetbrains.kotlin.resolve.ROOT_PREFIX_FOR_IDE_RESOLUTION_MODE
 import org.jetbrains.kotlin.utils.addIfNotNull
 import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
@@ -179,9 +177,10 @@ internal object FirReferenceResolveHelper {
     private fun collectTypeReferences(qualified: KtUserType): MutableList<KtNameReferenceExpression> {
         val refs = mutableListOf<KtNameReferenceExpression>()
         fun collectFragments(type: KtUserType) {
-            type.getStubOrPsiChild(KtStubElementTypes.USER_TYPE)?.let { collectFragments(it) }
+            type.qualifier?.let { collectFragments(it) }
             refs.add(type.referenceExpression as? KtNameReferenceExpression ?: return)
         }
+
         collectFragments(qualified)
         return refs
     }
@@ -252,7 +251,7 @@ internal object FirReferenceResolveHelper {
             is FirResolvedImport -> getSymbolsByResolvedImport(expression, symbolBuilder, fir, session)
             is FirPackageDirective -> getSymbolsForPackageDirective(expression, symbolBuilder)
             is FirFile -> getSymbolsByFirFile(symbolBuilder, fir)
-            is FirArrayLiteral -> {
+            is FirCollectionLiteral -> {
                 // We can't yet find PsiElement for arrayOf, intArrayOf, etc.
                 emptyList()
             }

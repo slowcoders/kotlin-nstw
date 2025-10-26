@@ -6,7 +6,6 @@
 package org.jetbrains.kotlin.backend.jvm.lower
 
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
-import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.backend.jvm.CachedFieldsForObjectInstances
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
 import org.jetbrains.kotlin.backend.jvm.JvmLoweredDeclarationOrigin
@@ -30,7 +29,6 @@ import org.jetbrains.kotlin.resolve.annotations.JVM_STATIC_ANNOTATION_FQ_NAME
 /**
  * Makes `@JvmStatic` functions in non-companion objects static and replaces all call sites in the module.
  */
-@PhaseDescription(name = "JvmStaticInObject")
 internal class JvmStaticInObjectLowering(val context: JvmBackendContext) : FileLoweringPass {
     override fun lower(irFile: IrFile) =
         irFile.transformChildrenVoid(
@@ -41,7 +39,6 @@ internal class JvmStaticInObjectLowering(val context: JvmBackendContext) : FileL
 /**
  * Synthesizes static proxy functions for `@JvmStatic` functions in companion objects.
  */
-@PhaseDescription(name = "JvmStaticInCompanion")
 internal class JvmStaticInCompanionLowering(val context: JvmBackendContext) : FileLoweringPass {
     override fun lower(irFile: IrFile) =
         irFile.transformChildrenVoid(CompanionObjectJvmStaticTransformer(context))
@@ -162,6 +159,7 @@ private class CompanionObjectJvmStaticTransformer(val context: JvmBackendContext
                 expression.makeStatic(context.irBuiltIns, staticProxy)
             }
             callee.symbol == context.symbols.indyLambdaMetafactoryIntrinsic -> {
+                // TODO change after KT-78719
                 val implFunRef = expression.arguments[1] as? IrFunctionReference
                     ?: throw AssertionError("'implMethodReference' is expected to be 'IrFunctionReference': ${expression.dump()}")
                 val implFun = implFunRef.symbol.owner
