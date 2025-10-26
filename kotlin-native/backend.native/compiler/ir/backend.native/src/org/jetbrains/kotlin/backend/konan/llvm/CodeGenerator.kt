@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.backend.konan.ir.isAny
 import org.jetbrains.kotlin.backend.konan.llvm.ThreadState.Native
 import org.jetbrains.kotlin.backend.konan.llvm.ThreadState.Runnable
 import org.jetbrains.kotlin.backend.konan.llvm.objc.ObjCDataGenerator
+import org.jetbrains.kotlin.config.nativeBinaryOptions.GC
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.objcinterop.*
@@ -514,6 +515,7 @@ internal class StackLocalsManagerImpl(
     private fun clean(stackLocal: StackLocal, refsOnly: Boolean) = with(functionGenerationContext) {
         if (stackLocal.isArray) {
             if (stackLocal.irClass.symbol == context.symbols.array) {
+                // rtgc. zeroArrayRefs => stackLocal 전용
                 call(llvm.zeroArrayRefsFunction, listOf(stackLocal.objHeaderPtr))
             } else if (!refsOnly) {
                 val arrayType = localArrayType(stackLocal.irClass, stackLocal.arraySize!!)
@@ -532,6 +534,7 @@ internal class StackLocalsManagerImpl(
                     if (refsOnly)
                         storeHeapRef(kNullObjHeaderPtr, fieldPtr)
                     else
+                        // rtgc. zeroHeapRef => stackLocal 전용
                         call(llvm.zeroHeapRefFunction, listOf(fieldPtr))
                 }
             }
@@ -786,10 +789,14 @@ internal abstract class FunctionGenerationContext(
     private fun updateRef(value: LLVMValueRef, address: LLVMValueRef, onStack: Boolean,
                           isVolatile: Boolean = false, alignment: Int? = null) {
         require(alignment == null || alignment % runtime.pointerAlignment == 0)
+
         if (onStack) {
             require(!isVolatile) { "Stack ref update can't be volatile"}
             call(llvm.updateStackRefFunction, listOf(address, value))
         } else {
+            // require(context.config.gc != GC.NO_STOP_THE_WORLD) {
+            //     "NSTW requires anchor!"
+            // }            
             if (isVolatile) {
                 call(llvm.UpdateVolatileHeapRef, listOf(address, value))
             } else {

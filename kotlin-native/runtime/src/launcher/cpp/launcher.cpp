@@ -43,7 +43,7 @@ OBJ_GETTER(setupArgs, int argc, const char** argv) {
     ObjHolder holder;
     CreateStringFromCString(argv[index], holder.slot());
     // UpdateHeapRef(ArrayAddressOfElementAt(array, index - 1), result.obj());
-    rtgc_UpdateObjectRef(ArrayAddressOfElementAt(array, index - 1), holder.obj(), result);
+    rtgc_UpdateHeapRef(ArrayAddressOfElementAt(array, index - 1), holder.obj(), result);
   }
   return result;
 }

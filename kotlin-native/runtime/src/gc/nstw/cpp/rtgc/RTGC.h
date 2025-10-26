@@ -588,7 +588,7 @@ public:
     static void replaceObjectRef_inline(GCRef* location, GCRef object, GCRef owner) {
         rtgc_assert(owner != NULL);
         auto referrer = pal::toNode<true>(owner);
-        if (referrer->isYoung()) {
+        if (true) {//} referrer->isYoung()) {
             pal::replaceYoungRef<_volatile>(location, object);
         } else {
             replaceObjectRef_slow(location, object, referrer);

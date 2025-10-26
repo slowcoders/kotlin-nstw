@@ -329,7 +329,7 @@ public class KotlinTestUtils {
     public static void failIfNotEqual(@NotNull String message, FileComparisonResult fileComparisonResult) {
         if (!fileComparisonResult.doesEqual) {
             throw new AssertionFailedError(
-                    message + ": " + fileComparisonResult.expectedFile.getName(),
+                    message + ": " + fileComparisonResult.expectedFile.getName() + " actual: " + fileComparisonResult.actualSanitizedText,
                     new FileInfo(fileComparisonResult.expectedFile.getAbsolutePath(), fileComparisonResult.expectedText.getBytes(StandardCharsets.UTF_8)),
                     fileComparisonResult.actualSanitizedText
             );

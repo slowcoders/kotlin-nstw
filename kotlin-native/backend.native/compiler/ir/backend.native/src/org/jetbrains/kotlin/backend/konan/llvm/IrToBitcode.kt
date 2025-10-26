@@ -498,11 +498,19 @@ internal class CodeGeneratorVisitor(
                             .forEach { irField ->
                                 if (irField.type.binaryTypeIsReference() && irField.storageKind != FieldStorageKind.THREAD_LOCAL) {
                                     val address = staticFieldPtr(irField, functionGenerationContext)
-                                    storeHeapRef(codegen.kNullObjHeaderPtr, address)
+                                    if (codegen.context.config.gc == GC.NO_STOP_THE_WORLD) {
+                                        rtgc_storeStaticVar(codegen.kNullObjHeaderPtr, address)
+                                    } else {
+                                        storeHeapRef(codegen.kNullObjHeaderPtr, address)
+                                    }
                                 }
                             }
                     state.globalSharedObjects.forEach { address ->
-                        storeHeapRef(codegen.kNullObjHeaderPtr, address)
+                        if (codegen.context.config.gc == GC.NO_STOP_THE_WORLD) {
+                            rtgc_storeStaticVar(codegen.kNullObjHeaderPtr, address)
+                        } else {
+                            storeHeapRef(codegen.kNullObjHeaderPtr, address)
+                        }
                     }
                     state.globalInitState?.let {
                         store(llvm.intptr(FILE_NOT_INITIALIZED), it)

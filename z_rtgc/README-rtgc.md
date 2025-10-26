@@ -43,15 +43,15 @@ org.gradle.java.installations.auto-detect=false
 
 ./gradlew :nativeCompilerTest --continue
 
-./gradlew :nativeCompilerTest --continue \
+./gradlew :nativeCompilerTest \
     -Pkotlin.internal.native.test.target=macos_arm64 \
-    -Pkotlin.internal.native.test.gcType=NSTW STWMS or CMS, PCMS
-    -Pkotlin.internal.native.test.compileOnly=false
+    -Pkotlin.internal.native.test.gcType=NSTW \
+    -Pkotlin.internal.native.test.compileOnly=true
+    -Pkotlin.native.tests.tags='frontend-classic'
     -Pkotlin.internal.native.test.optimizationMode=DEBUF OPT
     gcScheduler=UNSPECIFIED (default), ADAPTIVE, AGGRESSIVE, MANUAL
     alloc=UNSPECIFIED (default), STD, CUSTOM
     xctest=false (default), true.
-    -Pkotlin.native.tests.tags='frontend-classic'
 
 ## CodeGen box test.
 ./gradlew :native:native.tests:codegen-box:test --tests \

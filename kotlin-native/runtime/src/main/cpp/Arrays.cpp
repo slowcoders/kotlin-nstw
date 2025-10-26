@@ -92,7 +92,7 @@ PERFORMANCE_INLINE void Kotlin_Array_set_value(KRef thiz, KInt index, KConstRef 
   if (BoundsCheck)
     boundsCheck(array, index);
   // UpdateHeapRef(ArrayAddressOfElementAt(array, index), value);
-  rtgc_UpdateObjectRef(ArrayAddressOfElementAt(array, index), value, thiz);  
+  rtgc_UpdateHeapRef(ArrayAddressOfElementAt(array, index), value, thiz);  
 
 }
 
@@ -148,7 +148,7 @@ void Kotlin_Array_fillImpl(KRef thiz, KInt fromIndex, KInt toIndex, KRef value) 
   checkRangeIndexes(fromIndex, toIndex, array->count_);
   for (KInt index = fromIndex; index < toIndex; ++index) {
     // UpdateHeapRef(ArrayAddressOfElementAt(array, index), value);
-    rtgc_UpdateObjectRef(ArrayAddressOfElementAt(array, index), value, thiz);
+    rtgc_UpdateHeapRef(ArrayAddressOfElementAt(array, index), value, thiz);
   }
 }
 
@@ -165,14 +165,14 @@ void Kotlin_Array_copyImpl(KConstRef thiz, KInt fromIndex,
       for (int index = 0; index < count; index++) {
         // UpdateHeapRef(ArrayAddressOfElementAt(destinationArray, toIndex + index),
         //                 *ArrayAddressOfElementAt(array, fromIndex + index));
-        rtgc_UpdateObjectRef(ArrayAddressOfElementAt(destinationArray, toIndex + index),
+        rtgc_UpdateHeapRef(ArrayAddressOfElementAt(destinationArray, toIndex + index),
                       *ArrayAddressOfElementAt(array, fromIndex + index), destination);
       }
     } else {
       for (int index = count - 1; index >= 0; index--) {
         // UpdateHeapRef(ArrayAddressOfElementAt(destinationArray, toIndex + index),
         //                 *ArrayAddressOfElementAt(array, fromIndex + index));
-        rtgc_UpdateObjectRef(ArrayAddressOfElementAt(destinationArray, toIndex + index),
+        rtgc_UpdateHeapRef(ArrayAddressOfElementAt(destinationArray, toIndex + index),
                       *ArrayAddressOfElementAt(array, fromIndex + index), destination);
       }
     }

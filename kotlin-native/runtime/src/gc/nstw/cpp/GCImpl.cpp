@@ -130,7 +130,7 @@ void gc::GC::onEpochFinalized(int64_t epoch) noexcept {
     impl_->state_.finalized(epoch);
 }
 
-extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
+extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateHeapRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
     rtgc::GCNode::replaceObjectRef_inline<false>((const ObjHeader**)location, const_cast<ObjHeader*>(object), const_cast<ObjHeader*>(owner));
     /*
         AssertThreadState(ThreadState::kRunnable);
@@ -149,7 +149,7 @@ extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateObjectRef(ObjHeade
     */
 }
 
-extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateVolatileObjectRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
+extern "C" PERFORMANCE_INLINE RUNTIME_NOTHROW void rtgc_UpdateVolatileHeapRef(ObjHeader** location, const ObjHeader* object, const ObjHeader* owner) {
     rtgc::GCNode::replaceObjectRef_inline<true>((const ObjHeader**)location, const_cast<ObjHeader*>(object), const_cast<ObjHeader*>(owner));
     /*
         AssertThreadState(ThreadState::kRunnable);
