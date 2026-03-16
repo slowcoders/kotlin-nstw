@@ -134,8 +134,7 @@ internal abstract class WasmBinaryTransform : TransformAction<WasmBinaryTransfor
         ).run()
 
         if (mode == KotlinJsBinaryMode.DEVELOPMENT) return
-
-        val binaryenOutputDirectory = outputs.dir(inputFile.name.replace(".klib", "-transformed"))
+        val binaryenOutputDirectory = Files.createTempDirectory("wasm-transform-binaryen").toFile()
 
         val inputFileBinaryen = compilerOutputDir.listFilesOrEmpty().first { it.extension == "wasm" }
         execOps.exec {
@@ -144,12 +143,19 @@ internal abstract class WasmBinaryTransform : TransformAction<WasmBinaryTransfor
             it.args = binaryenArgs(inputFileBinaryen, binaryenOutputDirectory)
         }
 
+        val transformOutputDirectory = outputs.dir(inputFile.name.replace(".klib", "-transformed"))
+
         fs.copy {
             it.from(compilerOutputDir)
-            it.into(binaryenOutputDirectory)
+            it.into(transformOutputDirectory)
             it.include("*.mjs", "*.js", "*.js.map")
         }
 
+        fs.copy {
+            it.from(binaryenOutputDirectory)
+            it.into(transformOutputDirectory)
+            it.include("*.wasm")
+        }
     }
 
     private fun binaryenArgs(
@@ -160,7 +166,8 @@ internal abstract class WasmBinaryTransform : TransformAction<WasmBinaryTransfor
         newArgs.addAll(BinaryenConfig.binaryenMultimoduleArgs)
         newArgs.add(inputFileBinaryen.absolutePath)
         newArgs.add("-o")
-        newArgs.add(binaryenOutputDirectory.resolve(inputFileBinaryen.name).absolutePath)
+        val outputFile = binaryenOutputDirectory.resolve(inputFileBinaryen.name)
+        newArgs.add(outputFile.absolutePath)
         return newArgs
     }
 
