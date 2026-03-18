@@ -116,6 +116,38 @@ class KotlinWasmPerModuleGradlePluginIT : AbstractKotlinWasmGradlePluginIT() {
     fun jsTargetWithBrowser(gradleVersion: GradleVersion) {
         jsTargetWithBrowser(gradleVersion, 2)
     }
+
+    @DisplayName("Check that js target all wasm files' size less in production")
+    @GradleTest
+    fun jsTargetWasmFilesSize(gradleVersion: GradleVersion) {
+        project("new-mpp-wasm-js", gradleVersion) {
+            buildGradleKts.modify {
+                it.replace("<JsEngine>", "browser")
+            }
+
+            val developmentSize: MutableMap<String, Long> = mutableMapOf()
+
+            build("wasmJsDevelopmentExecutableCompileSync") {
+                assertTasksExecuted(":compileDevelopmentExecutableKotlinWasmJs")
+
+                projectPath.resolve("build/wasm/packages/redefined-wasm-module-name/kotlin").listDirectoryEntries()
+                    .filter { it.extension == "wasm" }
+                    .forEach { developmentSize[it.name] = it.fileSize() }
+            }
+
+            build("clean")
+
+            build("wasmJsProductionExecutableCompileSync") {
+                projectPath.resolve("build/wasm/packages/redefined-wasm-module-name/kotlin").listDirectoryEntries()
+                    .filter { it.extension == "wasm" }
+                    .forEach {
+                        assertTrue("Production variant should be smaller than development variant for ${it.name}") {
+                            it.fileSize() < developmentSize.getValue(it.name)
+                        }
+                    }
+            }
+        }
+    }
 }
 
 @MppGradlePluginTests
