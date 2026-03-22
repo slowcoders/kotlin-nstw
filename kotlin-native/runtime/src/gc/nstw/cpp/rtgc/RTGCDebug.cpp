@@ -138,8 +138,8 @@ bool RTGC_dumpRefInfo(const GCNode* node, const char* msg) {
 
 void RTGC_dump(const char* msg, const TypeInfo* objType, const ObjHeader* obj, const GCNode* node) {
     if (false) {
-        konan::consolePrintf("%s %p th=%lx rc=%llx\n", 
-            msg, node, konan::currentThreadId(), node == NULL ? 0 : node->refCountBitFlags());
+        konan::consolePrintf("%s %p th=%x rc=%llx\n", 
+            msg, node, (int)konan::currentThreadId(), node == NULL ? 0 : node->refCountBitFlags());
         return;
     }
 
@@ -188,9 +188,9 @@ void RTGC_dump(const char* msg, const TypeInfo* objType, const ObjHeader* obj, c
     }
 
     GCNode* anchor = node == NULL ? NULL : node->getAnchor();
-    konan::consolePrintf("%s [%p] -> %p(%s:%s) th: %lx rc_flags=%llx\n%s", 
+    konan::consolePrintf("%s [%p] -> %p(%s:%s) th: %x rc_flags=%llx\n%s", 
         msg, anchor, node, package_, classname,
-        konan::currentThreadId(), node == NULL ? 0 : node->refCountBitFlags(), stackTrace);
+        (int)konan::currentThreadId(), node == NULL ? 0 : node->refCountBitFlags(), stackTrace);
 
     if (classname[0] != '?') DisposeCString((char*)classname);
     if (package_[0] != '?') DisposeCString((char*)package_);

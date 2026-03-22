@@ -37,7 +37,7 @@ void* rtgc::mem::VirtualMemory::reserve_memory(size_t bytes) {
 #endif
 #endif
     rtgc_assert_f(addr != NULL && addr != (void*)-1, 
-        "fail to memory reservation size: %lu M", (bytes/(1024*1024)));
+        "fail to memory reservation size: %d M", (int)(bytes/(1024*1024)));
     if (false) rtgc_log("reserve_memory %p %dk\n", addr, (int)(bytes/1024));
     return addr;
 }

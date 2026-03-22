@@ -37,6 +37,14 @@ org.gradle.java.installations.auto-detect=false
 ## run test 
 ```sh
 
+# ./native/native.tests/build/t/ bb.src/ 아래에 소스 생성  bb.out/ 아래에 kexe 생성.
+# rm -rf ./native/native.tests/build/t/bb.out/
+./gradlew -Ptest_flags="-g -Xbinary=stripDebugInfoFromNativeLibs=false" :nativeCompilerTest  --continue
+./gradlew -Ptest_flags="-g -Xbinary=stripDebugInfoFromNativeLibs=false" :nativeCompilerUnitTest --continue
+./gradlew -Ptest_flags="-g -Xbinary=stripDebugInfoFromNativeLibs=false" :native:native.tests:stress:test --continue
+
+
+
 ./gradlew -Ptest_flags="-g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :native:native.tests:stdlibTest
 
 ./gradlew -Ptest_flags="-g -Xbinary=gc=nstw  -Xbinary=stripDebugInfoFromNativeLibs=false" :native:native.tests:stress:test

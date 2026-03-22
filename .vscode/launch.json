@@ -5,8 +5,9 @@
             "name": "Launch lldb",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceRoot}/kotlin-native/runtime/build/bin/test/macos_arm64/macos_arm64NstwGcTest.kexe",
-            "program": "${workspaceRoot}/kotlin-native/runtime/build/bin/test/macos_arm64/macos_arm64NstwGcCustomTest.kexe",
+            "program": "${workspaceRoot}/./native/native.tests/build/t/bb.out/oa64_FirNatStaTesWitInlFunInKliGen/standalone_console_readlnEmpty/standalone_console_readlnEmpty.kexe",
+            //"program": "${workspaceRoot}/kotlin-native/runtime/build/bin/test/macos_arm64/macos_arm64NstwGcTest.kexe",
+            //"program": "${workspaceRoot}/kotlin-native/runtime/build/bin/test/macos_arm64/macos_arm64NstwGcCustomTest.kexe",
             // "program": "${workspaceRoot}/native/native.tests/stress/build/t/bb.out/oa64_NatStrTesGen/testData_array_out_of_memory/testData_array_out_of_memory.kexe",
             // "program": "${workspaceRoot}/kotlin-native/runtime/build/bin/test/macos_arm64/macos_arm64MmTest.kexe",
             // "program": "${workspaceRoot}/native/native.tests/codegen-box/build/t/bb.out/oa64_NatCodBoxTesGen/box_annotations_instances_multi-750dc691/box_annotations_instances_multi-750dc691.kexe",
@@ -47,7 +48,7 @@
             // "cwd": "${workspaceRoot}/kotlin-native/performance/cinterop",
             
             // "cwd": "${workspaceRoot}",
-            "stopOnEntry": false,  // 참고) type 이 gdb, cppdb 인 경우엔 stopAtEntry 를 사용.
+            "stopOnEntry": true,  // 참고) type 이 gdb, cppdb 인 경우엔 stopAtEntry 를 사용.
             "breakpointMode": "file",  // 참고) file 모드에서는 assembly breakpoint 가 동작하지 않는다.
             "sourceMap": { 
                 "kotlin-native/runtime": "${workspaceFolder}/kotlin-native/runtime" 
