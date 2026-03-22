@@ -116,9 +116,9 @@ internal fun ObjCExportCodeGeneratorBase.generateBlockToKotlinFunctionConverter(
                     Lifetime.ARGUMENT
             )
             if (codegen.context.config.gc == GC.NO_STOP_THE_WORLD) {
-                rtgc_storeMemberVar(holder, structGep(bodyType, bodyPtr, 1), result, false);
+                rtgc_storeMemberVar(holder, structGep(bodyType, result, 1), result, false);
             } else {
-                storeHeapRef(holder, structGep(bodyType, bodyPtr, 1))
+                storeHeapRef(holder, structGep(bodyType, result, 1))
             }
             result
         } else {
