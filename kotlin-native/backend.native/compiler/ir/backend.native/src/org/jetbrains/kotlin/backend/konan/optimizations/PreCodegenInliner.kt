@@ -12,7 +12,9 @@ import org.jetbrains.kotlin.backend.common.push
 import org.jetbrains.kotlin.backend.konan.DECLARATION_ORIGIN_INLINE_CLASS_SPECIAL_FUNCTION
 import org.jetbrains.kotlin.backend.konan.NativeGenerationState
 import org.jetbrains.kotlin.backend.konan.ir.isArray
+import org.jetbrains.kotlin.backend.konan.ir.isBoxOrUnbox
 import org.jetbrains.kotlin.backend.konan.ir.konanLibrary
+import org.jetbrains.kotlin.backend.konan.lower.PreCodegenFunctionInlining
 import org.jetbrains.kotlin.backend.konan.lower.bridgeTarget
 import org.jetbrains.kotlin.backend.konan.lower.liveVariablesAtSuspensionPoint
 import org.jetbrains.kotlin.backend.konan.lower.originalConstructor
@@ -42,8 +44,8 @@ internal class PreCodegenInliner(
     private val context = generationState.context
     private val symbols = context.symbols
     private val noInline = symbols.noInline
-    private val string = symbols.string
-    private val throwable = symbols.throwable
+    private val string = context.irBuiltIns.stringClass
+    private val throwable = context.irBuiltIns.throwableClass
     private val kFunctionImpl = symbols.kFunctionImpl
     private val kSuspendFunctionImpl = symbols.kSuspendFunctionImpl
     private val invokeSuspendFunction = symbols.invokeSuspendFunction
@@ -131,7 +133,8 @@ internal class PreCodegenInliner(
                         val calleeSize = callee.body.allScopes.sumOf { it.nodes.size }
                         val shouldInline = !isALoop // As FunctionInlining doesn't work with recursive functions.
                                 && calleeSize <= inlineThreshold
-                                && (calleeIrFunction.origin != DECLARATION_ORIGIN_INLINE_CLASS_SPECIAL_FUNCTION)
+                                && calleeIrFunction.symbol != context.symbols.entryPoint // Might be unexpected to not see [main] in stacktraces.
+                                && !calleeIrFunction.isBoxOrUnbox()
                                 && calleeIrFunction.konanLibrary?.isCInteropLibrary() != true
                                 && !calleeIrFunction.hasAnnotation(noInline)
                                 && calleeIrFunction.correspondingPropertySymbol?.owner?.hasAnnotation(noInline) != true
@@ -146,19 +149,7 @@ internal class PreCodegenInliner(
                     }
 
                     if (functionsToInline.isNotEmpty()) {
-                        val inliner = FunctionInlining(
-                                context,
-                                inlineFunctionResolver = object : InlineFunctionResolver() {
-                                    override fun getFunctionDeclaration(symbol: IrFunctionSymbol): IrFunction? {
-                                        return symbol.owner.takeIf { it in functionsToInline }
-                                    }
-
-                                    override fun shouldSkipBecauseOfCallSite(expression: IrMemberAccessExpression<IrFunctionSymbol>): Boolean {
-                                        return expression is IrCall && expression.isVirtualCall
-                                    }
-                                },
-                        )
-                        inliner.lower(irBody, irFunction)
+                        PreCodegenFunctionInlining(context, functionsToInline).run(irFunction)
 
                         // KT-72336: This is not entirely correct since coroutinesLivenessAnalysisPhase could be turned off.
                         LivenessAnalysis.run(irBody) { it is IrSuspensionPoint }

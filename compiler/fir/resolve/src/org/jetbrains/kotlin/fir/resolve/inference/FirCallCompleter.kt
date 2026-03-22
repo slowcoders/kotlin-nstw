@@ -66,10 +66,6 @@ class FirCallCompleter(
 
     val completer: ConstraintSystemCompleter = ConstraintSystemCompleter(components)
 
-    fun isInsideAnnotationContext(): Boolean {
-        return transformer.expressionsTransformer?.enableArrayOfCallTransformation == true
-    }
-
     fun <T> completeCall(
         call: T,
         resolutionMode: ResolutionMode,
@@ -136,7 +132,7 @@ class FirCallCompleter(
 
                 inferenceSession.processPartiallyResolvedCall(call, resolutionMode, completionMode)
 
-                if (candidate.isSyntheticCallForTopLevelLambda()) {
+                if (candidate.isSyntheticCallForTopLevelLambda() || candidate.isSyntheticCallForTopLevelCL()) {
                     // This piece is only relevant for top-level lambdas inside PCLA.
                     // For a non-PCLA case, their synthetic call would be complete in the FULL mode.
                     // See FirSyntheticCallGenerator.resolveAnonymousFunctionExpressionWithSyntheticOuterCall
@@ -149,6 +145,8 @@ class FirCallCompleter(
                     // not-fixed outer type variables.
                     //
                     // Frankly speaking, this is some sort of hack, which currently I don't know how to resolve properly.
+                    //
+                    // Similarly, we need to replace top-level collection literals with function calls.
                     val storage = candidate.system.currentStorage()
                     val finalSubstitutor = storage
                         .buildCurrentSubstitutor(session.typeContext, emptyMap()).asCone()
@@ -168,6 +166,9 @@ class FirCallCompleter(
     }
 
     private fun Candidate.isSyntheticCallForTopLevelLambda(): Boolean = callInfo.callSite is FirAnonymousFunctionExpression
+    private fun Candidate.isSyntheticCallForTopLevelCL(): Boolean {
+        return symbol is FirSyntheticFunctionSymbol && callInfo.callSite is FirCollectionLiteral
+    }
 
     private fun checkStorageConstraintsAfterFullCompletion(storage: ConstraintStorage) {
         // Fast path for sake of optimization
@@ -289,16 +290,16 @@ class FirCallCompleter(
     }
 
     private fun FirBasedSymbol<*>.isSyntheticElvisFunction(): Boolean {
-        return origin == FirDeclarationOrigin.Synthetic.FakeFunction && (this as? FirCallableSymbol)?.callableId == SyntheticCallableId.ELVIS_NOT_NULL
+        return origin == FirDeclarationOrigin.Synthetic.FakeFunction && (this as? FirCallableSymbol)?.callableId == SyntheticCallableId.ELVIS
     }
 
-    fun <T> runCompletionForCall(
+    fun runCompletionForCall(
         candidate: Candidate,
         completionMode: ConstraintSystemCompletionMode,
-        call: T,
+        call: FirExpression,
         initialType: ConeKotlinType,
         analyzer: PostponedArgumentsAnalyzer? = null,
-    ) where T : FirExpression, T : FirResolvable {
+    ) {
         @Suppress("NAME_SHADOWING")
         val analyzer = analyzer ?: createPostponedArgumentsAnalyzer(transformer.resolutionContext)
         completer.complete(
@@ -307,8 +308,8 @@ class FirCallCompleter(
             listOf(ConeAtomWithCandidate(call, candidate)),
             initialType,
             transformer.resolutionContext
-        ) { atom, withPCLASession ->
-            analyzer.analyze(candidate.system, atom, candidate, withPCLASession)
+        ) { atom, withPCLASession, precalculatedBoundsForCL ->
+            analyzer.analyze(candidate.system, atom, candidate, withPCLASession, precalculatedBoundsForCL)
         }
     }
 
@@ -316,7 +317,10 @@ class FirCallCompleter(
         atom: ConeResolvedLambdaAtom,
         candidate: Candidate,
     ) {
-        val returnVariable = ConeTypeVariableForLambdaReturnType(atom.anonymousFunction, PostponedArgumentInputTypesResolver.TYPE_VARIABLE_NAME_FOR_LAMBDA_RETURN_TYPE)
+        val returnVariable = ConeTypeVariableForLambdaReturnType(
+            atom.anonymousFunction,
+            PostponedArgumentInputTypesResolver.TYPE_VARIABLE_NAME_FOR_LAMBDA_RETURN_TYPE
+        )
         val csBuilder = candidate.system.getBuilder()
         csBuilder.registerVariable(returnVariable)
         val functionalType = csBuilder.buildCurrentSubstitutor()
@@ -345,7 +349,7 @@ class FirCallCompleter(
             components.samResolver,
             components.context,
             mode,
-            insideAnnotationContext = isInsideAnnotationContext(),
+            insideAnnotationContext = components.context.isInsideAnnotationContext,
         )
     }
 
@@ -550,12 +554,7 @@ class FirCallCompleter(
                             returnTypeRef = contextParameterType
                                 .approximateLambdaInputType(symbol, withPCLASession, candidate)
                                 .toFirResolvedTypeRef(originalLambdaSource?.fakeElement(KtFakeSourceElementKind.LambdaContextParameter))
-                            valueParameterKind =
-                                if (LanguageFeature.ContextParameters.isEnabled()) {
-                                    FirValueParameterKind.ContextParameter
-                                } else {
-                                    FirValueParameterKind.LegacyContextReceiver
-                                }
+                            valueParameterKind = FirValueParameterKind.ContextParameter
                         }
                     }
                 )

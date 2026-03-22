@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.backend.wasm.utils.getWasmImportDescriptor
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.backend.js.utils.getJsNameOrKotlinName
-import org.jetbrains.kotlin.ir.backend.js.utils.isJsExport
+import org.jetbrains.kotlin.ir.backend.js.utils.isExplicitlyExported
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.builders.declarations.*
 import org.jetbrains.kotlin.ir.declarations.*
@@ -55,7 +55,7 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
 
         if (declaration.isFakeOverride) return null
         if (declaration !is IrSimpleFunction) return null
-        val isExported = declaration.isJsExport()
+        val isExported = declaration.isExplicitlyExported()
         val isExternal = declaration.isExternal || declaration.getJsFunAnnotation() != null
         if (declaration.isPropertyAccessor) return null
         if (declaration.parent !is IrPackageFragment) return null
@@ -68,6 +68,13 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
         additionalDeclarations.clear()
         currentParent = declaration.parent
         currentFile = declaration.file
+
+        val declarationName = declaration.name
+        val jsInteropAdapters = jsRelatedSymbols.jsInteropAdapters
+
+        if (declarationName == jsInteropAdapters.getCachedJsObject.owner.name) {
+            return null
+        }
 
         val newDeclarations = context.irFactory.stageController.restrictTo(declaration) {
             if (isExternal)
@@ -120,7 +127,7 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
         val jsFunction = context.irFactory.buildFun {
             origin = JS_CALL_INTEROP_FUNCTION
             name = function.name
-            visibility = DescriptorVisibilities.PRIVATE
+            visibility = DescriptorVisibilities.PUBLIC
             returnType = resultAdapter?.fromType ?: function.returnType
             modality = Modality.FINAL
             isExternal = true
@@ -199,10 +206,12 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
         val builder: DeclarationIrBuilder = context.createIrBuilder(newFun.symbol)
         newFun.body = createAdapterFunctionBody(builder, newFun, function, valueParametersAdapters, resultAdapter)
 
-        newFun.annotations += builder.irCallConstructor(jsRelatedSymbols.jsNameConstructor, typeArguments = emptyList()).also {
+        newFun.annotations += builder.irAnnotation(jsRelatedSymbols.jsNameConstructor, typeArguments = emptyList()).also {
             it.arguments[0] = builder.irString(function.getJsNameOrKotlinName().identifier)
         }
-        function.annotations = function.annotations.filter { it.symbol != jsRelatedSymbols.jsExportConstructor }
+        function.annotations = function.annotations.filter {
+            it.symbol != jsRelatedSymbols.jsExportConstructor && it.symbol != jsRelatedSymbols.jsExportDefaultConstructor
+        }
 
         return listOf(function, newFun)
     }
@@ -518,7 +527,7 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
         }
 
         // TODO find out a better way to export the such declarations only when it's required. Also, fix building roots for DCE, then.
-        result.annotations += builder.irCallConstructor(jsRelatedSymbols.jsExportConstructor, typeArguments = emptyList())
+        result.annotations += builder.irAnnotation(jsRelatedSymbols.jsExportConstructor, typeArguments = emptyList())
         additionalDeclarations += result
         return result
     }
@@ -550,7 +559,7 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
             append(")")
         }
 
-        result.annotations += builder.irCallConstructor(jsRelatedSymbols.jsFunConstructor, typeArguments = emptyList()).also {
+        result.annotations += builder.irAnnotation(jsRelatedSymbols.jsFunConstructor, typeArguments = emptyList()).also {
             it.arguments[0] = builder.irString(jsCode)
         }
 
@@ -670,7 +679,7 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
             append(")")
         }
 
-        result.annotations += builder.irCallConstructor(jsRelatedSymbols.jsFunConstructor, typeArguments = emptyList()).also {
+        result.annotations += builder.irAnnotation(jsRelatedSymbols.jsFunConstructor, typeArguments = emptyList()).also {
             it.arguments[0] = builder.irString(jsFun)
         }
 

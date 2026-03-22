@@ -257,9 +257,9 @@ public class IncrementalK2JvmCompilerRunnerTestGenerated extends AbstractIncreme
       runTest("jps/jps-plugin/testData/incremental/pureKotlin/functionReferencingClass/");
     }
 
-    @TestMetadata("genericContextReceiver")
-    public void testGenericContextReceiver() {
-      runTest("jps/jps-plugin/testData/incremental/pureKotlin/genericContextReceiver/");
+    @TestMetadata("genericContextReceiverSinceK2")
+    public void testGenericContextReceiverSinceK2() {
+      runTest("jps/jps-plugin/testData/incremental/pureKotlin/genericContextReceiverSinceK2/");
     }
 
     @TestMetadata("independentClasses")
@@ -968,11 +968,6 @@ public class IncrementalK2JvmCompilerRunnerTestGenerated extends AbstractIncreme
       runTest("jps/jps-plugin/testData/incremental/inlineFunCallSite/function/");
     }
 
-    @TestMetadata("functionIndirect")
-    public void testFunctionIndirect() {
-      runTest("jps/jps-plugin/testData/incremental/inlineFunCallSite/functionIndirect/");
-    }
-
     @TestMetadata("getter")
     public void testGetter() {
       runTest("jps/jps-plugin/testData/incremental/inlineFunCallSite/getter/");
@@ -1077,19 +1072,6 @@ public class IncrementalK2JvmCompilerRunnerTestGenerated extends AbstractIncreme
 
       public void testAllFilesPresentInFunction() {
         KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("jps/jps-plugin/testData/incremental/inlineFunCallSite/function"), Pattern.compile("^([^.]+)$"), null, true);
-      }
-    }
-
-    @TestMetadata("jps/jps-plugin/testData/incremental/inlineFunCallSite/functionIndirect")
-    @TestDataPath("$PROJECT_ROOT")
-    @RunWith(JUnit3RunnerWithInners.class)
-    public static class FunctionIndirect extends AbstractIncrementalK2JvmCompilerRunnerTest {
-      private void runTest(String testDataFilePath) {
-        KotlinTestUtils.runTest(this::doTest, TargetBackend.JVM_IR, testDataFilePath);
-      }
-
-      public void testAllFilesPresentInFunctionIndirect() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("jps/jps-plugin/testData/incremental/inlineFunCallSite/functionIndirect"), Pattern.compile("^([^.]+)$"), null, true);
       }
     }
 

@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.fir.declarations.FirTypeParameterRef
 import org.jetbrains.kotlin.fir.declarations.builder.buildOuterClassTypeParameterRef
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirReplSnippetSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirScriptSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
@@ -59,8 +60,12 @@ class Context<T> {
     val dispatchReceiverTypesStack: MutableList<ConeClassLikeType> = mutableListOf()
     var containerIsExpect: Boolean = false
 
+    var forceKeepingTheBodyInHeaderMode: Boolean = false
+
     var containingScriptSymbol: FirScriptSymbol? = null
     var containingReplSymbol: FirReplSnippetSymbol? = null
+
+    var currentCompanionBlockOwnerOrNull: FirClassSymbol<*>? = null
 
     fun pushFirTypeParameters(isInnerOrLocal: Boolean, parameters: List<FirTypeParameterRef>) {
         capturedTypeParameters.add(StatusFirTypeParameterSymbolList(isInnerOrLocal, parameters.map { it.symbol }))
@@ -116,6 +121,7 @@ class Context<T> {
      * @see popContainerSymbol
      */
     val containerSymbol: FirBasedSymbol<*> get() = _containerSymbolStack.last()
+    val containerSymbolIfAny: FirBasedSymbol<*>? get() = _containerSymbolStack.lastOrNull()
     private val _containerSymbolStack: MutableList<FirBasedSymbol<*>> = mutableListOf()
 
     /**

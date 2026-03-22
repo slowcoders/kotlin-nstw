@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.gradle.idea.testFixtures.tcs.IdeaKotlinDependencyMat
 import org.jetbrains.kotlin.gradle.idea.testFixtures.tcs.assertMatches
 import org.jetbrains.kotlin.gradle.idea.testFixtures.tcs.dependsOnDependency
 import org.jetbrains.kotlin.gradle.idea.testFixtures.tcs.friendSourceDependency
+import org.jetbrains.kotlin.gradle.idea.testFixtures.utils.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -32,9 +33,6 @@ import org.jetbrains.kotlin.gradle.testbase.*
 import org.jetbrains.kotlin.gradle.uklibs.applyMultiplatform
 import org.jetbrains.kotlin.gradle.uklibs.dumpKlibMetadataSignatures
 import org.jetbrains.kotlin.gradle.uklibs.include
-import org.jetbrains.kotlin.gradle.util.kotlinNativeDistributionDependencies
-import org.jetbrains.kotlin.gradle.util.kotlinStdlibDependencies
-import org.jetbrains.kotlin.gradle.util.nativeStdlibDependency
 import org.jetbrains.kotlin.gradle.util.replaceText
 import org.jetbrains.kotlin.gradle.util.reportSourceSetCommonizerDependencies
 import org.jetbrains.kotlin.gradle.util.resolveIdeDependencies
@@ -586,9 +584,7 @@ open class CommonizerIT : KGPBaseTest() {
     fun testCommonizationWithTransitiveCinterop(gradleVersion: GradleVersion) {
         nativeProject(
             "commonize-kt-51517-transitive-cinterop",
-            gradleVersion,
-            // KT-77812 MetadataDependencyTransformationTaskInputs is not (always) compatible with Gradle Isolated Projects
-            buildOptions = defaultBuildOptions.disableIsolatedProjects(),
+            gradleVersion
         ) {
             build(":app:assemble") {
                 assertTasksExecuted(":lib:transformCommonMainCInteropDependenciesMetadata")
@@ -669,6 +665,7 @@ open class CommonizerIT : KGPBaseTest() {
             val app = project("emptyKts", gradleVersion) {
                 buildScriptInjection {
                     project.applyMultiplatform {
+                        @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                         macosX64()
                         macosArm64()
                     }
@@ -677,6 +674,7 @@ open class CommonizerIT : KGPBaseTest() {
             val lib = project("emptyKts", gradleVersion) {
                 buildScriptInjection {
                     project.applyMultiplatform {
+                        @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                         macosX64()
                         macosArm64()
                     }
@@ -707,6 +705,7 @@ open class CommonizerIT : KGPBaseTest() {
                     linuxArm64()
                     linuxX64()
                     macosArm64()
+                    @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                     macosX64()
                 }
             }
@@ -750,6 +749,7 @@ open class CommonizerIT : KGPBaseTest() {
                     }
                     linuxX64().addCInterop()
                     linuxArm64().addCInterop()
+                    @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                     macosX64().addCInterop()
                     macosArm64().addCInterop()
                 }

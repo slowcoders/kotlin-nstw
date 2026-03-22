@@ -92,6 +92,9 @@ class FirJavaMethod @FirImplementationDetail constructor(
     //not used actually, because get 'enhanced' into regular FirSimpleFunction
     override var deprecationsProvider: DeprecationsProvider = UnresolvedDeprecationProvider
 
+    override val isLocal: Boolean
+        get() = false
+
     internal fun withTypeParameterBoundsResolveLock(f: () -> Unit) {
         // TODO: KT-68587
         typeParameterBoundsResolveLock.withLock(f)
@@ -208,7 +211,6 @@ class FirJavaMethodBuilder : FirFunctionBuilder, FirTypeParametersOwnerBuilder, 
     lateinit var symbol: FirNamedFunctionSymbol
     override val annotations: MutableList<FirAnnotation> get() = shouldNotBeCalled()
     override val typeParameters: MutableList<FirTypeParameter> = mutableListOf()
-    var isStatic: Boolean by Delegates.notNull()
     override var resolvePhase: FirResolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
     var isFromSource: Boolean by Delegates.notNull()
     var annotationList: FirJavaAnnotationList = FirEmptyJavaAnnotationList
@@ -238,6 +240,13 @@ class FirJavaMethodBuilder : FirFunctionBuilder, FirTypeParametersOwnerBuilder, 
     @Deprecated("Modification of 'contextParameters' has no impact for FirJavaFunctionBuilder", level = DeprecationLevel.HIDDEN)
     override val contextParameters: MutableList<FirValueParameter>
         get() = throw IllegalStateException()
+
+    @Deprecated("Modification of 'isLocal' has no impact for FirJavaFunctionBuilder", level = DeprecationLevel.HIDDEN)
+    override var isLocal: Boolean
+        get() = throw IllegalStateException()
+        set(_) {
+            throw IllegalStateException()
+        }
 
     @OptIn(FirImplementationDetail::class)
     override fun build(): FirJavaMethod {

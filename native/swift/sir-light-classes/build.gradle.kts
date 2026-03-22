@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("project-tests-convention")
 }
 
@@ -23,8 +22,9 @@ dependencies {
     api(project(":compiler:psi:psi-api"))
     api(project(":analysis:analysis-api"))
 
-    testApi(platform(libs.junit.bom))
+    testImplementation(platform(libs.junit.bom))
     testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(kotlinTest())
     testImplementation(project(":native:analysis-api-based-test-utils"))

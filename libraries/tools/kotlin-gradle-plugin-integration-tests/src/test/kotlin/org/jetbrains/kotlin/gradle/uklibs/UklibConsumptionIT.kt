@@ -51,6 +51,7 @@ class UklibConsumptionIT : KGPBaseTest() {
             androidTarget().publishLibraryVariants("debug", "release")
             linuxArm64()
             iosArm64()
+            @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
             iosX64()
             macosArm64()
             jvm()
@@ -180,10 +181,8 @@ class UklibConsumptionIT : KGPBaseTest() {
             "empty",
             gradleVersion,
             buildOptions = defaultBuildOptions.copy(
-                // KT-75899 Support Gradle Project Isolation in KGP JS & Wasm
-                isolatedProjects = BuildOptions.IsolatedProjectsMode.DISABLED,
                 androidVersion = androidVersion,
-            ),
+            ).disableIsolatedProjectsBecauseOfJsAndWasmKT75899(),
         ) {
             addAgpToBuildScriptCompilationClasspath(androidVersion)
             addKgpToBuildScriptCompilationClasspath()
@@ -241,7 +240,7 @@ class UklibConsumptionIT : KGPBaseTest() {
                     ),
                     "org.jetbrains.kotlin:kotlin-dom-api-compat:${defaultBuildOptions.kotlinVersion}" to ResolvedComponentWithArtifacts(
                         artifacts = mutableListOf(),
-                        configuration = "commonFakeApiElements-published",
+                        configuration = "fallbackVariant_KT-81412",
                     ),
                     "org.jetbrains.kotlin:kotlin-stdlib:${defaultBuildOptions.kotlinVersion}" to ResolvedComponentWithArtifacts(
                         artifacts = mutableListOf(),
@@ -308,9 +307,7 @@ class UklibConsumptionIT : KGPBaseTest() {
             gradleVersion,
             buildOptions = defaultBuildOptions.copy(
                 androidVersion = androidVersion,
-                // KT-75899 Support Gradle Project Isolation in KGP JS & Wasm
-                isolatedProjects = BuildOptions.IsolatedProjectsMode.DISABLED,
-            ),
+            ).disableIsolatedProjectsBecauseOfJsAndWasmKT75899(),
         ) {
             if (androidVersion != null) addAgpToBuildScriptCompilationClasspath(androidVersion)
             addKgpToBuildScriptCompilationClasspath()
@@ -680,6 +677,7 @@ class UklibConsumptionIT : KGPBaseTest() {
             buildScriptInjection {
                 project.applyMultiplatform {
                     iosArm64()
+                    @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                     iosX64()
                     jvm()
                     sourceSets.commonMain.get().compileSource(
@@ -703,6 +701,7 @@ class UklibConsumptionIT : KGPBaseTest() {
             buildScriptInjection {
                 project.applyMultiplatform {
                     iosArm64()
+                    @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                     iosX64()
                     jvm {
                         binaries {
@@ -1349,6 +1348,7 @@ class UklibConsumptionIT : KGPBaseTest() {
             buildScriptInjection {
                 project.applyMultiplatform {
                     iosArm64()
+                    @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                     iosX64()
                     js()
                     sourceSets.commonMain.get().compileSource("class Common")

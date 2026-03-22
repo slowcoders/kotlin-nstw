@@ -83,6 +83,7 @@ private class IrLinkerFakeOverrideBuilderStrategy(
     private val partialLinkageSupport: PartialLinkageSupportForLinker,
     private val fakeOverrideDeclarationTable: FakeOverrideDeclarationTable,
     private val friendModules: Map<String, Collection<String>>,
+    private val isMultipleInheritedImplementationsAllowed: (IrOverridableDeclaration<*>) -> Boolean,
 ) : FakeOverrideBuilderStrategy() {
 
     override fun <R> inFile(file: IrFile?, block: () -> R): R =
@@ -125,7 +126,7 @@ private class IrLinkerFakeOverrideBuilderStrategy(
                  * This is done to mimic jvm behaviour.
                  */
 
-                runIf(nonAbstractOverrides.all { it.parentAsClass.isInterface }) {
+                runIf(nonAbstractOverrides.all { it.parentAsClass.isInterface && !isMultipleInheritedImplementationsAllowed(it) }) {
                     PartiallyLinkedDeclarationOrigin.AMBIGUOUS_NON_OVERRIDDEN_CALLABLE_MEMBER
                 }
             }
@@ -263,11 +264,10 @@ private class IrLinkerFakeOverrideBuilderStrategy(
         function.factory.buildFun {
             updateFrom(function)
             name = function.name
-            returnType = irBuiltIns.unitType // Does not matter.
         }.apply {
             parent = function.parent
             copyAnnotationsFrom(function)
-            copyValueAndTypeParametersFrom(function)
+            copyFunctionSignatureFrom(function, returnType = irBuiltIns.unitType /* Does not matter */)
 
             typeParameters = typeParameters + buildTypeParameter(this) {
                 name = Name.identifier("disambiguation type parameter")
@@ -306,6 +306,7 @@ class IrLinkerFakeOverrideProvider(
     val platformSpecificClassFilter: FakeOverrideClassFilter = DefaultFakeOverrideClassFilter,
     private val fakeOverrideDeclarationTable: FakeOverrideDeclarationTable = FakeOverrideDeclarationTable(mangler),
     externalOverridabilityConditions: List<IrExternalOverridabilityCondition> = emptyList(),
+    isMultipleInheritedImplementationsAllowed: (IrOverridableDeclaration<*>) -> Boolean = { false },
 ) {
     private val irFakeOverrideBuilder = IrFakeOverrideBuilder(
         typeSystem,
@@ -315,7 +316,8 @@ class IrLinkerFakeOverrideProvider(
             typeSystem.irBuiltIns,
             partialLinkageSupport,
             fakeOverrideDeclarationTable,
-            friendModules
+            friendModules,
+            isMultipleInheritedImplementationsAllowed,
         ),
         externalOverridabilityConditions
     )

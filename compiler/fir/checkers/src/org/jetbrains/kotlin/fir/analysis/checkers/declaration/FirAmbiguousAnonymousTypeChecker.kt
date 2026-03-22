@@ -27,9 +27,9 @@ object FirAmbiguousAnonymousTypeChecker : FirBasicDeclarationChecker(MppCheckerK
         // if source is not null then this type was declared in source
         // so it can not be inferred to anonymous type
         if (declaration.symbol.hasExplicitReturnType) return
-        if (context.containingDeclarations.any { it.isLocalMember || it is FirAnonymousObjectSymbol }) return
+        if (declaration.isLocal) return
 
-        if (!shouldApproximateAnonymousTypesOfNonLocalDeclaration(
+        if (!shouldApproximateLocalTypesOfNonLocalDeclaration(
                 declaration.visibilityForApproximation(context.containingDeclarations.lastOrNull()),
                 declaration.isInline
             )

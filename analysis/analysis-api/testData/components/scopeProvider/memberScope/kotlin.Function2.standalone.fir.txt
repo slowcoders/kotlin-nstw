@@ -40,6 +40,7 @@ KaNamedFunctionSymbol:
       isCrossinline: false
       isExpect: false
       isExtension: false
+      isExternal: false
       isImplicitLambdaParameter: false
       isNoinline: false
       isVal: true
@@ -70,6 +71,7 @@ KaNamedFunctionSymbol:
       isCrossinline: false
       isExpect: false
       isExtension: false
+      isExternal: false
       isImplicitLambdaParameter: false
       isNoinline: false
       isVal: true
@@ -103,7 +105,7 @@ KaNamedFunctionSymbol:
         annotations: []
         type: R
     ]
-    type: kotlin/Function2<P1, P2, R>
+    type: (P1, P2) -> R
   getContainingFileSymbol: null
   getContainingJvmClassName: kotlin.Function2
   canBeOperator: true
@@ -155,6 +157,7 @@ KaNamedFunctionSymbol:
       isCrossinline: false
       isExpect: false
       isExtension: false
+      isExternal: false
       isImplicitLambdaParameter: false
       isNoinline: false
       isVal: true

@@ -419,12 +419,11 @@ fun FirResolvedQualifier.unsetResolvedToCompanionIf(condition: Boolean) {
 internal fun FirRegularClassSymbol.toImplicitResolvedQualifierReceiver(
     bodyResolveComponents: BodyResolveComponents,
     source: KtSourceElement?,
-    resolvedToCompanion: Boolean = false,
 ): FirResolvedQualifier {
     val resolvedQualifier = buildResolvedQualifier {
         packageFqName = classId.packageFqName
         relativeClassFqName = classId.relativeClassName
-        resolvedToCompanionObject = resolvedToCompanion
+        resolvedToCompanionObject = false
         symbol = this@toImplicitResolvedQualifierReceiver
         this.source = source
     }.apply {
@@ -844,7 +843,6 @@ val FirUserTypeRef.shortName: Name get() = qualifier.last().name
 val FirThisReference.referencedMemberSymbol: FirBasedSymbol<*>?
     get() = when (val boundSymbol = boundSymbol) {
         is FirReceiverParameterSymbol -> boundSymbol.containingDeclarationSymbol
-        is FirValueParameterSymbol -> boundSymbol.containingDeclarationSymbol
         is FirClassSymbol -> boundSymbol
         null -> null
         is FirTypeParameterSymbol, is FirTypeAliasSymbol -> errorWithAttachment(
@@ -885,4 +883,19 @@ fun FirScope.toResolvedSymbolOrigin(): FirResolvedSymbolOrigin? = when (this) {
     is FirPackageMemberScope -> FirResolvedSymbolOrigin.Package
     is FirAbstractSimpleImportingScope -> FirResolvedSymbolOrigin.ExplicitImport
     else -> null
+}
+
+fun FirFunctionCall.isArrayOfCall(session: FirSession): Boolean {
+    val function = getOriginalFunction() ?: return false
+    return function.isArrayOfFunction(session, this.argumentList)
+}
+
+private fun FirFunctionCall.getOriginalFunction(): FirNamedFunctionSymbol? {
+    val symbol: FirBasedSymbol<*>? = when (val reference = calleeReference) {
+        is FirResolvedErrorReference -> reference.resolvedSymbol
+        is FirResolvedNamedReference -> reference.resolvedSymbol
+        is FirNamedReferenceWithCandidate -> reference.candidateSymbol
+        else -> null
+    }
+    return symbol as? FirNamedFunctionSymbol
 }

@@ -1,15 +1,9 @@
-// TARGET_BACKEND: WASM
 // WITH_STDLIB
-// WASM_FAILS_IN_SINGLE_MODULE_MODE
 
 fun assertTrue(x: Boolean): Unit = check(x)
 fun assertNull(x: Any?): Unit = check(x === null)
 
 fun jsRepresentation(x: JsAny): String = js("(typeof x) + ':' + String(x)")
-
-@Suppress("INCOMPATIBLE_TYPES", "IMPOSSIBLE_IS_CHECK_ERROR")
-fun castToKotlinString(jsAny: JsAny?): String? =
-    if (jsAny is String) jsAny as String else null
 
 fun box(): String {
     // JsNumber
@@ -48,7 +42,6 @@ fun box(): String {
     assertTrue(jsBoolTrue == true.toJsBoolean())
     assertTrue(jsBoolTrue != false.toJsBoolean())
     assertTrue(jsRepresentation(jsBoolTrue) == "boolean:true")
-    assertNull(castToKotlinString(jsStr1))
 
 
     // JsArray

@@ -1,4 +1,5 @@
-// LANGUAGE: +ContextReceivers
+// LANGUAGE: +ContextReceivers, -ContextParameters
+// COMPILATION_ERRORS
 
 annotation class MyAnnotation
 

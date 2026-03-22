@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.getAnnotationFirstArgument
 import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.analysis.checkers.isTopLevel
 import org.jetbrains.kotlin.fir.analysis.diagnostics.js.FirJsErrors
+import org.jetbrains.kotlin.fir.analysis.diagnostics.js.FirJsErrors.EXPOSED_NOT_EXPORTED_SUPER_INTERFACE
 import org.jetbrains.kotlin.fir.analysis.js.checkers.isExportedObject
 import org.jetbrains.kotlin.fir.analysis.js.checkers.sanitizeName
 import org.jetbrains.kotlin.fir.declarations.*
@@ -135,6 +136,11 @@ object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind
                     return
                 }
 
+                if (declaration.contextParameters.isNotEmpty()) {
+                    reportWrongExportedDeclaration("property with context parameters")
+                    return
+                }
+
                 val containingClass = declaration.getContainingClassSymbol() as? FirClassSymbol<*>
                 val enumEntriesProperty = containingClass?.let(declaration::isEnumEntries) ?: false
                 val returnType = declaration.returnTypeRef.coneType
@@ -166,21 +172,40 @@ object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind
                 val wrongDeclaration: String? = when (declaration.classKind) {
                     ClassKind.ANNOTATION_CLASS -> "annotation class"
                     ClassKind.CLASS -> when {
-                        context.isInsideInterface -> "nested class inside exported interface"
+                        !context.languageVersionSettings.supportsFeature(LanguageFeature.AllowInterfaceNestedClassesInJsExport) && context.isInsideInterface -> "nested class inside exported interface"
                         declaration.isInlineOrValue -> "value class"
                         else -> null
                     }
-                    else -> if (context.isInsideInterface && !declaration.status.isCompanion) {
-                        "nested/inner declaration inside exported interface"
-                    } else null
+
+                    else if context.isInsideInterface -> when {
+                        !declaration.status.isCompanion -> "nested/inner declaration inside exported interface"
+                        declaration.symbol.isEffectivelyExternal(context.session) -> "external companion object"
+                        else -> null
+                    }
+
+                    else -> null
                 }
 
-                if (context.isInsideInterface && declaration.status.isCompanion && declaration.nameOrSpecialName != DEFAULT_NAME_FOR_COMPANION_OBJECT) {
+                if (
+                    !context.languageVersionSettings.supportsFeature(LanguageFeature.AllowNamedCompanionForJsExport) &&
+                    context.isInsideInterface &&
+                    declaration.status.isCompanion &&
+                    declaration.nameOrSpecialName != DEFAULT_NAME_FOR_COMPANION_OBJECT
+                ) {
                     reporter.reportOn(declaration.source, FirJsErrors.NAMED_COMPANION_IN_EXPORTED_INTERFACE)
                 }
 
                 if (wrongDeclaration != null) {
                     reportWrongExportedDeclaration(wrongDeclaration)
+                }
+
+                if (declaration.isInterface) {
+                    declaration.superTypeRefs.forEach { superType ->
+                        superType.coneType
+                            .takeIf { !it.isExportable(context.session) }
+                            ?.toRegularClassSymbol()
+                            ?.let { reporter.reportOn(superType.source, EXPOSED_NOT_EXPORTED_SUPER_INTERFACE, it) }
+                    }
                 }
             }
 
@@ -255,6 +280,8 @@ object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind
         session: FirSession,
         currentlyProcessed: MutableSet<ConeKotlinType> = hashSetOf(),
     ): Boolean {
+        // In case of other errors (like syntax error) we should not emit extra diagnostic
+        if (this is ConeErrorType) return true
         if (!currentlyProcessed.add(this)) {
             return true
         }

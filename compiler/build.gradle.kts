@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("d8-configuration")
     id("java-test-fixtures")
     id("project-tests-convention")
@@ -12,11 +11,11 @@ val otherCompilerModules = compilerModules.filter { it != path }
 dependencies {
     testImplementation(intellijCore()) // Should come before compiler, because of "progarded" stuff needed for tests
 
-    testApi(project(":kotlin-script-runtime"))
+    testImplementation(project(":kotlin-script-runtime"))
 
-    testApi(kotlinStdlib())
+    testImplementation(kotlinStdlib())
 
-    testApi(kotlinTest())
+    testImplementation(kotlinTest())
     testCompileOnly(kotlinTest("junit"))
     testImplementation(libs.junit4)
     testFixturesApi(testFixtures(project(":compiler:tests-common")))
@@ -56,7 +55,6 @@ projectTests {
         defineJDKEnvVariables = listOf(JdkMajorVersion.JDK_1_8, JdkMajorVersion.JDK_11_0, JdkMajorVersion.JDK_17_0)
     ) {
         dependsOn(":dist")
-        useJsIrBoxTests(version = version, buildDir = layout.buildDirectory)
 
         filter {
             excludeTestsMatching("org.jetbrains.kotlin.jvm.compiler.io.FastJarFSLongTest*")
@@ -75,6 +73,6 @@ projectTests {
     withJvmStdlibAndReflect()
 }
 
-val generateTestData by generator("org.jetbrains.kotlin.generators.tests.GenerateCompilerTestDataKt")
+val generateTestData by generator("org.jetbrains.kotlin.generators.tests.GenerateCompilerTestDataKt", testSourceSet)
 
 testsJar()

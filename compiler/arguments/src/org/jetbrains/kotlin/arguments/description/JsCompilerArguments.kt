@@ -5,7 +5,9 @@
 
 package org.jetbrains.kotlin.arguments.description
 
-import org.jetbrains.kotlin.arguments.dsl.base.*
+import org.jetbrains.kotlin.arguments.dsl.base.KotlinReleaseVersion
+import org.jetbrains.kotlin.arguments.dsl.base.asReleaseDependent
+import org.jetbrains.kotlin.arguments.dsl.base.compilerArgumentsLevel
 import org.jetbrains.kotlin.arguments.dsl.defaultFalse
 import org.jetbrains.kotlin.arguments.dsl.defaultNull
 import org.jetbrains.kotlin.arguments.dsl.types.BooleanType
@@ -469,6 +471,30 @@ val actualJsArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.jsAr
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_5_32,
+        )
+    }
+
+    compilerArgument {
+        name = "Xenable-suspend-function-exporting"
+        compilerName = "allowExportingSuspendFunctions"
+        description = "Enable exporting suspend functions to JavaScript/TypeScript.".asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+        additionalAnnotations(Enables(LanguageFeature.JsAllowExportingSuspendFunctions))
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_3_0,
+        )
+    }
+
+    compilerArgument {
+        name = "Xenable-implementing-interfaces-from-typescript"
+        compilerName = "allowImplementableInterfacesExporting"
+        description = "Enable exporting of Kotlin interfaces to implement them from JavaScript/TypeScript.".asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+        additionalAnnotations(Enables(LanguageFeature.JsExportInterfacesInImplementableWay))
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_3_20,
         )
     }
 

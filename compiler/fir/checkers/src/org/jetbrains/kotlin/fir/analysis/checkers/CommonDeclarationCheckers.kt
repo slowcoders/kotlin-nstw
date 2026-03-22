@@ -10,6 +10,9 @@ import org.jetbrains.kotlin.fir.analysis.cfa.FirCallsEffectAnalyzer
 import org.jetbrains.kotlin.fir.analysis.cfa.FirPropertyInitializationAnalyzer
 import org.jetbrains.kotlin.fir.analysis.checkers.cfa.FirControlFlowChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.*
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.crv.FirReturnValueAnnotationsChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.crv.FirReturnValueOverrideChecker
+import org.jetbrains.kotlin.fir.analysis.checkers.declaration.crv.FirUnusedReturnValueChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.syntax.*
 
 object CommonDeclarationCheckers : DeclarationCheckers() {
@@ -49,6 +52,8 @@ object CommonDeclarationCheckers : DeclarationCheckers() {
         FirExtensionShadowedByMemberChecker.ForExpectDeclaration,
         FirReturnValueOverrideChecker,
         FirImplicitReturnTypeAnnotationMissingDependencyChecker,
+        FirCoroutineContextAsContextParameterDeclarationChecker,
+        FirCompanionExtensionChecker,
     )
 
     override val functionCheckers: Set<FirFunctionChecker> = setOf(
@@ -61,6 +66,7 @@ object CommonDeclarationCheckers : DeclarationCheckers() {
         FirInfixFunctionDeclarationChecker,
         FirOperatorModifierChecker,
         FirTailrecFunctionChecker,
+        FirVersionOverloadsChecker,
     )
 
     override val simpleFunctionCheckers: Set<FirSimpleFunctionChecker> = setOf(
@@ -131,6 +137,7 @@ object CommonDeclarationCheckers : DeclarationCheckers() {
     override val regularClassCheckers: Set<FirRegularClassChecker> = setOf(
         FirAnnotationClassDeclarationChecker,
         FirOptInAnnotationClassChecker,
+        FirOperatorOfChecker,
         FirCommonConstructorDelegationIssuesChecker,
         FirDelegationSuperCallInEnumConstructorChecker,
         FirDelegationInExpectClassSyntaxChecker,
@@ -153,6 +160,7 @@ object CommonDeclarationCheckers : DeclarationCheckers() {
         FirObjectConstructorChecker,
         FirInlineClassDeclarationChecker,
         FirEnumEntryInitializationChecker,
+        FirCompanionBlockChecker,
     )
 
     override val constructorCheckers: Set<FirConstructorChecker> = setOf(
@@ -164,6 +172,7 @@ object CommonDeclarationCheckers : DeclarationCheckers() {
         FirImportsChecker,
         FirOptInImportsChecker,
         FirUnresolvedInMiddleOfImportChecker,
+        FirTooLargeFunctionImportChecker,
         FirTopLevelPropertiesChecker,
         FirPackageConflictsWithClassifierChecker,
         PlatformClassMappedToKotlinImportsChecker,

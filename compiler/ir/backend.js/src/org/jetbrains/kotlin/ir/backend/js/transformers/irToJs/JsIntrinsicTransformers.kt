@@ -6,7 +6,6 @@
 package org.jetbrains.kotlin.ir.backend.js.transformers.irToJs
 
 import org.jetbrains.kotlin.backend.common.compilationException
-import org.jetbrains.kotlin.backend.common.ir.KlibSymbols
 import org.jetbrains.kotlin.ir.backend.js.JsIrBackendContext
 import org.jetbrains.kotlin.ir.backend.js.lower.ES6ConstructorLowering
 import org.jetbrains.kotlin.ir.backend.js.lower.ES6PrimaryConstructorOptimizationLowering
@@ -27,6 +26,7 @@ import org.jetbrains.kotlin.js.backend.ast.*
 import org.jetbrains.kotlin.js.backend.ast.metadata.isInlineClassBoxing
 import org.jetbrains.kotlin.js.backend.ast.metadata.isInlineClassUnboxing
 import org.jetbrains.kotlin.js.config.compileLongAsBigint
+import org.jetbrains.kotlin.js.config.compileSuspendAsJsGenerator
 import org.jetbrains.kotlin.utils.filterIsInstanceAnd
 
 private typealias IrCallTransformer<T> = (T, context: JsGenerationContext) -> JsExpression
@@ -97,6 +97,18 @@ class JsIntrinsicTransformers(backendContext: JsIrBackendContext) {
 
             add(symbols.jsYieldFunctionSymbol) { call, context ->
                 JsYield(translateCallArguments(call, context).single())
+            }
+
+            add(symbols.jsYieldStarFunctionSymbol) { call, context ->
+                JsYieldStar(translateCallArguments(call, context).single())
+            }
+
+            add(symbols.jsGenerateInterfaceSymbol) { _, context ->
+                if (backendContext.es6mode) {
+                    JsInvocation(JsNameRef("Symbol"))
+                } else {
+                    JsInvocation(context.getNameForStaticFunction(symbols.generateInterfaceSymbolById.owner).makeRef())
+                }
             }
 
             add(symbols.jsObjectCreateSymbol) { call, context ->
@@ -175,6 +187,10 @@ class JsIntrinsicTransformers(backendContext: JsIrBackendContext) {
 
             add(symbols.jsArraySlice) { call, context ->
                 JsInvocation(JsNameRef(Namer.SLICE_FUNCTION, translateCallArguments(call, context).single()))
+            }
+
+            add(symbols.isLongCompiledToBigInt) { _, _ ->
+                JsBooleanLiteral(backendContext.configuration.compileLongAsBigint)
             }
 
             add(symbols.longCopyOfRange) { call, context ->
@@ -271,7 +287,7 @@ class JsIntrinsicTransformers(backendContext: JsIrBackendContext) {
 
             addAll(sharedVariableBoxConstructors) { call, context ->
                 val arg = translateCallArguments(call, context).single()
-                JsObjectLiteral(listOf(JsPropertyInitializer(JsStringLiteral(Namer.SHARED_BOX_V), arg)))
+                JsObjectLiteral(listOf(JsPropertyInitializer.KeyValue(JsStringLiteral(Namer.SHARED_BOX_V), arg)))
             }
 
             add(symbols.genericSharedVariableBox.load) { call, context: JsGenerationContext ->
@@ -307,19 +323,26 @@ class JsIntrinsicTransformers(backendContext: JsIrBackendContext) {
                 JsClass(baseClass = baseClass)
             }
 
+            add(symbols.jsMethodReference) { call, context ->
+                val dispatchReceiver = call.arguments[0] ?: compilationException(
+                    "Call of the jsMethodReference doesn't contain first argument representing dispatchReceiver",
+                    call
+                )
+
+                val rawFunctionReference = call.arguments[1] as? IrRawFunctionReference ?: compilationException(
+                    "Second argument is empty or not an instance of IrRawFunctionReference",
+                    call
+                )
+
+                JsNameRef(
+                    context.getNameForMemberFunction(rawFunctionReference.symbol.owner as IrSimpleFunction),
+                    dispatchReceiver.accept(IrElementToJsExpressionTransformer(), context),
+                )
+            }
+
             add(symbols.void.owner.getter!!.symbol) { _, context ->
                 val backingField = context.getNameForField(symbols.void.owner.backingField!!)
                 JsNameRef(backingField)
-            }
-
-            add(symbols.suspendOrReturnFunctionSymbol) { call, context ->
-                val (generatorCall, continuation) = translateCallArguments(call, context)
-                val jsInvokeFunName = context.getNameForStaticFunction(call.symbol.owner)
-                val VOID = context.getNameForField(symbols.void.owner.backingField!!)
-                val generatorBindCall = (generatorCall as JsInvocation).let {
-                    JsInvocation(JsNameRef(Namer.BIND_FUNCTION, it.qualifier), listOf(JsNameRef(VOID)) + it.arguments.dropLast(1))
-                }
-                JsInvocation(JsNameRef(jsInvokeFunName), generatorBindCall, continuation)
             }
         }
     }

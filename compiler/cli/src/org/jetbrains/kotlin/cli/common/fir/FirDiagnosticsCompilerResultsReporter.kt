@@ -69,7 +69,7 @@ object FirDiagnosticsCompilerResultsReporter {
 
                 for (diagnostic in diagnosticList.sortedWith(InFileDiagnosticsComparator)) {
                     val location = when (diagnostic) {
-                        is KtDiagnosticWithoutSource -> null
+                        is KtDiagnosticWithoutSource -> diagnostic.location
                         is KtDiagnosticWithSource -> when (diagnostic) {
                             is KtPsiDiagnostic -> {
                                 val file = diagnostic.element.psi.containingFile
@@ -112,7 +112,7 @@ object FirDiagnosticsCompilerResultsReporter {
         reporter: MessageCollector,
         renderDiagnosticName: Boolean
     ) {
-        val severity = AnalyzerWithCompilerReport.convertSeverity(diagnostic.severity)
+        val severity = diagnostic.severity.toCompilerMessageSeverity()
         val message = diagnostic.renderMessage()
         val textToRender = when (renderDiagnosticName) {
             true -> "[${diagnostic.factoryName}] $message"
@@ -128,7 +128,7 @@ object FirDiagnosticsCompilerResultsReporter {
         messageRenderer: MessageRenderer
     ) {
         if (diagnostic.severity == Severity.ERROR) {
-            val severity = AnalyzerWithCompilerReport.convertSeverity(diagnostic.severity)
+            val severity = diagnostic.severity.toCompilerMessageSeverity()
             val message = diagnostic.renderMessage()
             val diagnosticText = messageRenderer.render(severity, message, location)
             throw IllegalStateException("${diagnostic.factory.name}: $diagnosticText")

@@ -41,6 +41,7 @@ KaNamedFunctionSymbol:
       isCrossinline: false
       isExpect: false
       isExtension: false
+      isExternal: false
       isImplicitLambdaParameter: false
       isNoinline: false
       isVal: true
@@ -58,7 +59,7 @@ KaNamedFunctionSymbol:
             typeArguments: []
             type: kotlin/Int
         ]
-        type: kotlin/Function0<kotlin/Int>
+        type: () -> kotlin/Int
       visibility: PUBLIC
       getContainingFileSymbol: KaFileSymbol(parameterInlining.kt)
       getContainingJvmClassName: ParameterInliningKt
@@ -77,6 +78,7 @@ KaNamedFunctionSymbol:
       isCrossinline: true
       isExpect: false
       isExtension: false
+      isExternal: false
       isImplicitLambdaParameter: false
       isNoinline: false
       isVal: true
@@ -94,7 +96,7 @@ KaNamedFunctionSymbol:
             typeArguments: []
             type: kotlin/Int
         ]
-        type: kotlin/Function0<kotlin/Int>
+        type: () -> kotlin/Int
       visibility: PUBLIC
       getContainingFileSymbol: KaFileSymbol(parameterInlining.kt)
       getContainingJvmClassName: ParameterInliningKt
@@ -113,6 +115,7 @@ KaNamedFunctionSymbol:
       isCrossinline: false
       isExpect: false
       isExtension: false
+      isExternal: false
       isImplicitLambdaParameter: false
       isNoinline: true
       isVal: true
@@ -130,7 +133,7 @@ KaNamedFunctionSymbol:
             typeArguments: []
             type: kotlin/Int
         ]
-        type: kotlin/Function0<kotlin/Int>
+        type: () -> kotlin/Int
       visibility: PUBLIC
       getContainingFileSymbol: KaFileSymbol(parameterInlining.kt)
       getContainingJvmClassName: ParameterInliningKt

@@ -89,10 +89,13 @@ object StandardClassIds {
     val KCallable = "KCallable".reflectId()
     val KType = "KType".reflectId()
 
+    val Sequence = "Sequence".sequencesId()
+
     val Comparable = "Comparable".baseId()
     val Number = "Number".baseId()
 
     val Function = "Function".baseId()
+    val SuspendFunction = "SuspendFunction".coroutinesId()
 
     fun byName(name: String) = name.baseId()
     fun reflectByName(name: String) = name.reflectId()
@@ -110,6 +113,7 @@ object StandardClassIds {
     val constantAllowedTypes = primitiveTypes + unsignedTypes + String
 
     val Continuation = "Continuation".coroutinesId()
+    val CoroutineContext = "CoroutineContext".coroutinesId()
 
     @Suppress("FunctionName")
     fun FunctionN(n: Int): ClassId {
@@ -194,6 +198,7 @@ object StandardClassIds {
         val DeprecatedSinceKotlin = "DeprecatedSinceKotlin".baseId()
         val RequireKotlin = "RequireKotlin".internalId()
         val DslMarker = "DslMarker".baseId()
+        val IntroducedAt = "IntroducedAt".baseId()
 
         val ConsistentCopyVisibility = "ConsistentCopyVisibility".baseId()
         val ExposedCopyVisibility = "ExposedCopyVisibility".baseId()
@@ -246,6 +251,7 @@ object StandardClassIds {
         val jsExportIgnore = jsExport.createNestedClassId(Name.identifier("Ignore"))
         val jsExportDefault = jsExport.createNestedClassId(Name.identifier("Default"))
         val jsNoDispatchReceiver = "JsNoDispatchReceiver".jsId()
+        val jsNoRuntime = "JsNoRuntime".jsId()
 
         val AssociatedObjectKey = "AssociatedObjectKey".reflectId()
         val ExperimentalAssociatedObjects = "ExperimentalAssociatedObjects".reflectId()
@@ -254,6 +260,8 @@ object StandardClassIds {
 
         val JvmBuiltin = "JvmBuiltin".internalId()
         val SuppressBytecodeGeneration = "SuppressBytecodeGeneration".internalId()
+
+        val UsedFromCompilerGeneratedCode = "UsedFromCompilerGeneratedCode".internalId()
 
         object ParameterNames {
             val value = Name.identifier("value")
@@ -329,6 +337,7 @@ private fun String.coroutinesId() = ClassId(StandardClassIds.BASE_COROUTINES_PAC
 private fun String.enumsId() = ClassId(StandardClassIds.BASE_ENUMS_PACKAGE, Name.identifier(this))
 private fun String.concurrentId() = ClassId(StandardClassIds.BASE_CONCURRENT_PACKAGE, Name.identifier(this))
 private fun String.atomicsId() = ClassId(StandardClassIds.BASE_CONCURRENT_ATOMICS_PACKAGE, Name.identifier(this))
+private fun String.sequencesId() = ClassId(StandardClassIds.BASE_SEQUENCES_PACKAGE, Name.identifier(this))
 
 private fun String.testId() = ClassId(StandardClassIds.BASE_TEST_PACKAGE, Name.identifier(this))
 

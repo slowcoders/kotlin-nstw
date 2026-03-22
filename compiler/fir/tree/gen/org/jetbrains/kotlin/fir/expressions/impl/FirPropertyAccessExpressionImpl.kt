@@ -11,6 +11,7 @@
 package org.jetbrains.kotlin.fir.expressions.impl
 
 import org.jetbrains.kotlin.KtSourceElement
+import org.jetbrains.kotlin.fir.FirIdeOnly
 import org.jetbrains.kotlin.fir.FirImplementationDetail
 import org.jetbrains.kotlin.fir.MutableOrEmptyList
 import org.jetbrains.kotlin.fir.builder.toMutableOrEmpty
@@ -27,7 +28,7 @@ import org.jetbrains.kotlin.fir.visitors.FirTransformer
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
 import org.jetbrains.kotlin.fir.visitors.transformInplace
 
-@OptIn(UnresolvedExpressionTypeAccess::class)
+@OptIn(UnresolvedExpressionTypeAccess::class, FirIdeOnly::class)
 class FirPropertyAccessExpressionImpl @FirImplementationDetail constructor(
     @property:UnresolvedExpressionTypeAccess
     override var coneTypeOrNull: ConeKotlinType?,
@@ -39,6 +40,8 @@ class FirPropertyAccessExpressionImpl @FirImplementationDetail constructor(
     override var extensionReceiver: FirExpression?,
     override var source: KtSourceElement?,
     override var nonFatalDiagnostics: MutableOrEmptyList<ConeDiagnostic>,
+    @property:FirIdeOnly
+    override var contextSensitiveAlternative: FirPropertyAccessExpression?,
     override var calleeReference: FirNamedReference,
 ) : FirPropertyAccessExpression() {
 
@@ -53,12 +56,13 @@ class FirPropertyAccessExpressionImpl @FirImplementationDetail constructor(
         if (extensionReceiver !== explicitReceiver && extensionReceiver !== dispatchReceiver) {
             extensionReceiver?.accept(visitor, data)
         }
+        contextSensitiveAlternative?.accept(visitor, data)
         calleeReference.accept(visitor, data)
     }
 
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirPropertyAccessExpressionImpl {
         transformAnnotations(transformer, data)
-        contextArguments.transformInplace(transformer, data)
+        transformContextArguments(transformer, data)
         transformTypeArguments(transformer, data)
         explicitReceiver = explicitReceiver?.transform(transformer, data)
         if (dispatchReceiver !== explicitReceiver) {
@@ -67,12 +71,18 @@ class FirPropertyAccessExpressionImpl @FirImplementationDetail constructor(
         if (extensionReceiver !== explicitReceiver && extensionReceiver !== dispatchReceiver) {
             extensionReceiver = extensionReceiver?.transform(transformer, data)
         }
+        contextSensitiveAlternative = contextSensitiveAlternative?.transform(transformer, data)
         transformCalleeReference(transformer, data)
         return this
     }
 
     override fun <D> transformAnnotations(transformer: FirTransformer<D>, data: D): FirPropertyAccessExpressionImpl {
         annotations.transformInplace(transformer, data)
+        return this
+    }
+
+    override fun <D> transformContextArguments(transformer: FirTransformer<D>, data: D): FirPropertyAccessExpressionImpl {
+        contextArguments.transformInplace(transformer, data)
         return this
     }
 
@@ -126,6 +136,10 @@ class FirPropertyAccessExpressionImpl @FirImplementationDetail constructor(
 
     override fun replaceNonFatalDiagnostics(newNonFatalDiagnostics: List<ConeDiagnostic>) {
         nonFatalDiagnostics = newNonFatalDiagnostics.toMutableOrEmpty()
+    }
+
+    override fun replaceContextSensitiveAlternative(newContextSensitiveAlternative: FirPropertyAccessExpression?) {
+        contextSensitiveAlternative = newContextSensitiveAlternative
     }
 
     override fun replaceCalleeReference(newCalleeReference: FirNamedReference) {

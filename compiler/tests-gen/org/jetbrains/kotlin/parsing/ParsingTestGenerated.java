@@ -186,6 +186,11 @@ public class ParsingTestGenerated extends AbstractParsingTest {
       runTest("compiler/testData/psi/CommentsBindingInStatementBlock.kt");
     }
 
+    @TestMetadata("companionExtension.kt")
+    public void testCompanionExtension() {
+      runTest("compiler/testData/psi/companionExtension.kt");
+    }
+
     @TestMetadata("complicateLTGT.kt")
     public void testComplicateLTGT() {
       runTest("compiler/testData/psi/complicateLTGT.kt");
@@ -356,6 +361,11 @@ public class ParsingTestGenerated extends AbstractParsingTest {
       runTest("compiler/testData/psi/emptyArgumentsInArrayAccesses.kt");
     }
 
+    @TestMetadata("emptyContextParameters.kt")
+    public void testEmptyContextParameters() {
+      runTest("compiler/testData/psi/emptyContextParameters.kt");
+    }
+
     @TestMetadata("emptyEnum.kt")
     public void testEmptyEnum() {
       runTest("compiler/testData/psi/emptyEnum.kt");
@@ -369,6 +379,16 @@ public class ParsingTestGenerated extends AbstractParsingTest {
     @TestMetadata("EmptyName.kt")
     public void testEmptyName() {
       runTest("compiler/testData/psi/EmptyName.kt");
+    }
+
+    @TestMetadata("emptyParameters.kt")
+    public void testEmptyParameters() {
+      runTest("compiler/testData/psi/emptyParameters.kt");
+    }
+
+    @TestMetadata("emptyParametersInFunctionalTypes.kt")
+    public void testEmptyParametersInFunctionalTypes() {
+      runTest("compiler/testData/psi/emptyParametersInFunctionalTypes.kt");
     }
 
     @TestMetadata("enum.kt")
@@ -801,6 +821,16 @@ public class ParsingTestGenerated extends AbstractParsingTest {
       runTest("compiler/testData/psi/ParameterType_ERR.kt");
     }
 
+    @TestMetadata("parameterizedSuspendFunctionType.kt")
+    public void testParameterizedSuspendFunctionType() {
+      runTest("compiler/testData/psi/parameterizedSuspendFunctionType.kt");
+    }
+
+    @TestMetadata("parameterizedSuspendFunctionTypeComplex.kt")
+    public void testParameterizedSuspendFunctionTypeComplex() {
+      runTest("compiler/testData/psi/parameterizedSuspendFunctionTypeComplex.kt");
+    }
+
     @TestMetadata("Precedence.kt")
     public void testPrecedence() {
       runTest("compiler/testData/psi/Precedence.kt");
@@ -869,6 +899,11 @@ public class ParsingTestGenerated extends AbstractParsingTest {
     @TestMetadata("Reserved.kt")
     public void testReserved() {
       runTest("compiler/testData/psi/Reserved.kt");
+    }
+
+    @TestMetadata("returnsResultOfContract.kt")
+    public void testReturnsResultOfContract() {
+      runTest("compiler/testData/psi/returnsResultOfContract.kt");
     }
 
     @TestMetadata("sealed.kt")
@@ -1186,6 +1221,11 @@ public class ParsingTestGenerated extends AbstractParsingTest {
       @TestMetadata("annotatedTypeConstraint.kt")
       public void testAnnotatedTypeConstraint() {
         runTest("compiler/testData/psi/annotation/annotatedTypeConstraint.kt");
+      }
+
+      @TestMetadata("annotatedWhenExpression.kt")
+      public void testAnnotatedWhenExpression() {
+        runTest("compiler/testData/psi/annotation/annotatedWhenExpression.kt");
       }
 
       @TestMetadata("Annotations.kt")
@@ -1761,6 +1801,29 @@ public class ParsingTestGenerated extends AbstractParsingTest {
       }
     }
 
+    @TestMetadata("compiler/testData/psi/companionBlocks")
+    @TestDataPath("$PROJECT_ROOT")
+    @RunWith(JUnit3RunnerWithInners.class)
+    public static class CompanionBlocks extends AbstractParsingTest {
+      private void runTest(String testDataFilePath) {
+        KotlinTestUtils.runTest(this::doParsingTest, this, testDataFilePath);
+      }
+
+      public void testAllFilesPresentInCompanionBlocks() {
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/psi/companionBlocks"), Pattern.compile("^(.*)\\.kts?$"), null, true);
+      }
+
+      @TestMetadata("errors.kt")
+      public void testErrors() {
+        runTest("compiler/testData/psi/companionBlocks/errors.kt");
+      }
+
+      @TestMetadata("smoke.kt")
+      public void testSmoke() {
+        runTest("compiler/testData/psi/companionBlocks/smoke.kt");
+      }
+    }
+
     @TestMetadata("compiler/testData/psi/contextParameters")
     @TestDataPath("$PROJECT_ROOT")
     @RunWith(JUnit3RunnerWithInners.class)
@@ -1941,12 +2004,22 @@ public class ParsingTestGenerated extends AbstractParsingTest {
         runTest("compiler/testData/psi/contracts/SimpleFunctionWithContract.kt");
       }
 
+      @TestMetadata("withContextParameters.kt")
+      public void testWithContextParameters() {
+        runTest("compiler/testData/psi/contracts/withContextParameters.kt");
+      }
+
       @TestMetadata("compiler/testData/psi/contracts/good")
       @TestDataPath("$PROJECT_ROOT")
       @RunWith(JUnit3RunnerWithInners.class)
       public static class Good extends AbstractParsingTest {
         private void runTest(String testDataFilePath) {
           KotlinTestUtils.runTest(this::doParsingTest, this, testDataFilePath);
+        }
+
+        @TestMetadata("accessorsAllowed.kt")
+        public void testAccessorsAllowed() {
+          runTest("compiler/testData/psi/contracts/good/accessorsAllowed.kt");
         }
 
         public void testAllFilesPresentInGood() {
@@ -2021,6 +2094,79 @@ public class ParsingTestGenerated extends AbstractParsingTest {
           }
         }
 
+        @TestMetadata("compiler/testData/psi/contracts/good/holdsIn")
+        @TestDataPath("$PROJECT_ROOT")
+        @RunWith(JUnit3RunnerWithInners.class)
+        public static class HoldsIn extends AbstractParsingTest {
+          private void runTest(String testDataFilePath) {
+            KotlinTestUtils.runTest(this::doParsingTest, this, testDataFilePath);
+          }
+
+          public void testAllFilesPresentInHoldsIn() {
+            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/psi/contracts/good/holdsIn"), Pattern.compile("^(.*)\\.kts?$"), null, true);
+          }
+
+          @TestMetadata("combinedContractWithCallInPlace.kt")
+          public void testCombinedContractWithCallInPlace() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/combinedContractWithCallInPlace.kt");
+          }
+
+          @TestMetadata("combinedContractWithImpliesReturn.kt")
+          public void testCombinedContractWithImpliesReturn() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/combinedContractWithImpliesReturn.kt");
+          }
+
+          @TestMetadata("combinedContractWithReturnImplies.kt")
+          public void testCombinedContractWithReturnImplies() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/combinedContractWithReturnImplies.kt");
+          }
+
+          @TestMetadata("conditionWithDefaultValue.kt")
+          public void testConditionWithDefaultValue() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/conditionWithDefaultValue.kt");
+          }
+
+          @TestMetadata("differentConditions.kt")
+          public void testDifferentConditions() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/differentConditions.kt");
+          }
+
+          @TestMetadata("holdsInBaseCases.kt")
+          public void testHoldsInBaseCases() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/holdsInBaseCases.kt");
+          }
+
+          @TestMetadata("withContextParameters.kt")
+          public void testWithContextParameters() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/withContextParameters.kt");
+          }
+
+          @TestMetadata("withErasedType.kt")
+          public void testWithErasedType() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/withErasedType.kt");
+          }
+
+          @TestMetadata("withExtensionReceiver.kt")
+          public void testWithExtensionReceiver() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/withExtensionReceiver.kt");
+          }
+
+          @TestMetadata("withInfixFunction.kt")
+          public void testWithInfixFunction() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/withInfixFunction.kt");
+          }
+
+          @TestMetadata("withOperatorFunction.kt")
+          public void testWithOperatorFunction() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/withOperatorFunction.kt");
+          }
+
+          @TestMetadata("withReturnsImplies.kt")
+          public void testWithReturnsImplies() {
+            runTest("compiler/testData/psi/contracts/good/holdsIn/withReturnsImplies.kt");
+          }
+        }
+
         @TestMetadata("compiler/testData/psi/contracts/good/returnsImplies")
         @TestDataPath("$PROJECT_ROOT")
         @RunWith(JUnit3RunnerWithInners.class)
@@ -2031,6 +2177,11 @@ public class ParsingTestGenerated extends AbstractParsingTest {
 
           public void testAllFilesPresentInReturnsImplies() {
             KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/psi/contracts/good/returnsImplies"), Pattern.compile("^(.*)\\.kts?$"), null, true);
+          }
+
+          @TestMetadata("baseConditions.kt")
+          public void testBaseConditions() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/baseConditions.kt");
           }
 
           @TestMetadata("booleanOperators.kt")
@@ -2048,6 +2199,16 @@ public class ParsingTestGenerated extends AbstractParsingTest {
             runTest("compiler/testData/psi/contracts/good/returnsImplies/eqNotEq.kt");
           }
 
+          @TestMetadata("impliesReturnsInArgumentPosition.kt")
+          public void testImpliesReturnsInArgumentPosition() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/impliesReturnsInArgumentPosition.kt");
+          }
+
+          @TestMetadata("impliesReturnsWithIncrement.kt")
+          public void testImpliesReturnsWithIncrement() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/impliesReturnsWithIncrement.kt");
+          }
+
           @TestMetadata("inapplicable.kt")
           public void testInapplicable() {
             runTest("compiler/testData/psi/contracts/good/returnsImplies/inapplicable.kt");
@@ -2056,6 +2217,11 @@ public class ParsingTestGenerated extends AbstractParsingTest {
           @TestMetadata("namedArguments.kt")
           public void testNamedArguments() {
             runTest("compiler/testData/psi/contracts/good/returnsImplies/namedArguments.kt");
+          }
+
+          @TestMetadata("nestedCallOfImpliesReturnsContract.kt")
+          public void testNestedCallOfImpliesReturnsContract() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/nestedCallOfImpliesReturnsContract.kt");
           }
 
           @TestMetadata("notNull.kt")
@@ -2086,6 +2252,31 @@ public class ParsingTestGenerated extends AbstractParsingTest {
           @TestMetadata("typePredicate.kt")
           public void testTypePredicate() {
             runTest("compiler/testData/psi/contracts/good/returnsImplies/typePredicate.kt");
+          }
+
+          @TestMetadata("withDataFlowBasedExhaustivenes.kt")
+          public void testWithDataFlowBasedExhaustivenes() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/withDataFlowBasedExhaustivenes.kt");
+          }
+
+          @TestMetadata("withDestructuringDeclaration.kt")
+          public void testWithDestructuringDeclaration() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/withDestructuringDeclaration.kt");
+          }
+
+          @TestMetadata("withErasedType.kt")
+          public void testWithErasedType() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/withErasedType.kt");
+          }
+
+          @TestMetadata("withInfixFunction.kt")
+          public void testWithInfixFunction() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/withInfixFunction.kt");
+          }
+
+          @TestMetadata("withOperatorFunction.kt")
+          public void testWithOperatorFunction() {
+            runTest("compiler/testData/psi/contracts/good/returnsImplies/withOperatorFunction.kt");
           }
         }
 
@@ -2132,6 +2323,21 @@ public class ParsingTestGenerated extends AbstractParsingTest {
 
       public void testAllFilesPresentInDestructuring() {
         KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/psi/destructuring"), Pattern.compile("^(.*)\\.kts?$"), null, true);
+      }
+
+      @TestMetadata("annotationOnFullNameBasedDestructuring.kt")
+      public void testAnnotationOnFullNameBasedDestructuring() {
+        runTest("compiler/testData/psi/destructuring/annotationOnFullNameBasedDestructuring.kt");
+      }
+
+      @TestMetadata("annotationOnFullNameBasedDestructuringScript.kts")
+      public void testAnnotationOnFullNameBasedDestructuringScript() {
+        runTest("compiler/testData/psi/destructuring/annotationOnFullNameBasedDestructuringScript.kts");
+      }
+
+      @TestMetadata("danglingAnnotation.kt")
+      public void testDanglingAnnotation() {
+        runTest("compiler/testData/psi/destructuring/danglingAnnotation.kt");
       }
 
       @TestMetadata("freezeKt79951.kt")
@@ -2522,149 +2728,6 @@ public class ParsingTestGenerated extends AbstractParsingTest {
       }
     }
 
-    @TestMetadata("compiler/testData/psi/k1")
-    @TestDataPath("$PROJECT_ROOT")
-    @RunWith(JUnit3RunnerWithInners.class)
-    public static class K1 extends AbstractParsingTest {
-      private void runTest(String testDataFilePath) {
-        KotlinTestUtils.runTest(this::doParsingTest, this, testDataFilePath);
-      }
-
-      public void testAllFilesPresentInK1() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/psi/k1"), Pattern.compile("^(.*)\\.kts?$"), null, true);
-      }
-
-      @TestMetadata("annotatedDefaultPropertyAccessorK1.kt")
-      public void testAnnotatedDefaultPropertyAccessorK1() {
-        runTest("compiler/testData/psi/k1/annotatedDefaultPropertyAccessorK1.kt");
-      }
-
-      @TestMetadata("annotatedFlexibleTypes.kt")
-      public void testAnnotatedFlexibleTypes() {
-        runTest("compiler/testData/psi/k1/annotatedFlexibleTypes.kt");
-      }
-
-      @TestMetadata("annotatedParameterInEnumConstructor.kt")
-      public void testAnnotatedParameterInEnumConstructor() {
-        runTest("compiler/testData/psi/k1/annotatedParameterInEnumConstructor.kt");
-      }
-
-      @TestMetadata("annotatedParameterInInnerClassConstructor.kt")
-      public void testAnnotatedParameterInInnerClassConstructor() {
-        runTest("compiler/testData/psi/k1/annotatedParameterInInnerClassConstructor.kt");
-      }
-
-      @TestMetadata("annotatedPropertiesK1.kt")
-      public void testAnnotatedPropertiesK1() {
-        runTest("compiler/testData/psi/k1/annotatedPropertiesK1.kt");
-      }
-
-      @TestMetadata("annotationClass.kt")
-      public void testAnnotationClass() {
-        runTest("compiler/testData/psi/k1/annotationClass.kt");
-      }
-
-      @TestMetadata("annotationValues.kt")
-      public void testAnnotationValues() {
-        runTest("compiler/testData/psi/k1/annotationValues.kt");
-      }
-
-      @TestMetadata("annotations.kt")
-      public void testAnnotations() {
-        runTest("compiler/testData/psi/k1/annotations.kt");
-      }
-
-      @TestMetadata("annotationsOnNullableTypes.kt")
-      public void testAnnotationsOnNullableTypes() {
-        runTest("compiler/testData/psi/k1/annotationsOnNullableTypes.kt");
-      }
-
-      @TestMetadata("annotationsOnParenthesizedTypes.kt")
-      public void testAnnotationsOnParenthesizedTypes() {
-        runTest("compiler/testData/psi/k1/annotationsOnParenthesizedTypes.kt");
-      }
-
-      @TestMetadata("classMembers.kt")
-      public void testClassMembers() {
-        runTest("compiler/testData/psi/k1/classMembers.kt");
-      }
-
-      @TestMetadata("classObject.kt")
-      public void testClassObject() {
-        runTest("compiler/testData/psi/k1/classObject.kt");
-      }
-
-      @TestMetadata("const.kt")
-      public void testConst() {
-        runTest("compiler/testData/psi/k1/const.kt");
-      }
-
-      @TestMetadata("contextReceiversCallableMembers.kt")
-      public void testContextReceiversCallableMembers() {
-        runTest("compiler/testData/psi/k1/contextReceiversCallableMembers.kt");
-      }
-
-      @TestMetadata("contextReceiversOnClass.kt")
-      public void testContextReceiversOnClass() {
-        runTest("compiler/testData/psi/k1/contextReceiversOnClass.kt");
-      }
-
-      @TestMetadata("contextReceiversOnFunctionType.kt")
-      public void testContextReceiversOnFunctionType() {
-        runTest("compiler/testData/psi/k1/contextReceiversOnFunctionType.kt");
-      }
-
-      @TestMetadata("contextReceiversOnTopLevelCallables.kt")
-      public void testContextReceiversOnTopLevelCallables() {
-        runTest("compiler/testData/psi/k1/contextReceiversOnTopLevelCallables.kt");
-      }
-
-      @TestMetadata("contracts.kt")
-      public void testContracts() {
-        runTest("compiler/testData/psi/k1/contracts.kt");
-      }
-
-      @TestMetadata("dataClass.kt")
-      public void testDataClass() {
-        runTest("compiler/testData/psi/k1/dataClass.kt");
-      }
-
-      @TestMetadata("dataObject.kt")
-      public void testDataObject() {
-        runTest("compiler/testData/psi/k1/dataObject.kt");
-      }
-
-      @TestMetadata("defaultImplsInInterface.kt")
-      public void testDefaultImplsInInterface() {
-        runTest("compiler/testData/psi/k1/defaultImplsInInterface.kt");
-      }
-
-      @TestMetadata("delegatedWithInitializer.kt")
-      public void testDelegatedWithInitializer() {
-        runTest("compiler/testData/psi/k1/delegatedWithInitializer.kt");
-      }
-
-      @TestMetadata("enum.kt")
-      public void testEnum() {
-        runTest("compiler/testData/psi/k1/enum.kt");
-      }
-
-      @TestMetadata("EnumIn.kt")
-      public void testEnumIn() {
-        runTest("compiler/testData/psi/k1/EnumIn.kt");
-      }
-
-      @TestMetadata("multifileClass.kt")
-      public void testMultifileClass() {
-        runTest("compiler/testData/psi/k1/multifileClass.kt");
-      }
-
-      @TestMetadata("multifileClass2.kt")
-      public void testMultifileClass2() {
-        runTest("compiler/testData/psi/k1/multifileClass2.kt");
-      }
-    }
-
     @TestMetadata("compiler/testData/psi/kdoc")
     @TestDataPath("$PROJECT_ROOT")
     @RunWith(JUnit3RunnerWithInners.class)
@@ -2717,6 +2780,11 @@ public class ParsingTestGenerated extends AbstractParsingTest {
         runTest("compiler/testData/psi/kdoc/EndRightAfterText.kt");
       }
 
+      @TestMetadata("Escapes.kt")
+      public void testEscapes() {
+        runTest("compiler/testData/psi/kdoc/Escapes.kt");
+      }
+
       @TestMetadata("HttpLink.kt")
       public void testHttpLink() {
         runTest("compiler/testData/psi/kdoc/HttpLink.kt");
@@ -2755,6 +2823,11 @@ public class ParsingTestGenerated extends AbstractParsingTest {
       @TestMetadata("Markdown.kt")
       public void testMarkdown() {
         runTest("compiler/testData/psi/kdoc/Markdown.kt");
+      }
+
+      @TestMetadata("MarkdownCodeBlocks.kt")
+      public void testMarkdownCodeBlocks() {
+        runTest("compiler/testData/psi/kdoc/MarkdownCodeBlocks.kt");
       }
 
       @TestMetadata("MarkdownLinkWithError.kt")

@@ -23,6 +23,10 @@ object AnnotationTargetLists {
 
     val T_DESTRUCTURING_DECLARATION = targetList(DESTRUCTURING_DECLARATION)
 
+    val T_DESTRUCTURING_DECLARATION_NEW = targetList(DESTRUCTURING_DECLARATION) {
+        extraTargets(LOCAL_VARIABLE)
+    }
+
     private fun TargetListBuilder.propertyTargets(backingField: Boolean, delegate: Boolean) {
         if (backingField) extraTargets(FIELD)
         if (delegate) {
@@ -65,7 +69,7 @@ object AnnotationTargetLists {
 
     val T_VALUE_PARAMETER_WITHOUT_VAL = targetList(VALUE_PARAMETER)
 
-    val T_VALUE_PARAMETER_WITH_VAL = targetList(VALUE_PARAMETER, PROPERTY, MEMBER_PROPERTY) {
+    val T_VALUE_PARAMETER_WITH_VAL = targetList(VALUE_PARAMETER, PROPERTY, MEMBER_PROPERTY, PROPERTY_PARAMETER) {
         extraTargets(FIELD)
         onlyWithUseSiteTarget(PROPERTY_GETTER, PROPERTY_SETTER)
     }

@@ -1,4 +1,5 @@
-// LANGUAGE: +ContextReceivers
+// LANGUAGE: +ContextReceivers, -ContextParameters
+// COMPILATION_ERRORS
 
 @Target(AnnotationTarget.TYPE)
 annotation class MyAnnotation

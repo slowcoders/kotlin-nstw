@@ -5,10 +5,12 @@
 
 package org.jetbrains.kotlinx.jspo.compiler.fir
 
+import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
+import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.builder.FirAnnotationContainerBuilder
@@ -21,6 +23,7 @@ import org.jetbrains.kotlin.fir.declarations.builder.buildValueParameter
 import org.jetbrains.kotlin.fir.declarations.impl.FirResolvedDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.origin
 import org.jetbrains.kotlin.fir.declarations.utils.isCompanion
+import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotation
 import org.jetbrains.kotlin.fir.expressions.builder.buildAnnotationArgumentMapping
@@ -146,6 +149,7 @@ class JsPlainObjectsFunctionsGenerator(session: FirSession) : FirDeclarationGene
             name = classId.shortClassName
             symbol = FirRegularClassSymbol(classId)
             annotateWith(JsStandardClassIds.Annotations.JsExportIgnore)
+            source = owner.source?.fakeElement(KtFakeSourceElementKind.PluginGenerated)
         }.symbol
     }
 
@@ -236,6 +240,7 @@ class JsPlainObjectsFunctionsGenerator(session: FirSession) : FirDeclarationGene
             origin = JsPlainObjectsPluginKey.origin
             symbol = functionalSymbol
             name = callableId.callableName
+            source = jsPlainObjectInterface.source?.fakeElement(KtFakeSourceElementKind.PluginGenerated)
 
             status = FirResolvedDeclarationStatusImpl(
                 Visibilities.Public,
@@ -246,6 +251,7 @@ class JsPlainObjectsFunctionsGenerator(session: FirSession) : FirDeclarationGene
                 isOverride = false
                 this.isOperator = isOperator
             }
+            isLocal = parent.isLocal
 
             annotateWith(JsStandardClassIds.Annotations.JsExportIgnore)
 
@@ -321,6 +327,7 @@ class JsPlainObjectsFunctionsGenerator(session: FirSession) : FirDeclarationGene
                     resolvePhase = FirResolvePhase.BODY_RESOLVE
                     containingDeclarationSymbol = this@buildNamedFunction.symbol
                     defaultValue = it.getParameterDefaultValueFromProperty()
+                    source = it.source?.fakeElement(KtFakeSourceElementKind.PluginGenerated)
 
                     jsName?.let { name ->
                         annotateWith(JsStandardClassIds.Annotations.JsName) {

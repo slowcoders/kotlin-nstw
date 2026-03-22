@@ -31,7 +31,11 @@ import kotlin.math.*
  */
 @SinceKotlin("1.6")
 @JvmInline
-public value class Duration private constructor(private val rawValue: Long) : Comparable<Duration> {
+public value class Duration
+// A temporary workaround for KT-81995, the constructor has to be private once the issue is resolved.
+@Deprecated("Don't call this constructor directly.", level = DeprecationLevel.ERROR)
+internal constructor(private val rawValue: Long) :
+    Comparable<Duration> {
 
     private val value: Long get() = rawValue shr 1
     private inline val unitDiscriminator: Int get() = rawValue.toInt() and 1
@@ -40,6 +44,7 @@ public value class Duration private constructor(private val rawValue: Long) : Co
     private val storageUnit get() = if (isInNanos()) DurationUnit.NANOSECONDS else DurationUnit.MILLISECONDS
 
     public companion object {
+        @Suppress("DEPRECATION_ERROR") // A temporary workaround for KT-81995.
         internal fun fromRawValue(rawValue: Long): Duration = Duration(rawValue).apply {
             if (durationAssertionsEnabled) {
                 if (isInNanos()) {
@@ -52,6 +57,7 @@ public value class Duration private constructor(private val rawValue: Long) : Co
         }
 
         /** The duration equal to exactly 0 seconds. */
+        @Suppress("DEPRECATION_ERROR") // A temporary workaround for KT-81995.
         public val ZERO: Duration = Duration(0L)
 
         /** The duration whose value is positive infinity. It is useful for representing timeouts that should never expire. */
@@ -59,6 +65,7 @@ public value class Duration private constructor(private val rawValue: Long) : Co
         internal val NEG_INFINITE: Duration = durationOfMillis(-MAX_MILLIS)
 
         internal const val INVALID_RAW_VALUE = 0x7FFFFFFFFFFFC0DE
+        @Suppress("DEPRECATION_ERROR") // A temporary workaround for KT-81995.
         internal val INVALID = Duration(INVALID_RAW_VALUE)
 
         /** Converts the given time duration [value] expressed in the specified [sourceUnit] into the specified [targetUnit]. */
@@ -955,7 +962,11 @@ public value class Duration private constructor(private val rawValue: Long) : Co
 // constructing from number of units
 // extension functions
 
-/** Returns a [Duration] equal to this [Int] number of the specified [unit]. */
+/**
+ * Returns a [Duration] equal to this [Int] number of the specified [unit].
+ *
+ * @sample samples.time.Durations.toDurationInt
+ */
 @SinceKotlin("1.6")
 public fun Int.toDuration(unit: DurationUnit): Duration {
     return if (unit <= DurationUnit.SECONDS) {
@@ -964,13 +975,22 @@ public fun Int.toDuration(unit: DurationUnit): Duration {
         toLong().toDuration(unit)
 }
 
-/** Returns a [Duration] equal to this [Long] number of the specified [unit]. */
+/**
+ * Returns a [Duration] equal to this [Long] number of the specified [unit].
+ *
+ * @sample samples.time.Durations.toDurationLong
+ */
 @SinceKotlin("1.6")
 public fun Long.toDuration(unit: DurationUnit): Duration {
     val maxNsInUnit = convertDurationUnitOverflow(MAX_NANOS, DurationUnit.NANOSECONDS, unit)
     return when {
         this in -maxNsInUnit..maxNsInUnit -> durationOfNanos(convertDurationUnitOverflow(this, unit, DurationUnit.NANOSECONDS))
-        unit >= DurationUnit.MILLISECONDS -> durationOfMillis(this.sign * convertDurationUnitToMilliseconds(abs(this), unit))
+        unit >= DurationUnit.MILLISECONDS -> durationOfMillis(
+            this.sign * convertDurationUnitToMilliseconds(
+                abs(this.coerceAtLeast(Long.MIN_VALUE + 1)),
+                unit
+            )
+        )
         else -> durationOfMillis(convertDurationUnit(this, unit, DurationUnit.MILLISECONDS).coerceIn(-MAX_MILLIS, MAX_MILLIS))
     }
 }
@@ -981,6 +1001,8 @@ public fun Long.toDuration(unit: DurationUnit): Duration {
  * Depending on its magnitude, the value is rounded to an integer number of nanoseconds or milliseconds.
  *
  * @throws IllegalArgumentException if this `Double` value is `NaN`.
+ *
+ * @sample samples.time.Durations.toDurationDouble
  */
 @SinceKotlin("1.6")
 public fun Double.toDuration(unit: DurationUnit): Duration {
@@ -996,7 +1018,11 @@ public fun Double.toDuration(unit: DurationUnit): Duration {
 }
 
 
-/** Returns a duration whose value is the specified [duration] value multiplied by this number. */
+/**
+ * Returns a duration whose value is the specified [duration] value multiplied by this number.
+ *
+ * @sample samples.time.Durations.timesOperatorInt
+ */
 @SinceKotlin("1.6")
 @kotlin.internal.InlineOnly
 public inline operator fun Int.times(duration: Duration): Duration = duration * this
@@ -1007,6 +1033,8 @@ public inline operator fun Int.times(duration: Duration): Duration = duration * 
  * The operation may involve rounding when the result cannot be represented exactly with a [Double] number.
  *
  * @throws IllegalArgumentException if the operation results in a `NaN` value.
+ *
+ * @sample samples.time.Durations.timesOperatorDouble
  */
 @SinceKotlin("1.6")
 @kotlin.internal.InlineOnly

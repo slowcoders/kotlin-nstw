@@ -18,13 +18,14 @@ val testCompilerClasspath by configurations.creating {
 }
 
 dependencies {
+    api(project(":compiler:build-tools:kotlin-build-tools-api"))
     runtimeOnly(kotlinStdlib())
     runtimeOnly(project(":kotlin-script-runtime"))
     runtimeOnly(commonDependency("org.jetbrains.kotlin:kotlin-reflect")) { isTransitive = false }
     runtimeOnly(project(":kotlin-daemon-embeddable"))
     runtimeOnly(libs.kotlinx.coroutines.core) { isTransitive = false }
     testImplementation(libs.junit4)
-    testApi(kotlinTest("junit"))
+    testImplementation(kotlinTest("junit"))
     testCompilationClasspath(kotlinStdlib())
 }
 
@@ -32,12 +33,6 @@ sourceSets {
     "main" {}
     "test" { projectDefault() }
 }
-
-// dummy is used for rewriting dependencies to the shaded packages in the embeddable compiler
-compilerDummyJar(compilerDummyForDependenciesRewriting("compilerDummy") {
-    archiveClassifier.set("dummy")
-})
-
 
 val runtimeJar = runtimeJar(embeddableCompiler()) {
     exclude("com/sun/jna/**")

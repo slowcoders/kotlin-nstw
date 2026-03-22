@@ -33,7 +33,6 @@ import org.jetbrains.kotlin.gradle.logging.kotlinDebug
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.ContributeCompilerArgumentsContext
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext.Companion.create
-import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import org.jetbrains.kotlin.gradle.report.BuildReportMode
 import org.jetbrains.kotlin.gradle.targets.js.internal.LibraryFilterCachingService
 import org.jetbrains.kotlin.gradle.targets.js.internal.UsesLibraryFilterCachingService
@@ -43,8 +42,8 @@ import org.jetbrains.kotlin.gradle.utils.getFile
 import org.jetbrains.kotlin.gradle.utils.newInstance
 import org.jetbrains.kotlin.gradle.utils.toPathsArray
 import org.jetbrains.kotlin.incremental.ClasspathChanges
-import org.jetbrains.kotlin.library.KLIB_MANIFEST_FILE_NAME
-import org.jetbrains.kotlin.library.impl.isKotlinLibrary
+import org.jetbrains.kotlin.library.KlibConstants.KLIB_MANIFEST_FILE_NAME
+import org.jetbrains.kotlin.library.loader.KlibLoader
 import java.io.File
 import javax.inject.Inject
 
@@ -195,7 +194,7 @@ abstract class Kotlin2JsCompile @Inject constructor(
                 listOfNotNull(
                     pluginClasspath, kotlinPluginData?.orNull?.classpath
                 ).reduce(FileCollection::plus).toPathsArray()
-            }
+            } ?: emptyArray()
         }
 
         dependencyClasspath { args ->
@@ -203,7 +202,7 @@ abstract class Kotlin2JsCompile @Inject constructor(
 
             args.libraries = runSafe {
                 libraries
-                    .filter { it.exists() && libraryFilter(it) }
+                    .filter { libraryFilter(it) }
                     .filterMainCompilationKlibArtifact()
                     .map { it.absolutePath }
                     .toSet()
@@ -220,9 +219,13 @@ abstract class Kotlin2JsCompile @Inject constructor(
             if (multiPlatformEnabled.get()) {
                 if (compilerOptions.usesK2.get()) {
                     args.fragmentSources = multiplatformStructure.fragmentSourcesCompilerArgs(sources.files, sourceFileFilter)
-                    args.fragmentDependencies = if (separateKmpCompilation.get()) {
-                        multiplatformStructure.fragmentDependenciesCompilerArgs
-                    } else emptyArray()
+                    if (separateKmpCompilation.get()) {
+                        args.fragmentDependencies = multiplatformStructure.fragmentDependenciesCompilerArgs
+                        args.fragmentFriendDependencies = multiplatformStructure.fragmentFriendsCompilerArgs
+                    } else {
+                        args.fragmentDependencies = emptyArray()
+                        args.fragmentFriendDependencies = emptyArray()
+                    }
                 } else {
                     args.commonSources = commonSourceSet.asFileTree.toPathsArray()
                 }
@@ -255,6 +258,14 @@ abstract class Kotlin2JsCompile @Inject constructor(
             this
         )
 
+    /**
+     * Checks whether the specified [location] points to a really existing Klib library.
+     */
+    private fun isSomeKindOfAKlib(location: File): Boolean =
+        libraryFilterCacheService.get().getOrCompute(location.asLibraryFilterCacheKey) {
+            KlibLoader { libraryPaths(it.absolutePath) }.load().librariesStdlibFirst.isNotEmpty()
+        }
+
     @get:Internal
     abstract override val libraries: ConfigurableFileCollection
 
@@ -275,9 +286,7 @@ abstract class Kotlin2JsCompile @Inject constructor(
 
     @get:Internal
     protected val libraryFilter: (File) -> Boolean
-        get() = { file ->
-            libraryFilterCacheService.get().getOrCompute(file.asLibraryFilterCacheKey, ::isKotlinLibrary)
-        }
+        get() = { file -> isSomeKindOfAKlib(file) }
 
     override val incrementalProps: List<FileCollection>
         /*
@@ -314,7 +323,7 @@ abstract class Kotlin2JsCompile @Inject constructor(
         logger.debug("Calling compiler")
 
         val dependencies = libraries
-            .filter { it.exists() && libraryFilter(it) }
+            .filter { libraryFilter(it) }
             .filterMainCompilationKlibArtifact()
             .map { it.normalize().absolutePath }
 
@@ -358,6 +367,7 @@ abstract class Kotlin2JsCompile @Inject constructor(
             compilerArgumentsLogLevel = kotlinCompilerArgumentsLogLevel.get()
         )
         processArgsBeforeCompile(args)
+
         compilerRunner.runJsCompilerAsync(
             args,
             environment,

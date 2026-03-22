@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("java-test-fixtures")
     id("project-tests-convention")
 }
@@ -29,8 +28,6 @@ dependencies {
     testFixturesApi(testFixtures(project(":compiler:fir:raw-fir:psi2fir")))
 
     testCompileOnly(kotlinTest("junit"))
-
-    testRuntimeOnly(project(":core:descriptors.runtime"))
 
     testFixturesCompileOnly(intellijCore())
     testImplementation(intellijCore())

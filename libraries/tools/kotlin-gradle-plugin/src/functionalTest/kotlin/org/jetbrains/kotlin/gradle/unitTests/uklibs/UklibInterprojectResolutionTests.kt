@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.gradle.plugin.sources.internal
 import org.jetbrains.kotlin.gradle.testing.*
 import org.jetbrains.kotlin.gradle.util.*
 import org.jetbrains.kotlin.tooling.core.closure
-import org.junit.Test
+import kotlin.test.Test
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -37,6 +37,7 @@ class UklibInterprojectResolutionTests {
     fun `interproject uklib resolution - transitive dependency through jvm library - resolves uklib variants in transitive dependency`() {
         val targets: KotlinMultiplatformExtension.() -> Unit = {
             iosArm64()
+            @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
             iosX64()
             jvm()
             js()
@@ -118,7 +119,7 @@ class UklibInterprojectResolutionTests {
                             "artifactType" to "jar",
                             "org.gradle.category" to "library",
                             "org.gradle.dependency.bundling" to "external",
-                            "org.gradle.jvm.version" to "17",
+                            "org.gradle.jvm.version" to "21",
                             "org.gradle.libraryelements" to "jar",
                             "org.gradle.usage" to "java-api",
                         ),
@@ -151,7 +152,7 @@ class UklibInterprojectResolutionTests {
                             "artifactType" to "jar",
                             "org.gradle.category" to "library",
                             "org.gradle.dependency.bundling" to "external",
-                            "org.gradle.jvm.version" to "17",
+                            "org.gradle.jvm.version" to "21",
                             "org.gradle.libraryelements" to "jar",
                             "org.gradle.usage" to "java-api",
                         ),
@@ -183,7 +184,7 @@ class UklibInterprojectResolutionTests {
                             "artifactType" to "jar",
                             "org.gradle.category" to "library",
                             "org.gradle.dependency.bundling" to "external",
-                            "org.gradle.jvm.version" to "17",
+                            "org.gradle.jvm.version" to "21",
                             "org.gradle.libraryelements" to "jar",
                             "org.gradle.usage" to "java-runtime",
                         ),
@@ -219,7 +220,7 @@ class UklibInterprojectResolutionTests {
                                 "artifactType" to "jar",
                                 "org.gradle.category" to "library",
                                 "org.gradle.dependency.bundling" to "external",
-                                "org.gradle.jvm.version" to "17",
+                                "org.gradle.jvm.version" to "21",
                                 "org.gradle.libraryelements" to "jar",
                                 "org.gradle.usage" to "java-api",
                             ),
@@ -251,6 +252,7 @@ class UklibInterprojectResolutionTests {
     fun `interproject uklib resolution - direct dependency a uklib producing component - with matching set of targets`() {
         val targets: KotlinMultiplatformExtension.() -> Unit = {
             iosArm64()
+            @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
             iosX64()
             jvm()
             js()
@@ -406,6 +408,7 @@ class UklibInterprojectResolutionTests {
             kotlin {
                 iosArm64()
                 iosSimulatorArm64()
+                @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                 iosX64()
                 jvm()
                 js()
@@ -477,6 +480,7 @@ class UklibInterprojectResolutionTests {
     fun `interproject uklib resolution - transitive dependency though a uklib producing component - with a subset of targets`() {
         val targets: KotlinMultiplatformExtension.() -> Unit = {
             iosArm64()
+            @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
             iosX64()
             jvm()
             js()

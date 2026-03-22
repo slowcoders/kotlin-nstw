@@ -11,17 +11,19 @@ import org.jetbrains.kotlin.buildtools.api.ProjectId
 import org.jetbrains.kotlin.buildtools.api.cri.CriLookupDataDeserializationOperation
 import org.jetbrains.kotlin.buildtools.api.cri.LookupEntry
 import org.jetbrains.kotlin.buildtools.internal.BuildOperationImpl
+import org.jetbrains.kotlin.buildtools.internal.Options
 
 internal class CriLookupDataDeserializationOperationImpl(
     private val deserializer: CriDataDeserializerImpl,
     private val data: ByteArray,
-) : BuildOperationImpl<Collection<LookupEntry>>(), CriLookupDataDeserializationOperation {
+) : BuildOperationImpl<Iterable<LookupEntry>>(), CriLookupDataDeserializationOperation {
+    override val options: Options = Options(CriLookupDataDeserializationOperation::class)
 
-    override fun execute(
+    override fun executeImpl(
         projectId: ProjectId,
         executionPolicy: ExecutionPolicy,
         logger: KotlinLogger?,
-    ): Collection<LookupEntry> {
+    ): Iterable<LookupEntry> {
         return deserializer.deserializeLookupData(data)
     }
 }

@@ -162,7 +162,9 @@ class ValueParameter(
                 isOverride = modifiers.hasOverride()
                 isConst = modifiers.hasConst()
                 isLateInit = modifiers.hasLateinit()
+                isExternal = modifiers.hasExternal()
             }
+            isLocal = context.inLocalContext
 
             val defaultAccessorSource = propertySource?.fakeElement(KtFakeSourceElementKind.DefaultAccessor)
             backingField = FirDefaultPropertyBackingField(

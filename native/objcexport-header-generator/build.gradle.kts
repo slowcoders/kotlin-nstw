@@ -16,11 +16,24 @@ dependencies {
     api(project(":kotlin-tooling-core"))
     api(project(":native:base"))
 
+    if (kotlinBuildProperties.isKotlinNativeEnabled.get()) {
+        testImplementation(project(":kotlin-native:Interop:Indexer"))
+        testImplementation(project(":native:kotlin-native-utils"))
+        testImplementation(project(":kotlin-native:Interop:StubGenerator"))
+        testImplementation(project(":native:unsafe-mem"))
+        testImplementation(testFixtures(project(":native:native.tests")))
+    }
+
     testImplementation(project(":native:external-projects-test-utils"))
-    testApi(libs.junit.jupiter.api)
-    testApi(libs.junit.jupiter.engine)
-    testApi(libs.junit.jupiter.params)
-    testApi(testFixtures(project(":compiler:tests-common")))
+    testRuntimeOnly(project(":native:analysis-api-based-test-utils"))
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(testFixtures(project(":compiler:tests-common")))
+    api(project(":kotlin-stdlib"))
+    testImplementation(project(":kotlin-stdlib"))
+    testImplementation(project(":kotlin-test"))
+    testImplementation(testFixtures(project(":compiler:test-infrastructure-utils")))
 }
 
 kotlin {
@@ -51,16 +64,27 @@ tasks.test.configure {
 projectTests {
     objCExportHeaderGeneratorTestTask("testK1", testDisplayNameTag = "K1") {
         classpath += k1TestRuntimeClasspath
+        exclude("**/ObjCExportIntegrationTest.class")
     }
 
     objCExportHeaderGeneratorTestTask("testAnalysisApi", testDisplayNameTag = "AA") {
         classpath += analysisApiRuntimeClasspath
+        exclude("**/ObjCExportIntegrationTest.class")
+    }
+}
+
+projectTests {
+    objCExportHeaderGeneratorTestTask("testIntegration") {
+        classpath += k1TestRuntimeClasspath
+        classpath += analysisApiRuntimeClasspath
+        include("**/ObjCExportIntegrationTest.class")
     }
 }
 
 tasks.check.configure {
     dependsOn("testK1")
     dependsOn("testAnalysisApi")
+    dependsOn("testIntegration")
     dependsOn(":native:objcexport-header-generator-k1:check")
     dependsOn(":native:objcexport-header-generator-analysis-api:check")
 }

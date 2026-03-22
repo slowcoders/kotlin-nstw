@@ -2,7 +2,6 @@ import kotlin.io.path.createTempDirectory
 
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("project-tests-convention")
     id("test-inputs-check")
     id("java-test-fixtures")
@@ -11,6 +10,7 @@ plugins {
 dependencies {
     testFixturesApi(project(":kotlin-scripting-compiler"))
     testFixturesApi(testFixtures(project(":compiler:tests-common")))
+    testFixturesImplementation(project(":compiler:cli-jvm:javac-integration"))
     testFixturesImplementation(intellijCore())
     testImplementation(intellijCore())
     testFixturesApi(platform(libs.junit.bom))
@@ -55,19 +55,5 @@ projectTests {
 
 
 optInToK1Deprecation()
-
-tasks.register<Exec>("downloadJspecifyTests") {
-    val tmpDirPath = createTempDirectory().toAbsolutePath().toString()
-    doFirst {
-        executable("git")
-        args("clone", "https://github.com/jspecify/jspecify/", tmpDirPath)
-    }
-    doLast {
-        copy {
-            from("$tmpDirPath/samples")
-            into("${project.rootDir}/compiler/testData/foreignAnnotationsJava8/tests/jspecify/java")
-        }
-    }
-}
 
 testsJar()

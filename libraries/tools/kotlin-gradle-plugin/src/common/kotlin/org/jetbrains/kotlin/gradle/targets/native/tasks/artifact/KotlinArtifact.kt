@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.utils.lowerCamelCaseName
 import org.jetbrains.kotlin.gradle.utils.maybeCreateResolvable
 import org.jetbrains.kotlin.gradle.utils.named
+import org.jetbrains.kotlin.gradle.utils.setInvisibleIfSupported
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
 
@@ -87,7 +88,7 @@ abstract class KotlinNativeArtifactConfigImpl(artifactName: String) : KotlinArti
 internal fun Project.registerLibsDependencies(target: KonanTarget, artifactName: String, deps: Set<Any>): String {
     val librariesConfigurationName = lowerCamelCaseName(target.presetName, artifactName, "linkLibrary")
     configurations.maybeCreateResolvable(librariesConfigurationName).apply {
-        isVisible = false
+        setInvisibleIfSupported()
         isTransitive = true
         configureAttributesFor(project, target)
     }
@@ -98,7 +99,7 @@ internal fun Project.registerLibsDependencies(target: KonanTarget, artifactName:
 internal fun Project.registerExportDependencies(target: KonanTarget, artifactName: String, deps: Set<Any>): String {
     val exportConfigurationName = lowerCamelCaseName(target.presetName, artifactName, "linkExport")
     configurations.maybeCreateResolvable(exportConfigurationName).apply {
-        isVisible = false
+        setInvisibleIfSupported()
         isTransitive = false
         configureAttributesFor(project, target)
     }

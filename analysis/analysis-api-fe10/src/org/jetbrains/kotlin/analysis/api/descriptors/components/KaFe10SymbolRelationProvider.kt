@@ -20,6 +20,8 @@ import org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased.KaF
 import org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased.base.*
 import org.jetbrains.kotlin.analysis.api.getModule
 import org.jetbrains.kotlin.analysis.api.impl.base.components.KaBaseSessionComponent
+import org.jetbrains.kotlin.analysis.api.impl.base.components.getAllOverriddenSymbolsForParameter
+import org.jetbrains.kotlin.analysis.api.impl.base.components.getDirectlyOverriddenSymbolsForParameter
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KaModuleBase
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaLibraryModule
@@ -35,13 +37,18 @@ import org.jetbrains.kotlin.load.kotlin.JvmPackagePartSource
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement
 import org.jetbrains.kotlin.load.kotlin.asNioPath
 import org.jetbrains.kotlin.platform.TargetPlatform
+import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.hasActualModifier
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
+import org.jetbrains.kotlin.resolve.OverloadChecker
+import org.jetbrains.kotlin.resolve.calls.components.ClassicTypeSystemContextForCS
+import org.jetbrains.kotlin.resolve.calls.results.TypeSpecificityComparator
 import org.jetbrains.kotlin.resolve.descriptorUtil.denotedClassDescriptor
 import org.jetbrains.kotlin.resolve.descriptorUtil.platform
 import org.jetbrains.kotlin.resolve.findOriginalTopMostOverriddenDescriptors
+import org.jetbrains.kotlin.resolve.jvm.JvmTypeSpecificityComparatorDelegate
 import org.jetbrains.kotlin.resolve.multiplatform.ExpectedActualResolver
 import org.jetbrains.kotlin.resolve.multiplatform.isCompatibleOrWeaklyIncompatible
 import org.jetbrains.kotlin.resolve.sam.SamConstructorDescriptor
@@ -191,9 +198,19 @@ internal class KaFe10SymbolRelationProvider(
             return KaFe10DescSamConstructorSymbol(constructorDescriptor, analysisContext)
         }
 
-    override val KaSamConstructorSymbol.constructedClass: KaClassLikeSymbol
+    override val KaSamConstructorSymbol.functionalInterface: KaClassLikeSymbol
         get() = withValidityAssertion {
             (getDescriptor() as SamConstructorDescriptor).baseDescriptorForSynthetic.toKaClassSymbol(analysisContext)
+        }
+
+    override val KaClassLikeSymbol.functionalInterfaceFunction: KaNamedFunctionSymbol
+        get() = withValidityAssertion {
+            throw NotImplementedError("Method is not implemented for FE 1.0")
+        }
+
+    override val KaSamConstructorSymbol.functionalInterfaceFunction: KaNamedFunctionSymbol
+        get() = withValidityAssertion {
+            throw NotImplementedError("Method is not implemented for FE 1.0")
         }
 
     @KaExperimentalApi
@@ -204,11 +221,19 @@ internal class KaFe10SymbolRelationProvider(
 
     override val KaCallableSymbol.directlyOverriddenSymbols: Sequence<KaCallableSymbol>
         get() = withValidityAssertion {
+            if (this is KaValueParameterSymbol) {
+                return getDirectlyOverriddenSymbolsForParameter(this)
+            }
+
             overridesProvider.getDirectlyOverriddenSymbols(this)
         }
 
     override val KaCallableSymbol.allOverriddenSymbols: Sequence<KaCallableSymbol>
         get() = withValidityAssertion {
+            if (this is KaValueParameterSymbol) {
+                return getAllOverriddenSymbolsForParameter(this)
+            }
+
             overridesProvider.getAllOverriddenSymbols(this)
         }
 
@@ -259,6 +284,25 @@ internal class KaFe10SymbolRelationProvider(
 
             return inheritorsProvider.computeSealedSubclasses(classDescriptor, allowInDifferentFiles)
                 .mapNotNull { it.toKtClassifierSymbol(analysisContext) as? KaNamedClassSymbol }
+        }
+
+    override fun KaFunctionSymbol.hasConflictingSignatureWith(other: KaFunctionSymbol, targetPlatform: TargetPlatform): Boolean =
+        withValidityAssertion {
+            val thisDescriptor = getDescriptor() ?: return false
+            val otherDescriptor = other.getDescriptor() ?: return false
+
+            val typeSpecificityComparator = when {
+                targetPlatform.isJvm() -> JvmTypeSpecificityComparatorDelegate(
+                    ClassicTypeSystemContextForCS(
+                        analysisContext.builtIns,
+                        analysisContext.kotlinTypeRefiner
+                    ),
+                    analysisContext.languageVersionSettings,
+                )
+                else -> TypeSpecificityComparator.NONE
+            }
+
+            !OverloadChecker(typeSpecificityComparator).isOverloadable(thisDescriptor, otherDescriptor)
         }
 }
 

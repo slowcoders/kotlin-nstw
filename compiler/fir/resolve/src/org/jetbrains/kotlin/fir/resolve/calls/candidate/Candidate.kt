@@ -19,8 +19,11 @@ import org.jetbrains.kotlin.fir.expressions.FirThisReceiverExpression
 import org.jetbrains.kotlin.fir.expressions.builder.buildPropertyAccessExpressionCopy
 import org.jetbrains.kotlin.fir.expressions.builder.buildThisReceiverExpressionCopy
 import org.jetbrains.kotlin.fir.expressions.impl.FirExpressionStub
+import org.jetbrains.kotlin.fir.expressions.unwrapArgument
 import org.jetbrains.kotlin.fir.resolve.FirSamResolver
 import org.jetbrains.kotlin.fir.resolve.calls.*
+import org.jetbrains.kotlin.fir.resolve.calls.stages.CheckContextArguments
+import org.jetbrains.kotlin.fir.resolve.calls.stages.MapArguments
 import org.jetbrains.kotlin.fir.resolve.calls.stages.TypeArgumentMapping
 import org.jetbrains.kotlin.fir.resolve.inference.InferenceComponents
 import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutor
@@ -43,9 +46,7 @@ class Candidate(
     // - in some cases with static entities, no matter is a use-site receiver explicit or not
     // OR we may have here a kind of ImplicitReceiverValue (non-statics only)
     override var dispatchReceiver: ConeResolutionAtom?,
-    // In most cases, it contains zero or single element
-    // More than one, only in case of context receiver group
-    val givenExtensionReceiverOptions: List<ConeResolutionAtom>,
+    val givenExtensionReceiver: ConeResolutionAtom?,
     override val explicitReceiverKind: ExplicitReceiverKind,
     private val constraintSystemFactory: InferenceComponents.ConstraintSystemFactory,
     private val baseSystem: ConstraintStorage,
@@ -188,6 +189,14 @@ class Candidate(
         _argumentMapping = argumentMapping
     }
 
+    /**
+     * The arguments of a contextual implicit `invoke` candidate contain stub expressions for the implicitly passed
+     * context arguments between the [MapArguments] and [CheckContextArguments] stages.
+     *
+     * These expressions are always the first in the [arguments] list.
+     *
+     * This function replaces these stub arguments with the given [newArgumentPrefix] and updates the [argumentMapping] accordingly.
+     */
     @UpdatingCandidateInvariants
     fun replaceArgumentPrefix(newArgumentPrefix: List<ConeResolutionAtom>) {
         val remainingArguments = arguments.subList(newArgumentPrefix.size, arguments.size)
@@ -198,7 +207,7 @@ class Candidate(
         }
 
         for (argument in remainingArguments) {
-            newArgumentMapping[argument] = argumentMapping.getValue(argument)
+            argumentMapping[argument]?.let { newArgumentMapping[argument] = it }
         }
 
         val newArguments = newArgumentPrefix + remainingArguments
@@ -215,11 +224,11 @@ class Candidate(
 
     // ---------------------------------------- Postponed atoms ----------------------------------------
 
-    private val _postponedAtoms: MutableList<ConePostponedResolvedAtom> = mutableListOf()
-    val postponedAtoms: List<ConePostponedResolvedAtom> get() = _postponedAtoms
+    val postponedAtoms: List<ConePostponedResolvedAtom>
+        field = mutableListOf()
 
     fun addPostponedAtom(atom: ConePostponedResolvedAtom) {
-        _postponedAtoms += atom
+        postponedAtoms += atom
     }
 
     // ------------------------ Context-sensitively resolved arguments ------------------------------------
@@ -266,12 +275,11 @@ class Candidate(
     override val applicability: CandidateApplicability
         get() = lowestApplicability
 
-    private val _diagnostics: MutableList<ResolutionDiagnostic> = mutableListOf()
     override val diagnostics: List<ResolutionDiagnostic>
-        get() = _diagnostics
+        field = mutableListOf()
 
     fun addDiagnostic(diagnostic: ResolutionDiagnostic) {
-        _diagnostics += diagnostic
+        diagnostics += diagnostic
         if (diagnostic.applicability < lowestApplicability) {
             lowestApplicability = diagnostic.applicability
         }
@@ -293,7 +301,7 @@ class Candidate(
 
     // ---------------------------------------- Receivers ----------------------------------------
 
-    override var chosenExtensionReceiver: ConeResolutionAtom? = givenExtensionReceiverOptions.singleOrNull()
+    override var chosenExtensionReceiver: ConeResolutionAtom? = givenExtensionReceiver
 
     override var contextArguments: List<ConeResolutionAtom>? = null
 
@@ -314,7 +322,7 @@ class Candidate(
     }
 
     fun contextArguments(): List<FirExpression> {
-        return contextArguments?.map { it.expression } ?: emptyList()
+        return contextArguments?.map { it.expression.unwrapArgument() } ?: emptyList()
     }
 
     private var sourcesWereUpdated = false
@@ -405,6 +413,3 @@ class Candidate(
         return "$okOrFail($step): $symbol"
     }
 }
-
-val Candidate.fullyAnalyzed: Boolean
-    get() = passedStages == callInfo.callKind.resolutionSequence.size

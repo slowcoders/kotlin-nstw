@@ -187,7 +187,6 @@ Super   : 'super';
 Const   : 'const';
 Export  : 'export';
 Import  : 'import';
-Meta    : 'meta';
 
 Async : 'async';
 Await : 'await';
@@ -204,6 +203,11 @@ Interface    : 'interface'  {this.isStrictMode()}?;
 Package      : 'package'    {this.isStrictMode()}?;
 Protected    : 'protected'  {this.isStrictMode()}?;
 Static       : 'static'     {this.isStrictMode()}?;
+
+/// Special Identifiers
+
+Meta         : 'meta';
+Target       : 'target';
 
 /// Identifier Names and Identifiers
 
@@ -229,7 +233,7 @@ mode TEMPLATE;
 
 BackTickInside                : '`' -> type(BackTick), popMode;
 TemplateStringStartExpression : '${' {this.processTemplateOpenBrace();} -> pushMode(DEFAULT_MODE);
-TemplateStringAtom            : ~[`];
+TemplateStringAtom            : (~[`$\\] | '\\' . | '$' ~[{])+;
 
 // Fragment rules
 
@@ -239,10 +243,10 @@ fragment SingleStringCharacter: ~['\\\r\n] | '\\' EscapeSequence | LineContinuat
 
 fragment EscapeSequence:
     CharacterEscapeSequence
-    | '0' // no digit ahead! TODO
     | HexEscapeSequence
     | UnicodeEscapeSequence
     | ExtendedUnicodeEscapeSequence
+    | OctalEscapeSequence
 ;
 
 fragment CharacterEscapeSequence: SingleEscapeCharacter | NonEscapeCharacter;
@@ -256,11 +260,11 @@ fragment UnicodeEscapeSequence:
 
 fragment ExtendedUnicodeEscapeSequence: 'u' '{' HexDigit+ '}';
 
+fragment OctalEscapeSequence: [0-9] [0-9]? [0-9]?;
+
 fragment SingleEscapeCharacter: ['"\\bfnrtv];
 
 fragment NonEscapeCharacter: ~['"\\bfnrtv0-9xu\r\n];
-
-fragment EscapeCharacter: SingleEscapeCharacter | [0-9] | [xu];
 
 fragment LineContinuation: '\\' [\r\n\u2028\u2029]+;
 

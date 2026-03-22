@@ -7,7 +7,7 @@ implicit values:
       typeArguments: []
       type: A
     ownerSymbol = KaNamedFunctionSymbol:
-      /test(<extension receiver>: kotlin.Any): kotlin.Function0<kotlin.Int>
+      /test(<extension receiver>: kotlin.Any): () -> kotlin.Int
 
 scopes:
   LocalScope, index = 0
@@ -81,6 +81,7 @@ scopes:
             isCrossinline: false
             isExpect: false
             isExtension: false
+            isExternal: false
             isImplicitLambdaParameter: false
             isNoinline: false
             isVal: true
@@ -172,6 +173,7 @@ scopes:
         isActual: false
         isExpect: false
         isExtension: false
+        isExternal: false
         isPrimary: true
         location: CLASS
         modality: FINAL
@@ -283,6 +285,7 @@ scopes:
           isActual: false
           isExpect: false
           isExtension: false
+          isExternal: false
           isVal: true
           location: LOCAL
           modality: FINAL
@@ -303,7 +306,7 @@ scopes:
               typeArguments: []
               type: kotlin/Int
           ]
-          type: kotlin/Function0<kotlin/Int>
+          type: () -> kotlin/Int
         typeParameters: []
         valueParameters: []
         visibility: PUBLIC
@@ -320,4 +323,3 @@ scopes:
     constructors: 0
 
   DefaultStarImportingScope, index = 11
-

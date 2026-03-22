@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.JVM_INLINE_ANNOTATION_FQ_NAME
 import org.jetbrains.kotlin.resolve.JVM_NAME_ANNOTATION_FQ_NAME
+import org.jetbrains.kotlin.resolve.annotations.JVM_STATIC_ANNOTATION_FQ_NAME
 import org.jetbrains.kotlin.utils.addToStdlib.assignFrom
 
 /**
@@ -53,6 +54,8 @@ import org.jetbrains.kotlin.utils.addToStdlib.assignFrom
     CollectionStubMethodLowering::class,
     // SAM wrappers may require mangling for fun interfaces with value class parameters
     JvmSingleAbstractMethodLowering::class,
+    // When we check whether to expose a function, we expect already lowered suspend lambdas
+    SuspendLambdaLowering::class,
 )
 internal class JvmInlineClassLowering(context: JvmBackendContext) : JvmValueClassAbstractLowering(context) {
     override val replacements: MemoizedValueClassAbstractReplacements
@@ -70,15 +73,15 @@ internal class JvmInlineClassLowering(context: JvmBackendContext) : JvmValueClas
         context.irFactory.buildFun {
             updateFrom(source)
             name = mangledName
-            returnType = source.returnType
         }.apply {
-            copyValueAndTypeParametersFrom(source)
+            copyFunctionSignatureFrom(source)
             // Exposed functions should have no @JvmName annotation, since it does not affect them,
             // but always @JvmExposeBoxed, so users can use reflection to get all exposed functions, if they so desire.
             if (source.shouldBeExposedByAnnotationOrFlag(context.config.languageVersionSettings) &&
                 source.origin != IrDeclarationOrigin.GENERATED_SINGLE_FIELD_VALUE_CLASS_MEMBER
             ) {
-                annotations = source.annotations.withJvmExposeBoxedAnnotation(source, context).withoutJvmNameAnnotation()
+                annotations = source.annotations.withJvmExposeBoxedAnnotation(source, context).withoutJvmNameAnnotation() +
+                        source.copyPropagatedJvmStaticAnnotation()
             } else {
                 annotations = source.annotations
             }
@@ -91,6 +94,15 @@ internal class JvmInlineClassLowering(context: JvmBackendContext) : JvmValueClas
             // a continuation class.
             copyAttributes(source)
         }
+
+    // If a property is annotated with @JvmStatic, we generate static accessors.
+    // Thus, we should expose the accessors. The easiest way to do so is to copy @JvmStatic annotation.
+    private fun IrSimpleFunction.copyPropagatedJvmStaticAnnotation(): List<IrAnnotation> {
+        if (!isPropertyAccessor) return emptyList()
+        if (hasAnnotation(JVM_STATIC_ANNOTATION_FQ_NAME)) return emptyList()
+        if (!propertyIfAccessor.hasAnnotation(JVM_STATIC_ANNOTATION_FQ_NAME)) return emptyList()
+        return propertyIfAccessor.annotations.filter { it.isAnnotation(JVM_STATIC_ANNOTATION_FQ_NAME) }.map { it.deepCopyWithSymbols() }
+    }
 
     override fun IrClass.isSpecificLoweringLogicApplicable(): Boolean = isSingleFieldValueClass
 
@@ -145,7 +157,7 @@ internal class JvmInlineClassLowering(context: JvmBackendContext) : JvmValueClas
     private fun addJvmInlineAnnotation(valueClass: IrClass) {
         if (valueClass.hasAnnotation(JVM_INLINE_ANNOTATION_FQ_NAME)) return
         val constructor = context.symbols.jvmInlineAnnotation.constructors.first()
-        valueClass.annotations = valueClass.annotations + IrConstructorCallImpl.fromSymbolOwner(
+        valueClass.annotations = valueClass.annotations + IrAnnotationImpl.fromSymbolOwner(
             constructor.owner.returnType,
             constructor
         )
@@ -292,9 +304,8 @@ internal class JvmInlineClassLowering(context: JvmBackendContext) : JvmValueClas
         constructor.parentAsClass.factory.buildConstructor {
             updateFrom(constructor)
             isPrimary = false
-            returnType = constructor.returnType
         }.apply {
-            copyValueAndTypeParametersFrom(constructor)
+            copyFunctionSignatureFrom(constructor)
             parameters.forEach { it.defaultValue = null }
             val addedSyntheticParameter =
                 parameters.last().origin == JvmLoweredDeclarationOrigin.NON_EXPOSED_CONSTRUCTOR_SYNTHETIC_PARAMETER
@@ -469,9 +480,8 @@ internal class JvmInlineClassLowering(context: JvmBackendContext) : JvmValueClas
             updateFrom(irConstructor)
             visibility = DescriptorVisibilities.PRIVATE
             origin = JvmLoweredDeclarationOrigin.SYNTHETIC_INLINE_CLASS_MEMBER
-            returnType = irConstructor.returnType
         }.apply {
-            copyValueAndTypeParametersFrom(irConstructor)
+            copyFunctionSignatureFrom(irConstructor)
             // Don't create a default argument stub for the primary constructor
             parameters.forEach { it.defaultValue = null }
             if (irConstructor.shouldBeExposedByAnnotationOrFlag(context.config.languageVersionSettings)) {
@@ -530,10 +540,9 @@ internal class JvmInlineClassLowering(context: JvmBackendContext) : JvmValueClas
             updateFrom(irConstructor)
             isPrimary = false
             origin = JvmLoweredDeclarationOrigin.EXPOSED_INLINE_CLASS_CONSTRUCTOR
-            returnType = irConstructor.returnType
         }.apply {
             // Don't create a default argument stub for the exposed constructor
-            copyValueAndTypeParametersFrom(irConstructor)
+            copyFunctionSignatureFrom(irConstructor)
             parameters.forEach { it.defaultValue = null }
             annotations = irConstructor.annotations.withJvmExposeBoxedAnnotation(irConstructor, this@JvmInlineClassLowering.context)
             body = this@JvmInlineClassLowering.context.createIrBuilder(symbol).irBlockBody(this) {
@@ -578,7 +587,7 @@ internal class JvmInlineClassLowering(context: JvmBackendContext) : JvmValueClas
         }
     }
 
-    private fun List<IrConstructorCall>.withoutJvmNameAnnotation(): List<IrConstructorCall> =
+    private fun List<IrAnnotation>.withoutJvmNameAnnotation(): List<IrAnnotation> =
         this.toMutableList().apply {
             removeAll {
                 it.symbol.owner.returnType.classOrNull?.owner?.hasEqualFqName(JVM_NAME_ANNOTATION_FQ_NAME) == true

@@ -16,10 +16,10 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.kotlin.dsl.newInstance
 import org.jetbrains.kotlin.konan.target.Distribution
+import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.nativeDistribution.asProperties
 import org.jetbrains.kotlin.nativeDistribution.llvmDistributionSource
-import org.jetbrains.kotlin.nativeDistribution.nativeDistributionProperty
 import org.jetbrains.kotlin.nativeDistribution.nativeProtoDistribution
 import javax.inject.Inject
 
@@ -36,7 +36,7 @@ open class PlatformManagerProvider @Inject constructor(
         project: Project,
 ) {
     @get:Internal("only konan.properties and its override matter")
-    val distribution = objectFactory.nativeDistributionProperty().convention(project.nativeProtoDistribution)
+    val distributionRoot = objectFactory.directoryProperty().convention(project.nativeProtoDistribution.root)
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
@@ -46,14 +46,24 @@ open class PlatformManagerProvider @Inject constructor(
     @get:Input
     val konanPropertiesOverride: Map<String, String> = project.llvmDistributionSource.asProperties
 
+    /**
+     * [PlatformManager] may depend on the current host, so the current host must be an input
+     *
+     * One example is `llvm`: we do not guarantee that llvm version is the same between Linux and macOS.
+     * There could be other problems as well.
+     */
+    @get:Input
+    @Suppress("UNUSED") // used by Gradle via reflection
+    protected val currentHost = HostManager.host
+
     @get:Input
     @get:Optional
     protected val konanDataDir = providerFactory.gradleProperty("konan.data.dir")
 
     @get:Internal("dependencies are: konanProperties and konanDataDir")
-    val platformManager = distribution.map {
+    val platformManager = distributionRoot.map {
         PlatformManager(Distribution(
-                konanHome = it.root.asFile.absolutePath,
+                konanHome = it.asFile.absolutePath,
                 onlyDefaultProfiles = true,
                 propertyOverrides = konanPropertiesOverride,
                 konanDataDir = konanDataDir.orNull,

@@ -1566,11 +1566,132 @@ class SirAsSwiftSourcesPrinterTests {
                     returnType = SirType.void
                 }
             )
+
+            val asyncClosureTypealias = buildTypealias {
+                origin = SirOrigin.Unknown
+                name = "AsyncClosure"
+                type = SirFunctionalType(
+                    parameterTypes = emptyList(),
+                    isAsync = true,
+                    returnType = SirType.void,
+                    attributes = listOf(SirAttribute.Escaping)
+                )
+                attributes.add(SirAttribute.Escaping)
+            }
+            declarations.add(asyncClosureTypealias)
+
+            declarations.add(
+                buildFunction {
+                    origin = SirOrigin.Unknown
+                    visibility = SirVisibility.PUBLIC
+                    name = "functionConsumingClosureConsumingClosure"
+                    parameters.add(
+                        SirParameter(
+                            argumentName = "asyncReturnClosure",
+                            type = SirFunctionalType(
+                                parameterTypes = listOf(
+                                    SirFunctionalType(
+                                        parameterTypes = listOf(SirNominalType(SirSwiftModule.int32)),
+                                        isAsync = true,
+                                        returnType = SirNominalType(SirSwiftModule.bool),
+                                        attributes = listOf(SirAttribute.Escaping)
+                                    )
+                                ),
+                                isAsync = true,
+                                returnType = SirNominalType(SirSwiftModule.bool),
+                                attributes = listOf(SirAttribute.Escaping)
+                            )
+                        )
+                    )
+                    parameters.add(
+                        SirParameter(
+                            argumentName = "typealiasedClosure",
+                            type = asyncClosureTypealias.nominalType(),
+                        )
+                    )
+                    returnType = SirFunctionalType(
+                        parameterTypes = listOf(
+                            SirFunctionalType(
+                                parameterTypes = listOf(SirNominalType(SirSwiftModule.int32)),
+                                isAsync = true,
+                                returnType = SirNominalType(SirSwiftModule.bool),
+                                attributes = listOf(SirAttribute.Escaping)
+                            )
+                        ),
+                        isAsync = true,
+                        returnType = SirNominalType(SirSwiftModule.bool),
+                        attributes = listOf(SirAttribute.Escaping)
+                    )
+                }
+            )
         }.attachDeclarations()
 
         runTest(
             module,
             "testData/async_callables"
+        )
+    }
+
+    @Test
+    fun `should print context parameter`() {
+        val module = buildModule {
+            name = "Test"
+            declarations.add(
+                buildFunction {
+                    origin = SirOrigin.Unknown
+                    visibility = SirVisibility.PUBLIC
+                    name = "foo"
+                    contextParameter = SirParameter(
+                        parameterName = "context",
+                        type = SirNominalType(SirSwiftModule.int32)
+                    )
+                    parameters.add(
+                        SirParameter(
+                            parameterName = "arg",
+                            type = SirNominalType(SirSwiftModule.bool)
+                        )
+                    )
+                    returnType = SirType.void
+                }
+            )
+        }.attachDeclarations()
+
+        runTest(
+            module,
+            "testData/context_parameter"
+        )
+    }
+
+    @Test
+    fun `should print context parameter in functional type`() {
+        val module = buildModule {
+            name = "Test"
+            declarations.add(
+                buildFunction {
+                    origin = SirOrigin.Unknown
+                    visibility = SirVisibility.PUBLIC
+                    name = "foo"
+                    parameters.add(
+                        SirParameter(
+                            parameterName = "block",
+                            type = SirFunctionalType(
+                                contextTypes = listOf(
+                                    SirNominalType(SirSwiftModule.int32),
+                                    SirNominalType(SirSwiftModule.bool),
+                                ),
+                                parameterTypes = listOf(SirNominalType(SirSwiftModule.float)),
+                                returnType = SirType.void,
+                            )
+                        )
+                    )
+                    returnType = SirType.void
+                }
+            )
+        }.attachDeclarations()
+
+        runTest(
+            module,
+            "testData/context_parameter_functional_type"
         )
     }
 

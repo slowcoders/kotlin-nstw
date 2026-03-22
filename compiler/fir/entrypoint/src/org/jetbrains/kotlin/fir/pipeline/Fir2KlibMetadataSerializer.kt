@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.backend.common.serialization.metadata.KlibSingleFile
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.languageVersionSettings
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.backend.ConstValueProviderImpl
 import org.jetbrains.kotlin.fir.backend.utils.extractFirDeclarations
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.packageFqName
@@ -28,7 +27,7 @@ import org.jetbrains.kotlin.util.klibMetadataVersionOrDefault
  */
 class Fir2KlibMetadataSerializer(
     compilerConfiguration: CompilerConfiguration,
-    private val firOutputs: List<ModuleCompilerAnalyzedOutput>,
+    private val firOutputs: List<SingleModuleFrontendOutput>,
     private val fir2IrActualizedResult: Fir2IrActualizedResult?,
     private val exportKDoc: Boolean,
     private val produceHeaderKlib: Boolean,
@@ -56,7 +55,7 @@ class Fir2KlibMetadataSerializer(
     /**
      * The list of source files whose metadata is to be serialized.
      */
-    val sourceFiles: List<KtSourceFile> = firFilesAndSessions.keys.map { it.sourceFile!! }
+    val sourceFiles: List<KtSourceFile> = firFilesAndSessions.keys.mapNotNull { it.sourceFile }
 
     override val numberOfSourceFiles: Int
         get() = firFilesAndSessions.size
@@ -86,7 +85,6 @@ class Fir2KlibMetadataSerializer(
                 scopeSession,
                 firProvider,
                 metadataVersion,
-                components?.let(::ConstValueProviderImpl),
                 exportKDoc,
                 components?.annotationsFromPluginRegistrar?.createAdditionalMetadataProvider(),
             ),
@@ -95,9 +93,9 @@ class Fir2KlibMetadataSerializer(
         )
     }
 
-    override fun forEachFile(block: (Int, FirFile, KtSourceFile, FqName) -> Unit) {
+    override fun forEachFile(block: (Int, FirFile, KtSourceFile?, FqName) -> Unit) {
         firFilesAndSessions.keys.forEachIndexed { i, firFile ->
-            block(i, firFile, firFile.sourceFile!!, firFile.packageFqName)
+            block(i, firFile, firFile.sourceFile, firFile.packageFqName)
         }
     }
 }

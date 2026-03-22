@@ -137,8 +137,8 @@ object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
 
         impl(replSnippet) {
             implementation.putImplementationOptInInConstructor = false
-            defaultNull("returnType", "stateObject", "targetClass")
-            isLateinit("receiverParameters", "body")
+            defaultNull("stateObject", "targetClass")
+            isLateinit("receiverParameters")
             default("origin", "REPL_SNIPPET_ORIGIN")
             default("declarationsFromOtherSnippets", "ArrayList()")
             default("variablesFromOtherSnippets", "ArrayList()")
@@ -180,7 +180,7 @@ object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
             implementation.putImplementationOptInInConstructor = false
             implementation.constructorParameterOrderOverride = listOf("fileEntry", "symbol", "packageFqName")
             defaultWithErrorOnSet("startOffset", "0")
-            defaultWithErrorOnSet("endOffset", "fileEntry.maxOffset")
+            defaultWithErrorOnSet("endOffset", "maxOf(fileEntry.maxOffset, 0)")
             isMutable("module")
             isLateinit("module")
         }
@@ -382,6 +382,15 @@ object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
         }
 
         impl(enumConstructorCall) {
+            implementation.generationCallback = {
+                println()
+                println("companion object")
+            }
+
+            recordTargetShapeOnSymbolChange()
+        }
+
+        impl(annotation) {
             implementation.generationCallback = {
                 println()
                 println("companion object")

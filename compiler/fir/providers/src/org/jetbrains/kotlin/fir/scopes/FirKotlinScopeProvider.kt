@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.fir.FirImplementationDetail
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.FirSessionComponent
+import org.jetbrains.kotlin.fir.SessionAndScopeSessionHolder
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.impl.FirPrimaryConstructor
 import org.jetbrains.kotlin.fir.declarations.utils.*
@@ -22,6 +23,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhaseWithCallableMembers
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.utils.addToStdlib.runUnless
 
 class FirKotlinScopeProvider(
     val declaredMemberScopeDecorator: (
@@ -119,22 +121,27 @@ class FirKotlinScopeProvider(
         scopeSession: ScopeSession,
         forBackend: Boolean
     ): FirContainingNamesAwareScope? {
-        return when {
-            klass.classKind == ClassKind.ENUM_CLASS -> FirNameAwareOnlyCallablesScope(
+        val declaredMemberScope = useSiteSession.declaredMemberScope(
+            klass,
+            memberRequiredPhase = null,
+        )
+
+        val scope = runUnless(declaredMemberScope.hasDefinitelyNoStaticMembers) {
+            FirNameAwareOnlyCallablesScope(
                 FirStaticScope(
-                    useSiteSession.declaredMemberScope(
-                        klass,
-                        memberRequiredPhase = null,
-                    )
+                    declaredMemberScope
                 )
             )
-            forBackend -> {
-                val superClass = klass.superConeTypes.firstNotNullOfOrNull {
-                    it.fullyExpandedType(useSiteSession).toRegularClassSymbol(useSiteSession)?.takeIf { it.classKind == ClassKind.CLASS }
-                }?.fir
-                superClass?.staticScopeForBackend(useSiteSession, scopeSession)
-            }
-            else -> null
+        }
+
+        return if (forBackend) {
+            val superClass = klass.superConeTypes.firstNotNullOfOrNull {
+                it.fullyExpandedType(useSiteSession).toRegularClassSymbol(useSiteSession)?.takeIf { it.classKind == ClassKind.CLASS }
+            }?.fir
+            val superClassScope = superClass?.staticScopeForBackend(useSiteSession, scopeSession) ?: return scope
+            scope?.let { FirNameAwareCompositeScope(listOf(it, superClassScope)) } ?: superClassScope
+        } else {
+            scope
         }
     }
 
@@ -218,6 +225,14 @@ fun FirClass.unsubstitutedScope(
     return scope
 }
 
+context(c: SessionAndScopeSessionHolder)
+fun FirClass.unsubstitutedScope(
+    withForcedTypeCalculator: Boolean,
+    memberRequiredPhase: FirResolvePhase?,
+): FirTypeScope {
+    return unsubstitutedScope(c.session, c.scopeSession, withForcedTypeCalculator, memberRequiredPhase)
+}
+
 fun FirClassSymbol<*>.unsubstitutedScope(
     useSiteSession: FirSession,
     scopeSession: ScopeSession,
@@ -225,6 +240,14 @@ fun FirClassSymbol<*>.unsubstitutedScope(
     memberRequiredPhase: FirResolvePhase?,
 ): FirTypeScope {
     return fir.unsubstitutedScope(useSiteSession, scopeSession, withForcedTypeCalculator, memberRequiredPhase)
+}
+
+context(c: SessionAndScopeSessionHolder)
+fun FirClassSymbol<*>.unsubstitutedScope(
+    withForcedTypeCalculator: Boolean,
+    memberRequiredPhase: FirResolvePhase?,
+): FirTypeScope {
+    return unsubstitutedScope(c.session, c.scopeSession, withForcedTypeCalculator, memberRequiredPhase)
 }
 
 fun FirClass.scopeForClass(
@@ -241,6 +264,19 @@ fun FirClass.scopeForClass(
     isFromExpectClass = false,
     memberOwnerLookupTag = memberOwnerLookupTag,
     memberRequiredPhase = memberRequiredPhase,
+)
+
+context(c: SessionAndScopeSessionHolder)
+fun FirClass.scopeForClass(
+    substitutor: ConeSubstitutor,
+    memberOwnerLookupTag: ConeClassLikeLookupTag,
+    memberRequiredPhase: FirResolvePhase?,
+): FirTypeScope = scopeForClass(
+    substitutor,
+    c.session,
+    c.scopeSession,
+    memberOwnerLookupTag,
+    memberRequiredPhase,
 )
 
 fun FirTypeAlias.scopeForTypeAlias(

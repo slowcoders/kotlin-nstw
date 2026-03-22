@@ -176,6 +176,11 @@ public class LoadJavaUsingJavacTestGenerated extends AbstractLoadJavaUsingJavacT
       runTest("compiler/testData/loadJava/compiledJava/MyException.java");
     }
 
+    @TestMetadata("NativeMethod.java")
+    public void testNativeMethod() {
+      runTest("compiler/testData/loadJava/compiledJava/NativeMethod.java");
+    }
+
     @TestMetadata("NestedClass.java")
     public void testNestedClass() {
       runTest("compiler/testData/loadJava/compiledJava/NestedClass.java");
@@ -1774,6 +1779,11 @@ public class LoadJavaUsingJavacTestGenerated extends AbstractLoadJavaUsingJavacT
         runTest("compiler/testData/loadJava/compiledKotlin/annotations/PrimitiveArrayArguments.kt");
       }
 
+      @TestMetadata("RepeatableAnnotation.kt")
+      public void testRepeatableAnnotation() {
+        runTest("compiler/testData/loadJava/compiledKotlin/annotations/RepeatableAnnotation.kt");
+      }
+
       @TestMetadata("SelfReferentialAnnotation.kt")
       public void testSelfReferentialAnnotation() {
         runTest("compiler/testData/loadJava/compiledKotlin/annotations/SelfReferentialAnnotation.kt");
@@ -2704,24 +2714,6 @@ public class LoadJavaUsingJavacTestGenerated extends AbstractLoadJavaUsingJavacT
       @TestMetadata("simpleContextParameters.kt")
       public void testSimpleContextParameters() {
         runTest("compiler/testData/loadJava/compiledKotlin/contextParameters/simpleContextParameters.kt");
-      }
-    }
-
-    @TestMetadata("compiler/testData/loadJava/compiledKotlin/contextReceivers")
-    @TestDataPath("$PROJECT_ROOT")
-    @RunWith(JUnit3RunnerWithInners.class)
-    public static class ContextReceivers extends AbstractLoadJavaUsingJavacTest {
-      private void runTest(String testDataFilePath) {
-        KotlinTestUtils.runTest(this::doTestCompiledKotlin, this, testDataFilePath);
-      }
-
-      public void testAllFilesPresentInContextReceivers() {
-        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/loadJava/compiledKotlin/contextReceivers"), Pattern.compile("^(.+)\\.kt$"), null, true);
-      }
-
-      @TestMetadata("SimpleContextReceivers.kt")
-      public void testSimpleContextReceivers() {
-        runTest("compiler/testData/loadJava/compiledKotlin/contextReceivers/SimpleContextReceivers.kt");
       }
     }
 

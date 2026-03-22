@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.checkers.setupLanguageVersionSettingsForMultifileCom
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
+import org.jetbrains.kotlin.cli.jvm.javac.registerJavac
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.messageCollector
@@ -100,7 +101,7 @@ abstract class AbstractCompileJavaAgainstKotlinTest : TestCaseWithTmpdir(), Fron
         val environment = KotlinCoreEnvironment.createForTests(testRootDisposable, configuration, EnvironmentConfigFiles.JVM_CONFIG_FILES)
         setupLanguageVersionSettingsForCompilerTests(ktFile.readText(), environment)
 
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION_ERROR")
         val analysisResult = JvmResolveUtil.analyze(environment)
         val packageView = analysisResult.moduleDescriptor.getPackage(LoadDescriptorUtil.TEST_PACKAGE_FQNAME)
         assertFalse("Nothing found in package ${LoadDescriptorUtil.TEST_PACKAGE_FQNAME}", packageView.isEmpty())

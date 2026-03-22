@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
 import org.jetbrains.kotlin.gradle.util.buildProjectWithMPP
 import org.jetbrains.kotlin.gradle.util.kotlin
-import org.junit.Test
+import kotlin.test.Test
 
 class CrossCompilationPublishingTests {
 
@@ -19,6 +19,7 @@ class CrossCompilationPublishingTests {
     fun `test KT-81134 Gradle configuration failure when accessing publishable property`() {
         with(buildProjectWithMPP {
             kotlin {
+                @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                 macosX64()
                 linuxX64()
                 mingwX64()

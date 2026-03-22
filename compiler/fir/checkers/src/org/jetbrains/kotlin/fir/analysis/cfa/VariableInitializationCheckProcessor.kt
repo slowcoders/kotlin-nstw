@@ -28,7 +28,8 @@ import org.jetbrains.kotlin.fir.resolve.dfa.cfg.*
 import org.jetbrains.kotlin.fir.resolve.dfa.cfg.ControlFlowGraph.Kind
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
-import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirLocalPropertySymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirRegularPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirVariableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.RenderingInternals
 import org.jetbrains.kotlin.fir.types.resolvedType
@@ -70,7 +71,7 @@ abstract class VariableInitializationCheckProcessor {
             }
 
             when (node) {
-                is VariableDeclarationNode -> processVariableDeclaration(node, scope, properties, scopes)
+                is VariableDeclarationExitNode -> processVariableDeclaration(node, scope, properties, scopes)
                 is VariableAssignmentNode -> processVariableAssignment(node, properties, scope, scopes)
                 is QualifiedAccessNode -> processQualifiedAccess(
                     node, node.fir, properties,
@@ -122,7 +123,7 @@ abstract class VariableInitializationCheckProcessor {
             for (previousNode in previousCfgNodes) {
                 if (edgeFrom(previousNode).kind.isBack) continue
                 when (val assignmentNode = getValue(previousNode)[path]?.get(symbol)?.range?.location) {
-                    is VariableDeclarationNode -> {} // unreachable - `val`s with initializers do not require hindsight
+                    is VariableDeclarationExitNode -> {} // unreachable - `val`s with initializers do not require hindsight
                     is VariableAssignmentNode -> reportCapturedInitialization(assignmentNode, symbol)
                     else -> // merge node for a branching construct, e.g. `if (p) { x = 1 } else { x = 2 }` - report on all branches
                         assignmentNode?.reportErrorsOnInitializationsInInputs(symbol, path, newVisited)
@@ -146,7 +147,7 @@ abstract class VariableInitializationCheckProcessor {
     }
 
     private fun VariableInitializationInfoData.processVariableDeclaration(
-        node: VariableDeclarationNode,
+        node: VariableDeclarationExitNode,
         scope: FirDeclaration?,
         properties: Set<FirVariableSymbol<*>>,
         scopes: MutableMap<FirVariableSymbol<*>, FirDeclaration?>,
@@ -182,7 +183,7 @@ abstract class VariableInitializationCheckProcessor {
             scope != scopes[symbol] -> {
                 reportCapturedInitialization(node, symbol)
             }
-            !symbol.isLocal && !node.owner.isInline(until = symbol.getContainingSymbol(context.session)) -> {
+            symbol is FirRegularPropertySymbol && !node.owner.isInline(until = symbol.getContainingSymbol(context.session)) -> {
                 // If the assignment is inside INVOKE_ONCE lambda and the lambda is not inlined,
                 // backend generates either separate function or separate class for the lambda.
                 // If we try to initialize non-static final field there, we will get exception at
@@ -334,14 +335,8 @@ private fun ControlFlowGraph.isInline(until: FirBasedSymbol<*>?): Boolean {
     return enterNode.previousNodes.all { it.owner.isInline(until) }
 }
 
-private val FirVariableSymbol<*>.isLocal: Boolean
-    get() = when (this) {
-        is FirPropertySymbol -> isLocal
-        else -> false
-    }
-
 val FirVariableSymbol<*>.isCapturedByValue: Boolean
-    get() = isVal && isLocal
+    get() = isVal && this is FirLocalPropertySymbol
 
 context(context: CheckerContext)
 fun buildRecursionErrorMessage(
@@ -373,7 +368,7 @@ private fun FirBasedSymbol<*>.getDebugFqName(): FqName {
     return when (val fir = this.fir) {
         is FirFile -> fir.packageFqName.child(Name.identifier(fir.name))
         is FirScript -> fir.symbol.fqName
-        is FirReplSnippet -> FqName.topLevel(fir.name)
+        is FirReplSnippet -> fir.snippetClass.symbol.classId.asSingleFqName()
         is FirClassLikeDeclaration -> fir.symbol.classId.asSingleFqName()
         is FirTypeParameter -> fir.containingDeclarationSymbol.getDebugFqName().child(fir.name)
         is FirAnonymousInitializer -> fir.containingDeclarationSymbol.getDebugFqName().child(Name.special("<init>"))

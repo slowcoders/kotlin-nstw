@@ -33,11 +33,13 @@ import org.jetbrains.kotlin.test.model.*
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.defaultsProvider
 import org.jetbrains.kotlin.test.services.independentSourceDirectoryPath
+import org.jetbrains.kotlin.test.services.independentSourceDirectoryPathsTransitive
 import org.jetbrains.kotlin.test.services.moduleStructure
 import org.jetbrains.kotlin.test.utils.MultiModuleInfoDumper
 import org.jetbrains.kotlin.test.utils.withExtension
 import org.jetbrains.kotlin.test.utils.withSuffixAndExtension
 import org.jetbrains.kotlin.utils.addToStdlib.applyIf
+import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.io.File
 
 class IrTextDumpHandler(
@@ -45,6 +47,7 @@ class IrTextDumpHandler(
     artifactKind: BackendKind<IrBackendInput>,
     val customExtension: String? = null,
     val directive: SimpleDirective = DUMP_IR,
+    val showOffsets: Boolean = false,
 ) : AbstractIrHandler(testServices, artifactKind) {
     companion object {
         const val DUMP_EXTENSION = "ir.txt"
@@ -114,6 +117,8 @@ class IrTextDumpHandler(
     override val additionalAfterAnalysisCheckers: List<Constructor<AfterAnalysisChecker>>
         get() = listOf(::FirIrDumpIdenticalChecker)
 
+    private val pathRelativizer = IrFileEntryPathRelativizer(testServices)
+
     private val baseDumper = MultiModuleInfoDumper()
     private val buildersForSeparateFileDumps: MutableMap<File, StringBuilder> = mutableMapOf()
 
@@ -124,24 +129,32 @@ class IrTextDumpHandler(
 
         if (directive !in module.directives) return
 
-        val testFileToIrFile = info.irModuleFragment.files.groupWithTestFiles(testServices, ordered = true)
+        pathRelativizer.addModule(module)
+
+        val ignoreIrExpectFlag = CodegenTestDirectives.IGNORE_IR_EXPECT_FLAG in module.directives
+
         val dumpOptions = DumpIrTreeOptions(
             normalizeNames = true,
             printFacadeClassInFqNames = false,
             declarationFlagsFilter = FlagsFilter { declaration, isReference, flags ->
                 // By coincidence, there is a huge number of cases in IR text test data files
                 // when flags are still rendered for references to fields and classes.
-                flags.takeIf { !isReference || declaration is IrField || declaration is IrClass }.orEmpty()
+                var filteredFlags = flags.takeIf { !isReference || declaration is IrField || declaration is IrClass }.orEmpty()
+                if (ignoreIrExpectFlag && filteredFlags.isNotEmpty()) {
+                    filteredFlags = filteredFlags.filter { it != "expect" }
+                }
+                filteredFlags
             },
             isHiddenDeclaration = { isHiddenDeclaration(it, info.irBuiltIns) },
             stableOrder = true,
-            filePathRenderer = { irFileEntry, fullPath ->
-                renderFilePathForIrFile(testFileToIrFile, testServices, irFileEntry, fullPath)
-            }
+            filePathRenderer = { _, fullPath ->
+                pathRelativizer.getRelativePath(fullPath)
+            },
+            printSourceOffsets = showOffsets,
         )
         val builder = baseDumper.builderForModule(module.name)
 
-        for ((moduleAndFile, irFile) in testFileToIrFile) {
+        for ((moduleAndFile, irFile) in info.irModuleFragment.files.groupWithTestFiles(testServices, ordered = true)) {
             if (moduleAndFile?.second?.directives?.contains(EXTERNAL_FILE) == true) continue
             val actualDump = irFile.dumpTreesFromLineNumber(lineNumber = 0, dumpOptions)
             builder.append(actualDump)
@@ -175,7 +188,7 @@ class IrTextDumpHandler(
         ) {
             // irBuiltIns.symbolFinder sometimes returns unbound symbols in JVM K1 tests.
             // Use IrPluginContext for this instead, it works okay.
-            return (this as IrBackendInput.JvmIrBackendInput).backendInput.pluginContext?.referenceClass(classId)?.owner
+            return (this as IrBackendInput.JvmIrBackendInput).backendInput.pluginContext?.finderForBuiltins()?.findClass(classId)?.owner
                 ?: assertions.fail { "Can't find a class in external dependencies: $externalClassId" }
         }
 
@@ -205,3 +218,17 @@ class IrTextDumpHandler(
     }
 }
 
+private class IrFileEntryPathRelativizer(private val testServices: TestServices) {
+    private val absolutePathPrefixes = linkedSetOf<String>()
+    private val relativizedPathsCache = mutableMapOf<String, String>()
+
+    fun addModule(module: TestModule) {
+        absolutePathPrefixes.addAll(module.independentSourceDirectoryPathsTransitive(testServices))
+    }
+
+    fun getRelativePath(fullPath: String): String = relativizedPathsCache.getOrPut(fullPath) {
+        absolutePathPrefixes.firstNotNullOfOrNull { absolutePathPrefix ->
+            runIf(fullPath.startsWith(absolutePathPrefix)) { fullPath.removePrefix(absolutePathPrefix) }
+        } ?: fullPath
+    }
+}

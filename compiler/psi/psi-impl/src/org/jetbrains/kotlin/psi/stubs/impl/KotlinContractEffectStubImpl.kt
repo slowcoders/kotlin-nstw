@@ -101,7 +101,34 @@ enum class KotlinContractEffectType {
                 else -> error("Unexpected $str")
             }
         }
-    };
+    },
+    CONDITIONAL_RETURNS {
+        override fun deserialize(dataStream: StubInputStream): KtContractDescriptionElement<KotlinTypeBean, Nothing?> {
+            val argumentCondition = entries[dataStream.readVarInt()].deserialize(dataStream)
+            val descriptionElement = entries[dataStream.readVarInt()].deserialize(dataStream)
+            return KtConditionalReturnsDeclaration(
+                argumentCondition as KtBooleanExpression,
+                descriptionElement as KtEffectDeclaration,
+            )
+        }
+    },
+    HOLDS_IN {
+        override fun deserialize(dataStream: StubInputStream): KtContractDescriptionElement<KotlinTypeBean, Nothing?> {
+            val condition = entries[dataStream.readVarInt()].deserialize(dataStream)
+            val declaration = PARAMETER_REFERENCE.deserialize(dataStream)
+            return KtHoldsInEffectDeclaration(
+                condition as KtBooleanExpression,
+                declaration as KtValueParameterReference,
+            )
+        }
+    },
+    RETURNS_RESULT_OF {
+        override fun deserialize(dataStream: StubInputStream): KtContractDescriptionElement<KotlinTypeBean, Nothing?> {
+            val declaration = PARAMETER_REFERENCE.deserialize(dataStream)
+            return KtReturnsResultOfDeclaration(declaration as KtValueParameterReference)
+        }
+    },
+    ;
 
     abstract fun deserialize(dataStream: StubInputStream): KtContractDescriptionElement<KotlinTypeBean, Nothing?>
 
@@ -121,6 +148,24 @@ class KotlinContractSerializationVisitor(val dataStream: StubOutputStream) :
         conditionalEffect.condition.accept(this, data)
     }
 
+    override fun visitConditionalReturnsDeclaration(
+        conditionalEffect: KtConditionalReturnsDeclaration<KotlinTypeBean, Nothing?>,
+        data: Nothing?,
+    ) {
+        dataStream.writeVarInt(KotlinContractEffectType.CONDITIONAL_RETURNS.ordinal)
+        conditionalEffect.argumentsCondition.accept(this, data)
+        conditionalEffect.returnsEffect.accept(this, data)
+    }
+
+    override fun visitHoldsInEffectDeclaration(
+        holdsInEffect: KtHoldsInEffectDeclaration<KotlinTypeBean, Nothing?>,
+        data: Nothing?,
+    ) {
+        dataStream.writeVarInt(KotlinContractEffectType.HOLDS_IN.ordinal)
+        holdsInEffect.argumentsCondition.accept(this, data)
+        dataStream.writeVarInt(holdsInEffect.valueParameterReference.parameterIndex)
+    }
+
     override fun visitReturnsEffectDeclaration(returnsEffect: KtReturnsEffectDeclaration<KotlinTypeBean, Nothing?>, data: Nothing?) {
         dataStream.writeVarInt(KotlinContractEffectType.RETURNS.ordinal)
         dataStream.writeName(returnsEffect.value.name)
@@ -130,6 +175,14 @@ class KotlinContractSerializationVisitor(val dataStream: StubOutputStream) :
         dataStream.writeVarInt(KotlinContractEffectType.CALLS.ordinal)
         dataStream.writeVarInt(callsEffect.valueParameterReference.parameterIndex)
         dataStream.writeVarInt(callsEffect.kind.ordinal)
+    }
+
+    override fun visitReturnsResultOfEffectDeclaration(
+        returnsResultOfEffect: KtReturnsResultOfDeclaration<KotlinTypeBean, Nothing?>,
+        data: Nothing?,
+    ) {
+        dataStream.writeVarInt(KotlinContractEffectType.RETURNS_RESULT_OF.ordinal)
+        dataStream.writeVarInt(returnsResultOfEffect.valueParameterReference.parameterIndex)
     }
 
     override fun visitLogicalBinaryOperationContractExpression(

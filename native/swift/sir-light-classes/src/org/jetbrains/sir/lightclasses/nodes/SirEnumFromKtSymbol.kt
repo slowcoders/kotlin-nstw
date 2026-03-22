@@ -47,8 +47,8 @@ import org.jetbrains.sir.lightclasses.SirFromKtSymbol
 import org.jetbrains.sir.lightclasses.extensions.documentation
 import org.jetbrains.sir.lightclasses.extensions.lazyWithSessions
 import org.jetbrains.sir.lightclasses.extensions.withSessions
+import org.jetbrains.sir.lightclasses.utils.baseBridgeName
 import org.jetbrains.sir.lightclasses.utils.bridgeFqName
-import org.jetbrains.sir.lightclasses.utils.forBridge
 import org.jetbrains.sir.lightclasses.utils.relocatedDeclarationNamePrefix
 import org.jetbrains.sir.lightclasses.utils.translatedAttributes
 
@@ -290,13 +290,14 @@ private class SirEnumCaseFromKtSymbol(
 
     private val bridgeProxy: BridgeFunctionProxy? by lazyWithSessions {
         val fqName = bridgeFqName ?: return@lazyWithSessions null
-        val baseName = fqName.forBridge.joinToString("_")
+        val baseName = fqName.baseBridgeName
         generateFunctionBridge(
             baseBridgeName = baseName,
             explicitParameters = emptyList(),
-            returnType = SirType.Companion.any,
+            returnType = SirType.any,
             kotlinFqName = fqName,
             selfParameter = null,
+            contextParameters = emptyList(),
             extensionReceiverParameter = null,
             errorParameter = null,
             isAsync = false,
@@ -304,8 +305,8 @@ private class SirEnumCaseFromKtSymbol(
     }
 
     override val bridges: List<SirBridge> by lazyWithSessions {
-        listOfNotNull(bridgeProxy?.createSirBridge {
+        bridgeProxy?.createSirBridges {
             buildCall("")
-        })
+        }.orEmpty()
     }
 }

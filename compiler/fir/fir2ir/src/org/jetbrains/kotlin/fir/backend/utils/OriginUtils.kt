@@ -31,7 +31,6 @@ import org.jetbrains.kotlin.fir.types.ConeClassLikeLookupTag
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.GeneratedByPlugin
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
-import org.jetbrains.kotlin.name.isLocal
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.name.StandardClassIds
@@ -64,6 +63,10 @@ fun FirDeclaration?.computeIrOrigin(
     val firOrigin = origin
     val computed = when {
         firOrigin is FirDeclarationOrigin.Plugin -> GeneratedByPlugin(firOrigin.key)
+
+        firOrigin is FirDeclarationOrigin.Synthetic.ReplContainerClass -> IrDeclarationOrigin.SCRIPT_CLASS
+        firOrigin is FirDeclarationOrigin.Synthetic.ReplEvalFunction -> IrDeclarationOrigin.REPL_EVAL_FUNCTION
+        firOrigin is FirDeclarationOrigin.ScriptCustomization.ResultProperty -> IrDeclarationOrigin.SCRIPT_RESULT_PROPERTY
 
         this is FirValueParameter -> when (name) {
             SpecialNames.UNDERSCORE_FOR_UNUSED_VAR -> IrDeclarationOrigin.UNDERSCORE_PARAMETER
@@ -183,7 +186,7 @@ fun FirVariableAssignment.getIrPrefixPostfixOriginIfAny(): IrStatementOrigin? {
 private fun FirVariableAssignment.getCallableNameFromIntClassIfAny(): Name? {
     val calleeReferenceSymbol = calleeReference?.toResolvedCallableSymbol() ?: return null
     val rValue = rValue
-    if (rValue is FirFunctionCall && calleeReferenceSymbol.callableId.isLocal) {
+    if (rValue is FirFunctionCall && calleeReferenceSymbol.isLocal) {
         val callableId = rValue.calleeReference.toResolvedCallableSymbol()?.callableId
         if (callableId?.classId == StandardClassIds.Int) {
             return callableId.callableName

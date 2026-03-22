@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.declarations.impl.IrFileImpl
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.expressions.impl.IrClassReferenceImpl
-import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
@@ -251,8 +250,7 @@ private fun IrSimpleFunction.createMultifileDelegateIfNeeded(
 
     function.copyAttributes(target)
     function.copyAnnotationsFrom(target)
-    function.copyValueAndTypeParametersFrom(target)
-    function.returnType = target.returnType.substitute(target.typeParameters, function.typeParameters.map { it.defaultType })
+    function.copyFunctionSignatureFrom(target)
     function.parent = facadeClass
 
     if (shouldGeneratePartHierarchy) {
@@ -344,6 +342,8 @@ private class UpdateConstantFacadePropertyReferences(
         val declaration = when (val callableReference = irClass.attributeOwnerId) {
             is IrPropertyReference -> callableReference.getter?.owner?.correspondingPropertySymbol?.owner
             is IrFunctionReference -> callableReference.symbol.owner
+            is IrRichPropertyReference -> callableReference.reflectionTargetSymbol?.owner as? IrProperty
+            is IrRichFunctionReference -> callableReference.reflectionTargetSymbol?.owner
             else -> null
         } ?: return null
         val parent = declaration.parent as? IrClass ?: return null

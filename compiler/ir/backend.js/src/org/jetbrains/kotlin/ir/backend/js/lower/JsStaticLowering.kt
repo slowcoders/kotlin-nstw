@@ -12,8 +12,11 @@ import org.jetbrains.kotlin.ir.backend.js.ir.JsIrBuilder
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
 import org.jetbrains.kotlin.ir.builders.declarations.buildProperty
-import org.jetbrains.kotlin.ir.declarations.*
-import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
+import org.jetbrains.kotlin.ir.declarations.IrClass
+import org.jetbrains.kotlin.ir.declarations.IrDeclaration
+import org.jetbrains.kotlin.ir.declarations.IrProperty
+import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
+import org.jetbrains.kotlin.ir.expressions.IrAnnotation
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.name.JsStandardClassIds
 
@@ -58,15 +61,13 @@ class JsStaticLowering(private val context: JsIrBackendContext) : DeclarationTra
         return context.irFactory.buildFun {
             updateFrom(originalFun)
             name = originalFun.name
-            returnType = originalFun.returnType
         }.apply proxy@{
-            copyTypeParametersFrom(originalFun)
             copyAnnotationsFrom(originalFun)
 
             parent = proxyParent
 
-            val substitutionMap = makeTypeParameterSubstitutionMap(originalFun, this)
-            parameters = originalFun.nonDispatchParameters.map { it.copyTo(this, type = it.type.substitute(substitutionMap)) }
+            copyFunctionSignatureFrom(originalFun, returnType = originalFun.returnType)
+            parameters = nonDispatchParameters // Drop the dispatch parameter
 
             body = context.createIrBuilder(symbol).irBlockBody {
                 val delegatingCall = irCall(originalFun).apply {
@@ -91,10 +92,10 @@ class JsStaticLowering(private val context: JsIrBackendContext) : DeclarationTra
 
 
     private fun IrDeclaration.excludeFromJsExport() {
-        annotations += generateJsExportIgnoreCall()
+        annotations += generateJsExportIgnoreAnnotation()
     }
 
-    private fun generateJsExportIgnoreCall(): IrConstructorCall {
-        return JsIrBuilder.buildConstructorCall(context.symbols.jsExportIgnoreAnnotationSymbol.owner.primaryConstructor!!.symbol)
+    private fun generateJsExportIgnoreAnnotation(): IrAnnotation {
+        return JsIrBuilder.buildAnnotation(context.symbols.jsExportIgnoreAnnotationSymbol.owner.primaryConstructor!!.symbol)
     }
 }

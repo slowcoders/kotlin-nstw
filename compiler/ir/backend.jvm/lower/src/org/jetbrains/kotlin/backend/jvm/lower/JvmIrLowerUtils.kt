@@ -19,6 +19,8 @@ import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.util.getPackageFragment
+import org.jetbrains.kotlin.ir.util.isFunctionOrKFunction
+import org.jetbrains.kotlin.ir.util.isSuspendFunctionOrKFunction
 import org.jetbrains.kotlin.ir.util.shallowCopyOrNull
 import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.org.objectweb.asm.Handle
@@ -51,6 +53,20 @@ internal fun IrProperty.getPropertyReferenceForOptimizableDelegatedProperty(): I
     return delegate
 }
 
+// Criteria for delegate optimizations on the JVM.
+// All cases must be reflected in isJvmOptimizableDelegate() to inform the kotlinx-serialization plugin.
+internal fun IrProperty.getRichPropertyReferenceForOptimizableDelegatedProperty(): IrRichPropertyReference? {
+    if (!isDelegated || isFakeOverride || backingField == null) return null
+
+    val delegate = backingField?.initializer?.expression
+    if (delegate !is IrRichPropertyReference ||
+        getter?.returnsResultOfStdlibCall == false ||
+        setter?.returnsResultOfStdlibCall == false
+    ) return null
+
+    return delegate
+}
+
 internal fun IrProperty.getSingletonOrConstantForOptimizableDelegatedProperty(): IrExpression? {
     fun IrExpression.isInlineable(): Boolean =
         when (this) {
@@ -76,14 +92,12 @@ fun IrProperty.isJvmOptimizableDelegate(): Boolean =
     isDelegated && !isFakeOverride && backingField != null && // fast path
             (getPropertyReferenceForOptimizableDelegatedProperty() != null || getSingletonOrConstantForOptimizableDelegatedProperty() != null)
 
-internal val IrMemberAccessExpression<*>.constInitializer: IrExpression?
+internal val IrRichPropertyReference.constInitializer: IrExpression?
     get() {
-        if (this !is IrPropertyReference) return null
-        val constPropertyField = if (field == null) {
-            symbol.owner.takeIf { it.isConst }?.backingField
-        } else {
-            field!!.owner.takeIf { it.isFinal && it.isStatic }
-        }
+        val symbol = reflectionTargetSymbol ?: return null
+        val property = symbol.owner as? IrProperty ?: return null
+        if (!property.isConst) return null
+        val constPropertyField = property.backingField
         return constPropertyField?.initializer?.expression?.shallowCopyOrNull()
     }
 
@@ -95,3 +109,13 @@ internal fun JvmIrBuilder.jvmMethodHandle(handle: Handle): IrCall =
         arguments[3] = irString(handle.desc)
         arguments[4] = irBoolean(handle.isInterface)
     }
+
+internal val IrRichPropertyReference.singleBoundValueOrNull: IrExpression?
+    get() = when (boundValues.size) {
+        0 -> return null
+        1 -> boundValues.first()
+        else -> error("Property reference can not have more than one bound value, but got: ${boundValues.size}")
+    }
+
+internal fun IrRichFunctionReference.isSamConversion(): Boolean =
+    !type.isFunctionOrKFunction() && !type.isSuspendFunctionOrKFunction()

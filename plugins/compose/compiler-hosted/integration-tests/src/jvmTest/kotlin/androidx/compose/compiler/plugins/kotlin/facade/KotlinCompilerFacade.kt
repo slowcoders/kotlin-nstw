@@ -29,12 +29,14 @@ import org.jetbrains.kotlin.K1Deprecation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
+import org.jetbrains.kotlin.cli.create
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
+import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.AnalyzingUtils
 import java.nio.charset.StandardCharsets
@@ -105,10 +107,11 @@ abstract class KotlinCompilerFacade(val environment: KotlinCoreEnvironment) {
             updateConfiguration: CompilerConfiguration.() -> Unit,
             registerExtensions: Project.(CompilerConfiguration) -> Unit,
         ): KotlinCompilerFacade {
-            val configuration = CompilerConfiguration().apply {
+            val configuration = CompilerConfiguration.create().apply {
                 put(CommonConfigurationKeys.MODULE_NAME, TEST_MODULE_NAME)
                 put(CommonConfigurationKeys.VERIFY_IR, IrVerificationMode.ERROR)
                 put(CommonConfigurationKeys.ENABLE_IR_VISIBILITY_CHECKS, true)
+                this.targetPlatform = JvmPlatforms.unspecifiedJvmPlatform
                 put(JVMConfigurationKeys.JVM_TARGET, JvmTarget.JVM_11)
                 messageCollector = TestMessageCollector
                 updateConfiguration()

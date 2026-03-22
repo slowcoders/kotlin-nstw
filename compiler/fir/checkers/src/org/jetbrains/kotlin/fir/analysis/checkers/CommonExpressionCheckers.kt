@@ -51,6 +51,7 @@ object CommonExpressionCheckers : ExpressionCheckers() {
         FirReifiedChecker,
         FirSuspendCallChecker,
         FirLateinitIntrinsicApplicabilityChecker,
+        FirLargeArityFunctionCallableReferenceChecker,
         FirAbstractClassInstantiationChecker,
         FirIncompatibleClassExpressionChecker,
         FirMissingDependencyClassChecker,
@@ -69,6 +70,7 @@ object CommonExpressionCheckers : ExpressionCheckers() {
         FirKotlinActualAnnotationHasNoEffectInKotlinExpressionChecker.FunctionCall,
         FirConventionFunctionCallChecker,
         FirDivisionByZeroChecker,
+        FirTrimMarginBlankPrefixChecker,
         FirConstructorCallChecker,
         FirSpreadOfNullableChecker,
         FirAssignmentOperatorCallChecker,
@@ -83,6 +85,7 @@ object CommonExpressionCheckers : ExpressionCheckers() {
         FirVarargWithNonTrivialUpperBoundInferredToNothingChecker,
         PlatformClassMappedToKotlinConstructorCallChecker,
         RedundantCallOfConversionMethodChecker,
+        FirImplicitPropertyTypeMakesBehaviorOrderDependantChecker,
     )
 
     override val propertyAccessExpressionCheckers: Set<FirPropertyAccessExpressionChecker> = setOf(
@@ -170,6 +173,7 @@ object CommonExpressionCheckers : ExpressionCheckers() {
         FirInlineBodyResolvedQualifierChecker,
         FirCustomEnumEntriesMigrationQualifierChecker,
         FirQualifierWithTypeArgumentsChecker,
+        FirRootIdePackageDeprecatedInCliQualifierChecker,
     )
 
     override val equalityOperatorCallCheckers: Set<FirEqualityOperatorCallChecker> = setOf(

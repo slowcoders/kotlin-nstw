@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
 import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.analysis.checkers.unsubstitutedScope
 import org.jetbrains.kotlin.fir.analysis.diagnostics.js.FirJsErrors
+import org.jetbrains.kotlin.fir.analysis.diagnostics.web.common.FirWebCommonErrors
 import org.jetbrains.kotlin.fir.analysis.js.checkers.isOverridingExternalWithOptionalParams
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.fullyExpandedClass
@@ -52,12 +53,12 @@ sealed class FirJsInheritanceClassChecker(mppKind: MppCheckerKind) : FirClassChe
         val isEffectivelyExternal = declaration.symbol.isEffectivelyExternal(session)
 
         if (isEffectivelyExternal && declaration.classKind != ClassKind.ANNOTATION_CLASS) {
-            val superTypes = declaration.superConeTypes
-                .filterNot { it.isAnyOrNullableAny || it.isThrowableOrNullableThrowable || it.isEnum }
-                .mapNotNull { it.toSymbol()?.fullyExpandedClass() }
+            for (superType in declaration.superConeTypes) {
+                if (superType.isAnyOrNullableAny || superType.isThrowableOrNullableThrowable || superType.isEnum) continue
+                val fullyExpandedClass = superType.toSymbol()?.fullyExpandedClass() ?: continue
+                if (fullyExpandedClass.isEffectivelyExternal(session) || fullyExpandedClass.isExpect) continue
 
-            if (superTypes.any { !it.isEffectivelyExternal(session) }) {
-                reporter.reportOn(declaration.source, FirJsErrors.EXTERNAL_TYPE_EXTENDS_NON_EXTERNAL_TYPE)
+                reporter.reportOn(declaration.source, FirWebCommonErrors.EXTERNAL_TYPE_EXTENDS_NON_EXTERNAL_TYPE, superType)
             }
         }
 

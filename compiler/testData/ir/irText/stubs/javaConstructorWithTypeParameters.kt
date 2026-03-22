@@ -1,3 +1,5 @@
+// IGNORE_BACKEND: JKLIB
+// FIR_IDENTICAL
 // TARGET_BACKEND: JVM
 // DUMP_EXTERNAL_CLASS: J1
 // FILE: javaConstructorWithTypeParameters.kt

@@ -1,17 +1,6 @@
 /*
- * Copyright 2010-2016 JetBrains s.r.o.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2010-2026 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
 package org.jetbrains.kotlin.types.expressions;
@@ -27,18 +16,21 @@ import org.jetbrains.kotlin.name.Name;
 
 import static org.jetbrains.kotlin.util.OperatorNameConventions.*;
 
+/**
+ * Should be consistent with {@link org.jetbrains.kotlin.util.OperatorNameConventions}
+ */
 public class OperatorConventions {
 
     private OperatorConventions() {}
 
     // Names for primitive type conversion properties
-    public static final Name DOUBLE = Name.identifier("toDouble");
-    public static final Name FLOAT = Name.identifier("toFloat");
-    public static final Name LONG = Name.identifier("toLong");
-    public static final Name INT = Name.identifier("toInt");
-    public static final Name CHAR = Name.identifier("toChar");
-    public static final Name SHORT = Name.identifier("toShort");
-    public static final Name BYTE = Name.identifier("toByte");
+    public static final Name DOUBLE = TO_DOUBLE;
+    public static final Name FLOAT = TO_FLOAT;
+    public static final Name LONG = TO_LONG;
+    public static final Name INT = TO_INT;
+    public static final Name CHAR = TO_CHAR;
+    public static final Name SHORT = TO_SHORT;
+    public static final Name BYTE = TO_BYTE;
 
 
     public static final ImmutableSet<Name> NUMBER_CONVERSIONS = ImmutableSet.of(
@@ -107,7 +99,21 @@ public class OperatorConventions {
              .build();
 
     public static final ImmutableSet<Name> CONVENTION_NAMES = ImmutableSet.<Name>builder()
-            .add(GET, SET, INVOKE, CONTAINS, ITERATOR, NEXT, HAS_NEXT, EQUALS, COMPARE_TO, GET_VALUE, SET_VALUE)
+            .add(
+                    GET_VALUE,
+                    SET_VALUE,
+                    PROVIDE_DELEGATE,
+                    EQUALS,
+                    COMPARE_TO,
+                    CONTAINS,
+                    INVOKE,
+                    ITERATOR,
+                    GET,
+                    SET,
+                    NEXT,
+                    HAS_NEXT,
+                    OF
+            )
             .addAll(UNARY_OPERATION_NAMES.values())
             .addAll(BINARY_OPERATION_NAMES.values())
             .addAll(ASSIGNMENT_OPERATIONS.values())

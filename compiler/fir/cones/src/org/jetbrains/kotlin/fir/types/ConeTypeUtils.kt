@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.fir.types
 
-import org.jetbrains.kotlin.fir.renderer.ConeIdRendererForDiagnostics
+import org.jetbrains.kotlin.fir.renderer.ConeFullyQualifiedIdRenderer
 import org.jetbrains.kotlin.fir.renderer.ConeIdShortRenderer
 import org.jetbrains.kotlin.fir.renderer.ConeTypeRendererForDebugging
 import org.jetbrains.kotlin.fir.renderer.ConeTypeRendererForReadability
@@ -57,6 +57,8 @@ val ConeKotlinType.hasFlexibleMarkedNullability: Boolean
     get() = this is ConeFlexibleType && lowerBound.isMarkedNullable != upperBound.isMarkedNullable
 
 val ConeKotlinType.classId: ClassId? get() = (this.lowerBoundIfFlexible() as? ConeClassLikeType)?.lookupTag?.classId
+
+val ConeClassLikeType.classId: ClassId get() = lookupTag.classId
 
 val ConeKotlinType.lookupTagIfAny: ConeClassifierLookupTag?
     get() = (this.lowerBoundIfFlexible() as? ConeLookupTagBasedType)?.lookupTag
@@ -166,6 +168,15 @@ fun ConeKotlinType.toTypeProjection(projectionKind: ProjectionKind): ConeTypePro
     }
 }
 
+fun ConeSimpleKotlinType.replaceArgumentsWithStarProjectionsOrNull(): ConeSimpleKotlinType? {
+    return when (this) {
+        is ConeClassLikeType -> this.replaceArgumentsWithStarProjections()
+        // Intersection overrides can have intersection types as dispatch receivers
+        is ConeIntersectionType -> this.mapTypes { (it as ConeClassLikeType).replaceArgumentsWithStarProjections() }
+        else -> null
+    }
+}
+
 fun ConeClassLikeType.replaceArgumentsWithStarProjections(): ConeClassLikeType {
     if (typeArguments.isEmpty()) return this
     val newArguments = Array(typeArguments.size) { ConeStarProjection }
@@ -184,9 +195,9 @@ fun ConeKotlinType.renderReadable(): String {
     return builder.toString()
 }
 
-fun ConeKotlinType.renderReadableWithFqNames(preRenderedConstructors: Map<TypeConstructorMarker, String>? = null): String {
+fun ConeKotlinType.renderReadableWithFqNames(preRenderedConstructors: Map<TypeConstructorMarker, String?>? = null): String {
     val builder = StringBuilder()
-    ConeTypeRendererForReadability(builder, preRenderedConstructors) { ConeIdRendererForDiagnostics() }.render(this)
+    ConeTypeRendererForReadability(builder, preRenderedConstructors) { ConeFullyQualifiedIdRenderer() }.render(this)
     return builder.toString()
 }
 
@@ -194,7 +205,7 @@ fun ConeKotlinType.hasError(): Boolean = contains { it is ConeErrorType }
 
 fun ConeKotlinType.hasCapture(): Boolean = contains { it is ConeCapturedType }
 
-fun ConeRigidType.getConstructor(): TypeConstructorMarker {
+fun ConeRigidType.getConstructor(): ConeTypeConstructorMarker {
     return when (this) {
         is ConeLookupTagBasedType -> this.lookupTag
         is ConeCapturedType -> this.constructor

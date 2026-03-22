@@ -5,28 +5,21 @@
 
 package org.jetbrains.kotlin.backend.common.extensions
 
-import org.jetbrains.kotlin.backend.common.ir.Symbols
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
+import org.jetbrains.kotlin.backend.common.linkage.IrDeserializer
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.TypeAliasDescriptor
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
-import org.jetbrains.kotlin.diagnostics.DiagnosticReporterFactory
+import org.jetbrains.kotlin.diagnostics.impl.DiagnosticsCollectorImpl
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.IrDiagnosticReporter
 import org.jetbrains.kotlin.ir.KtDiagnosticReporterWithImplicitIrBasedContext
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
-import org.jetbrains.kotlin.ir.declarations.IrConstructor
-import org.jetbrains.kotlin.ir.declarations.IrDeclaration
-import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
-import org.jetbrains.kotlin.backend.common.linkage.IrDeserializer
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationWithName
-import org.jetbrains.kotlin.ir.declarations.IrFile
+import org.jetbrains.kotlin.ir.declarations.*
+import org.jetbrains.kotlin.ir.expressions.IrAnnotation
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.ReferenceSymbolTable
@@ -56,12 +49,8 @@ open class IrPluginContextImpl(
         level = DeprecationLevel.WARNING
     )
     override val messageCollector: MessageCollector,
-    diagnosticReporter: DiagnosticReporter = DiagnosticReporterFactory.createReporter(messageCollector),
+    diagnosticReporter: DiagnosticReporter = DiagnosticsCollectorImpl(),
 ) : IrPluginContext {
-    @Deprecated("This API is deprecated. Use `irBuiltIns` instead.", level = DeprecationLevel.ERROR)
-    override val symbols: Symbols
-        get() = error("`symbols` are deprecated")
-
     override val afterK2: Boolean = false
 
     override val platform: TargetPlatform? = module.platform
@@ -100,19 +89,6 @@ open class IrPluginContextImpl(
         return symbol
     }
 
-    @Deprecated("Use messageCollector or diagnosticReporter properties instead", level = DeprecationLevel.ERROR)
-    override fun createDiagnosticReporter(pluginId: String): MessageCollector {
-        return object : MessageCollector by messageCollector {
-            override fun report(
-                severity: CompilerMessageSeverity,
-                message: String,
-                location: CompilerMessageSourceLocation?
-            ) {
-                messageCollector.report(severity, "[Plugin $pluginId] $message", location)
-            }
-        }
-    }
-
     override val diagnosticReporter: IrDiagnosticReporter =
         KtDiagnosticReporterWithImplicitIrBasedContext(diagnosticReporter, languageVersionSettings)
 
@@ -126,6 +102,36 @@ open class IrPluginContextImpl(
         linker.postProcess(inOrAfterLinkageStep = false)
 
         return symbols
+    }
+
+    private inner class Finder : DeclarationFinder {
+        override fun findClass(classId: ClassId): IrClassSymbol? {
+            return this@IrPluginContextImpl.referenceClass(classId)
+        }
+
+        override fun findClassifier(classId: ClassId): IrSymbol? {
+            return this@IrPluginContextImpl.referenceClassifier(classId)
+        }
+
+        override fun findConstructors(classId: ClassId): Collection<IrConstructorSymbol> {
+            return this@IrPluginContextImpl.referenceConstructors(classId)
+        }
+
+        override fun findFunctions(callableId: CallableId): Collection<IrSimpleFunctionSymbol> {
+            return this@IrPluginContextImpl.referenceFunctions(callableId)
+        }
+
+        override fun findProperties(callableId: CallableId): Collection<IrPropertySymbol> {
+            return this@IrPluginContextImpl.referenceProperties(callableId)
+        }
+    }
+
+    override fun finderForBuiltins(): DeclarationFinder {
+        return Finder()
+    }
+
+    override fun finderForSource(fromFile: IrFile): DeclarationFinder {
+        return Finder()
     }
 
     @Deprecated("This API is deprecated. It will be removed after the 2.3 release", level = DeprecationLevel.WARNING)
@@ -179,22 +185,43 @@ open class IrPluginContextImpl(
         }
     }
 
+    @Deprecated("Please use `finderForBuiltins()` or `finderForSource(fromFile)` instead.", level = DeprecationLevel.WARNING)
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
     override fun referenceClass(classId: ClassId): IrClassSymbol? {
-        return referenceClass(classId.asSingleFqName())
+        val fqName = classId.asSingleFqName()
+        return resolveSymbol(fqName.parent()) l@{ scope ->
+            when (val descriptor = scope.getContributedClassifier(fqName.shortName(), NoLookupLocation.FROM_BACKEND)) {
+                is TypeAliasDescriptor -> st.descriptorExtension.referenceClass(descriptor.classDescriptor ?: return@l null)
+                is ClassDescriptor -> st.descriptorExtension.referenceClass(descriptor)
+                else -> null
+            }
+        }
     }
 
-    override fun referenceTypeAlias(classId: ClassId): IrTypeAliasSymbol? {
-        return referenceTypeAlias(classId.asSingleFqName())
+    @Deprecated("Please use `finderForBuiltins()` or `finderForSource(fromFile)` instead.", level = DeprecationLevel.WARNING)
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
+    override fun referenceClassifier(classId: ClassId): IrSymbol? {
+        val fqName = classId.asSingleFqName()
+        return resolveSymbol(fqName.parent()) { scope ->
+            when (val descriptor = scope.getContributedClassifier(fqName.shortName(), NoLookupLocation.FROM_BACKEND)) {
+                is TypeAliasDescriptor -> st.descriptorExtension.referenceTypeAlias(descriptor)
+                is ClassDescriptor -> st.descriptorExtension.referenceClass(descriptor)
+                else -> null
+            }
+        }
     }
 
+    @Deprecated("Please use `finderForBuiltins()` or `finderForSource(fromFile)` instead.", level = DeprecationLevel.WARNING)
     override fun referenceConstructors(classId: ClassId): Collection<IrConstructorSymbol> {
         return referenceConstructors(classId.asSingleFqName())
     }
 
+    @Deprecated("Please use `finderForBuiltins()` or `finderForSource(fromFile)` instead.", level = DeprecationLevel.WARNING)
     override fun referenceFunctions(callableId: CallableId): Collection<IrSimpleFunctionSymbol> {
         return referenceFunctions(callableId.asSingleFqName())
     }
 
+    @Deprecated("Please use `finderForBuiltins()` or `finderForSource(fromFile)` instead.", level = DeprecationLevel.WARNING)
     override fun referenceProperties(callableId: CallableId): Collection<IrPropertySymbol> {
         return referenceProperties(callableId.asSingleFqName())
     }
@@ -214,9 +241,9 @@ open class IrPluginContextImpl(
     }
 
     private object DummyIrGeneratedDeclarationsRegistrar : IrGeneratedDeclarationsRegistrar() {
-        override fun getMetadataVisibleAnnotationsForElement(declaration: IrDeclaration): MutableList<IrConstructorCall> = mutableListOf()
+        override fun getMetadataVisibleAnnotationsForElement(declaration: IrDeclaration): MutableList<IrAnnotation> = mutableListOf()
 
-        override fun addMetadataVisibleAnnotationsToElement(declaration: IrDeclaration, annotations: List<IrConstructorCall>) {
+        override fun addMetadataVisibleAnnotationsToElement(declaration: IrDeclaration, annotations: List<IrAnnotation>) {
             declaration.annotations += annotations
         }
 

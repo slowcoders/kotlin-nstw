@@ -15,7 +15,10 @@ import org.jetbrains.kotlin.config.nativeBinaryOptions.CCallMode
 import org.jetbrains.kotlin.config.nativeBinaryOptions.CInterfaceGenerationMode
 import org.jetbrains.kotlin.config.nativeBinaryOptions.GC
 import org.jetbrains.kotlin.config.nativeBinaryOptions.GCSchedulerType
+import org.jetbrains.kotlin.konan.config.nomain
 import org.jetbrains.kotlin.konan.file.isBitcode
+import org.jetbrains.kotlin.konan.library.components.bitcode
+import org.jetbrains.kotlin.konan.library.linkerOpts
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.supportsCoreSymbolication
@@ -28,7 +31,7 @@ import java.io.File
 /**
  * Supposed to be true for a single LLVM module within final binary.
  */
-val KonanConfig.isFinalBinary: Boolean get() = when (this.produce) {
+val NativeSecondStageCompilationConfig.isFinalBinary: Boolean get() = when (this.produce) {
     CompilerOutputKind.PROGRAM, CompilerOutputKind.DYNAMIC,
     CompilerOutputKind.STATIC -> true
     CompilerOutputKind.DYNAMIC_CACHE, CompilerOutputKind.STATIC_CACHE, CompilerOutputKind.HEADER_CACHE,
@@ -43,7 +46,7 @@ val CompilerOutputKind.isNativeLibrary: Boolean
 /**
  * Return true if compiler has to generate a C API for dynamic/static library.
  */
-val KonanConfig.produceCInterface: Boolean
+val NativeSecondStageCompilationConfig.produceCInterface: Boolean
     get() = this.produce.isNativeLibrary && this.cInterfaceGenerationMode != CInterfaceGenerationMode.NONE
 
 val CompilerOutputKind.involvesBitcodeGeneration: Boolean
@@ -103,7 +106,7 @@ private fun collectLlvmModules(generationState: NativeGenerationState, generated
             .partition { it.isNativeStdlib && generationState.producedLlvmModuleContainsStdlib }
             .toList()
             .map { libraries ->
-                libraries.flatMap { it.bitcodePaths }.filter { it.isBitcode }
+                libraries.flatMap { it.bitcode(config.target)?.bitcodeFilePaths.orEmpty() }.filter { it.isBitcode }
             }
 
     fun MutableList<String>.add(module: RuntimeModule) = add(runtimeModulesConfig.absolutePathFor(module))
@@ -225,7 +228,7 @@ private fun linkAllDependencies(generationState: NativeGenerationState, generate
 
 internal fun insertAliasToEntryPoint(context: NativeBackendPhaseContext, module: LLVMModuleRef) {
     val config = context.config
-    val nomain = config.configuration.get(KonanConfigKeys.NOMAIN) ?: false
+    val nomain = config.configuration.nomain
     if (config.produce != CompilerOutputKind.PROGRAM || nomain)
         return
     val entryPointName = config.entryPointName
@@ -261,7 +264,7 @@ private fun parseAndLinkBitcodeFile(generationState: NativeGenerationState, llvm
     }
 }
 
-private fun embedAppleLinkerOptionsToBitcode(llvm: CodegenLlvmHelpers, config: KonanConfig) {
+private fun embedAppleLinkerOptionsToBitcode(llvm: CodegenLlvmHelpers, config: NativeSecondStageCompilationConfig) {
     fun findEmbeddableOptions(options: List<String>): List<List<String>> {
         val result = mutableListOf<List<String>>()
         val iterator = options.iterator()

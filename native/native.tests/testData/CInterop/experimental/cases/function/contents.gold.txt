@@ -10,6 +10,7 @@ library {
       @kotlinx/cinterop/ExperimentalForeignApi
       public final external fun bar(): kotlin/Unit
 
+      @kotlinx/cinterop/internal/CCall.Direct(name = "foo")
       @kotlinx/cinterop/internal/CCall(id = "knifunptr_dependency0_foo")
       @kotlinx/cinterop/ExperimentalForeignApi
       public final external fun foo(): kotlin/Unit

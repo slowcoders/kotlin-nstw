@@ -111,6 +111,10 @@ fun main(args: Array<String>) {
 
             testClass<AbstractFirLightTreeDiagnosticsWithLatestLanguageVersionTest>(init = init)
             testClass<AbstractFirLightTreeDiagnosticsWithoutAliasExpansionTest>(init = init)
+
+            testClass<AbstractMetadataDiagnosticTest> {
+                model("metadataDiagnostic")
+            }
         }
 
         testGroup(testRoot, "compiler/") {
@@ -144,6 +148,12 @@ fun main(args: Array<String>) {
             }
             testClass<AbstractPhasedJvmDiagnosticPsiTest> {
                 phasedModel(allowKts = true)
+            }
+        }
+
+        testGroup(testRoot, "compiler/fir/analysis-tests/testData/resolve/contextSensitiveResolutionUsingExpectedType") {
+            testClass<AbstractPhasedJvmDiagnosticPsiWithContextSensitiveEnabledTest> {
+                model("ideHint")
             }
         }
 

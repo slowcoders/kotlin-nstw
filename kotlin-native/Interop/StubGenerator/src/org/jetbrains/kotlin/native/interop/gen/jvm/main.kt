@@ -22,6 +22,8 @@ import kotlinx.cli.ArgType
 import kotlinx.cli.default
 import kotlinx.cli.required
 import kotlinx.metadata.klib.ChunkedKlibModuleFragmentWriteStrategy
+import kotlinx.metadata.klib.KlibMetadataVersion
+import org.jetbrains.kotlin.backend.common.legacyKlibReverseTopoSort
 import org.jetbrains.kotlin.config.KlibAbiCompatibilityLevel
 import org.jetbrains.kotlin.konan.ForeignExceptionMode
 import org.jetbrains.kotlin.konan.TempFiles
@@ -34,7 +36,6 @@ import org.jetbrains.kotlin.konan.util.DefFile
 import org.jetbrains.kotlin.library.*
 import org.jetbrains.kotlin.utils.KotlinNativePaths
 import org.jetbrains.kotlin.utils.usingNativeMemoryAllocator
-import org.jetbrains.kotlin.library.metadata.resolver.TopologicalLibraryOrder
 import org.jetbrains.kotlin.library.metadata.resolver.impl.KotlinLibraryResolverImpl
 import org.jetbrains.kotlin.library.metadata.resolver.impl.libraryResolver
 import org.jetbrains.kotlin.native.interop.gen.*
@@ -42,6 +43,7 @@ import org.jetbrains.kotlin.native.interop.indexer.*
 import org.jetbrains.kotlin.native.interop.tool.*
 import org.jetbrains.kotlin.util.removeSuffixIfPresent
 import org.jetbrains.kotlin.util.suffixIfNot
+import org.jetbrains.kotlin.util.toCInteropKlibMetadataVersion
 import java.io.File
 import java.nio.file.*
 import java.util.*
@@ -171,7 +173,7 @@ private fun selectNativeLanguage(config: DefFile.DefFileConfig): Language {
 }
 
 private fun parseImports(dependencies: List<KotlinLibrary>): ImportsImpl =
-        dependencies.filterIsInstance<KonanLibrary>().mapNotNull { library ->
+        dependencies.mapNotNull { library ->
             // TODO: handle missing properties?
             library.packageFqName?.let { packageFqName ->
                 val headerIds = library.includedHeaders
@@ -262,7 +264,7 @@ private fun processCLib(
 
     val tool = prepareTool(cinteropArguments.target, flavor, runFromDaemon, parseKeyValuePairs(cinteropArguments.overrideKonanProperties), konanDataDir = cinteropArguments.konanDataDir)
 
-    val def = DefFile(defFile, tool.substitutions)
+    val def = DefFile(defFile, tool.target)
 
     checkCCallModeCompatibility(cinteropArguments, def)
     checkKlibAbiCompatibilityLevel(cinteropArguments)
@@ -350,7 +352,17 @@ private fun processCLib(
         KotlinPlatform.NATIVE -> GenerationMode.METADATA
     }
     // when this tool does not compile native library, make the generated source consumable by external compiler (i.e. do not strip includes)
-    val stubIrContext = StubIrContext(logger, configuration, nativeIndex, imports, flavor, mode, libName, allowPrecompiledHeaders = nativeLibsDir != null)
+    val stubIrContext = StubIrContext(
+            logger,
+            configuration,
+            nativeIndex,
+            imports,
+            flavor,
+            mode,
+            libName,
+            allowPrecompiledHeaders = nativeLibsDir != null,
+            KlibMetadataVersion(cinteropArguments.klibAbiCompatibilityLevel.toCInteropKlibMetadataVersion().toArray())
+    )
     val stubIrOutput = run {
         val outKtFileCreator = {
             val outKtFileName = fqParts.last() + ".kt"
@@ -460,7 +472,7 @@ private fun processCLib(
             }
 
             val serializedMetadata = stubIrOutput.metadata.write(ChunkedKlibModuleFragmentWriteStrategy(topLevelClassifierDeclarationsPerFile = 128)).run {
-                SerializedMetadata(header, fragments, fragmentNames)
+                SerializedMetadata(header, fragments, fragmentNames, metadataVersion.toArray())
             }
 
             createInteropLibrary(
@@ -498,32 +510,34 @@ private fun checkCCallModeCompatibility(
     Additionally, regardless of the bitcode inclusion, the compiler also doesn't support generating direct CCalls to
     functions defined through `compileSource`.
     */
+    val flag = "-$CCALL_MODE ${CCallMode.INDIRECT.name.lowercase()}"
     check(def.config.entryPoints.isEmpty()) {
-        "entryPoint= in the .def file is only supported with -$CCALL_MODE ${CCallMode.INDIRECT.name.lowercase()}"
+        "entryPoint= in the .def file is only supported with the legacy mode flag $flag.\n" +
+                "See https://youtrack.jetbrains.com/issue/KT-79747 for more details."
     }
 
     check(cinteropArguments.compileSource.isEmpty()) {
-        "-$COMPILE_SOURCES is only supported with -$CCALL_MODE ${CCallMode.INDIRECT.name.lowercase()}"
+        "-$COMPILE_SOURCES is only supported with the legacy mode flag $flag.\n" +
+                "See https://youtrack.jetbrains.com/issue/KT-79749 for more details."
     }
 }
 
-// TODO (KT-81433): Reconsider how exactly the export in P.V. feature should work in further versions (ex: 2.4.0)
-//  if we decide to upgrade LLVM.
+// TODO (KT-84721): Reconsider how exactly the export in P.V. feature should work in further versions (ex: 2.5.0) if we decide to upgrade LLVM.
 private fun checkKlibAbiCompatibilityLevel(cinteropArguments: CInteropArguments) {
     val klibAbiCompatibilityLevel = cinteropArguments.klibAbiCompatibilityLevel
     val cCallMode = cinteropArguments.cCallMode
 
     when (klibAbiCompatibilityLevel) {
-        KlibAbiCompatibilityLevel.ABI_LEVEL_2_2 -> {
-            check(cCallMode == CCallMode.INDIRECT) {
+        KlibAbiCompatibilityLevel.ABI_LEVEL_2_3 -> {
+            check(cCallMode == CCallMode.DIRECT) {
                 "-$CCALL_MODE ${cCallMode.name.lowercase()} is not supported in combination with -$KLIB_ABI_COMPATIBILITY_LEVEL ${klibAbiCompatibilityLevel}\n" +
-                        "Please use -$KLIB_ABI_COMPATIBILITY_LEVEL ${KlibAbiCompatibilityLevel.LATEST_STABLE} or specify -$CCALL_MODE ${CCallMode.INDIRECT.name.lowercase()}"
+                        "Please use -$KLIB_ABI_COMPATIBILITY_LEVEL ${KlibAbiCompatibilityLevel.LATEST_STABLE} or specify -$CCALL_MODE ${CCallMode.DIRECT.name.lowercase()}"
             }
 
             warn("-$KLIB_ABI_COMPATIBILITY_LEVEL $klibAbiCompatibilityLevel will trigger generating KLIB compatible with KLIB ABI version $klibAbiCompatibilityLevel. This is an experimental feature.")
         }
 
-        KlibAbiCompatibilityLevel.ABI_LEVEL_2_3 -> {
+        KlibAbiCompatibilityLevel.ABI_LEVEL_2_4 -> {
             // No specific restrictions for now.
         }
     }
@@ -545,7 +559,7 @@ private fun compileSources(
 
 private fun getLibraryResolver(
         cinteropArguments: CInteropArguments, target: KonanTarget
-): KotlinLibraryResolverImpl<KonanLibrary> {
+): KotlinLibraryResolverImpl<KotlinLibrary> {
     return defaultResolver(
         directLibs = cinteropArguments.library,
         target,
@@ -554,7 +568,7 @@ private fun getLibraryResolver(
 }
 
 private fun resolveDependencies(
-        resolver: KotlinLibraryResolverImpl<KonanLibrary>, cinteropArguments: CInteropArguments
+        resolver: KotlinLibraryResolverImpl<KotlinLibrary>, cinteropArguments: CInteropArguments
 ): List<KotlinLibrary> {
     val noDefaultLibs = cinteropArguments.nodefaultlibs || cinteropArguments.nodefaultlibsDeprecated
     val noEndorsedLibs = cinteropArguments.noendorsedlibs
@@ -563,7 +577,7 @@ private fun resolveDependencies(
         noStdLib = false,
         noDefaultLibs = noDefaultLibs,
         noEndorsedLibs = noEndorsedLibs
-    ).getFullList(TopologicalLibraryOrder)
+    ).getFullList().legacyKlibReverseTopoSort()
     validateNoLibrariesWerePassedViaCliByUniqueName(cinteropArguments.library, resolvedLibraries, resolver.logger)
     return resolvedLibraries
 }
@@ -629,7 +643,7 @@ internal fun buildNativeLibrary(
         require(headerFiles.isEmpty()) { "cinterop doesn't support having headers and modules specified at the same time" }
         require(def.config.headerFilter.isEmpty()) { "cinterop doesn't support 'headerFilter' with 'modules'" }
 
-        val modulesInfo = getModulesInfo(compilation, modules)
+        val modulesInfo = getModulesInfo(compilation, modules, def.config.skipNonImportableModules)
 
         headerFilter = NativeLibraryHeaderFilter.Predefined(modulesInfo.ownHeaders, modulesInfo.modules)
         includes = modulesInfo.topLevelHeaders

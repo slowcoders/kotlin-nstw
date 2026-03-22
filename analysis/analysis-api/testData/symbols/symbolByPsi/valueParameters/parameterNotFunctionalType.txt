@@ -41,6 +41,7 @@ KaNamedFunctionSymbol:
       isCrossinline: false
       isExpect: false
       isExtension: false
+      isExternal: false
       isImplicitLambdaParameter: false
       isNoinline: false
       isVal: true
@@ -64,7 +65,7 @@ KaNamedFunctionSymbol:
             annotations: []
             type: ERROR_TYPE
         ]
-        type: kotlin/Function2<kotlin/Int, ERROR CLASS: Symbol not found for p2, ERROR CLASS: Incomplete code>
+        type: (kotlin/Int, ERROR CLASS: Symbol not found for p2) -> ERROR CLASS: Incomplete code
       visibility: PUBLIC
       getContainingFileSymbol: KaFileSymbol(parameterNotFunctionalType.kt)
       getContainingJvmClassName: ParameterNotFunctionalTypeKt
@@ -83,6 +84,7 @@ KaNamedFunctionSymbol:
       isCrossinline: false
       isExpect: false
       isExtension: false
+      isExternal: false
       isImplicitLambdaParameter: false
       isNoinline: false
       isVal: true

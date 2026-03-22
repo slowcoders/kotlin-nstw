@@ -2,30 +2,29 @@ import org.jetbrains.kotlin.build.androidsdkprovisioner.ProvisioningType
 
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("android-sdk-provisioner")
     id("project-tests-convention")
 }
 
 dependencies {
-    testApi(project(":core:descriptors"))
-    testApi(project(":core:descriptors.jvm"))
-    testApi(project(":compiler:util"))
-    testApi(project(":compiler:cli"))
-    testApi(project(":compiler:frontend"))
-    testApi(project(":compiler:backend"))
-    testApi(project(":compiler:incremental-compilation-impl"))
-    testApi(project(":compiler:frontend.java"))
+    testImplementation(project(":core:descriptors"))
+    testImplementation(project(":core:descriptors.jvm"))
+    testImplementation(project(":compiler:util"))
+    testImplementation(project(":compiler:cli"))
+    testImplementation(project(":compiler:frontend"))
+    testImplementation(project(":compiler:backend"))
+    testImplementation(project(":compiler:incremental-compilation-impl"))
+    testImplementation(project(":compiler:frontend.java"))
 
-    testApi(kotlinStdlib())
-    testApi(testFixtures(project(":compiler:tests-common")))
+    testImplementation(kotlinStdlib())
+    testImplementation(testFixtures(project(":compiler:tests-common")))
     testImplementation(libs.junit4)
-    testApi(testFixtures(project(":compiler:test-infrastructure")))
-    testApi(testFixtures(project(":compiler:test-infrastructure-utils")))
-    testApi(testFixtures(project(":compiler:tests-compiler-utils")))
-    testApi(testFixtures(project(":compiler:tests-common-new")))
+    testImplementation(testFixtures(project(":compiler:test-infrastructure")))
+    testImplementation(testFixtures(project(":compiler:test-infrastructure-utils")))
+    testImplementation(testFixtures(project(":compiler:tests-compiler-utils")))
+    testImplementation(testFixtures(project(":compiler:tests-common-new")))
 
-    testApi(jpsModel())
+    testImplementation(jpsModel())
 
     testRuntimeOnly(intellijCore())
     testRuntimeOnly(commonDependency("org.jetbrains.intellij.deps.jna:jna"))
@@ -42,6 +41,10 @@ optInToK1Deprecation()
 
 projectTests {
     testTask(jUnitMode = JUnitMode.JUnit4) {
+        develocity {
+            testRetry.maxRetries.set(0)
+        }
+
         dependsOn(":dist")
         val jdkHome = project.getToolchainJdkHomeFor(JdkMajorVersion.JDK_1_8)
         doFirst {
@@ -66,7 +69,11 @@ projectTests {
     withJvmStdlibAndReflect()
 }
 
-val generateAndroidTests by generator("org.jetbrains.kotlin.android.tests.CodegenTestsOnAndroidGenerator") {
+val generateAndroidTests by generator(
+    "org.jetbrains.kotlin.android.tests.CodegenTestsOnAndroidGenerator",
+    testSourceSet,
+    inputKind = GeneratorInputKind.RuntimeClasspath,
+) {
     workingDir = rootDir
     dependsOn(rootProject.tasks.named("dist"))
 }

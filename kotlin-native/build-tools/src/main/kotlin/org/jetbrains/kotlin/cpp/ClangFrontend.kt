@@ -7,17 +7,22 @@ package org.jetbrains.kotlin.cpp
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.*
+import org.gradle.api.internal.file.FileOperations
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
-import org.jetbrains.kotlin.ExecClang
 import org.jetbrains.kotlin.bitcode.CompileToBitcodePlugin
+import org.jetbrains.kotlin.clangArgs
+import org.jetbrains.kotlin.execLlvmUtility
 import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.platformManagerProvider
+import java.io.File
 import javax.inject.Inject
 
 private abstract class ClangFrontendJob : WorkAction<ClangFrontendJob.Parameters> {
@@ -29,19 +34,22 @@ private abstract class ClangFrontendJob : WorkAction<ClangFrontendJob.Parameters
         val compilerExecutable: Property<String>
         val arguments: ListProperty<String>
         val platformManager: Property<PlatformManager>
+        val clangPaths: Property<String>
     }
 
     @get:Inject
     abstract val objects: ObjectFactory
 
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
     override fun execute() {
         with(parameters) {
-            val execClang = ExecClang.create(objects, platformManager.get())
-
             outputFile.get().asFile.parentFile.mkdirs()
-            execClang.execKonanClang(targetName.get(), compilerExecutable.get()) {
+            execOperations.execLlvmUtility(platformManager.get(), compilerExecutable.get()) {
                 workingDir = workingDirectory.asFile.get()
                 args = arguments.get() + listOf(inputPathRelativeToWorkingDir.get(), "-o", outputFile.get().asFile.absolutePath)
+                environment["PATH"] = clangPaths.get() + File.pathSeparator + environment["PATH"]
             }
         }
     }
@@ -57,6 +65,7 @@ open class ClangFrontend @Inject constructor(
         objects: ObjectFactory,
         private val workerExecutor: WorkerExecutor,
         private val layout: ProjectLayout,
+        private val fileOperations: FileOperations,
 ) : DefaultTask() {
     protected data class WorkUnit(
             /**
@@ -115,6 +124,9 @@ open class ClangFrontend @Inject constructor(
     @get:Internal("Used to compute workUnits and headersPathsRelativeToWorkingDir")
     val workingDirectory: DirectoryProperty = objects.directoryProperty()
 
+    @get:Internal
+    val reproducibilityRootsMap: MapProperty<File, String> = objects.mapProperty(File::class.java, String::class.java)
+
     /**
      * Locations to search for headers.
      *
@@ -135,7 +147,7 @@ open class ClangFrontend @Inject constructor(
         files.map {
             val relativePath = it.asFile.toRelativeString(base.asFile)
             WorkUnit(relativePath, out.file(relativePath.replaceAfterLast(".", "bc")))
-        }
+        }.sortedBy { it.inputPathRelativeToWorkingDir }
     }
 
     @get:Nested
@@ -145,6 +157,11 @@ open class ClangFrontend @Inject constructor(
     fun compile() {
         val workQueue = workerExecutor.noIsolation()
 
+        val platformManager = platformManagerProvider.platformManager.get()
+        val target = platformManager.targetByName(targetName.get())
+        val compilerSpecificArgs = platformManager.clangArgs(target, compiler.get())
+        val clangPaths = fileOperations.configurableFiles(platformManager.hostPlatform.clang.clangPaths).asPath
+
         workUnits.get().forEach { workUnit ->
             workQueue.submit(ClangFrontendJob::class.java) {
                 workingDirectory.set(this@ClangFrontend.workingDirectory)
@@ -152,18 +169,24 @@ open class ClangFrontend @Inject constructor(
                 inputPathRelativeToWorkingDir.set(workUnit.inputPathRelativeToWorkingDir)
                 outputFile.set(workUnit.outputFile)
                 compilerExecutable.set(this@ClangFrontend.compiler)
-                arguments.set(defaultCompilerFlags(this@ClangFrontend.headersDirs))
+                arguments.set(defaultCompilerFlags(this@ClangFrontend.headersDirs, this@ClangFrontend.reproducibilityRootsMap.get()))
+                arguments.addAll(compilerSpecificArgs)
                 arguments.addAll(this@ClangFrontend.arguments)
-                platformManager.set(this@ClangFrontend.platformManagerProvider.platformManager)
+                this.platformManager.set(platformManager)
+                this.clangPaths.set(clangPaths)
             }
         }
     }
 
     companion object {
-        internal fun defaultCompilerFlags(headersDirs: CppHeadersSet): List<String> = buildList {
+        internal fun defaultCompilerFlags(headersDirs: CppHeadersSet, reproducibilityRootsMap: Map<File, String>): List<String> = buildList {
             add("-c")
             add("-emit-llvm")
             addAll(headersDirs.asCompilerArguments.get())
+            // Prevent generated binaries from containing absolute paths
+            addAll(reproducibilityRootsMap.map {
+                "-ffile-prefix-map=${it.key}=${it.value}"
+            })
         }
     }
 }

@@ -23,6 +23,7 @@ import kotlin.properties.ReadOnlyProperty
  * @param valueDescription describes which values are accepted by the argument.
  * The description text may have a different value for different Kotlin releases,
  * see [ReleaseDependent] on how to define the description for older versions.
+ * @param argumentType the type-safe representation of the argument value type. This is an experimental API that may change in future versions.
  * @param additionalAnnotations additional annotations that should be added for the Kotlin compiler argument representation (e.g. [Deprecated]).
  * @param compilerName alternative property name in the generated Kotlin compiler argument representation
  *
@@ -42,6 +43,9 @@ data class KotlinCompilerArgument(
 
     override val releaseVersionsMetadata: KotlinReleaseVersionLifecycle,
 
+    @ExperimentalArgumentApi
+    val argumentType: KotlinArgumentValueType<*> = valueType,
+
     @kotlinx.serialization.Transient
     val additionalAnnotations: List<Annotation> = emptyList(),
 
@@ -50,7 +54,6 @@ data class KotlinCompilerArgument(
 
     @kotlinx.serialization.Transient
     val isObsolete: Boolean = false,
-
 ) : WithKotlinReleaseVersionsMetadata {
 
     // corresponds to [org.jetbrains.kotlin.cli.common.arguments.Argument.Delimiters]
@@ -100,6 +103,12 @@ internal class KotlinCompilerArgumentBuilder {
     var valueDescription: ReleaseDependent<String?> = null.asReleaseDependent()
 
     /**
+     * @see KotlinCompilerArgument.argumentType
+     */
+    @ExperimentalArgumentApi
+    var argumentType: KotlinArgumentValueType<*>? = null
+
+    /**
      * @see KotlinCompilerArgument.compilerName
      */
     var compilerName: String? = null
@@ -146,6 +155,7 @@ internal class KotlinCompilerArgumentBuilder {
     /**
      * Build a new instance of [KotlinCompilerArgument].
      */
+    @OptIn(ExperimentalArgumentApi::class)
     fun build(): KotlinCompilerArgument = KotlinCompilerArgument(
         name = name,
         shortName = shortName,
@@ -153,6 +163,7 @@ internal class KotlinCompilerArgumentBuilder {
         description = description,
         valueType = valueType,
         valueDescription = valueDescription,
+        argumentType = argumentType ?: valueType,
         releaseVersionsMetadata = releaseVersionsMetadata,
         additionalAnnotations = additionalAnnotations,
         compilerName = compilerName,
@@ -179,7 +190,7 @@ internal class KotlinCompilerArgumentBuilder {
  * @see KotlinCompilerArgumentBuilder
  */
 internal fun compilerArgument(
-    config: KotlinCompilerArgumentBuilder.() -> Unit
+    config: KotlinCompilerArgumentBuilder.() -> Unit,
 ) = ReadOnlyProperty<Any?, KotlinCompilerArgument> { _, _ ->
     val builder = KotlinCompilerArgumentBuilder()
     config(builder)

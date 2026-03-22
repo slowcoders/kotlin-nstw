@@ -175,10 +175,8 @@ abstract class FirSyntheticFunctionInterfaceProviderBase(
     protected open fun createSyntheticFunctionInterface(classId: ClassId, kind: FunctionTypeKind): FirRegularClassSymbol? {
         return with(classId) {
             val builtInOrigin = if (originateFromFallbackBuiltIns) FirDeclarationOrigin.BuiltInsFallback else FirDeclarationOrigin.BuiltIns
-            val className = relativeClassName.asString()
             if (!kind.isAcceptable()) return null
-            val prefix = kind.classNamePrefix
-            val arity = className.substring(prefix.length).toIntOrNull() ?: return null
+            val arity = classId.getArityIfAllowedOrNull(kind) ?: 0
             FirRegularClassSymbol(classId).apply symbol@{
                 buildRegularClass klass@{
                     moduleData = this@FirSyntheticFunctionInterfaceProviderBase.moduleData
@@ -262,6 +260,7 @@ abstract class FirSyntheticFunctionInterfaceProviderBase(
                                 returnTypeRef = typeArguments.last()
                                 this.name = name
                                 status = functionStatus
+                                isLocal = false
                                 symbol = FirNamedFunctionSymbol(
                                     CallableId(packageFqName, relativeClassName, name)
                                 )
@@ -318,5 +317,8 @@ abstract class FirSyntheticFunctionInterfaceProviderBase(
          */
         @FirSymbolProviderInternals
         fun ClassId.mayBeSyntheticFunctionClassName(): Boolean = relativeClassName.asString().lastOrNull()?.isDigit() == true
+
+        fun ClassId.getArityIfAllowedOrNull(kind: FunctionTypeKind): Int? =
+            relativeClassName.asString().substring(kind.classNamePrefix.length).toIntOrNull()?.takeIf { it <= kind.maxArity }
     }
 }

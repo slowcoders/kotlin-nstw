@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.fir.renderer
 
 import org.jetbrains.kotlin.builtins.functions.AllowedToUsedOnlyInK1
 import org.jetbrains.kotlin.builtins.functions.FunctionTypeKindExtractor
-import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
 import org.jetbrains.kotlin.fir.FirElement
@@ -16,7 +15,7 @@ import org.jetbrains.kotlin.fir.contracts.FirContractDescription
 import org.jetbrains.kotlin.fir.contracts.FirEffectDeclaration
 import org.jetbrains.kotlin.fir.contracts.description.ConeContractRenderer
 import org.jetbrains.kotlin.fir.declarations.*
-import org.jetbrains.kotlin.fir.declarations.utils.visibility
+import org.jetbrains.kotlin.fir.declarations.utils.isDelegatedProperty
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.FirElseIfTrueCondition
 import org.jetbrains.kotlin.fir.expressions.impl.FirExpressionStub
@@ -25,6 +24,7 @@ import org.jetbrains.kotlin.fir.expressions.impl.FirUnitExpression
 import org.jetbrains.kotlin.fir.isCatchParameter
 import org.jetbrains.kotlin.fir.references.*
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirLocalPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.RenderingInternals
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.visitors.FirVisitorVoid
@@ -254,6 +254,29 @@ class FirRenderer(
             scriptReceiverParameter.typeRef.accept(this)
         }
 
+        override fun visitReplDeclarationReference(replDeclarationReference: FirReplDeclarationReference) {
+            print("<repl declaration reference>: ")
+            referencedSymbolRenderer.printReference(replDeclarationReference.symbol)
+        }
+
+        override fun visitReplPropertyInitializer(replPropertyInitializer: FirReplPropertyInitializer) {
+            print("<repl property initializer: ")
+            referencedSymbolRenderer.printReference(replPropertyInitializer.propertySymbol)
+            print("> = ")
+            replPropertyInitializer.initializer.accept(this)
+        }
+
+        override fun visitReplPropertyDelegate(replPropertyDelegate: FirReplPropertyDelegate) {
+            print("<repl property delegate: ")
+            referencedSymbolRenderer.printReference(replPropertyDelegate.propertySymbol)
+            print("> = ")
+            replPropertyDelegate.delegate.accept(this)
+        }
+
+        override fun visitReplExpressionReference(replExpressionReference: FirReplExpressionReference) {
+            print("REPL_EXPRESSION_REF")
+        }
+
         override fun visitCodeFragment(codeFragment: FirCodeFragment) {
             printer.print("CODE FRAGMENT:")
             bodyRenderer?.renderBody(codeFragment.block)
@@ -377,7 +400,7 @@ class FirRenderer(
 
         override fun visitProperty(property: FirProperty) {
             visitVariable(property)
-            if (property.isLocal || property.visibility == Visibilities.Local) return
+            if (property.symbol is FirLocalPropertySymbol && !property.isDelegatedProperty) return
             propertyAccessorRenderer?.render(property)
         }
 
@@ -1061,6 +1084,9 @@ class FirRenderer(
             }
             print("::")
             callableReferenceAccess.calleeReference.accept(this)
+            callableReferenceAccess.errorArgumentList?.let {
+                callArgumentsRenderer?.renderArguments(it.arguments)
+            }
         }
 
         override fun visitQualifiedAccessExpression(qualifiedAccessExpression: FirQualifiedAccessExpression) {

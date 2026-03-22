@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("java-test-fixtures")
     id("project-tests-convention")
 }
@@ -13,8 +12,6 @@ dependencies {
 
     testCompileOnly(intellijCore())
 
-    testRuntimeOnly(project(":core:descriptors.runtime"))
-    testRuntimeOnly(project(":compiler:fir:fir-serialization"))
     testRuntimeOnly(project(":compiler:fir:plugin-utils"))
 
     testRuntimeOnly(commonDependency("org.lz4:lz4-java"))
@@ -24,6 +21,7 @@ dependencies {
 
     testRuntimeOnly(toolsJar())
     testRuntimeOnly(libs.junit.vintage.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 sourceSets {

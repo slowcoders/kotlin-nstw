@@ -115,15 +115,22 @@ internal fun buildDecompiledText(fileStub: KotlinFileStubImpl): String = PrettyP
 
             withPrefix(" ") { function.typeConstraintList?.accept(this) }
 
-            if (function.hasBody()) {
-                append(" { ")
-                if (function.mayHaveContract()) {
-                    append(DECOMPILED_CONTRACT_STUB)
-                    append("; ")
-                }
-                append(DECOMPILED_CODE_COMMENT)
-                append(" }")
+            printBody(function)
+        }
+
+        fun printBody(declaration: KtDeclarationWithBody) {
+            if (!declaration.hasBody()) {
+                return
             }
+
+            append(" { ")
+            if (declaration.mayHaveContract()) {
+                append(DECOMPILED_CONTRACT_STUB)
+                append("; ")
+            }
+
+            append(DECOMPILED_CODE_COMMENT)
+            append(" }")
         }
 
         override fun visitTypeAlias(typeAlias: KtTypeAlias) {
@@ -455,9 +462,7 @@ internal fun buildDecompiledText(fileStub: KotlinFileStubImpl): String = PrettyP
 
             accessor.parameterList?.accept(this)
             withPrefix(": ") { accessor.typeReference?.accept(this) }
-            if (accessor.hasBody()) {
-                append(" { $DECOMPILED_CODE_COMMENT }")
-            }
+            printBody(accessor)
         }
 
         override fun visitParameterList(list: KtParameterList) {
@@ -499,15 +504,15 @@ internal fun buildDecompiledText(fileStub: KotlinFileStubImpl): String = PrettyP
 
         override fun visitModifierList(list: KtModifierList) {
             " ".separated(
-                { list.contextReceiverList?.accept(this) },
+                { list.contextParameterList?.accept(this) },
                 { printAnnotations(list) },
                 { printModifiers(list) },
             )
         }
 
-        override fun visitContextReceiverList(contextReceiverList: KtContextReceiverList) {
-            val contextElements = contextReceiverList.contextParameters().ifEmpty {
-                contextReceiverList.contextReceivers()
+        override fun visitContextParameterList(contextParameterList: KtContextParameterList) {
+            val contextElements = contextParameterList.contextParameters.ifEmpty {
+                contextParameterList.contextReceivers()
             }
 
             printCollection(contextElements, prefix = "context(", postfix = ")") {

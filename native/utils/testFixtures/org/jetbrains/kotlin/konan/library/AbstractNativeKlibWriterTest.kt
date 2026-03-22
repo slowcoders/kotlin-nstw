@@ -7,8 +7,12 @@ package org.jetbrains.kotlin.konan.library
 
 import org.jetbrains.kotlin.konan.library.AbstractNativeKlibWriterTest.NativeParameters
 import org.jetbrains.kotlin.konan.library.AbstractNativeKlibWriterTest.NativeParameters.BinaryFile
+import org.jetbrains.kotlin.konan.library.components.KlibBitcodeConstants.KLIB_BITCODE_FOLDER_NAME
+import org.jetbrains.kotlin.library.components.KlibNativeConstants.KLIB_TARGETS_FOLDER_NAME
+import org.jetbrains.kotlin.konan.library.components.KlibNativeIncludedBinariesConstants.KLIB_NATIVE_INCLUDED_BINARIES_FOLDER_NAME
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.library.AbstractKlibWriterTest
+import org.jetbrains.kotlin.library.KLIB_PROPERTY_DEPENDS
 import org.jetbrains.kotlin.library.KLIB_PROPERTY_NATIVE_TARGETS
 import org.jetbrains.kotlin.library.KLIB_PROPERTY_SHORT_NAME
 import org.jetbrains.kotlin.library.KlibMockDSL
@@ -23,9 +27,10 @@ import kotlin.random.Random
 abstract class AbstractNativeKlibWriterTest<P : NativeParameters>(newParameters: () -> P) : AbstractKlibWriterTest<P>(newParameters) {
     open class NativeParameters : Parameters() {
         var shortName: String? = null
+        var dependencies: List<KlibDependency> = emptyList()
         var target: KonanTarget = KonanTarget.IOS_ARM64
-        var bitCodeFiles: List<BinaryFile> = emptyList()
-        var includedFiles: List<BinaryFile> = emptyList()
+        var bitcodeFiles: List<BinaryFile> = emptyList()
+        var nativeIncludedBinaryFiles: List<BinaryFile> = emptyList()
 
         final override var builtInsPlatform: BuiltInsPlatform = BuiltInsPlatform.NATIVE
             set(_) = abort<Nothing>("only NATIVE built-ins platform is supported")
@@ -49,6 +54,13 @@ abstract class AbstractNativeKlibWriterTest<P : NativeParameters>(newParameters:
     }
 
     @Test
+    fun `Writing a klib with dependencies`() {
+        runTestWithParameters {
+            dependencies = listOf(mockKlibDependency("dep1"), mockKlibDependency("dep2"))
+        }
+    }
+
+    @Test
     fun `Writing a klib with different targets`() {
         listOf(KonanTarget.IOS_ARM64, KonanTarget.MACOS_ARM64, KonanTarget.WATCHOS_ARM64).forEach { target ->
             runTestWithParameters {
@@ -58,10 +70,10 @@ abstract class AbstractNativeKlibWriterTest<P : NativeParameters>(newParameters:
     }
 
     @Test
-    fun `Writing a klib with custom included files`() {
+    fun `Writing a klib with custom native included binaries`() {
         repeat(3) { index ->
             runTestWithParameters {
-                includedFiles = mockBinaryFiles(count = index + 1, prefix = index.toString(), extension = "o")
+                nativeIncludedBinaryFiles = mockBinaryFiles(count = index + 1, prefix = index.toString(), extension = "o")
             }
         }
     }
@@ -70,7 +82,7 @@ abstract class AbstractNativeKlibWriterTest<P : NativeParameters>(newParameters:
     fun `Writing a klib with custom bitcode files`() {
         repeat(3) { index ->
             runTestWithParameters {
-                bitCodeFiles = mockBinaryFiles(count = index + 1, prefix = index.toString(), extension = "bc")
+                bitcodeFiles = mockBinaryFiles(count = index + 1, prefix = index.toString(), extension = "bc")
             }
         }
     }
@@ -78,9 +90,9 @@ abstract class AbstractNativeKlibWriterTest<P : NativeParameters>(newParameters:
     context(dsl: KlibMockDSL)
     override fun customizeMockKlib(parameters: P) {
         super.customizeMockKlib(parameters)
-        dsl.targets(parameters.target) {
-            included(parameters.includedFiles)
-            native(parameters.bitCodeFiles)
+        dsl.target(parameters.target) {
+            nativeIncludedBinaries(parameters.nativeIncludedBinaryFiles)
+            bitcode(parameters.bitcodeFiles)
         }
     }
 
@@ -88,6 +100,9 @@ abstract class AbstractNativeKlibWriterTest<P : NativeParameters>(newParameters:
     override fun customizeManifestForMockKlib(parameters: P) {
         super.customizeManifestForMockKlib(parameters)
         parameters.shortName?.let { shortName -> properties[KLIB_PROPERTY_SHORT_NAME] = shortName }
+        if (parameters.dependencies.isNotEmpty()) {
+            properties[KLIB_PROPERTY_DEPENDS] = parameters.dependencies.joinToString(" ") { it.uniqueName }
+        }
         properties[KLIB_PROPERTY_NATIVE_TARGETS] = parameters.target.visibleName
     }
 
@@ -104,20 +119,20 @@ abstract class AbstractNativeKlibWriterTest<P : NativeParameters>(newParameters:
     }
 }
 
-fun KlibMockDSL.targets(target: KonanTarget, init: KlibMockDSL.() -> Unit = {}) {
+fun KlibMockDSL.target(target: KonanTarget, init: KlibMockDSL.() -> Unit = {}) {
     dir(KLIB_TARGETS_FOLDER_NAME) {
         dir(target.name, init)
     }
 }
 
-fun KlibMockDSL.included(binaryFiles: List<BinaryFile> = emptyList()) {
-    dir("included") {
+fun KlibMockDSL.nativeIncludedBinaries(binaryFiles: List<BinaryFile> = emptyList()) {
+    dir(KLIB_NATIVE_INCLUDED_BINARIES_FOLDER_NAME) {
         binaryFiles.forEach { binaryFile -> file(binaryFile.file.name, binaryFile.content) }
     }
 }
 
-fun KlibMockDSL.native(binaryFiles: List<BinaryFile> = emptyList()) {
-    dir("native") {
+fun KlibMockDSL.bitcode(binaryFiles: List<BinaryFile> = emptyList()) {
+    dir(KLIB_BITCODE_FOLDER_NAME) {
         binaryFiles.forEach { binaryFile -> file(binaryFile.file.name, binaryFile.content) }
     }
 }

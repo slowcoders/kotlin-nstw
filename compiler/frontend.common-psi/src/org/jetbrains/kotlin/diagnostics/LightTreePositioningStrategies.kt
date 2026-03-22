@@ -274,7 +274,7 @@ object LightTreePositioningStrategies {
             startOffset: Int,
             endOffset: Int,
             tree: FlyweightCapableTreeStructure<LighterASTNode>
-        ): List<TextRange> = tree.findDescendantByType(node, KtNodeTypes.CONTEXT_RECEIVER_LIST)?.getChildren(tree)?.firstOrNull()
+        ): List<TextRange> = tree.findDescendantByType(node, KtNodeTypes.CONTEXT_PARAMETER_LIST)?.getChildren(tree)?.firstOrNull()
             ?.let { markElement(it, startOffset, endOffset, tree, node) }
             ?: super.mark(node, startOffset, endOffset, tree)
     }
@@ -1164,7 +1164,10 @@ object LightTreePositioningStrategies {
             endOffset: Int,
             tree: FlyweightCapableTreeStructure<LighterASTNode>
         ): List<TextRange> {
-            val nodeToMark = tree.collectDescendantsOfType(node, KtNodeTypes.REFERENCE_EXPRESSION).lastOrNull() ?: node
+            val nodeToMark = when {
+                node.tokenType != KtNodeTypes.IMPORT_DIRECTIVE -> node
+                else -> tree.collectDescendantsOfType(node, KtNodeTypes.REFERENCE_EXPRESSION).lastOrNull() ?: node
+            }
             return markElement(nodeToMark, startOffset, endOffset, tree, node)
         }
     }
@@ -1405,6 +1408,21 @@ object LightTreePositioningStrategies {
             tree: FlyweightCapableTreeStructure<LighterASTNode>,
         ): List<TextRange> {
             val nodeToMark = tree.findChildByType(tree.selector(node) ?: node, KtNodeTypes.TYPE_ARGUMENT_LIST) ?: node
+
+            return markElement(nodeToMark, startOffset, endOffset, tree, node)
+        }
+    }
+
+    val TYPE_ARGUMENT_LIST_OR_WITHOUT_RECEIVER: LightTreePositioningStrategy = object : LightTreePositioningStrategy() {
+        override fun mark(
+            node: LighterASTNode,
+            startOffset: Int,
+            endOffset: Int,
+            tree: FlyweightCapableTreeStructure<LighterASTNode>,
+        ): List<TextRange> {
+            val selector = tree.selector(node)
+            val nodeToMark =
+                tree.findChildByType(selector ?: node, KtNodeTypes.TYPE_ARGUMENT_LIST) ?: selector ?: node
 
             return markElement(nodeToMark, startOffset, endOffset, tree, node)
         }

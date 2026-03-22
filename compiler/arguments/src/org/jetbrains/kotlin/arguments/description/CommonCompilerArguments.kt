@@ -6,11 +6,13 @@
 package org.jetbrains.kotlin.arguments.description
 
 import org.jetbrains.kotlin.arguments.dsl.base.*
+import org.jetbrains.kotlin.arguments.dsl.defaultEmpty
 import org.jetbrains.kotlin.arguments.dsl.defaultFalse
 import org.jetbrains.kotlin.arguments.dsl.defaultNull
 import org.jetbrains.kotlin.arguments.dsl.defaultTrue
 import org.jetbrains.kotlin.arguments.dsl.types.*
-import org.jetbrains.kotlin.cli.common.arguments.*
+import org.jetbrains.kotlin.cli.common.arguments.Disables
+import org.jetbrains.kotlin.cli.common.arguments.Enables
 import org.jetbrains.kotlin.config.LanguageFeature
 
 val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLevelNames.commonCompilerArguments) {
@@ -42,11 +44,13 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
         )
     }
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "kotlin-home"
         description = "Path to the Kotlin compiler home directory used for the discovery of runtime libraries.".asReleaseDependent()
         valueType = StringType.defaultNull
         valueDescription = "<path>".asReleaseDependent()
+        argumentType = PathType.defaultNull
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_1_50,
@@ -95,6 +99,7 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
         )
     }
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "opt-in"
         deprecatedName = "Xopt-in"
@@ -102,6 +107,7 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
             "Enable API usages that require opt-in with an opt-in requirement marker with the given fully qualified name.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
         valueDescription = "<fq.name>".asReleaseDependent()
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_4_0,
@@ -376,10 +382,12 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xdisable-phases"
         description = "Disable backend phases.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_3_20,
@@ -387,10 +395,12 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xverbose-phases"
         description = "Be verbose while performing the given backend phases.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_3_20,
@@ -398,10 +408,12 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xphases-to-dump-before"
         description = "Dump the backend's state before these phases.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_3_20,
@@ -409,10 +421,12 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xphases-to-dump-after"
         description = "Dump the backend's state after these phases.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_3_20,
@@ -420,10 +434,12 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xphases-to-dump"
         description = "Dump the backend's state both before and after these phases.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_3_20,
@@ -454,10 +470,12 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xphases-to-validate-before"
         description = "Validate the backend's state before these phases.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_3_40,
@@ -465,10 +483,12 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xphases-to-validate-after"
         description = "Validate the backend's state after these phases.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_3_40,
@@ -476,10 +496,12 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xphases-to-validate"
         description = "Validate the backend's state both before and after these phases.".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v1_3_40,
@@ -487,11 +509,13 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xverify-ir"
         description = "IR verification mode (no verification by default).".asReleaseDependent()
         valueDescription = "{none|warning|error}".asReleaseDependent()
         valueType = StringType.defaultNull
+        argumentType = VerifyIrModeType()
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v2_0_20,
@@ -507,6 +531,18 @@ val actualCommonCompilerArguments by compilerArgumentsLevel(CompilerArgumentsLev
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v2_0_20,
+        )
+    }
+
+
+    compilerArgument {
+        name = "Xverify-ir-nested-offsets"
+        description =
+            "Check that offsets of nested IR elements conform to offsets of their containers. Only has effect if '-Xverify-ir' is not 'none'.".asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_3_20,
         )
     }
 
@@ -733,6 +769,19 @@ Kotlin reports a warning every time you use one of them. You can use this flag t
 
 
     compilerArgument {
+        name = "Xexplicit-context-arguments"
+        description = "Enable explicit passing of context arguments using named argument syntax.".asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        additionalAnnotations(Enables(LanguageFeature.ExplicitContextArguments))
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_4_0,
+        )
+    }
+
+
+    compilerArgument {
         name = "Xcontext-sensitive-resolution"
         description = "Enable experimental context-sensitive resolution.".asReleaseDependent()
         valueType = BooleanType.defaultFalse
@@ -780,6 +829,19 @@ Kotlin reports a warning every time you use one of them. You can use this flag t
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v2_3_0,
+        )
+    }
+
+
+    compilerArgument {
+        name = "Xcollection-literals"
+        description = "Enable experimental language support for collection literals.".asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        additionalAnnotations(Enables(LanguageFeature.CollectionLiterals))
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_4_0
         )
     }
 
@@ -929,7 +991,8 @@ The argument should be used only if the new compilation scheme is enabled with -
     compilerArgument {
         name = "Xseparate-kmp-compilation"
         compilerName = "separateKmpCompilationScheme"
-        description = "Enables the separated compilation scheme, in which common source sets are analyzed against their own dependencies".asReleaseDependent()
+        description =
+            "Enables the separated compilation scheme, in which common source sets are analyzed against their own dependencies".asReleaseDependent()
         valueType = BooleanType.defaultFalse
 
         lifecycle(
@@ -1003,6 +1066,7 @@ The argument should be used only if the new compilation scheme is enabled with -
         )
     }
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xsuppress-warning"
         compilerName = "suppressedDiagnostics"
@@ -1010,6 +1074,7 @@ The argument should be used only if the new compilation scheme is enabled with -
             "Suppress specified warning module-wide. This option is deprecated in favor of \"-Xwarning-level\" flag".asReleaseDependent()
         valueDescription = "<WARNING_NAME>".asReleaseDependent()
         valueType = StringArrayType.defaultNull
+        argumentType = StringListType.defaultEmpty
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v2_1_0,
@@ -1033,6 +1098,7 @@ The argument should be used only if the new compilation scheme is enabled with -
     }
 
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xannotation-default-target"
         description = """Change the default annotation targets for constructor properties:
@@ -1051,6 +1117,7 @@ default: 'first-only-warn' in language version 2.2+, 'first-only' in version 2.1
 
             Enables(LanguageFeature.PropertyParamAnnotationDefaultTargetMode, "param-property"),
         )
+        argumentType = AnnotationDefaultTargetModeType()
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v2_1_20,
@@ -1144,6 +1211,7 @@ default: 'first-only-warn' in language version 2.2+, 'first-only' in version 2.1
         )
     }
 
+    @OptIn(ExperimentalArgumentApi::class)
     compilerArgument {
         name = "Xname-based-destructuring"
         description = """Enables the following destructuring features:
@@ -1152,6 +1220,7 @@ default: 'first-only-warn' in language version 2.2+, 'first-only' in version 2.1
 -Xname-based-destructuring=complete:      Enables short-form name-based destructuring with parentheses;""".asReleaseDependent()
         valueDescription = "only-syntax|name-mismatch|complete".asReleaseDependent()
         valueType = StringType.defaultNull
+        argumentType = NameBasedDestructuringModeType()
         additionalAnnotations(
             Enables(LanguageFeature.NameBasedDestructuring, "only-syntax"),
             Enables(LanguageFeature.NameBasedDestructuring, "name-mismatch"),
@@ -1199,6 +1268,22 @@ Warning: this flag is not intended for production use. If you want to configure 
     }
 
     compilerArgument {
+        name = "Xheader-mode-type"
+        description = """Generates output based on what it is used for:
+-Xheader-mode-type=compilation: Skips the IR generation for modules that don't have inline functions.
+-Xheader-mode-type=any: Can be used for any downstream dependency which doesn't require linking.
+                """.trimIndent().asReleaseDependent()
+        valueType = KotlinHeaderModeType()
+        valueDescription = ReleaseDependent(
+            current = HeaderMode.entries.joinToString(prefix = "{", separator = "|", postfix = "}")
+        )
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_4_0
+        )
+    }
+
+    compilerArgument {
         name = "Xdont-sort-source-files"
         description = """
             Disable automatic sorting of source files.
@@ -1207,6 +1292,18 @@ Warning: this flag is not intended for production use. If you want to configure 
 
         lifecycle(
             introducedVersion = KotlinReleaseVersion.v2_3_20
+        )
+    }
+
+    compilerArgument {
+        name = "Xprint-configuration"
+        description = """
+            Print compiler configuration.
+        """.trimIndent().asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_4_0
         )
     }
 }

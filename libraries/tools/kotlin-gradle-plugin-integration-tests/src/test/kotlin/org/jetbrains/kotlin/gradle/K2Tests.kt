@@ -45,7 +45,7 @@ class CustomK2Tests : KGPBaseTest() {
             "k2-serialization-plugin-in-common-sourceset",
             gradleVersion,
             // KT-75899 Support Gradle Project Isolation in KGP JS & Wasm
-            buildOptions = defaultBuildOptions.copy(isolatedProjects = BuildOptions.IsolatedProjectsMode.DISABLED),
+            buildOptions = defaultBuildOptions.disableIsolatedProjectsBecauseOfJsAndWasmKT75899(),
         ) {
             val taskToExecute = ":compileKotlinJs"
             build(taskToExecute) {
@@ -159,7 +159,7 @@ class CustomK2Tests : KGPBaseTest() {
             "k2-serialization-plugin-in-common-sourceset",
             gradleVersion,
             // KT-75899 Support Gradle Project Isolation in KGP JS & Wasm
-            buildOptions = defaultBuildOptions.copy(isolatedProjects = BuildOptions.IsolatedProjectsMode.DISABLED),
+            buildOptions = defaultBuildOptions.disableIsolatedProjectsBecauseOfJsAndWasmKT75899(),
         ) {
             val taskToExecute = ":compileCommonMainKotlinMetadata"
             build(taskToExecute) {
@@ -220,6 +220,7 @@ class CustomK2Tests : KGPBaseTest() {
                 kotlinMultiplatform.apply {
                     applyDefaultHierarchyTemplate()
                     linuxX64()
+                    @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                     macosX64()
 
                     compilerOptions.freeCompilerArgs.add("-Xrender-internal-diagnostic-names")
@@ -245,7 +246,7 @@ class CustomK2MacOSTests : KGPBaseTest() {
             "k2-universal-metadata-compilation-with-constant-expressions",
             gradleVersion,
             // KT-75899 Support Gradle Project Isolation in KGP JS & Wasm
-            buildOptions = defaultBuildOptions.disableIsolatedProjects(),
+            buildOptions = defaultBuildOptions.disableIsolatedProjectsBecauseOfJsAndWasmKT75899(),
         ) {
             build("assemble") {
                 assertTasksExecuted(":assemble")

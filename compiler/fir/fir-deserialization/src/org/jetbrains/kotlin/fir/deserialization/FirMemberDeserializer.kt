@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.fir.deserialization
 
+import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.EffectiveVisibility
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibility
@@ -323,6 +324,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
                 local.memberDeserializer.addValueParametersTo(
                     listOf(proto.setterValueParameter),
                     symbol,
+                    classBuilderForAnnotationConstructor = null,
                     proto,
                     CallableKind.PROPERTY_SETTER,
                     classProto,
@@ -424,11 +426,15 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
                 isExternal = Flags.IS_EXTERNAL_PROPERTY.get(flags)
                 returnValueStatus = ProtoEnumFlags.returnValueStatus(Flags.RETURN_VALUE_STATUS_PROPERTY.get(flags))
             }
+            isLocal = false
 
             resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
             typeParameters += local.typeDeserializer.ownTypeParameters.map { it.fir }
-            annotations +=
-                c.annotationDeserializer.loadPropertyAnnotations(c.containerSource, proto, classProto, local.nameResolver, local.typeTable)
+            if (!isFromAnnotation || c.session.deserializationExtension?.isLoadingOfAnnotationsOnAnnotationPropertiesEnabled != false) {
+                annotations += c.annotationDeserializer.loadPropertyAnnotations(
+                    c.containerSource, proto, classProto, local.nameResolver, local.typeTable
+                )
+            }
             val backingFieldAnnotations = mutableListOf<FirAnnotation>()
             backingFieldAnnotations +=
                 c.annotationDeserializer.loadPropertyBackingFieldAnnotations(
@@ -573,6 +579,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
             addValueParametersTo(
                 contextParameterList,
                 symbol,
+                classBuilderForAnnotationConstructor = null,
                 proto,
                 callableKind,
                 classProto,
@@ -668,6 +675,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
                 hasStableParameterNames = !Flags.IS_FUNCTION_WITH_NON_STABLE_PARAMETER_NAMES.get(flags)
                 returnValueStatus = ProtoEnumFlags.returnValueStatus(Flags.RETURN_VALUE_STATUS_FUNCTION.get(flags))
             }
+            isLocal = false
             this.symbol = symbol
             dispatchReceiverType = c.dispatchReceiver
             resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
@@ -675,6 +683,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
             local.memberDeserializer.addValueParametersTo(
                 proto.valueParameterList,
                 symbol,
+                classBuilderForAnnotationConstructor = null,
                 proto,
                 CallableKind.OTHERS,
                 classProto,
@@ -757,6 +766,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
                 this.isInner = isInner
                 returnValueStatus = ProtoEnumFlags.returnValueStatus(Flags.RETURN_VALUE_STATUS_CTOR.get(flags))
             }
+            isLocal = false
             this.symbol = symbol
             dispatchReceiverType =
                 if (!isInner) null
@@ -770,6 +780,7 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
             local.memberDeserializer.addValueParametersTo(
                 proto.valueParameterList,
                 symbol,
+                classBuilder,
                 proto,
                 CallableKind.OTHERS,
                 classProto,
@@ -791,16 +802,38 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
         }
     }
 
-    private fun defaultValue(flags: Int): FirExpression? {
-        if (Flags.DECLARES_DEFAULT_VALUE.get(flags)) {
-            return buildExpressionStub()
+    private fun ProtoBuf.ValueParameter.loadDefaultValue(
+        parameterName: Name,
+        classBuilderForAnnotationConstructor: FirRegularClassBuilder?,
+        forcefullyCreateDefaultValue: Boolean,
+    ): FirExpression? {
+        val flags = if (hasFlags()) flags else 0
+        if (!forcefullyCreateDefaultValue && !Flags.DECLARES_DEFAULT_VALUE.get(flags)) {
+            return null
         }
-        return null
+        if (hasAnnotationParameterDefaultValue()) {
+            return annotationParameterDefaultValue.toFirExpression(c.session, c.nameResolver)
+        }
+        if (classBuilderForAnnotationConstructor?.classKind == ClassKind.ANNOTATION_CLASS) {
+            // `annotationParameterDefaultValue` is written to value parameters since 2.2.0, see KT-59526
+            // if the library was compiled with older version, we need to extract the initializer from the corresponding property
+            val property = classBuilderForAnnotationConstructor.declarations
+                .filterIsInstance<FirProperty>()
+                .firstOrNull { it.name == parameterName }
+            return property?.initializer ?: buildExpressionStub()
+        }
+        return buildExpressionStub()
     }
 
+    /**
+     * @param addDefaultValue is needed to create stub default values of enum constructors.
+     * These constructors don't have defaults in reality, but they do from the frontend point of view.
+     * The real arguments are injected at the backend.
+     */
     private fun addValueParametersTo(
         valueParameters: List<ProtoBuf.ValueParameter>,
         containingDeclarationSymbol: FirBasedSymbol<*>,
+        classBuilderForAnnotationConstructor: FirRegularClassBuilder?,
         callableProto: MessageLite,
         callableKind: CallableKind,
         classProto: ProtoBuf.Class?,
@@ -822,10 +855,11 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
                 this.name = name
                 symbol = FirValueParameterSymbol()
                 resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
-                defaultValue = defaultValue(flags)
-                if (addDefaultValue) {
-                    defaultValue = buildExpressionStub()
-                }
+                defaultValue = proto.loadDefaultValue(
+                    name,
+                    classBuilderForAnnotationConstructor,
+                    forcefullyCreateDefaultValue = addDefaultValue
+                )
                 isCrossinline = Flags.IS_CROSSINLINE.get(flags)
                 isNoinline = Flags.IS_NOINLINE.get(flags)
                 isVararg = proto.varargElementType(c.typeTable) != null

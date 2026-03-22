@@ -1,5 +1,4 @@
-// TARGET_BACKEND: WASM
-// WASM_FAILS_IN_SINGLE_MODULE_MODE
+// WITH_STDLIB
 
 external interface EI
 

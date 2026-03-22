@@ -6,56 +6,61 @@
 package kotlin.reflect.jvm.internal
 
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
-import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.PropertyAccessorDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.descriptors.impl.ValueParameterDescriptorImpl
+import org.jetbrains.kotlin.load.java.JavaDescriptorVisibilities
 import org.jetbrains.kotlin.load.java.descriptors.JavaCallableMemberDescriptor
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPropertyDescriptor
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedSimpleFunctionDescriptor
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
-import java.lang.reflect.WildcardType
-import kotlin.coroutines.Continuation
-import kotlin.reflect.*
+import kotlin.metadata.Modality
+import kotlin.reflect.KParameter
+import kotlin.reflect.KType
+import kotlin.reflect.KTypeParameter
+import kotlin.reflect.KVisibility
 import kotlin.reflect.jvm.internal.types.DescriptorKType
+import org.jetbrains.kotlin.descriptors.Modality as DescriptorModality
 
-internal abstract class DescriptorKCallable<out R> : ReflectKCallable<R> {
+internal abstract class DescriptorKCallable<out R>(
+    overriddenStorage: KCallableOverriddenStorage,
+) : ReflectKCallableImpl<R>(overriddenStorage) {
     abstract val descriptor: CallableMemberDescriptor
+
+    protected abstract fun computeReturnType(): DescriptorKType
 
     private val _annotations = ReflectProperties.lazySoft { descriptor.computeAnnotations() }
 
     override val annotations: List<Annotation> get() = _annotations()
 
-    private val _receiverParameters = ReflectProperties.lazySoft {
-        val result = ArrayList<KParameter>()
-        val instanceReceiver = descriptor.instanceReceiverParameter
-        if (instanceReceiver != null) {
-            result.add(DescriptorKParameter(this, result.size, KParameter.Kind.INSTANCE) { instanceReceiver })
-        }
+    private val _allParameters = ReflectProperties.lazySoft { computeParameters(includeReceivers = true) }
 
-        val contextParameters = descriptor.computeContextParameters()
-        for (i in contextParameters.indices) {
-            @OptIn(ExperimentalContextParameters::class)
-            result.add(DescriptorKParameter(this, result.size, KParameter.Kind.CONTEXT) { contextParameters[i] })
-        }
-
-        val extensionReceiver = descriptor.extensionReceiverParameter
-        if (extensionReceiver != null) {
-            result.add(DescriptorKParameter(this, result.size, KParameter.Kind.EXTENSION_RECEIVER) { extensionReceiver })
-        }
-        result
-    }
-
-    override val receiverParameters: List<KParameter> get() = _receiverParameters()
+    override val allParameters: List<KParameter> get() = _allParameters()
 
     private val _parameters = ReflectProperties.lazySoft {
+        if (isBound) computeParameters(includeReceivers = false) else allParameters
+    }
+
+    final override val parameters: List<KParameter> get() = _parameters()
+
+    private fun computeParameters(includeReceivers: Boolean): List<KParameter> {
         val descriptor = descriptor
         val result = ArrayList<KParameter>()
+        if (includeReceivers) {
+            val instanceReceiver = instanceReceiverParameter
+            if (instanceReceiver != null) {
+                result.add(DescriptorKParameter(this, result.size, KParameter.Kind.INSTANCE) { instanceReceiver })
+            }
 
-        if (!isBound) {
-            result.addAll(receiverParameters)
+            val contextParameters = descriptor.computeContextParameters()
+            for (i in contextParameters.indices) {
+                result.add(DescriptorKParameter(this, result.size, KParameter.Kind.CONTEXT) { contextParameters[i] })
+            }
+
+            val extensionReceiver = descriptor.extensionReceiverParameter
+            if (extensionReceiver != null) {
+                result.add(DescriptorKParameter(this, result.size, KParameter.Kind.EXTENSION_RECEIVER) { extensionReceiver })
+            }
         }
 
         for (i in descriptor.valueParameters.indices) {
@@ -70,7 +75,7 @@ internal abstract class DescriptorKCallable<out R> : ReflectKCallable<R> {
         }
 
         result.trimToSize()
-        result
+        return result
     }
 
     private fun CallableMemberDescriptor.computeContextParameters(): List<ValueParameterDescriptor> {
@@ -97,20 +102,25 @@ internal abstract class DescriptorKCallable<out R> : ReflectKCallable<R> {
         }
     }
 
-    override val parameters: List<KParameter>
-        get() = _parameters()
-
     private val _returnType = ReflectProperties.lazySoft {
-        DescriptorKType(descriptor.returnType!!) {
-            extractContinuationArgument() ?: caller.returnType
-        }
+        val type = computeReturnType()
+        overriddenStorage.getTypeSubstitutor(typeParameters, memberNameForDebug = name).substitute(type).type
+            ?: starProjectionInTopLevelTypeIsNotPossible(containerNameForDebug = name)
     }
 
-    override val returnType: KType
+    final override val returnType: KType
         get() = _returnType()
 
     private val _typeParameters = ReflectProperties.lazySoft {
-        descriptor.typeParameters.map { descriptor -> KTypeParameterImpl(this, descriptor) }
+        val typeParametersWithNotYetSubstitutedUpperBounds =
+            descriptor.typeParameters.map { descriptor -> KTypeParameterImpl(this, descriptor) }
+        val substitutor = overriddenStorage.getTypeSubstitutor(typeParametersWithNotYetSubstitutedUpperBounds, memberNameForDebug = name)
+        for (typeParameter in typeParametersWithNotYetSubstitutedUpperBounds) {
+            typeParameter.upperBounds = typeParameter.upperBounds.map { type ->
+                substitutor.substitute(type).type ?: starProjectionInTopLevelTypeIsNotPossible(containerNameForDebug = name)
+            }
+        }
+        typeParametersWithNotYetSubstitutedUpperBounds
     }
 
     override val typeParameters: List<KTypeParameter>
@@ -119,31 +129,16 @@ internal abstract class DescriptorKCallable<out R> : ReflectKCallable<R> {
     override val visibility: KVisibility?
         get() = descriptor.visibility.toKVisibility()
 
-    override val isFinal: Boolean
-        get() = descriptor.modality == Modality.FINAL
+    final override val modality: Modality
+        get() = overriddenStorage.modality ?: descriptor.modality.toMetadataModality()
 
-    override val isOpen: Boolean
-        get() = descriptor.modality == Modality.OPEN
+    final override val isPackagePrivate: Boolean
+        get() = descriptor.visibility == JavaDescriptorVisibilities.PACKAGE_VISIBILITY
+}
 
-    override val isAbstract: Boolean
-        get() = descriptor.modality == Modality.ABSTRACT
-
-    private val _absentArguments = ReflectProperties.lazySoft(::computeAbsentArguments)
-
-    override fun getAbsentArguments(): Array<Any?> = _absentArguments().clone()
-
-    private fun extractContinuationArgument(): Type? {
-        if (isSuspend) {
-            // kotlin.coroutines.Continuation<? super java.lang.String>
-            val continuationType = caller.parameterTypes.lastOrNull() as? ParameterizedType
-            if (continuationType?.rawType == Continuation::class.java) {
-                // ? super java.lang.String
-                val wildcard = continuationType.actualTypeArguments.single() as? WildcardType
-                // java.lang.String
-                return wildcard?.lowerBounds?.first()
-            }
-        }
-
-        return null
-    }
+private fun DescriptorModality.toMetadataModality(): Modality = when (this) {
+    DescriptorModality.FINAL -> Modality.FINAL
+    DescriptorModality.OPEN -> Modality.OPEN
+    DescriptorModality.ABSTRACT -> Modality.ABSTRACT
+    DescriptorModality.SEALED -> Modality.SEALED
 }

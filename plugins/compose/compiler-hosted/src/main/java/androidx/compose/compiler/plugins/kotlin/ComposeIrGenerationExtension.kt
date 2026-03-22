@@ -137,6 +137,10 @@ class ComposeIrGenerationExtension(
 
         ProgressManager.checkCanceled()
 
+        ComposableVersionOverloadsLowering(pluginContext).lower(moduleFragment)
+
+        ProgressManager.checkCanceled()
+
         // Generate default wrappers for virtual functions
         ComposableDefaultParamLowering(
             pluginContext,
@@ -225,7 +229,7 @@ class ComposeIrGenerationExtension(
     }
 
     private val IrPluginContext.keyMetaAnnotation: IrClass?
-        get() = referenceClass(ComposeClassIds.FunctionKeyMeta)?.owner
+        get() = finderForBuiltins().findClass(ComposeClassIds.FunctionKeyMeta)?.owner
 
     private fun IrClass?.hasRuntimeRetention(): Boolean {
         return this?.getAnnotationRetention()?.let { it == KotlinRetention.RUNTIME } ?: true

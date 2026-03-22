@@ -25,6 +25,11 @@ class A {
     }
 
     fun funD() = 1 + 2
+
+    inline fun funE(): String {
+        fun funF() = "funF body"
+        return funF()
+    }
 }
 
 interface B {
@@ -36,8 +41,26 @@ interface B {
 }
 
 class C : B {
+    inner class D {
+        fun funA() : String {
+            return "D.fun body"
+        }
+    }
+
     override fun funB(): String {
         return "C.funB body"
+    }
+}
+
+class E {
+    fun funA() : String {
+        return "E.fun body"
+    }
+}
+
+class F : E {
+    fun funA() : String {
+        return "F.fun body"
     }
 }
 

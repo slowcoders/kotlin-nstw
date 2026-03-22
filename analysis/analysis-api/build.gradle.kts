@@ -1,10 +1,11 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.jetbrains.kotlin.build.foreign.CheckForeignClassUsageTask
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
-    id("org.jetbrains.kotlinx.binary-compatibility-validator")
+    id("kotlin-git.gradle-build-conventions.foreign-class-usage-checker")
     id("project-tests-convention")
+    id("test-inputs-check")
 }
 
 kotlin {
@@ -26,16 +27,35 @@ dependencies {
     api(libs.intellij.asm)
     api(libs.guava)
 
-    testApi(platform(libs.junit.bom))
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
     testImplementation(testFixtures(project(":compiler:psi:psi-api")))
     testImplementation(testFixtures(project(":compiler:tests-common")))
 }
 
+private val stableNonPublicMarkers = listOf(
+    "org.jetbrains.kotlin.analysis.api.KaImplementationDetail",
+    "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+    "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+    "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+    "org.jetbrains.kotlin.analysis.api.KaPlatformInterface", // Platform interface is not stable yet
+    "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+)
+
 kotlin {
     explicitApi()
+
+    @OptIn(ExperimentalAbiValidation::class)
+    abiValidation {
+        enabled.set(true)
+
+        filters {
+            exclude.annotatedWith.addAll(stableNonPublicMarkers)
+        }
+    }
 }
 
 sourceSets {
@@ -43,23 +63,28 @@ sourceSets {
     "test" { projectDefault() }
 }
 
-apiValidation {
-    nonPublicMarkers += listOf(
-        "org.jetbrains.kotlin.analysis.api.KaImplementationDetail",
-        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
-        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
-        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
-        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface", // Platform interface is not stable yet
-        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
-    )
-}
-
 testsJar()
 
 projectTests {
-    testTask(jUnitMode = JUnitMode.JUnit5) {
-        workingDir = rootDir
-    }
+    testTask(jUnitMode = JUnitMode.JUnit5)
 
-    withJvmStdlibAndReflect()
+    testData(project.isolated, "src")
+
+    /** The 'test' task inputs cannot depend on [checkForeignClassUsage] outputs. */
+    testData(project.isolated, "api/analysis-api.api")
+    testData(project.isolated, "api/analysis-api.undocumented")
+}
+
+val checkForeignClassUsage by tasks.registering(CheckForeignClassUsageTask::class) {
+    outputFile = file("api/analysis-api.foreign")
+    nonPublicMarkers.addAll(stableNonPublicMarkers)
+}
+
+run /* Workaround for KT-84365 */ {
+    tasks.named("checkKotlinAbi").configure {
+        mustRunAfter(checkForeignClassUsage)
+    }
+    tasks.named("test").configure {
+        mustRunAfter("updateKotlinAbi")
+    }
 }

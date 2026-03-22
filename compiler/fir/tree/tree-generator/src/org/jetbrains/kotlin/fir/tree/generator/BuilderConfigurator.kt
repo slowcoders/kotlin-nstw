@@ -266,10 +266,6 @@ class BuilderConfigurator(model: Model) : AbstractFirBuilderConfigurator<Abstrac
             default("resolvePhase", "FirResolvePhase.DECLARATIONS")
         }
 
-        builder(enumEntry) {
-            withCopy()
-        }
-
         builder(typeOperatorCall) {
             parents += callBuilder
             default("argumentList") {
@@ -398,6 +394,11 @@ class BuilderConfigurator(model: Model) : AbstractFirBuilderConfigurator<Abstrac
         }
 
         builder(elvisExpression) {
+            default("calleeReference", "FirStubReference")
+            additionalImports(stubReferenceType)
+        }
+
+        builder(equalityOperatorCall) {
             default("calleeReference", "FirStubReference")
             additionalImports(stubReferenceType)
         }

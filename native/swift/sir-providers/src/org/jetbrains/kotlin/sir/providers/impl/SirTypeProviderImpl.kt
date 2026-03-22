@@ -5,49 +5,29 @@
 
 package org.jetbrains.kotlin.sir.providers.impl
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaNonPublicApi
 import org.jetbrains.kotlin.analysis.api.KaSession
-import org.jetbrains.kotlin.analysis.api.components.containingModule
-import org.jetbrains.kotlin.analysis.api.components.isAnyType
-import org.jetbrains.kotlin.analysis.api.components.isBooleanType
-import org.jetbrains.kotlin.analysis.api.components.isByteType
-import org.jetbrains.kotlin.analysis.api.components.isCharType
-import org.jetbrains.kotlin.analysis.api.components.isClassType
-import org.jetbrains.kotlin.analysis.api.components.isDoubleType
-import org.jetbrains.kotlin.analysis.api.components.isFloatType
-import org.jetbrains.kotlin.analysis.api.components.isFunctionType
-import org.jetbrains.kotlin.analysis.api.components.isIntType
-import org.jetbrains.kotlin.analysis.api.components.isLongType
-import org.jetbrains.kotlin.analysis.api.components.isMarkedNullable
-import org.jetbrains.kotlin.analysis.api.components.isNothingType
-import org.jetbrains.kotlin.analysis.api.components.isShortType
-import org.jetbrains.kotlin.analysis.api.components.isStringType
-import org.jetbrains.kotlin.analysis.api.components.isSuspendFunctionType
-import org.jetbrains.kotlin.analysis.api.components.isUByteType
-import org.jetbrains.kotlin.analysis.api.components.isUIntType
-import org.jetbrains.kotlin.analysis.api.components.isULongType
-import org.jetbrains.kotlin.analysis.api.components.isUShortType
-import org.jetbrains.kotlin.analysis.api.components.isUnitType
+import org.jetbrains.kotlin.analysis.api.components.*
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassKind
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassLikeSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaTypeAliasSymbol
 import org.jetbrains.kotlin.analysis.api.types.*
-import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.sir.*
-import org.jetbrains.kotlin.sir.providers.SirSession
-import org.jetbrains.kotlin.sir.providers.SirTypeProvider
+import org.jetbrains.kotlin.sir.providers.*
 import org.jetbrains.kotlin.sir.providers.SirTypeProvider.ErrorTypeStrategy
-import org.jetbrains.kotlin.sir.providers.sirAvailability
 import org.jetbrains.kotlin.sir.providers.source.KotlinRuntimeElement
 import org.jetbrains.kotlin.sir.providers.source.KotlinSource
-import org.jetbrains.kotlin.sir.providers.toSir
+import org.jetbrains.kotlin.sir.providers.utils.KotlinCoroutineSupportModule
 import org.jetbrains.kotlin.sir.providers.utils.KotlinRuntimeModule
 import org.jetbrains.kotlin.sir.providers.utils.KotlinRuntimeSupportModule
-import org.jetbrains.kotlin.sir.providers.withSessions
 import org.jetbrains.kotlin.sir.util.SirSwiftModule
+import org.jetbrains.kotlin.sir.util.expandedType
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
+import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 
 public class SirTypeProviderImpl(
     private val sirSession: SirSession,
@@ -55,14 +35,15 @@ public class SirTypeProviderImpl(
     override val unsupportedTypeStrategy: ErrorTypeStrategy,
 ) : SirTypeProvider {
 
-    private data class TypeTranslationCtx(
+    @ConsistentCopyVisibility
+    public data class TypeTranslationCtx internal constructor(
         val currentPosition: SirTypeVariance,
         val reportErrorType: (String) -> Nothing,
         val reportUnsupportedType: () -> Nothing,
         val processTypeImports: (List<SirImport>) -> Unit,
         val requiresHashableAsAny: Boolean,
     ) {
-        fun anyRepresentativeType(): SirType =
+        public fun anyRepresentativeType(): SirType =
             if (requiresHashableAsAny) SirType.anyHashable else KotlinRuntimeSupportModule.kotlinBridgeableType
     }
 
@@ -72,13 +53,14 @@ public class SirTypeProviderImpl(
         reportErrorType: (String) -> Nothing,
         reportUnsupportedType: () -> Nothing,
         processTypeImports: (List<SirImport>) -> Unit,
+        requiresHashableAsAny: Boolean,
     ): SirType = translateType(
         TypeTranslationCtx(
             currentPosition = position,
             reportErrorType = reportErrorType,
             reportUnsupportedType = reportUnsupportedType,
             processTypeImports = processTypeImports,
-            requiresHashableAsAny = false,
+            requiresHashableAsAny = requiresHashableAsAny,
         )
     )
 
@@ -91,69 +73,36 @@ public class SirTypeProviderImpl(
 
     @OptIn(KaNonPublicApi::class)
     private fun buildSirType(ktType: KaType, ctx: TypeTranslationCtx): SirType {
-        fun buildPrimitiveType(ktType: KaType): SirType? = sirSession.withSessions {
-            when {
-                ktType.isCharType -> SirSwiftModule.utf16CodeUnit
-                ktType.isUnitType -> SirSwiftModule.void
-
-                ktType.isByteType -> SirSwiftModule.int8
-                ktType.isShortType -> SirSwiftModule.int16
-                ktType.isIntType -> SirSwiftModule.int32
-                ktType.isLongType -> SirSwiftModule.int64
-
-                ktType.isUByteType -> SirSwiftModule.uint8
-                ktType.isUShortType -> SirSwiftModule.uint16
-                ktType.isUIntType -> SirSwiftModule.uint32
-                ktType.isULongType -> SirSwiftModule.uint64
-
-                ktType.isBooleanType -> SirSwiftModule.bool
-
-                ktType.isDoubleType -> SirSwiftModule.double
-                ktType.isFloatType -> SirSwiftModule.float
-
-                else -> null
-            }
-                ?.let { SirNominalType(it) }
-                ?.optionalIfNeeded(ktType)
-        }
-
         fun buildRegularType(kaType: KaType): SirType = sirSession.withSessions {
-            fun KaTypeProjection.sirType(ctx: TypeTranslationCtx): SirType = when (this) {
-                is KaStarTypeProjection -> ctx.anyRepresentativeType()
-                is KaTypeArgumentWithVariance -> buildSirType(type, ctx)
-            }
-
             when (kaType) {
                 is KaUsualClassType -> {
-                    if (kaType.isTypealiasToFunctionalType && kaType.isUnsupportedFunctionalType(ctx)) {
-                        return@withSessions SirUnsupportedType
-                    }
                     when {
                         kaType.isNothingType -> SirNominalType(SirSwiftModule.never)
-                        kaType.isStringType -> SirNominalType(SirSwiftModule.string)
                         kaType.isAnyType -> ctx.anyRepresentativeType()
 
-                        kaType.isClassType(StandardClassIds.List) -> {
-                            SirArrayType(
-                                kaType.typeArguments.single().sirType(ctx),
-                            )
-                        }
-
-                        kaType.isClassType(StandardClassIds.Set) -> {
-                            SirNominalType(
-                                SirSwiftModule.set,
-                                listOf(kaType.typeArguments.single().sirType(ctx.copy(requiresHashableAsAny = true)))
-                            )
-                        }
-
-                        kaType.isClassType(StandardClassIds.Map) -> {
-                            SirDictionaryType(
-                                kaType.typeArguments.first().sirType(ctx.copy(requiresHashableAsAny = true)),
-                                kaType.typeArguments.last().sirType(ctx),
-                            )
-                        }
-
                         else -> {
+                            if (sirSession.isClassIdSupported(kaType.classId)) {
+                                val customBridge = kaType.toSirTypeBridge(ctx)?.bridge?.swiftType
+                                if (customBridge != null) return@withSessions customBridge.optionalIfNeeded(kaType)
+                            }
+
+                            // Intercept Flow<T> for typed generic wrapping in covariant position
+                            if (kaType.classId == FLOW_CLASS_ID && ctx.currentPosition == SirTypeVariance.COVARIANT) {
+                                val elementArg = kaType.typeArguments.singleOrNull()
+                                if (elementArg is KaTypeArgumentWithVariance) {
+                                    val elementType = elementArg.type
+                                    val translatedElement = elementType.translateType(ctx)
+                                    if (translatedElement !is SirErrorType && translatedElement !is SirUnsupportedType) {
+                                        val flowType = resolveFlowProtocolType(kaType)
+                                        return@withSessions SirWrappedFlowType(
+                                            wrapperStruct = KotlinCoroutineSupportModule.kotlinTypedFlowStruct,
+                                            flowType = flowType,
+                                            typeArguments = listOf(translatedElement)
+                                        ).optionalIfNeeded(kaType)
+                                    }
+                                }
+                            }
+
                             val classSymbol = kaType.symbol
                             when (classSymbol.sirAvailability()) {
                                 is SirAvailability.Available, is SirAvailability.Hidden ->
@@ -170,18 +119,22 @@ public class SirTypeProviderImpl(
                         ?: SirUnsupportedType
                 }
                 is KaFunctionType -> {
-                    if (kaType.isUnsupportedFunctionalType(ctx)) {
-                        return@withSessions SirUnsupportedType
-                    } else {
-                        SirFunctionalType(
-                            parameterTypes = listOfNotNull(
-                                kaType.receiverType?.translateType(
-                                    ctx.copy(currentPosition = ctx.currentPosition.flip())
-                                )
-                            ) + kaType.parameterTypes.map { it.translateType(ctx.copy(currentPosition = ctx.currentPosition.flip())) },
-                            returnType = kaType.returnType.translateType(ctx.copy(currentPosition = ctx.currentPosition)),
-                        ).optionalIfNeeded(kaType)
-                    }
+                    @OptIn(KaExperimentalApi::class)
+                    SirFunctionalType(
+                        contextTypes = kaType.contextReceivers.map {
+                            it.type.translateType(ctx.copy(currentPosition = ctx.currentPosition.flip())).withEscapingIfNeeded()
+                        },
+                        parameterTypes = listOfNotNull(
+                            kaType.receiverType?.translateType(ctx.copy(currentPosition = ctx.currentPosition.flip()))
+                                ?.withEscapingIfNeeded()
+                        ) + kaType.parameterTypes
+                            .map { it.translateType(ctx.copy(currentPosition = ctx.currentPosition.flip())).withEscapingIfNeeded() },
+                        isAsync = kaType.isSuspendFunctionType,
+                        errorType = kaType.isSuspendFunctionType.ifTrue { SirType.any } ?: SirType.never,
+                        returnType = kaType.returnType.translateType(ctx.copy(currentPosition = ctx.currentPosition)),
+                    )
+                        .withEscapingIfNeeded()
+                        .optionalIfNeeded(kaType)
                 }
                 is KaTypeParameterType -> ctx.translateTypeParameterType(kaType)
                 is KaErrorType
@@ -192,7 +145,6 @@ public class SirTypeProviderImpl(
         }
 
         return ktType.abbreviation?.let { buildRegularType(it) }
-            ?: buildPrimitiveType(ktType)
             ?: buildRegularType(ktType)
     }
 
@@ -254,14 +206,22 @@ public class SirTypeProviderImpl(
                     typeArguments.forEach { it.handleImports(processTypeImports) }
                     typeDeclaration.extractImport()
                 }
+                if (this is SirWrappedFlowType) {
+                    wrappedType.handleImports(processTypeImports)
+                }
             }
             is SirExistentialType -> this.protocols.forEach { it.extractImport() }
             is SirFunctionalType -> {
                 parameterTypes.forEach { it.handleImports(processTypeImports) }
                 returnType.handleImports(processTypeImports)
             }
+            is SirTupleType -> {
+                types.forEach { (_, type) -> type.handleImports(processTypeImports) }
+            }
             is SirErrorType -> {}
             SirUnsupportedType -> {}
+            is SirArrayType, is SirDictionaryType, is SirOptionalType ->
+                TODO("already covered by NominalType, exhaustive check is faulty here")
         }
         return this
     }
@@ -284,12 +244,27 @@ public class SirTypeProviderImpl(
     private val KaType.isTypealiasToNullableType: Boolean
         get() = (symbol as? KaTypeAliasSymbol)?.expandedType?.isMarkedNullable ?: false
 
-    context(ka: KaSession)
-    private val KaType.isTypealiasToFunctionalType: Boolean
-        get() = (symbol as? KaTypeAliasSymbol)?.expandedType?.isFunctionType ?: false
+    private fun SirType.withEscapingIfNeeded(): SirType = when (this) {
+        is SirFunctionalType -> copyAppendingAttributes(SirAttribute.Escaping)
+        is SirNominalType -> if (isTypealiasOntoFunctionalType) {
+            copyAppendingAttributes(SirAttribute.Escaping)
+        } else {
+            this
+        }
+        else -> this
+    }
 
-    context(ka: KaSession)
-    private fun KaType.isUnsupportedFunctionalType(ctx: TypeTranslationCtx, ): Boolean =
-        isSuspendFunctionType || ctx.currentPosition == SirTypeVariance.COVARIANT
+    private val SirNominalType.isTypealiasOntoFunctionalType: Boolean
+        get() = (typeDeclaration as? SirTypealias)?.let { it.expandedType is SirFunctionalType } == true
+
+    private companion object {
+        val FLOW_CLASS_ID = ClassId.fromString("kotlinx/coroutines/flow/Flow")
+    }
 }
 
+context(sir: SirSession)
+private fun resolveFlowProtocolType(kaType: KaType): SirExistentialType {
+    return (kaType.symbol?.toSir()?.primaryDeclaration as? SirProtocol)
+        ?.let { SirExistentialType(it) }
+        ?: SirExistentialType(KotlinCoroutineSupportModule.kotlinFlow)
+}

@@ -8,13 +8,12 @@ package org.jetbrains.kotlin.fir.resolve.calls.stages
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.builtins.functions.FunctionTypeKind
 import org.jetbrains.kotlin.builtins.functions.isBasicFunctionOrKFunction
+import org.jetbrains.kotlin.config.AnalysisFlags
 import org.jetbrains.kotlin.config.LanguageFeature
-import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.SessionHolder
+import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.FirAnonymousFunction
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.expressions.*
-import org.jetbrains.kotlin.fir.isEnabled
 import org.jetbrains.kotlin.fir.resolve.calls.*
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.Candidate
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.CheckerSink
@@ -25,8 +24,8 @@ import org.jetbrains.kotlin.fir.resolve.inference.csBuilder
 import org.jetbrains.kotlin.fir.resolve.inference.extractLambdaInfoFromFunctionType
 import org.jetbrains.kotlin.fir.resolve.inference.model.ConeArgumentConstraintPosition
 import org.jetbrains.kotlin.fir.resolve.inference.model.ConeExplicitTypeParameterConstraintPosition
-import org.jetbrains.kotlin.fir.resolve.inference.model.ConeRegularLambdaArgumentConstraintPosition
 import org.jetbrains.kotlin.fir.resolve.inference.model.ConeReceiverConstraintPosition
+import org.jetbrains.kotlin.fir.resolve.inference.model.ConeRegularLambdaArgumentConstraintPosition
 import org.jetbrains.kotlin.fir.symbols.ConeTypeParameterLookupTag
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.impl.ConeTypeParameterTypeImpl
@@ -123,7 +122,17 @@ internal object ArgumentCheckingProcessor {
             is ConeResolutionAtomWithPostponedChild -> when (atom.expression) {
                 is FirAnonymousFunctionExpression -> preprocessLambdaArgument(atom)
                 is FirCallableReferenceAccess -> preprocessCallableReference(atom)
-                is FirPropertyAccessExpression -> preprocessSimpleNameReferenceForContextSensitiveResolution(atom)
+                is FirPropertyAccessExpression ->
+                    when {
+                        atom.expression.explicitReceiver == null ->
+                            preprocessSimpleNameReferenceForContextSensitiveResolution(atom, atom.expression)
+                        AnalysisFlags.ideMode.isSet() ->
+                            preprocessQualifierWithContextSensitiveAlternative(atom, atom.expression)
+                        else ->
+                            error("Unknown kind of atom with postponed child: ${atom.expression::class}")
+                    }
+                is FirResolvedQualifier if AnalysisFlags.ideMode.isSet() ->
+                    preprocessQualifierWithContextSensitiveAlternative(atom, atom.expression)
                 is FirCollectionLiteral -> preprocessCollectionLiteral(atom)
                 else -> error("Unknown kind of atom with postponed child: ${atom.expression::class}")
             }
@@ -344,16 +353,50 @@ internal object ArgumentCheckingProcessor {
         candidate.addPostponedAtom(postponedAtom)
     }
 
-    private fun ArgumentContext.preprocessSimpleNameReferenceForContextSensitiveResolution(atom: ConeResolutionAtomWithPostponedChild) {
-        val expression = atom.expression as FirPropertyAccessExpression
-
+    private fun ArgumentContext.preprocessSimpleNameReferenceForContextSensitiveResolution(
+        atom: ConeResolutionAtomWithPostponedChild,
+        expression: FirPropertyAccessExpression,
+    ) {
         if (expectedType == null || !LanguageFeature.ContextSensitiveResolutionUsingExpectedType.isEnabled()) {
             atom.useFallbackSubAtom()
             resolveArgumentExpression(atom.subAtom!!)
             return
         }
 
-        val postponedAtom = ConeSimpleNameForContextSensitiveResolution(expression, expectedType, candidate, atom.fallbackSubAtom!!)
+        val postponedAtom = ConeSimpleNameForContextSensitiveResolution(
+            expression, expectedType, candidate, atom.fallbackSubAtom!!,
+        )
+
+        atom.setPostponedSubAtom(postponedAtom)
+        candidate.addPostponedAtom(postponedAtom)
+    }
+
+    private fun ArgumentContext.preprocessQualifierWithContextSensitiveAlternative(
+        atom: ConeResolutionAtomWithPostponedChild,
+        expression: FirQualifierWithContextSensitiveAlternative,
+    ) {
+        @OptIn(FirIdeOnly::class)
+        val alternative = expression.contextSensitiveAlternative
+        // See org.jetbrains.kotlin.fir.resolve.calls.ConeResolutionAtom.Companion.createRawAtom
+        // [Sorry for the comment formatting (KTIJ-31545)]
+            ?: error("Should not create atom with postponed child for expression without CSR alternative ${expression.render()}")
+
+        if (expectedType == null) {
+            atom.useFallbackSubAtom()
+            resolveArgumentExpression(atom.subAtom!!)
+            return
+        }
+
+        @OptIn(FirIdeOnly::class)
+        val postponedAtom = ConeContextSensitiveAlternativeForQualifierAtom(
+            expression,
+            alternative,
+            expectedType,
+        )
+
+        // NB: We apply the original expression immediately just the same way we would do without the alternative
+        resolveArgumentExpression(atom.fallbackSubAtom!!)
+
         atom.setPostponedSubAtom(postponedAtom)
         candidate.addPostponedAtom(postponedAtom)
     }
@@ -365,7 +408,7 @@ internal object ArgumentCheckingProcessor {
     private fun ArgumentContext.preprocessCollectionLiteral(atom: ConeResolutionAtomWithPostponedChild) {
         val expression = atom.collectionLiteralExpression
 
-        val insideAnnotation = context.bodyResolveComponents.callCompleter.isInsideAnnotationContext()
+        val insideAnnotation = context.bodyResolveContext.isInsideAnnotationContext
         if (insideAnnotation || !LanguageFeature.CollectionLiterals.isEnabled()) {
             atom.useFallbackForDisabledCollectionLiterals()
             resolveArgumentExpression(atom.subAtom!!)

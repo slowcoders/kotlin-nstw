@@ -9,12 +9,14 @@ import org.jetbrains.kotlin.arguments.description.actualCommonToolsArguments
 import org.jetbrains.kotlin.arguments.description.actualJvmCompilerArguments
 import org.jetbrains.kotlin.arguments.description.actualMetadataArguments
 import org.jetbrains.kotlin.arguments.description.removed.removedCommonCompilerArguments
+import org.jetbrains.kotlin.arguments.description.removed.removedJvmCompilerArguments
 import org.jetbrains.kotlin.arguments.dsl.base.KotlinCompilerArgument
 import org.jetbrains.kotlin.arguments.dsl.base.KotlinCompilerArgumentsLevel
 
 sealed interface ArgumentTransform {
     object NoOp : ArgumentTransform
     object Drop : ArgumentTransform
+    class CustomArgument(val argument: BtaCompilerArgument.CustomCompilerArgument) : ArgumentTransform
 //    data class Rename(val to: String) : ArgumentTransform // possible future operations
 }
 
@@ -31,6 +33,7 @@ private val levelsToArgumentTransforms: Map<String, Map<String, ArgumentTransfor
             drop("Xintellij-plugin-root")
             drop("Xcommon-sources")
             drop("Xenable-incremental-compilation")
+            custom(CustomCompilerArguments.compilerPlugins)
 
             // KMP related
             drop("Xmulti-platform")
@@ -41,6 +44,7 @@ private val levelsToArgumentTransforms: Map<String, Map<String, ArgumentTransfor
             drop("Xfragment-dependency")
             drop("Xseparate-kmp-compilation")
             drop("Xdirect-java-actualization")
+            drop("Xfragment-friend-dependency")
         }
         with(removedCommonCompilerArguments) {
             drop("Xuse-k2")
@@ -64,6 +68,8 @@ private val levelsToArgumentTransforms: Map<String, Map<String, ArgumentTransfor
             drop("expression")
             drop("include-runtime") // we're only considering building into directories for now (not jars)
             drop("Xbuild-file")
+        }
+        with(removedJvmCompilerArguments) {
             drop("Xuse-javac")
             drop("Xcompile-java")
             drop("Xjavac-arguments")
@@ -78,8 +84,37 @@ private fun MutableMap<String, ArgumentTransform>.drop(name: String) {
 }
 
 context(level: KotlinCompilerArgumentsLevel)
-internal fun KotlinCompilerArgument.transform(): ArgumentTransform =
+private fun MutableMap<String, ArgumentTransform>.custom(argument: BtaCompilerArgument.CustomCompilerArgument) {
+    put(argument.name, ArgumentTransform.CustomArgument(argument))
+}
+
+context(level: KotlinCompilerArgumentsLevel)
+private fun KotlinCompilerArgument.transform(): ArgumentTransform =
     levelsToArgumentTransforms[level.name]?.get(name) ?: ArgumentTransform.NoOp
 
-internal fun KotlinCompilerArgumentsLevel.filterOutDroppedArguments(): List<KotlinCompilerArgument> =
-    arguments.filter { it.transform() != ArgumentTransform.Drop }
+private fun KotlinCompilerArgumentsLevel.generateCustomArguments(): List<BtaCompilerArgument<*>> {
+    val levelTransforms = levelsToArgumentTransforms[name] ?: error("Level $this is not found in levelsToArgumentTransforms")
+    return levelTransforms.values.filterIsInstance<ArgumentTransform.CustomArgument>().map { it.argument }
+}
+
+internal fun KotlinCompilerArgumentsLevel.transformApiArguments(): List<BtaCompilerArgument<*>> {
+    val transformedArguments = arguments.mapNotNull { argument ->
+        when (argument.transform()) {
+            is ArgumentTransform.NoOp -> BtaCompilerArgument.SSoTCompilerArgument(argument)
+            is ArgumentTransform.Drop, is ArgumentTransform.CustomArgument -> null
+        }
+    }
+
+    return transformedArguments + generateCustomArguments()
+}
+
+internal fun KotlinCompilerArgumentsLevel.transformImplArguments(): List<BtaCompilerArgument<*>> {
+    val transformedArguments = arguments.mapNotNull { argument ->
+        when (argument.transform()) {
+            is ArgumentTransform.NoOp, is ArgumentTransform.Drop -> BtaCompilerArgument.SSoTCompilerArgument(argument)
+            is ArgumentTransform.CustomArgument -> null
+        }
+    }
+
+    return transformedArguments + generateCustomArguments()
+}

@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir.analysis.diagnostics.jvm
 
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactoryToRendererMap
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticRenderers.CLASS_ID
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticRenderers.NOT_RENDERED
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticRenderers.TO_STRING
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
@@ -23,6 +24,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.SYMB
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.ACCIDENTAL_OVERRIDE_CLASH_BY_JVM_SIGNATURE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.ANNOTATION_TARGETS_ONLY_IN_JAVA
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.CONCURRENT_HASH_MAP_CONTAINS_OPERATOR_ERROR
+import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.CONFLICT_VERSION_AND_JVM_OVERLOADS_ANNOTATION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.DANGEROUS_CHARACTERS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.DELEGATION_BY_IN_JVM_RECORD
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.DEPRECATED_JAVA_ANNOTATION
@@ -87,7 +89,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.NON_SOURCE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.NOT_YET_SUPPORTED_LOCAL_INLINE_FUNCTION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.NO_REFLECTION_IN_CLASS_PATH
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.NULLABILITY_MISMATCH_BASED_ON_EXPLICIT_TYPE_ARGUMENTS_FOR_JAVA
-import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS
+import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.TYPE_MISMATCH_BASED_ON_JAVA_ANNOTATIONS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.OVERLOADS_ABSTRACT
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.OVERLOADS_ANNOTATION_CLASS_CONSTRUCTOR_ERROR
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.OVERLOADS_INTERFACE
@@ -97,6 +99,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.OVERLOADS_
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.OVERRIDE_CANNOT_BE_STATIC
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.POSITIONED_VALUE_ARGUMENT_FOR_JAVA_ANNOTATION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.PROPERTY_HIDES_JAVA_FIELD
+import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.RECEIVER_MUTABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.REDUNDANT_REPEATABLE_ANNOTATION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.REPEATABLE_ANNOTATION_HAS_NESTED_CLASS_NAMED_CONTAINER_ERROR
@@ -125,7 +128,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.UPPER_BOUN
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.UPPER_BOUND_VIOLATED_IN_TYPEALIAS_EXPANSION_BASED_ON_JAVA_ANNOTATIONS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.USELESS_JVM_EXPOSE_BOXED
 import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.VALUE_CLASS_WITHOUT_JVM_INLINE_ANNOTATION
-import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.WRONG_NULLABILITY_FOR_JAVA_OVERRIDE
+import org.jetbrains.kotlin.fir.analysis.diagnostics.jvm.FirJvmErrors.WRONG_TYPE_FOR_JAVA_OVERRIDE
 
 object FirJvmErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
 
@@ -145,7 +148,13 @@ object FirJvmErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
             OPTIONAL_SENTENCE,
         )
         map.put(
-            NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS,
+            RECEIVER_MUTABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS,
+            "Java type mismatch: inferred receiver type is ''{0}'', but a member from ''{1}'' is called on it.",
+            RENDER_TYPE,
+            CLASS_ID,
+        )
+        map.put(
+            TYPE_MISMATCH_BASED_ON_JAVA_ANNOTATIONS,
             "Java type mismatch: inferred type is ''{0}'', but ''{1}'' was expected.{2}",
             RENDER_TYPE,
             RENDER_TYPE,
@@ -175,8 +184,8 @@ object FirJvmErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         )
 
         map.put(
-            WRONG_NULLABILITY_FOR_JAVA_OVERRIDE,
-            "Override ''{0}'' has incorrect nullability in its signature compared to the overridden declaration ''{1}''.",
+            WRONG_TYPE_FOR_JAVA_OVERRIDE,
+            "Override ''{0}'' has incorrect nullability/mutability in its signature compared to the overridden declaration ''{1}''.",
             SYMBOL,
             SYMBOL,
         )
@@ -301,7 +310,7 @@ object FirJvmErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             JVM_STATIC_ON_CONST_OR_JVM_FIELD,
-            "'@JvmStatic' annotation is useless for const or '@JvmField' properties.",
+            "'@JvmStatic' annotation is redundant for const or '@JvmField' properties.",
         )
         map.put(
             JVM_STATIC_ON_EXTERNAL_IN_INTERFACE,
@@ -319,7 +328,7 @@ object FirJvmErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         map.put(INAPPLICABLE_JVM_EXPOSE_BOXED_WITH_NAME, "'@JvmExposeBoxed' with name is applicable only to functions, getters and setters.")
         map.put(
             USELESS_JVM_EXPOSE_BOXED,
-            "Useless '@JvmExposeBoxed', it is a callable declaration with no inline value class in its signature."
+            "'@JvmExposeBoxed' has no effect when applied to a callable declaration with no inline value class in its signature."
         )
         map.put(
             JVM_EXPOSE_BOXED_CANNOT_EXPOSE_SUSPEND,
@@ -514,6 +523,12 @@ object FirJvmErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
             IDENTITY_SENSITIVE_OPERATIONS_WITH_VALUE_TYPE,
             "Identity-sensitive operation on an instance of value type ''{0}'' may cause unexpected behavior or errors.",
             RENDER_TYPE,
+        )
+
+
+        map.put(
+            CONFLICT_VERSION_AND_JVM_OVERLOADS_ANNOTATION,
+            "'@JvmOverloads' annotation may generate conflicting overloads with the '@IntroducedAt' annotation."
         )
     }
 }

@@ -20,22 +20,29 @@ internal fun generateKotlinVersion(
 ) {
     val kotlinVersionFqName = FqName("org.jetbrains.kotlin.gradle.dsl.KotlinVersion")
     filePrinter(fileFromFqName(apiDir, kotlinVersionFqName)) {
-        generateDeclaration("enum class", kotlinVersionFqName, afterType = "(val version: String)") {
+        generateDeclaration(
+            modifiers = "enum class",
+            type = kotlinVersionFqName,
+            afterType = "(val version: String)",
+            declarationKDoc = "@param version"
+        ) {
             for (languageVersion in LanguageVersion.entries) {
                 val prefix = when {
-                    languageVersion.isJvmOnly -> "@Deprecated(\"JVM only, will be removed soon\") "
                     languageVersion.isUnsupported -> "@Deprecated(\"Unsupported\", level = DeprecationLevel.ERROR) "
                     languageVersion.isDeprecated -> "@Deprecated(\"Will be removed soon\") "
                     else -> ""
                 }
 
+                println("/***/")
                 println("${prefix}KOTLIN_${languageVersion.major}_${languageVersion.minor}(\"${languageVersion.versionString}\"),")
             }
             println(";")
 
             println()
+            println("/***/")
             println("companion object {")
             withIndent {
+                println("/***/")
                 println("@JvmStatic")
                 println("fun fromVersion(version: String): KotlinVersion =")
                 println("    KotlinVersion.values().firstOrNull { it.version == version }")
@@ -44,6 +51,7 @@ internal fun generateKotlinVersion(
                 println("                    \"Prefer configuring 'apiVersion' or 'languageVersion' values via 'compilerOptions' DSL: https://kotl.in/compiler-options-dsl\"")
                 println("        )")
                 println()
+                println("/***/")
                 println("@JvmStatic")
                 println("val DEFAULT = KOTLIN_${LanguageVersion.LATEST_STABLE.major}_${LanguageVersion.LATEST_STABLE.minor}")
             }

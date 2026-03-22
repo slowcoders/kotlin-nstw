@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.internal.config.MavenComparableVersion
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
+import org.jetbrains.kotlin.gradle.plugin.kotlinToolingVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
@@ -36,7 +37,7 @@ fun Project.addImplicitDependenciesConfiguration() {
         isCanBeResolved = false
     }
 
-    if (kotlinBuildProperties.isInIdeaSync) {
+    if (kotlinBuildProperties.isInIdeaSync.get()) {
         afterEvaluate {
             // IDEA manages to download dependencies from `implicitDependencies`, even if it is created with `isCanBeResolved = false`
             // Clear `implicitDependencies` to avoid downloading unnecessary dependencies during import
@@ -106,18 +107,27 @@ val modulesWithRequiredExplicitTypes = rootProject.extra["firAllCompilerModules"
 
 fun Project.configureKotlinCompilationOptions() {
     plugins.withType<KotlinBasePluginWrapper> {
-        val commonCompilerArgs = listOfNotNull(
-            "-opt-in=kotlin.RequiresOptIn",
-            "-progressive".takeIf { getBooleanProperty("test.progressive.mode") ?: false },
-            "-Xdont-warn-on-error-suppression",
-            "-Xmulti-dollar-interpolation", // KT-2425
-            "-Xwhen-guards", // KT-13626
-            "-Xnon-local-break-continue", // KT-1436
-            "-Xcontext-parameters", // KT-72222
-        )
+        val commonCompilerArgs = provider {
+            listOfNotNull(
+                "-opt-in=kotlin.RequiresOptIn",
+                "-progressive".takeIf { getBooleanProperty("test.progressive.mode") ?: false },
+                "-Xdont-warn-on-error-suppression",
+                "-Xcontext-parameters", // KT-72222
+                "-Xexplicit-backing-fields", // KT-14663
+                // Between making a language feature stable and the next bootstrap, we need to keep providing the compiler argument.
+                // But this produces a warning
+                // "The argument ... is redundant for the current language version ..."
+                // in the bootstrap test and fails because of -Werror.
+                // To work around it, we suppress the warning.
+                @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
+                "-Xwarning-level=REDUNDANT_CLI_ARG:disabled".takeIf {
+                    project.kotlinExtension.compilerVersion.get() == project.kotlinToolingVersion.toString()
+                },
+            )
+        }
 
         val kotlinLanguageVersion: String by rootProject.extra
-        val renderDiagnosticNames by extra(project.kotlinBuildProperties.renderDiagnosticNames)
+        val renderDiagnosticNames by extra(project.kotlinBuildProperties.renderDiagnosticNames.get())
 
         tasks.withType<KotlinCompilationTask<*>>().configureEach {
             compilerOptions {
@@ -136,7 +146,7 @@ fun Project.configureKotlinCompilationOptions() {
 
             val layout = project.layout
             val rootDir = rootDir
-            val useAbsolutePathsInKlib = kotlinBuildProperties.getBoolean("kotlin.build.use.absolute.paths.in.klib")
+            val useAbsolutePathsInKlib = kotlinBuildProperties.booleanProperty("kotlin.build.use.absolute.paths.in.klib").get()
 
             // Workaround to avoid remote build cache misses due to absolute paths in relativePathBaseArg
             // This is a workaround for KT-50876, but with no clear explanation why doFirst is used.
@@ -145,7 +155,9 @@ fun Project.configureKotlinCompilationOptions() {
             if (project.path != ":native:kotlin-test-native-xctest" &&
                 !project.path.startsWith(":native:objcexport-header-generator") &&
                 !project.path.startsWith(":libraries:tools:analysis-api-based-klib-reader") &&
-                !project.path.startsWith(":native:external-projects-test-utils")
+                !project.path.startsWith(":native:external-projects-test-utils") &&
+                !project.path.startsWith(":plugins:plugin-sandbox:plugin-annotations") &&
+                !project.path.startsWith(":kotlin-power-assert-runtime")
             ) {
                 doFirst {
                     if (!useAbsolutePathsInKlib && this !is KotlinJvmCompile && this !is KotlinCompileCommon) {
@@ -200,10 +212,6 @@ private fun Project.shouldUseOldJvmDefaultArgument(): Boolean {
 fun Project.configureArtifacts() {
     tasks.withType<Javadoc>().configureEach {
         enabled = false
-    }
-
-    tasks.withType<Jar>().configureEach {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
     /**
@@ -292,35 +300,172 @@ fun Project.configureArtifacts() {
 }
 
 fun Project.configureTests() {
-    val projectsUsingTcMutes = listOf(
-        ":native",
-        ":kotlin-native",
-    )
-    if (projectsUsingTcMutes.any { project.path.startsWith(it) }) {
-        val ignoreTestFailures: Boolean by rootProject.extra
-        tasks.configureEach {
-            if (this is VerificationTask) {
-                ignoreFailures = ignoreTestFailures
-            }
-        }
-    }
-
     val concurrencyLimitService = project.gradle.sharedServices.registerIfAbsent(
         "concurrencyLimitService",
         ConcurrencyLimitService::class
     ) {
-        maxParallelUsages = 1
+        maxParallelUsages.set(1)
     }
 
     tasks.withType<Test>().configureEach {
-        if (!plugins.hasPlugin("test-inputs-check")) {
+        val notCacheableTestProjects: List<String> = listOf(
+            ":analysis:analysis-api-standalone:analysis-api-standalone-native",
+            ":analysis:low-level-api-fir:low-level-api-fir-native-compiler-tests",
+            ":compiler",
+            ":compiler:android-tests",
+            ":compiler:arguments",
+            ":compiler:build-tools:kotlin-build-tools-api",
+            ":compiler:build-tools:kotlin-build-tools-compat",
+            ":compiler:build-tools:kotlin-build-tools-options-generator",
+            ":compiler:fir:modularized-tests",
+            ":compiler:fir:raw-fir:light-tree2fir",
+            ":compiler:fir:raw-fir:psi2fir",
+            ":compiler:incremental-compilation-impl",
+            ":compiler:ir.backend.common",
+            ":compiler:multiplatform-parsing",
+            ":compiler:test-infrastructure-utils",
+            ":compiler:tests-integration",
+            ":compose-compiler-gradle-plugin",
+            ":examples:scripting-jvm-embeddable-host",
+            ":examples:scripting-jvm-maven-deps-host",
+            ":examples:scripting-jvm-simple-script-host",
+            ":generators",
+            ":jps:jps-common",
+            ":jps:jps-plugin",
+            ":kotlin-annotation-processing",
+            ":kotlin-annotation-processing-base",
+            ":kotlin-annotation-processing-cli",
+            ":kotlin-atomicfu-compiler-plugin",
+            ":kotlin-build-common",
+            ":kotlin-compiler-client-embeddable",
+            ":kotlin-compiler-embeddable",
+            ":kotlin-daemon-client",
+            ":kotlin-daemon-tests",
+            ":kotlin-dataframe-compiler-plugin",
+            ":kotlin-gradle-plugin",
+            ":kotlin-gradle-plugin-dsl-codegen",
+            ":kotlin-gradle-plugin-idea",
+            ":kotlin-gradle-plugin-idea-proto",
+            ":kotlin-gradle-plugin-integration-tests",
+            ":kotlin-gradle-statistics",
+            ":kotlin-main-kts",
+            ":kotlin-main-kts-test",
+            ":kotlin-metadata-jvm",
+            ":kotlin-native:Interop:Indexer",
+            ":kotlin-native:Interop:StubGenerator",
+            ":kotlin-native:Interop:StubGeneratorConsistencyCheck",
+            ":kotlin-native:common:env",
+            ":kotlin-native:common:files",
+            ":kotlin-native:libclangInterop",
+            ":kotlin-native:llvmInterop",
+            ":kotlin-native:tools:kdumputil",
+            ":kotlin-power-assert-runtime", // TODO(KTI-3056): 'test-inputs-check' cannot be combined with 'multiplatform' projects
+            ":kotlin-scripting-common",
+            ":kotlin-scripting-compiler",
+            ":kotlin-scripting-dependencies",
+            ":kotlin-scripting-dependencies-maven",
+            ":kotlin-scripting-dependencies-maven-all",
+            ":kotlin-scripting-ide-services-test",
+            ":kotlin-scripting-jsr223-test",
+            ":kotlin-scripting-jvm",
+            ":kotlin-scripting-jvm-host-test",
+            ":kotlin-stdlib",
+            ":kotlin-stdlib-jdk8",
+            ":kotlin-stdlib:samples",
+            ":kotlin-test",
+            ":kotlin-tooling-core",
+            ":kotlin-tooling-metadata",
+            ":kotlin-util-klib",
+            ":kotlinx-metadata-klib",
+            ":kotlinx-serialization-compiler-plugin",
+            ":libraries:tools:abi-validation:abi-tools",
+            ":libraries:tools:abi-validation:abi-tools-api",
+            ":libraries:tools:abi-validation:abi-tools-tests",
+            ":libraries:tools:abi-validation:kgp-integration-tests",
+            ":libraries:tools:analysis-api-based-klib-reader",
+            ":native:kotlin-klib-commonizer",
+            ":native:kotlin-klib-commonizer-api",
+            ":native:kotlin-native-utils",
+            ":native:native.tests:driver",
+            ":native:native.tests:gc-fuzzing-tests",
+            ":native:native.tests:gc-fuzzing-tests:engine",
+            ":native:objcexport-header-generator",
+            ":native:objcexport-header-generator-analysis-api",
+            ":native:objcexport-header-generator-k1",
+            ":native:swift:sir-light-classes",
+            ":native:swift:sir-printer",
+            ":native:swift:swift-export-embeddable",
+            ":native:swift:swift-export-ide",
+            ":native:swift:swift-export-standalone-integration-tests:coroutines",
+            ":native:swift:swift-export-standalone-integration-tests:external",
+            ":native:swift:swift-export-standalone-integration-tests:simple",
+            ":plugins:compose-compiler-plugin:compiler-hosted",
+            ":plugins:compose-compiler-plugin:compiler-hosted:integration-tests",
+            ":plugins:jvm-abi-gen",
+            ":plugins:parcelize:parcelize-compiler",
+            ":plugins:plugins-interactions-testing",
+            ":plugins:plugin-sandbox:plugin-sandbox-ic-test",
+            ":plugins:scripting:scripting-tests",
+            ":repo:artifacts-tests",
+            ":repo:codebase-tests",
+            ":tools:binary-compatibility-validator",
+            ":tools:ide-plugin-dependencies-validator",
+            ":tools:jdk-api-validator",
+            ":wasm:wasm.ir",
+            ":compiler:test-engine-sandbox",
+        )
+        val projectPath = project.path
+        val hasTestInputCheckPlugin = plugins.hasPlugin("test-inputs-check")
+        if (!hasTestInputCheckPlugin) {
             outputs.doNotCacheIf("https://youtrack.jetbrains.com/issue/KTI-112") { true }
+        }
+        doFirst {
+            if (!hasTestInputCheckPlugin) {
+                if (projectPath !in notCacheableTestProjects) {
+                    throw GradleException(
+                        """
+                        Tests are not cacheable in: $projectPath
+                        Apply id("test-inputs-check") to the project to make the tests cacheable.
+                    """.trimIndent()
+                    )
+                }
+            } else {
+                if (projectPath in notCacheableTestProjects) {
+                    throw GradleException("Tests are cacheable in: ${projectPath}, but we listed it in `notCacheableTestProjects`")
+                }
+            }
         }
         if (project.kotlinBuildProperties.limitTestTasksConcurrency) {
             usesService(concurrencyLimitService)
         }
+
+        /*
+        We're disabling test reports on teamcity for Gradle 9.4 as we experienced failures like
+        'File name too long' when upgrading to Gradle 9.4 while generating those reports.
+        https://github.com/gradle/gradle/issues/36996
+         */
+        reports {
+            configureEach {
+                if (GradleVersion.current() == GradleVersion.version("9.4.0")) {
+                    this.required = false
+                }
+            }
+        }
+
     }
 
+    tasks.withType<AbstractTestTask>().configureEach {
+        val disableVerificationTasks: Provider<Boolean> = providers.gradleProperty("kotlin.build.disable.verification.tasks")
+            .map { it.toBoolean() }
+            .orElse(false)
+        inputs.property("kotlin.build.disable.verification.tasks", disableVerificationTasks)
+        doFirst {
+            if (disableVerificationTasks.get()) {
+                logger.warn("Task $path is disabled because `kotlin.build.disable.verification.tasks` is true")
+                throw StopExecutionException("Verification tasks are disabled.")
+            }
+        }
+    }
     // Aggregate task for build related checks
     tasks.register("checkBuild")
     val mppProjects: List<String> by rootProject.extra

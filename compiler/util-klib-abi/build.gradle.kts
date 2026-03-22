@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("java-test-fixtures")
     id("project-tests-convention")
     id("test-inputs-check")
@@ -12,7 +11,7 @@ dependencies {
     implementation(project(":core:compiler.common"))
     implementation(project(":compiler:ir.serialization.common"))
     compileOnly(libs.intellij.fastutil)
-    testApi(platform(libs.junit.bom))
+    testImplementation(platform(libs.junit.bom))
     testFixturesApi(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testFixturesApi(libs.junit.jupiter.params)
@@ -32,8 +31,7 @@ sourceSets {
 projectTests {
     testData(project(":compiler").isolated, "testData/klib/dump-abi/content")
     testData(project(":compiler").isolated, "testData/klib/dump-abi/malformed")
-    withStdlibJsRuntime()
-    withTestJsRuntime()
+    withJsRuntime()
 
     testTask(jUnitMode = JUnitMode.JUnit5) {
         outputs.dir(layout.buildDirectory.dir("t"))

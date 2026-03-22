@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.analysis.api.components.*
 import org.jetbrains.kotlin.analysis.api.fir.KaFirSession
 import org.jetbrains.kotlin.analysis.api.fir.components.ElementsToShortenCollector.PartialOrderOfScope.Companion.toPartialOrder
+import org.jetbrains.kotlin.analysis.api.fir.getTagIfSubject
 import org.jetbrains.kotlin.analysis.api.fir.isImplicitDispatchReceiver
 import org.jetbrains.kotlin.analysis.api.fir.references.KDocReferenceResolver
 import org.jetbrains.kotlin.analysis.api.fir.utils.computeImportableName
@@ -43,11 +44,14 @@ import org.jetbrains.kotlin.fir.references.FirNamedReference
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.references.FirThisReference
 import org.jetbrains.kotlin.fir.references.builder.buildSimpleNamedReference
-import org.jetbrains.kotlin.fir.resolve.*
+import org.jetbrains.kotlin.fir.resolve.FirSamResolver
+import org.jetbrains.kotlin.fir.resolve.ResolutionMode
 import org.jetbrains.kotlin.fir.resolve.calls.OverloadCandidate
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeAmbiguityError
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnmatchedTypeArgumentsError
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
+import org.jetbrains.kotlin.fir.resolve.referencedMemberSymbol
+import org.jetbrains.kotlin.fir.resolve.toRegularClassSymbol
 import org.jetbrains.kotlin.fir.resolve.transformers.PackageResolutionResult
 import org.jetbrains.kotlin.fir.resolve.transformers.resolveToPackageOrClass
 import org.jetbrains.kotlin.fir.scopes.*
@@ -63,7 +67,6 @@ import org.jetbrains.kotlin.psi.psiUtil.*
 import org.jetbrains.kotlin.resolve.ROOT_PREFIX_FOR_IDE_RESOLUTION_MODE
 import org.jetbrains.kotlin.resolve.calls.tower.CandidateApplicability
 import org.jetbrains.kotlin.utils.addIfNotNull
-import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 
 internal class KaFirReferenceShortener(
@@ -628,6 +631,7 @@ private class ElementsToShortenCollector(
         is FirNestedClassifierScope -> klass.classId
         is FirNestedClassifierScopeWithSubstitution -> originalScope.correspondingClassIdIfExists()
         is FirClassUseSiteMemberScope -> ownerClassLookupTag.classId
+        is FirNameAwareCompositeScope -> scopes.firstNotNullOf { it.correspondingClassIdIfExists() }
         else -> errorWithAttachment("FirScope ${this::class}` is expected to be one of FirNestedClassifierScope and FirClassUseSiteMemberScope to get ClassId") {
             withEntry("firScope", this@correspondingClassIdIfExists) { it.toString() }
         }
@@ -635,10 +639,11 @@ private class ElementsToShortenCollector(
 
     private fun ClassId.idWithoutCompanion() = if (shortClassName == SpecialNames.DEFAULT_NAME_FOR_COMPANION_OBJECT) outerClassId else this
 
-    private fun FirScope.isScopeForClass(): Boolean = when {
-        this is FirNestedClassifierScope -> true
-        this is FirNestedClassifierScopeWithSubstitution -> originalScope.isScopeForClass()
-        this is FirClassUseSiteMemberScope -> true
+    private fun FirScope.isScopeForClass(): Boolean = when (this) {
+        is FirNestedClassifierScope -> true
+        is FirNestedClassifierScopeWithSubstitution -> originalScope.isScopeForClass()
+        is FirClassUseSiteMemberScope -> true
+        is FirNameAwareCompositeScope -> scopes.any { it.isScopeForClass() }
         else -> false
     }
 
@@ -740,6 +745,7 @@ private class ElementsToShortenCollector(
                     is FirNestedClassifierScopeWithSubstitution -> originalScope.toPartialOrder()
                     is FirExplicitSimpleImportingScope -> ExplicitSimpleImporting
                     is FirPackageMemberScope -> PackageMember
+                    is FirNameAwareCompositeScope -> scopes.minOf { it.toPartialOrder() }
                     else -> Unclassified
                 }
             }
@@ -769,9 +775,11 @@ private class ElementsToShortenCollector(
      * symbol.
      */
     private fun importDirectiveForDifferentSymbolWithSameNameIsPresent(classId: ClassId): Boolean {
-        val importDirectivesWithSameImportedFqName = containingFile.collectDescendantsOfType { importedDirective: KtImportDirective ->
-            importedDirective.importedFqName?.shortName() == classId.shortClassName
+        val shortClassName = classId.shortClassName
+        val importDirectivesWithSameImportedFqName = containingFile.importDirectives.filter {
+            it.importedFqName?.shortName() == shortClassName
         }
+
         return importDirectivesWithSameImportedFqName.isNotEmpty() &&
                 importDirectivesWithSameImportedFqName.all { it.importedFqName != classId.asSingleFqName() }
     }
@@ -810,12 +818,10 @@ private class ElementsToShortenCollector(
     }
 
     private fun shortenIfAlreadyImportedAsAlias(referenceExpression: KtElement, referencedSymbolFqName: FqName?): ElementToShorten? {
-        val importDirectiveForReferencedSymbol = containingFile.importDirectives.firstOrNull {
-            it.importedFqName == referencedSymbolFqName && it.alias != null
-        } ?: return null
+        if (referencedSymbolFqName == null) return null
 
-        val aliasedName = importDirectiveForReferencedSymbol.alias?.name
-        return createElementToShorten(referenceExpression, shortenedRef = aliasedName)
+        val alias = containingFile.findAliasByFqName(referencedSymbolFqName) ?: return null
+        return createElementToShorten(referenceExpression, shortenedRef = alias.name)
     }
 
     private fun shortenClassifierQualifier(
@@ -1552,27 +1558,49 @@ private class KDocQualifiersToShortenCollector(
         // KDocs are only shortened if they are available without imports, so `additionalImports` contain all the imports to add
         if (fqName.isInNewImports(additionalImports)) return true
 
-        val resolvedSymbols = with(analysisSession) {
+        with(analysisSession) {
             val shortFqName = FqName.topLevel(fqName.shortName())
             val owner = kDocName.getContainingDoc().owner
 
             val contextElement = owner ?: kDocName.containingKtFile
-            KDocReferenceResolver.resolveKdocFqName(useSiteSession, shortFqName, shortFqName, contextElement)
-        }
+            // There we have to calculate the resolution results for FQN and short name to then ensure that these sets of symbols are the same
 
-        resolvedSymbols.firstIsInstanceOrNull<KaCallableSymbol>()?.firSymbol?.let { availableCallable ->
-            return canShorten(fqName, availableCallable.callableId?.asSingleFqName()) { callableShortenStrategy(availableCallable) }
-        }
+            val containedTagSectionIfSubject = kDocName.getTagIfSubject()?.knownTag
 
-        resolvedSymbols.firstIsInstanceOrNull<KaClassLikeSymbol>()?.firSymbol?.let { availableClassifier ->
-            return canShorten(fqName, availableClassifier.classId.asSingleFqName()) { classShortenStrategy(availableClassifier) }
-        }
+            val resolvedSymbolsByShortName =
+                KDocReferenceResolver.resolveKdocFqName(
+                    useSiteSession,
+                    selectedFqName = shortFqName,
+                    fullFqName = shortFqName,
+                    contextElement,
+                    containedTagSectionIfSubject
+                )
+            val resolvedSymbolsByFQN =
+                KDocReferenceResolver.resolveKdocFqName(
+                    useSiteSession,
+                    selectedFqName = fqName,
+                    fullFqName = fqName,
+                    contextElement,
+                    containedTagSectionIfSubject
+                )
 
-        return false
+            if (resolvedSymbolsByShortName != resolvedSymbolsByFQN) {
+                // Shortening led to another set of symbols being available, so we cannot shorten the KDoc
+                return false
+            }
+
+            val shortenStrategies = resolvedSymbolsByFQN.map { symbol ->
+                when (symbol) {
+                    is KaCallableSymbol -> callableShortenStrategy(symbol.firSymbol)
+                    is KaClassLikeSymbol -> classShortenStrategy(symbol.firSymbol)
+                    else -> ShortenStrategy.DO_NOT_SHORTEN
+                }
+            }
+
+            val singleStrategy = shortenStrategies.distinct().singleOrNull() ?: return false
+            return singleStrategy != ShortenStrategy.DO_NOT_SHORTEN
+        }
     }
-
-    private fun canShorten(fqNameToShorten: FqName, fqNameOfAvailableSymbol: FqName?, getShortenStrategy: () -> ShortenStrategy): Boolean =
-        fqNameToShorten == fqNameOfAvailableSymbol && getShortenStrategy() != ShortenStrategy.DO_NOT_SHORTEN
 
     private fun FqName.isInNewImports(additionalImports: AdditionalImports): Boolean =
         this in additionalImports.simpleImports || this.parent() in additionalImports.starImports

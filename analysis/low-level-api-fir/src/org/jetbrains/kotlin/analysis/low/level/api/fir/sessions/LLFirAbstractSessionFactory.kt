@@ -7,8 +7,10 @@ package org.jetbrains.kotlin.analysis.low.level.api.fir.sessions
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
+import org.jetbrains.kotlin.analysis.api.platform.KaCachedService
 import org.jetbrains.kotlin.analysis.api.platform.declarations.*
 import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KaDanglingFileModuleImpl
+import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KaResolutionScopeProvider
 import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KotlinAnchorModuleProvider
 import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KotlinProjectStructureProvider
 import org.jetbrains.kotlin.analysis.api.platform.utils.mergeInto
@@ -22,13 +24,7 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.providers.LLFirIdeRegiste
 import org.jetbrains.kotlin.analysis.low.level.api.fir.providers.LLFirLibrarySessionProvider
 import org.jetbrains.kotlin.analysis.low.level.api.fir.providers.LLFirProvider
 import org.jetbrains.kotlin.analysis.low.level.api.fir.providers.LLNameConflictsTracker
-import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLDanglingFileDependenciesSymbolProvider
-import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLDependenciesSymbolProvider
-import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLFirJavaSymbolProvider
-import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLFirSwitchableExtensionDeclarationsSymbolProvider
-import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLKotlinSourceSymbolProvider
-import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLKotlinStubBasedLibrarySymbolProvider
-import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.LLModuleWithDependenciesSymbolProvider
+import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.*
 import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.LLCombinedJavaSymbolProvider
 import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.LLCombinedKotlinSymbolProvider
 import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.LLCombinedPackageDelegationSymbolProvider
@@ -36,9 +32,11 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.symbolProviders.combined.
 import org.jetbrains.kotlin.assignment.plugin.AssignmentCommandLineProcessor
 import org.jetbrains.kotlin.assignment.plugin.AssignmentConfigurationKeys
 import org.jetbrains.kotlin.assignment.plugin.k2.FirAssignmentPluginExtensionRegistrar
+import org.jetbrains.kotlin.cli.create
 import org.jetbrains.kotlin.cli.plugins.processCompilerPluginsOptions
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.*
+import org.jetbrains.kotlin.diagnostics.KtRegisteredDiagnosticFactoriesStorage
 import org.jetbrains.kotlin.fir.FirNameConflictsTracker
 import org.jetbrains.kotlin.fir.PrivateSessionConstructor
 import org.jetbrains.kotlin.fir.SessionConfiguration
@@ -46,15 +44,11 @@ import org.jetbrains.kotlin.fir.backend.jvm.FirJvmTypeMapper
 import org.jetbrains.kotlin.fir.extensions.*
 import org.jetbrains.kotlin.fir.java.JavaSymbolProvider
 import org.jetbrains.kotlin.fir.languageVersionSettings
-import org.jetbrains.kotlin.fir.resolve.providers.DEPENDENCIES_SYMBOL_PROVIDER_QUALIFIED_KEY
-import org.jetbrains.kotlin.fir.resolve.providers.FirProvider
-import org.jetbrains.kotlin.fir.resolve.providers.FirSymbolProvider
-import org.jetbrains.kotlin.fir.resolve.providers.dependenciesSymbolProvider
+import org.jetbrains.kotlin.fir.resolve.providers.*
 import org.jetbrains.kotlin.fir.resolve.providers.impl.FirBuiltinSyntheticFunctionInterfaceProvider
 import org.jetbrains.kotlin.fir.resolve.providers.impl.FirCompositeSymbolProvider
 import org.jetbrains.kotlin.fir.resolve.providers.impl.FirExtensionSyntheticFunctionInterfaceProvider
 import org.jetbrains.kotlin.fir.resolve.providers.impl.syntheticFunctionInterfacesSymbolProvider
-import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.resolve.scopes.wrapScopeWithJvmMapped
 import org.jetbrains.kotlin.fir.resolve.transformers.FirDummyCompilerLazyDeclarationResolver
 import org.jetbrains.kotlin.fir.scopes.FirKotlinScopeProvider
@@ -72,13 +66,18 @@ import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 import org.jetbrains.kotlin.utils.exceptions.requireWithAttachment
 import org.jetbrains.kotlin.utils.exceptions.withPsiEntry
 import org.jetbrains.kotlin.utils.exceptions.withVirtualFileEntry
-import kotlin.script.experimental.host.ScriptingHostConfiguration
-import kotlin.script.experimental.jvm.defaultJvmScriptingHostConfiguration
 
 @OptIn(PrivateSessionConstructor::class, SessionConfiguration::class)
 internal abstract class LLFirAbstractSessionFactory(protected val project: Project) {
-    private val globalResolveComponents: LLFirGlobalResolveComponents
-        get() = LLFirGlobalResolveComponents.getInstance(project)
+    @KaCachedService
+    private val globalResolveComponents: LLFirGlobalResolveComponents by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        LLFirGlobalResolveComponents.getInstance(project)
+    }
+
+    @KaCachedService
+    private val resolutionScopeProvider: KaResolutionScopeProvider by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        KaResolutionScopeProvider.getInstance(project)
+    }
 
     abstract fun createSourcesSession(module: KaSourceModule): LLFirSourcesSession
 
@@ -109,12 +108,13 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
         components.session = session
 
         val moduleData = createModuleData(session)
+        val resolutionScope = resolutionScopeProvider.getResolutionScope(module)
 
         return session.apply {
             registerModuleData(moduleData)
             register(FirKotlinScopeProvider::class, scopeProvider)
 
-            registerAllCommonComponents(languageVersionSettings)
+            registerAllCommonComponents(languageVersionSettings, module, resolutionScope)
             registerSourceLikeComponents()
 
             registerCommonComponentsAfterExtensionsAreConfigured()
@@ -169,17 +169,17 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
 
     @OptIn(ExperimentalCompilerApi::class)
     private fun FirSessionConfigurator.registerScriptExtensions(file: KtFile) {
-        val hostConfiguration = ScriptingHostConfiguration(defaultJvmScriptingHostConfiguration) {}
         val scriptDefinition = file.findScriptDefinition()
             ?: errorWithAttachment("Cannot load script definition") {
                 withVirtualFileEntry("file", file.virtualFile)
             }
+        val hostConfiguration = scriptDefinition.hostConfiguration
 
         val compilerArguments = makeScriptCompilerArguments(scriptDefinition.compilerOptions.toList())
         val commandLineProcessors = listOf(AssignmentCommandLineProcessor())
-        val compilerConfiguration = CompilerConfiguration()
+        val compilerConfiguration = CompilerConfiguration.create()
         processCompilerPluginsOptions(
-            compilerConfiguration, compilerArguments.pluginOptions?.asIterable() ?: emptyList(), commandLineProcessors
+            compilerConfiguration, compilerArguments.pluginOptions.asIterable(), commandLineProcessors
         )
 
         val extensionRegistrar = FirScriptingCompilerExtensionIdeRegistrar(
@@ -192,7 +192,7 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
         registerExtensions(extensionRegistrar.configure())
         registerExtensions(FirScriptingSamWithReceiverExtensionRegistrar().configure())
 
-        compilerConfiguration.getList(AssignmentConfigurationKeys.ANNOTATION).takeIf { it.isNotEmpty() }?.let {
+        compilerConfiguration.getList(AssignmentConfigurationKeys.ASSIGNMENT_ANNOTATION).takeIf { it.isNotEmpty() }?.let {
             registerExtensions(FirAssignmentPluginExtensionRegistrar(it).configure())
         }
     }
@@ -207,12 +207,13 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
         components.session = session
 
         val moduleData = createModuleData(session)
+        val resolutionScope = resolutionScopeProvider.getResolutionScope(module)
 
         return session.apply {
             registerModuleData(moduleData)
             register(FirKotlinScopeProvider::class, scopeProvider)
 
-            registerAllCommonComponents(languageVersionSettings)
+            registerAllCommonComponents(languageVersionSettings, module, resolutionScope)
             registerSourceLikeComponents()
 
             registerCommonComponentsAfterExtensionsAreConfigured()
@@ -285,12 +286,13 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
         components.session = session
 
         val moduleData = createModuleData(session)
+        val resolutionScope = resolutionScopeProvider.getResolutionScope(module)
 
         return session.apply {
             registerModuleData(moduleData)
             register(FirKotlinScopeProvider::class, scopeProvider)
 
-            registerAllCommonComponents(languageVersionSettings)
+            registerAllCommonComponents(languageVersionSettings, module, resolutionScope)
             registerSourceLikeComponents()
 
             val firProvider = LLFirProvider(
@@ -305,7 +307,7 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
             register(FirProvider::class, firProvider)
             register(FirLazyDeclarationResolver::class, LLFirLazyDeclarationResolver())
 
-            registerCompilerPluginServices(project, module)
+            registerCompilerPluginServices(project, resolutionScope)
             registerCompilerPluginExtensions(project, module)
             registerCommonComponentsAfterExtensionsAreConfigured()
 
@@ -373,12 +375,13 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
         components.session = session
 
         val moduleData = createModuleData(session)
+        val binaryContentScope = binaryModule.contentScope
 
         return session.apply {
             registerModuleData(moduleData)
             register(FirKotlinScopeProvider::class, scopeProvider)
 
-            registerAllCommonComponents(languageVersionSettings)
+            registerAllCommonComponents(languageVersionSettings, module, binaryContentScope)
             registerCommonComponentsAfterExtensionsAreConfigured()
 
             val firProvider = LLFirProvider(
@@ -393,10 +396,8 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
 
             register(FirLazyDeclarationResolver::class, LLFirLazyDeclarationResolver())
 
-            val contentScope = binaryModule.contentScope
-
             // We need FirRegisteredPluginAnnotations during extensions' registration process
-            val annotationsResolver = project.createAnnotationResolver(contentScope)
+            val annotationsResolver = project.createAnnotationResolver(binaryContentScope)
             register(FirRegisteredPluginAnnotations::class, LLFirIdeRegisteredPluginAnnotations(this, annotationsResolver))
             register(FirPredicateBasedProvider::class, FirEmptyPredicateBasedProvider)
 
@@ -425,7 +426,7 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
 
             register(DEPENDENCIES_SYMBOL_PROVIDER_QUALIFIED_KEY, dependencyProvider)
 
-            val context = LibrarySessionCreationContext(contentScope, firProvider, dependencyProvider)
+            val context = LibrarySessionCreationContext(binaryContentScope, firProvider, dependencyProvider)
             additionalSessionConfiguration(context)
 
             LLFirSessionConfigurator.configure(this)
@@ -449,13 +450,14 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
         val session = LLFirLibrarySession(module, builtinsSession.builtinTypes)
 
         val moduleData = createModuleData(session)
+        val contentScope = module.contentScope
 
         return session.apply {
             val languageVersionSettings = KotlinProjectStructureProvider.getInstance(project).libraryLanguageVersionSettings
             registerModuleData(moduleData)
-            registerIdeComponents(project, languageVersionSettings)
+            registerIdeComponents(project, languageVersionSettings, contentScope)
             register(FirLazyDeclarationResolver::class, FirDummyCompilerLazyDeclarationResolver)
-            registerCommonComponents(languageVersionSettings)
+            registerCommonComponents(languageVersionSettings, isMetadataCompilation = false)
             registerCommonComponentsAfterExtensionsAreConfigured()
 
             val kotlinScopeProvider = when {
@@ -467,7 +469,7 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
 
             val symbolProvider = LLModuleWithDependenciesSymbolProvider(
                 this,
-                providers = createProjectLibraryProvidersForScope(this, module.contentScope),
+                providers = createProjectLibraryProvidersForScope(this, contentScope),
                 LLDependenciesSymbolProvider(this) {
                     // A binary library session should not have any dependencies (apart from fallback builtins), as library module
                     // dependencies only apply to *resolvable* sessions, including fallback dependencies.
@@ -503,12 +505,13 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
         components.session = session
 
         val moduleData = createModuleData(session)
+        val resolutionScope = resolutionScopeProvider.getResolutionScope(module)
 
         return session.apply {
             registerModuleData(moduleData)
             register(FirKotlinScopeProvider::class, scopeProvider)
 
-            registerAllCommonComponents(languageVersionSettings)
+            registerAllCommonComponents(languageVersionSettings, module, resolutionScope)
             registerSourceLikeComponents()
 
             val firProvider = LLFirProvider(
@@ -528,7 +531,7 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
             val contextModule = module.contextModule
             when (contextModule) {
                 is KaSourceModule -> {
-                    registerCompilerPluginServices(project, contextModule)
+                    registerCompilerPluginServices(project, resolutionScope)
                     registerCompilerPluginExtensions(project, contextModule)
                 }
                 is KaScriptModule -> {
@@ -710,10 +713,14 @@ internal abstract class LLFirAbstractSessionFactory(protected val project: Proje
         return LLFirModuleData(session)
     }
 
-    private fun LLFirSession.registerAllCommonComponents(languageVersionSettings: LanguageVersionSettings) {
-        registerIdeComponents(project, languageVersionSettings)
-        registerCommonComponents(languageVersionSettings)
-        registerResolveComponents()
+    private fun LLFirSession.registerAllCommonComponents(
+        languageVersionSettings: LanguageVersionSettings,
+        module: KaModule,
+        annotationSearchScope: GlobalSearchScope,
+    ) {
+        registerIdeComponents(project, languageVersionSettings, annotationSearchScope)
+        registerCommonComponents(languageVersionSettings, isMetadataCompilation = false)
+        registerResolveComponents(KtRegisteredDiagnosticFactoriesStorage())
     }
 
     private fun LLFirSession.registerSourceLikeComponents() {

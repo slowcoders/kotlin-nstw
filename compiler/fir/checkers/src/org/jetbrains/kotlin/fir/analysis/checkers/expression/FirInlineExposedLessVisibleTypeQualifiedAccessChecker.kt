@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.fir.analysis.checkers.declaration.isLocalMember
 import org.jetbrains.kotlin.fir.analysis.checkers.resolvedSymbolOrCompanionSymbol
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.declarations.utils.effectiveVisibility
@@ -27,21 +26,19 @@ import org.jetbrains.kotlin.fir.types.forEachType
 import org.jetbrains.kotlin.fir.types.resolvedType
 
 object FirInlineExposedLessVisibleTypeQualifiedAccessChecker : FirQualifiedAccessExpressionChecker(MppCheckerKind.Platform) {
-    context(c: CheckerContext, reporter: DiagnosticReporter)
+    context(context: CheckerContext, reporter: DiagnosticReporter)
     override fun check(expression: FirQualifiedAccessExpression) {
-        val inlineFunctionBodyContext = c.inlineFunctionBodyContext ?: return
+        val inlineFunctionBodyContext = context.inlineFunctionBodyContext ?: return
 
         // We don't care about public functions because other diagnostics are already reported on them
         if (inlineFunctionBodyContext.inlineFunEffectiveVisibility == EffectiveVisibility.Public) return
 
-        if (c.callsOrAssignments.any { it is FirAnnotation }) return
+        if (context.callsOrAssignments.any { it is FirAnnotation }) return
 
         val symbol = expression.toResolvedCallableSymbol() ?: return
         if (symbol.effectiveVisibility is EffectiveVisibility.Local) return
 
         // Calls to local callables are allowed to contain local/anonymous types in their signatures
-        val ignoreLocal = symbol.isLocalMember
-
         fun ConeKotlinType.reportIfLessVisible(ignoreLocal: Boolean) {
             fullyExpandedType().forEachType { type ->
                 val classLikeSymbol = type.toClassLikeSymbol() ?: return@forEachType
@@ -60,15 +57,15 @@ object FirInlineExposedLessVisibleTypeQualifiedAccessChecker : FirQualifiedAcces
             }
         }
 
-        symbol.contextParameterSymbols.forEach { it.resolvedReturnType.reportIfLessVisible(ignoreLocal) }
-        symbol.receiverParameterSymbol?.resolvedType?.reportIfLessVisible(ignoreLocal)
+        symbol.contextParameterSymbols.forEach { it.resolvedReturnType.reportIfLessVisible(ignoreLocal = false) }
+        symbol.receiverParameterSymbol?.resolvedType?.reportIfLessVisible(ignoreLocal = false)
         if (symbol is FirFunctionSymbol) {
-            symbol.valueParameterSymbols.forEach { it.resolvedReturnType.reportIfLessVisible(ignoreLocal) }
+            symbol.valueParameterSymbols.forEach { it.resolvedReturnType.reportIfLessVisible(ignoreLocal = false) }
         }
         symbol.typeParameterSymbols.forEach { typeParameterSymbol ->
-            typeParameterSymbol.resolvedBounds.forEach { it.coneType.reportIfLessVisible(ignoreLocal) }
+            typeParameterSymbol.resolvedBounds.forEach { it.coneType.reportIfLessVisible(ignoreLocal = false) }
         }
-        symbol.resolvedReturnType.reportIfLessVisible(ignoreLocal)
+        symbol.resolvedReturnType.reportIfLessVisible(ignoreLocal = false)
 
         expression.dispatchReceiver?.let {
             if (it is FirResolvedQualifier) {

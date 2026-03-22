@@ -1,12 +1,12 @@
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("generated-sources")
 }
 
 dependencies {
     api(project(":compiler:fir:checkers"))
     api(project(":compiler:fir:checkers:checkers.web.common"))
+    implementation(project(":compiler:fir:diagnostic-renderers"))
     implementation(project(":core:compiler.common.wasm"))
     implementation(project(":core:compiler.common.web"))
 

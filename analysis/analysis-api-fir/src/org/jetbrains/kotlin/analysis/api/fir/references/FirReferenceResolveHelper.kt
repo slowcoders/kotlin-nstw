@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2025 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2026 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -39,7 +39,6 @@ import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirReceiverParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.ClassId
@@ -123,7 +122,6 @@ internal object FirReferenceResolveHelper {
                     listOfNotNull(
                         when (boundSymbol) {
                             is FirReceiverParameterSymbol -> boundSymbol.containingDeclarationSymbol
-                            is FirValueParameterSymbol -> boundSymbol.containingDeclarationSymbol
                             else -> boundSymbol as FirBasedSymbol<*>?
                         }?.buildSymbol(symbolBuilder)
                     )
@@ -261,8 +259,8 @@ internal object FirReferenceResolveHelper {
             is FirResolvedNamedReference -> getSymbolByResolvedNameReference(fir, expression, analysisSession, session, symbolBuilder)
             is FirDelegatedConstructorCall ->
                 getSymbolByDelegatedConstructorCall(expression, adjustedResolutionExpression, fir, session, symbolBuilder)
-            is FirResolvable -> getSymbolsByResolvable(fir, expression, session, symbolBuilder)
             is FirEqualityOperatorCall -> getSymbolsByEqualsName(fir, session, analysisSession, symbolBuilder)
+            is FirResolvable -> getSymbolsByResolvable(fir, expression, session, symbolBuilder)
             is FirTypeParameter -> getSybmolsByTypeParameter(symbolBuilder, fir)
             is FirResolvedReifiedParameterReference -> getSymbolsByResolvedReifiedTypeParameterReference(symbolBuilder, fir)
             is FirErrorExpression -> handleErrorExpression(fir, expression, symbolBuilder)
@@ -383,12 +381,12 @@ internal object FirReferenceResolveHelper {
         val ktCallExpression = ktValueArgumentList.parent as? KtCallElement ?: return emptyList()
 
         val firCall = ktCallExpression.getOrBuildFir(analysisSession.resolutionFacade)?.unwrapSafeCall() as? FirCall ?: return emptyList()
-        val parameter = firCall.findCorrespondingParameter(ktValueArgumentName.asName) ?: return emptyList()
-        return listOfNotNull(parameter.buildSymbol(symbolBuilder))
+        val parameter = firCall.findCorrespondingParameter(ktValueArgumentName.asName)
+        return listOfNotNull(parameter?.buildSymbol(symbolBuilder))
     }
 
     private fun FirCall.findCorrespondingParameter(name: Name): FirValueParameter? {
-        return resolvedArgumentMapping?.values?.firstOrNull { it.name == name }
+        return resolvedArgumentMappingIncludingContextArguments?.values?.firstOrNull { it.name == name }
     }
 
     private fun handleErrorExpression(
@@ -604,7 +602,7 @@ internal object FirReferenceResolveHelper {
                 )
             }
             is FirResolvedTypeRef -> {
-                return getSymbolsForResolvedTypeRef(typeRef, expression, session, symbolBuilder)
+                getSymbolsForResolvedTypeRef(typeRef, expression, session, symbolBuilder)
             }
             else -> throwUnexpectedFirElementError(
                 typeRef,

@@ -23,7 +23,9 @@ class KotlinSourceSetTreeDependsOnMismatchTest {
                 applyDefaultHierarchyTemplate()
                 @Suppress("DEPRECATION")
                 androidTarget()
+                @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                 iosX64(); iosArm64(); iosSimulatorArm64()
+                @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                 macosX64(); macosArm64()
 
                 configure()
@@ -35,7 +37,7 @@ class KotlinSourceSetTreeDependsOnMismatchTest {
             KotlinSourceSetDependsOnDefaultCompilationSourceSet.id
         )
         return project.kotlinToolingDiagnosticsCollector
-            .getDiagnosticsForProject(project)
+            .getDiagnosticsForProject(project.path)
             .filter { it.id in expectedDiagnosticsIds } // ignore other diagnostics that can appear as well
     }
 

@@ -14,6 +14,8 @@ import org.jetbrains.kotlin.analysis.api.components.KaSymbolRelationProvider
 import org.jetbrains.kotlin.analysis.api.fir.KaFirSession
 import org.jetbrains.kotlin.analysis.api.fir.buildSymbol
 import org.jetbrains.kotlin.analysis.api.fir.symbols.KaFirConstructorSymbol
+import org.jetbrains.kotlin.analysis.api.fir.symbols.KaFirEnumEntryInitializerSymbol
+import org.jetbrains.kotlin.analysis.api.fir.symbols.KaFirEnumEntrySymbol
 import org.jetbrains.kotlin.analysis.api.fir.symbols.KaFirNamedClassSymbol
 import org.jetbrains.kotlin.analysis.api.fir.symbols.KaFirSymbol
 import org.jetbrains.kotlin.analysis.api.fir.symbols.pointers.getClassLikeSymbol
@@ -21,6 +23,8 @@ import org.jetbrains.kotlin.analysis.api.fir.utils.firSymbol
 import org.jetbrains.kotlin.analysis.api.fir.utils.getContainingKtModule
 import org.jetbrains.kotlin.analysis.api.fir.utils.withSymbolAttachment
 import org.jetbrains.kotlin.analysis.api.impl.base.components.KaBaseSessionComponent
+import org.jetbrains.kotlin.analysis.api.impl.base.components.getAllOverriddenSymbolsForParameter
+import org.jetbrains.kotlin.analysis.api.impl.base.components.getDirectlyOverriddenSymbolsForParameter
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaDanglingFileModule
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaDanglingFileResolutionMode
@@ -31,16 +35,16 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.llFirSession
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.getContainingFile
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.originalDeclaration
 import org.jetbrains.kotlin.analysis.utils.printer.parentOfType
-import org.jetbrains.kotlin.fir.FirElementWithResolveState
-import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
+import org.jetbrains.kotlin.config.LanguageFeature
+import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.analysis.checkers.getImplementationStatus
-import org.jetbrains.kotlin.fir.containingClassForLocalAttr
 import org.jetbrains.kotlin.fir.declarations.*
+import org.jetbrains.kotlin.fir.declarations.FirDeclarationOverloadabilityHelper.ContextParameterShadowing.BothWays
 import org.jetbrains.kotlin.fir.diagnostics.ConeDestructuringDeclarationsOnTopLevel
 import org.jetbrains.kotlin.fir.resolve.FirSamResolver
 import org.jetbrains.kotlin.fir.resolve.SessionHolderImpl
 import org.jetbrains.kotlin.fir.resolve.calls.FirSimpleSyntheticPropertySymbol
+import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.scopes.impl.typeAliasConstructorInfo
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
@@ -49,9 +53,10 @@ import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.toLookupTag
-import org.jetbrains.kotlin.fir.unwrapFakeOverridesOrDelegated
 import org.jetbrains.kotlin.fir.utils.exceptions.withFirSymbolEntry
 import org.jetbrains.kotlin.ir.util.kotlinPackageFqn
+import org.jetbrains.kotlin.platform.TargetPlatform
+import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.psi
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
@@ -191,9 +196,17 @@ internal class KaFirSymbolRelationProvider(
         return true
     }
 
-    fun getContainingDeclarationByPsi(symbol: KaSymbol): KaDeclarationSymbol? {
+    private fun getContainingDeclarationByPsi(symbol: KaSymbol): KaDeclarationSymbol? {
         val containingDeclaration = getContainingPsi(symbol) ?: return null
-        return with(analysisSession) { containingDeclaration.symbol }
+        val declarationSymbol = with(analysisSession) { containingDeclaration.symbol }
+
+        if (declarationSymbol is KaFirEnumEntrySymbol && symbol !is KaFirEnumEntryInitializerSymbol) {
+            // From the FIR point of view, the real containing declaration of enum entry functions or implicit constructor
+            // is not the enum entry itself, but its `KaFirEnumEntryInitializerSymbol`.
+            return declarationSymbol.enumEntryInitializer
+        }
+
+        return declarationSymbol
     }
 
     private fun getContainingDeclarationForDependentDeclaration(symbol: KaSymbol): KaDeclarationSymbol? = when (symbol) {
@@ -353,13 +366,32 @@ internal class KaFirSymbolRelationProvider(
             }
         }
 
-    override val KaSamConstructorSymbol.constructedClass: KaClassLikeSymbol
+    override val KaClassLikeSymbol.functionalInterfaceFunction: KaNamedFunctionSymbol?
+        get() = withValidityAssertion {
+            val classId = classId ?: return null
+            val firClassOrTypeAlias = analysisSession.getClassLikeSymbol(classId) ?: return null
+            val firSession = analysisSession.firSession
+            val resolver = FirSamResolver(firSession, analysisSession.getScopeSessionFor(firSession))
+            val samFunction = resolver.getSamFunction(firClassOrTypeAlias) ?: return null
+            return analysisSession.firSymbolBuilder.functionBuilder.buildNamedFunctionSymbol(samFunction)
+        }
+
+    override val KaSamConstructorSymbol.functionalInterface: KaClassLikeSymbol
         get() = withValidityAssertion {
             firSymbol.fir.returnTypeRef.coneType.classId?.toLookupTag()?.let {
                 analysisSession.firSymbolBuilder.classifierBuilder.buildClassLikeSymbolByLookupTag(it)
-            } ?: errorWithAttachment("Cannot retrieve constructed class for KaSamConstructorSymbol") {
-                withSymbolAttachment("KaSamConstructorSymbol", analysisSession, this@constructedClass)
+            } ?: errorWithAttachment("Cannot retrieve functional interface for KaSamConstructorSymbol") {
+                withSymbolAttachment("KaSamConstructorSymbol", analysisSession, this@functionalInterface)
             }
+        }
+
+    override val KaSamConstructorSymbol.functionalInterfaceFunction: KaNamedFunctionSymbol
+        get() = withValidityAssertion {
+            functionalInterface.functionalInterfaceFunction
+                ?: errorWithAttachment("SAM constructor should have a corresponding function in its functional interface") {
+                    withSymbolAttachment("KaSamConstructorSymbol", analysisSession, this@functionalInterfaceFunction)
+                    withSymbolAttachment("functionalInterface", analysisSession, functionalInterface)
+                }
         }
 
     @KaExperimentalApi
@@ -372,29 +404,35 @@ internal class KaFirSymbolRelationProvider(
             analysisSession.firSymbolBuilder.functionBuilder.buildConstructorSymbol(originalConstructor.symbol)
         }
 
-    private val overridesProvider = KaFirSymbolDeclarationOverridesProvider(analysisSessionProvider)
-
     override val KaCallableSymbol.allOverriddenSymbols: Sequence<KaCallableSymbol>
         get() = withValidityAssertion {
-            overridesProvider.getAllOverriddenSymbols(this)
+            if (this is KaValueParameterSymbol) {
+                return getAllOverriddenSymbolsForParameter(this)
+            }
+
+            getAllOverriddenSymbols(this)
         }
 
     override val KaCallableSymbol.directlyOverriddenSymbols: Sequence<KaCallableSymbol>
         get() = withValidityAssertion {
-            overridesProvider.getDirectlyOverriddenSymbols(this)
+            if (this is KaValueParameterSymbol) {
+                return getDirectlyOverriddenSymbolsForParameter(this)
+            }
+
+            getDirectlyOverriddenSymbols(this)
         }
 
     override fun KaClassSymbol.isSubClassOf(superClass: KaClassSymbol): Boolean = withValidityAssertion {
-        return overridesProvider.isSubClassOf(this, superClass)
+        return isSubClassOf(this, superClass)
     }
 
     override fun KaClassSymbol.isDirectSubClassOf(superClass: KaClassSymbol): Boolean = withValidityAssertion {
-        return overridesProvider.isDirectSubClassOf(this, superClass)
+        return isDirectSubClassOf(this, superClass)
     }
 
     override val KaCallableSymbol.intersectionOverriddenSymbols: List<KaCallableSymbol>
         get() = withValidityAssertion {
-            overridesProvider.getIntersectionOverriddenSymbols(this)
+            getIntersectionOverriddenSymbols(this)
         }
 
     override fun KaCallableSymbol.getImplementationStatus(parentClassSymbol: KaClassSymbol): ImplementationStatus? {
@@ -410,7 +448,9 @@ internal class KaFirSymbolRelationProvider(
             memberFir.lazyResolveToPhase(FirResolvePhase.STATUS)
 
             val scopeSession = analysisSession.getScopeSessionFor(analysisSession.firSession)
-            return memberFir.symbol.getImplementationStatus(SessionHolderImpl(rootModuleSession, scopeSession), parentClassFir.symbol)
+            return with(SessionHolderImpl(rootModuleSession, scopeSession)) {
+                memberFir.symbol.getImplementationStatus(parentClassFir.symbol)
+            }
         }
     }
 
@@ -458,6 +498,57 @@ internal class KaFirSymbolRelationProvider(
 
             return with(analysisSession) {
                 inheritorClassIds.mapNotNull { findClass(it) as? KaNamedClassSymbol }
+            }
+        }
+
+    override fun KaFunctionSymbol.hasConflictingSignatureWith(other: KaFunctionSymbol, targetPlatform: TargetPlatform): Boolean =
+        withValidityAssertion {
+            val thisFirSymbol = firSymbol
+            val otherFirSymbol = other.firSymbol
+
+            val thisHasLowPriority = hasLowPriorityAnnotation(thisFirSymbol.resolvedAnnotationsWithClassIds)
+            val otherHasLowPriority = hasLowPriorityAnnotation(otherFirSymbol.resolvedAnnotationsWithClassIds)
+            if (thisHasLowPriority != otherHasLowPriority) {
+                return false
+            }
+
+            /**
+             * [FirDeclarationOverloadabilityHelper] performs signature comparison only from JVM platform perspective.
+             * However, as the API needs to be more generic than that, here we perform manual signature comparison
+             * before calling [FirDeclarationOverloadabilityHelper].
+             * This is done to handle cases which are considered conflicting on JVM but completely valid on other platforms:
+             * - Overloads by type parameters
+             * ```kotlin
+             * fun <T> foo() // Conflicting on JVM, valid on other platforms
+             * fun foo()
+             * ```
+             * - Overloads by vararg/array parameters
+             * ```kotlin
+             * fun foo(vararg ints: Int) // Conflicting on JVM, valid on other platforms
+             * fun foo(ints: IntArray)
+             * ```
+             */
+            if (!targetPlatform.isJvm()) {
+                if (thisFirSymbol.typeParameterSymbols.isEmpty() != otherFirSymbol.typeParameterSymbols.isEmpty()) {
+                    return false
+                }
+
+                val thisVarargParameterPosition = valueParameters.indexOfFirst { it.isVararg }
+                val otherVarargParameterPosition = other.valueParameters.indexOfFirst { it.isVararg }
+                if (thisVarargParameterPosition != otherVarargParameterPosition) {
+                    return false
+                }
+            }
+
+            val overloadabilityHelper = analysisSession.firSession.declarationOverloadabilityHelper
+
+            return if (analysisSession.firSession.languageVersionSettings.supportsFeature(LanguageFeature.ContextParameters)) {
+                overloadabilityHelper.getContextParameterShadowing(thisFirSymbol, otherFirSymbol) == BothWays
+            } else {
+                overloadabilityHelper.isConflicting(
+                    thisFirSymbol,
+                    otherFirSymbol,
+                )
             }
         }
 }

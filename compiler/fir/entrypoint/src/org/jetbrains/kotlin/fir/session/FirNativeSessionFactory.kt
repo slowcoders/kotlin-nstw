@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.library.metadata.impl.KlibResolvedModuleDescriptorsF
 import org.jetbrains.kotlin.resolve.konan.platform.NativeDefaultImportsProvider
 
 @OptIn(SessionConfiguration::class)
-abstract class FirNativeSessionFactory : AbstractFirKlibSessionFactory<Nothing?, Nothing?>() {
+abstract class FirNativeSessionFactory : AbstractFirKlibSessionFactory<Nothing?>() {
     companion object : FirNativeSessionFactory()
 
     object ForMetadata : FirNativeSessionFactory() {
@@ -69,11 +69,11 @@ abstract class FirNativeSessionFactory : AbstractFirKlibSessionFactory<Nothing?,
 
     // ==================================== Platform session ====================================
 
-    override fun FirSessionConfigurator.registerPlatformCheckers(c: Nothing?) {
+    override fun FirSessionConfigurator.registerPlatformCheckers() {
         registerNativeCheckers()
     }
 
-    override fun FirSessionConfigurator.registerExtraPlatformCheckers(c: Nothing?) {
+    override fun FirSessionConfigurator.registerExtraPlatformCheckers() {
         registerExtraNativeCheckers()
     }
 

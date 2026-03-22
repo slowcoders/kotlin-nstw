@@ -87,6 +87,9 @@ inline val FirClassSymbol<*>.isClass: Boolean
 inline val FirClassSymbol<*>.isInterface: Boolean
     get() = classKind.isInterface
 
+inline val FirClassSymbol<*>.isAnnotationClass: Boolean
+    get() = classKind.isAnnotationClass
+
 inline val FirClassSymbol<*>.isEnumClass: Boolean
     get() = classKind.isEnumClass
 
@@ -95,4 +98,5 @@ inline val FirClassSymbol<*>.isEnumEntry: Boolean
 
 // ---------------------- specific callables ----------------------
 
-inline val FirFunctionSymbol<*>.isLocal: Boolean get() = rawStatus.visibility == Visibilities.Local
+val FirCallableSymbol<*>.isCompanionExtension: Boolean
+    get() = fir.isCompanionExtension

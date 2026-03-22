@@ -18,7 +18,6 @@ FILE: enumEntryWithAnnotations.kt
 
             public final val <error property>: <ERROR TYPE REF: Destructuring declarations are only allowed for local variables/values> = IntegerLiteral(1).to#(IntegerLiteral(2))
 
-
         }
 
         public final static [ContainingClassKey=MyEnumClass] fun values(): R|kotlin/Array<MyEnumClass>| {
@@ -28,6 +27,6 @@ FILE: enumEntryWithAnnotations.kt
         }
 
         public final static [ContainingClassKey=MyEnumClass] val entries: R|kotlin/enums/EnumEntries<MyEnumClass>|
-            public get(): R|kotlin/enums/EnumEntries<MyEnumClass>|
+            public static get(): R|kotlin/enums/EnumEntries<MyEnumClass>|
 
     }

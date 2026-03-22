@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.generators.util.GeneratorsFileUtil
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.typeUtil.makeNotNullable
+import org.jetbrains.kotlin.util.OperatorNameConventions
 import org.jetbrains.kotlin.utils.Printer
 import java.io.File
 import kotlin.reflect.full.memberFunctions
@@ -72,6 +73,11 @@ private fun getOperationMaps(): Pair<ArrayList<Operation>, ArrayList<Operation>>
 
     unaryOperationsMap.add(Operation("code", listOf("Char"), false))
 
+    for (name in listOf("trimIndent", "trimMargin")) {
+        unaryOperationsMap.add(Operation(name, listOf("String")))
+    }
+    binaryOperationsMap.add(Operation("trimMargin", listOf("String", "String")))
+
     for (type in integerTypes) {
         for (otherType in integerTypes) {
             val parameters = listOf(type, otherType).map { it.typeName }
@@ -100,14 +106,16 @@ private fun getOperationMaps(): Pair<ArrayList<Operation>, ArrayList<Operation>>
             }
     }
 
-    val uintConversionExtensions = mapOf(
-        "Long" to listOf("toULong", "toUInt", "toUShort", "toUByte"),
-        "Int" to listOf("toULong", "toUInt", "toUShort", "toUByte"),
-        "Short" to listOf("toULong", "toUInt", "toUShort", "toUByte"),
-        "Byte" to listOf("toULong", "toUInt", "toUShort", "toUByte"),
-        "Double" to listOf("toULong", "toUInt"),
-        "Float" to listOf("toULong", "toUInt"),
-    )
+    val uintConversionExtensions = with(OperatorNameConventions) {
+        mapOf(
+            "Long" to listOf(TO_ULONG, TO_UINT, TO_USHORT, TO_UBYTE).map { it.asString() },
+            "Int" to listOf(TO_ULONG, TO_UINT, TO_USHORT, TO_UBYTE).map { it.asString() },
+            "Short" to listOf(TO_ULONG, TO_UINT, TO_USHORT, TO_UBYTE).map { it.asString() },
+            "Byte" to listOf(TO_ULONG, TO_UINT, TO_USHORT, TO_UBYTE).map { it.asString() },
+            "Double" to listOf(TO_ULONG, TO_UINT).map { it.asString() },
+            "Float" to listOf(TO_ULONG, TO_UINT).map { it.asString() }
+        )
+    }
 
     for ((type, extensions) in uintConversionExtensions) {
         for (extension in extensions) {

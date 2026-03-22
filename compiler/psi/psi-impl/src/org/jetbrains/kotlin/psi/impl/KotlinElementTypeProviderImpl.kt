@@ -44,6 +44,9 @@ object KotlinElementTypeProviderImpl : KotlinElementTypeProvider {
     override val classBodyType: KtStubElementType<out KotlinPlaceHolderStub<KtClassBody>, KtClassBody> =
         KtStubElementTypes.CLASS_BODY
 
+    @KtExperimentalApi
+    override val companionBlockType: KtStubElementType<out KotlinPlaceHolderStub<KtCompanionBlock>, KtCompanionBlock> =
+        KtStubElementTypes.COMPANION_BLOCK
 
     // Initializers
 
@@ -90,8 +93,8 @@ object KotlinElementTypeProviderImpl : KotlinElementTypeProvider {
     override val valueParameterType: KtStubElementType<out KotlinParameterStub, KtParameter> =
         KtStubElementTypes.VALUE_PARAMETER
 
-    override val contextReceiverListType: KtStubElementType<out KotlinPlaceHolderStub<KtContextReceiverList>, KtContextReceiverList> =
-        KtStubElementTypes.CONTEXT_RECEIVER_LIST
+    override val contextParameterListType: KtStubElementType<out KotlinPlaceHolderStub<KtContextParameterList>, KtContextParameterList> =
+        KtStubElementTypes.CONTEXT_PARAMETER_LIST
 
     override val contextReceiverType: KtStubElementType<out KotlinContextReceiverStub, KtContextReceiver> =
         KtStubElementTypes.CONTEXT_RECEIVER

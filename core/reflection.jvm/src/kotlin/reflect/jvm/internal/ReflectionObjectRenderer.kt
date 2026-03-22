@@ -34,14 +34,13 @@ internal object ReflectionObjectRenderer {
         append(renderType(receiver.type)).append(".")
 
     private fun StringBuilder.appendReceivers(callable: KCallable<*>) {
-        val receivers = (callable as ReflectKCallable<*>).receiverParameters.filter {
+        val receivers = (callable as ReflectKCallable<*>).allParameters.filter {
             it.kind == KParameter.Kind.INSTANCE || it.kind == KParameter.Kind.EXTENSION_RECEIVER
         }
         receivers.getOrNull(0)?.let { appendReceiverType(it) }
         receivers.getOrNull(1)?.let { append("(").appendReceiverType(it).append(")") }
     }
 
-    @OptIn(ExperimentalContextParameters::class)
     private fun StringBuilder.appendContexts(callable: KCallable<*>) {
         val parameters = callable.contextParameters
         if (parameters.isEmpty()) return
@@ -112,9 +111,7 @@ internal object ReflectionObjectRenderer {
         return buildString {
             when (parameter.kind) {
                 KParameter.Kind.INSTANCE -> append("instance parameter")
-                @OptIn(ExperimentalContextParameters::class)
-                KParameter.Kind.CONTEXT,
-                    -> append("context parameter ${parameter.name}")
+                KParameter.Kind.CONTEXT -> append("context parameter ${parameter.name}")
                 KParameter.Kind.EXTENSION_RECEIVER -> append("extension receiver parameter")
                 KParameter.Kind.VALUE -> append("parameter #${parameter.index} ${parameter.name}")
             }

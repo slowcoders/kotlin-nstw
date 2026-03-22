@@ -160,6 +160,8 @@ interface ExpectActualMatchingContext<T : DeclarationSymbolMarker> : TypeSystemC
 
     val CallableSymbolMarker.hasStableParameterNames: Boolean
 
+    val CallableSymbolMarker.shouldMatchByParameterNames: Boolean
+
     val CallableSymbolMarker.isJavaField: Boolean
     val CallableSymbolMarker.canBeActualizedByJavaField: Boolean
 
@@ -200,6 +202,7 @@ interface ExpectActualMatchingContext<T : DeclarationSymbolMarker> : TypeSystemC
         val classId: ClassId?
         val isRetentionSource: Boolean
         val isOptIn: Boolean
+        val isOptionalExpectation: Boolean
     }
 
     val checkClassScopesForAnnotationCompatibility: Boolean
@@ -215,6 +218,13 @@ interface ExpectActualMatchingContext<T : DeclarationSymbolMarker> : TypeSystemC
      */
     val checkEnumEntriesForAnnotationsCompatibility: Boolean
         get() = true
+
+    /**
+     * If true, missing annotation on actual declaration won't be reported, if this annotation
+     * has a `@OptionalExpectation` annotation (see KT-77337)
+     */
+    val skipOptionalAnnotationMismatch: Boolean
+        get() = false
 
     /**
      * Determines whether it is needed to skip checking annotations on class member in [AbstractExpectActualAnnotationMatchChecker].

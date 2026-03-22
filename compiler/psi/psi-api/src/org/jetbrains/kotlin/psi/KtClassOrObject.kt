@@ -139,6 +139,13 @@ abstract class KtClassOrObject :
 
     fun getDeclarationKeyword(): PsiElement? = findChildByType(classInterfaceObjectTokenSet)
 
+    /**
+     * The list of all companion blocks.
+     */
+    @KtExperimentalApi
+    val companionBlocks: List<KtCompanionBlock>
+        get() = body?.companionBlocks.orEmpty()
+
     private val classInterfaceObjectTokenSet = TokenSet.create(
         KtTokens.CLASS_KEYWORD, KtTokens.INTERFACE_KEYWORD, KtTokens.OBJECT_KEYWORD
     )
@@ -169,7 +176,7 @@ abstract class KtClassOrObject :
                 getClassId() == another.getClassId()
 
     override fun getContextReceivers(): List<KtContextReceiver> =
-        contextReceiverList?.let { return it.contextReceivers() } ?: emptyList()
+        modifierList?.contextParameterList?.contextReceivers().orEmpty()
 }
 
 

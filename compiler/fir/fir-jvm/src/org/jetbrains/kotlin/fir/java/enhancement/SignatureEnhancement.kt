@@ -149,20 +149,11 @@ class FirSignatureEnhancement(
     ): FirVariableSymbol<*> {
         when (val firElement = original.fir) {
             is FirEnumEntry -> {
-                if (firElement.returnTypeRef !is FirJavaTypeRef) return original
-                val predefinedInfo =
-                    PredefinedFunctionEnhancementInfo(
-                        TypeEnhancementInfo(0 to JavaTypeQualifiers(NullabilityQualifier.NOT_NULL, null, false)),
-                        emptyList()
-                    )
-
-                val newReturnTypeRef = enhanceReturnType(firElement, firElement.computeDefaultQualifiers(), predefinedInfo)
-
-                return buildEnumEntryCopy(firElement) {
-                    symbol = FirEnumEntrySymbol(firElement.symbol.callableId)
-                    returnTypeRef = newReturnTypeRef
-                    origin = FirDeclarationOrigin.Enhancement
-                }.symbol
+                // See org.jetbrains.kotlin.fir.java.FirJavaFacadeKt.convertJavaFieldToFir
+                check(firElement.returnTypeRef is FirResolvedTypeRef) {
+                    "For Java enum entries we expect its type to be resolved, but got ${firElement.returnTypeRef::class.simpleName}"
+                }
+                return original
             }
             is FirField -> {
                 if (firElement.returnTypeRef !is FirJavaTypeRef) return original
@@ -384,6 +375,7 @@ class FirSignatureEnhancement(
                     }
                 }
                 builder.apply {
+                    isLocal = false
                     source = firMethod.source
                     moduleData = this@FirSignatureEnhancement.moduleData
                     resolvePhase = FirResolvePhase.ANALYZED_DEPENDENCIES
@@ -410,6 +402,7 @@ class FirSignatureEnhancement(
 
                     this.name = name!!
                     status = enhanceStatus(firMethod.status, predefinedEnhancementInfo, overriddenMembers)
+                    isLocal = false
                     symbol = if (isIntersectionOverride) {
                         FirIntersectionOverrideFunctionSymbol(
                             methodId, overriddenMembers.map { it.symbol },

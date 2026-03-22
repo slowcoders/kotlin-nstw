@@ -6,7 +6,6 @@ description = "kotlin-gradle-statistics"
 plugins {
     `java-library`
     id("org.jetbrains.kotlin.jvm")
-    id("jps-compatible")
     id("project-tests-convention")
     `maven-publish`
 }
@@ -21,7 +20,8 @@ dependencies {
 
     testImplementation(libs.junit4)
     testImplementation(kotlin("stdlib", coreDepsVersion))
-    testImplementation(kotlin("test-junit", coreDepsVersion))
+    testImplementation(kotlin("test", coreDepsVersion))
+    testRuntimeOnly(kotlin("test-junit", coreDepsVersion))
 }
 
 projectTests {

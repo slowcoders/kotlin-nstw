@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.resolve.calls.inference.model
 
+import org.jetbrains.kotlin.K1Deprecation
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.resolve.calls.components.PostponedArgumentsAnalyzerContext
@@ -20,6 +21,7 @@ import org.jetbrains.kotlin.utils.SmartList
 import org.jetbrains.kotlin.utils.SmartSet
 import org.jetbrains.kotlin.utils.addToStdlib.trimToSize
 import kotlin.math.max
+import kotlin.reflect.KFunction
 
 class NewConstraintSystemImpl(
     private val constraintInjector: ConstraintInjector,
@@ -73,7 +75,8 @@ class NewConstraintSystemImpl(
         val previousAllowSemiFixationToOtherTypeVariables = this.allowSemiFixationToOtherTypeVariables
 
         require(typeVariablesThatAreCountedAsProperTypes == null) {
-            "Currently there should be no nested withDisallowingOnlyThisTypeVariablesForProperTypes calls"
+            val functionRef: KFunction<R> = ::withTypeVariablesThatAreCountedAsProperTypes
+            "Currently there should be no nested ${functionRef.name} calls"
         }
 
         typeVariablesThatAreCountedAsProperTypes = typeVariables
@@ -221,6 +224,7 @@ class NewConstraintSystemImpl(
         constraintInjector.addInitialEqualityConstraint(a, b, position)
     }
 
+    @K1Deprecation
     override fun getProperSuperTypeConstructors(type: KotlinTypeMarker): List<TypeConstructorMarker> {
         checkState(State.BUILDING, State.COMPLETION, State.TRANSACTION)
         val variableWithConstraints = notFixedTypeVariables[type.typeConstructor()] ?: return listOf(type.typeConstructor())
@@ -252,6 +256,7 @@ class NewConstraintSystemImpl(
         private val beforeTypeVariablesTransactionSize: Int,
         private val beforeConstraintCountByVariables: Map<TypeConstructorMarker, Int>,
         private val beforeConstraintsFromAllForks: Int,
+        private val beforeHasContradictionInForkPointsCache: Boolean?,
     ) : ConstraintSystemTransaction() {
         override fun closeTransaction() {
             checkState(State.TRANSACTION)
@@ -282,6 +287,9 @@ class NewConstraintSystemImpl(
             }
 
             addedInitialConstraints.clear() // remove constraint from storage.initialConstraints
+
+            hasContradictionInForkPointsCache = beforeHasContradictionInForkPointsCache
+
             closeTransaction(beforeState, beforeTypeVariablesTransactionSize)
         }
     }
@@ -296,6 +304,7 @@ class NewConstraintSystemImpl(
             beforeTypeVariablesTransactionSize = typeVariablesTransaction.size,
             beforeConstraintCountByVariables = storage.notFixedTypeVariables.mapValues { it.value.rawConstraintsCount },
             beforeConstraintsFromAllForks = storage.constraintsFromAllForkPoints.size,
+            beforeHasContradictionInForkPointsCache = hasContradictionInForkPointsCache,
         ).also {
             state = State.TRANSACTION
         }
@@ -698,6 +707,7 @@ class NewConstraintSystemImpl(
         }
 
         storage.fixedTypeVariables[freshTypeConstructor] = resultType
+        inferenceLogger?.logFixVariable(variable, resultType, this@NewConstraintSystemImpl)
 
         postponeOnlyInputTypesCheck(variableWithConstraints, resultType)
 
@@ -855,7 +865,7 @@ class NewConstraintSystemImpl(
         checkState(State.BUILDING, State.COMPLETION, State.FREEZED)
         val constraints = storage.notFixedTypeVariables[type.typeConstructor()]?.constraints ?: return false
         return constraints.any {
-            (it.kind == ConstraintKind.UPPER || it.kind == ConstraintKind.EQUALITY) &&
+            (it.kind == ConstraintKind.UPPER || it.kind == ConstraintKind.EQUALITY) && !it.isNoInfer &&
                     it.type.lowerBoundIfFlexible().isUnit()
         }
     }

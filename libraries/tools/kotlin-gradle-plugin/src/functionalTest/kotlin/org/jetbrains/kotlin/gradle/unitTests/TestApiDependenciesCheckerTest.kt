@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.plugin.diagnostics.KotlinToolingDiagnostics.TestApiDependencyWarning
 import org.jetbrains.kotlin.gradle.plugin.diagnostics.kotlinToolingDiagnosticsCollector
 import org.jetbrains.kotlin.gradle.util.*
-import org.junit.Test
+import kotlin.test.Test
 import org.junit.jupiter.api.assertAll
 
 @OptIn(ExperimentalWasmDsl::class)
@@ -29,6 +29,7 @@ class TestApiDependenciesCheckerTest {
 
                 linuxX64()
                 mingwX64()
+                @Suppress("DEPRECATION") // fixme: KT-81704 Cleanup tests after apple x64 family deprecation
                 macosX64()
 
                 js { browser() }
@@ -270,7 +271,7 @@ class TestApiDependenciesCheckerTest {
     companion object {
         private fun Project.assertNoTestApiDependencyWarning() {
             runLifecycleAwareTest {
-                val diagnostics = kotlinToolingDiagnosticsCollector.getDiagnosticsForProject(project)
+                val diagnostics = kotlinToolingDiagnosticsCollector.getDiagnosticsForProject(project.path)
                 diagnostics.assertNoDiagnostics(TestApiDependencyWarning)
             }
         }
@@ -279,7 +280,7 @@ class TestApiDependenciesCheckerTest {
             vararg messages: String,
         ) {
             runLifecycleAwareTest {
-                val diagnostics = project.kotlinToolingDiagnosticsCollector.getDiagnosticsForProject(project)
+                val diagnostics = project.kotlinToolingDiagnosticsCollector.getDiagnosticsForProject(project.path)
 
                 val actualWarning = diagnostics.assertContainsSingleDiagnostic(TestApiDependencyWarning)
 

@@ -8,10 +8,11 @@ package org.jetbrains.kotlin.fir.resolve.dfa.cfg
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.contracts.description.*
 import org.jetbrains.kotlin.descriptors.ClassKind
+import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.hasExplicitBackingField
-import org.jetbrains.kotlin.fir.declarations.utils.isLocal
+import org.jetbrains.kotlin.fir.declarations.utils.isReplSnippetDeclaration
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.builder.buildUnitExpression
 import org.jetbrains.kotlin.fir.expressions.impl.FirSingleExpressionBlock
@@ -267,7 +268,7 @@ class ControlFlowGraphBuilder private constructor(
             else -> throw IllegalArgumentException("Unknown function: ${function.render()}")
         }
 
-        val localFunctionNode = runIf(function is FirNamedFunction && function.isLocal && bodyBuildingMode) {
+        val localFunctionNode = runIf(function is FirNamedFunction && function.status.visibility == Visibilities.Local && bodyBuildingMode) {
             createLocalFunctionDeclarationNode(function).also { addNewSimpleNode(it) }
         }
         val kind = when {
@@ -976,9 +977,15 @@ class ControlFlowGraphBuilder private constructor(
      * call, and the second is the exit node of the equality operator call. This allows DFA to
      * determine if an assignment took place within the RHS of the equality operator call.
      */
-    fun exitEqualityOperatorCall(equalityOperatorCall: FirEqualityOperatorCall): Pair<CFGNode<*>, EqualityOperatorCallNode> {
+    fun exitEqualityOperatorCall(
+        equalityOperatorCall: FirEqualityOperatorCall,
+        callCompleted: Boolean,
+    ): Pair<CFGNode<*>, EqualityOperatorCallNode> {
         val lhsExitNode = equalityOperatorCallLhsExitNodes.pop()
-        val node = createEqualityOperatorCallNode(equalityOperatorCall).also { addNewSimpleNode(it) }
+        val node = createEqualityOperatorCallNode(equalityOperatorCall).also {
+            unifyDataFlowFromPostponedLambdas(it, callCompleted)
+            addNewSimpleNode(it)
+        }
         return lhsExitNode to node
     }
 
@@ -1468,8 +1475,12 @@ class ControlFlowGraphBuilder private constructor(
         return createLiteralExpressionNode(literalExpression).also { addNewSimpleNode(it) }
     }
 
-    fun exitVariableDeclaration(variable: FirProperty): VariableDeclarationNode {
-        return createVariableDeclarationNode(variable).also { addNewSimpleNode(it) }
+    fun enterVariableDeclaration(variable: FirProperty): VariableDeclarationEnterNode {
+        return createVariableDeclarationEnterNode(variable).also { addNewSimpleNode(it) }
+    }
+
+    fun exitVariableDeclaration(variable: FirProperty): VariableDeclarationExitNode {
+        return createVariableDeclarationExitNode(variable).also { addNewSimpleNode(it) }
     }
 
     fun exitVariableAssignment(assignment: FirVariableAssignment): VariableAssignmentNode {

@@ -20,6 +20,7 @@ KaNamedFunctionSymbol:
               isActual: false
               isExpect: false
               isExtension: false
+              isExternal: false
               isVal: true
               location: LOCAL
               modality: FINAL
@@ -35,7 +36,7 @@ KaNamedFunctionSymbol:
                     typeArguments: []
                     type: kotlin/Unit
                 ]
-                type: kotlin/Function0<kotlin/Unit>
+                type: () -> kotlin/Unit
               visibility: PUBLIC
               getContainingFileSymbol: KaFileSymbol(referenceReceiverInContract.kt)
               getContainingJvmClassName: ReferenceReceiverInContractKt
@@ -69,6 +70,7 @@ KaNamedFunctionSymbol:
     isActual: false
     isExpect: false
     isExtension: false
+    isExternal: false
     isVal: true
     location: LOCAL
     modality: FINAL
@@ -84,7 +86,7 @@ KaNamedFunctionSymbol:
           typeArguments: []
           type: kotlin/Unit
       ]
-      type: kotlin/Function0<kotlin/Unit>
+      type: () -> kotlin/Unit
     visibility: PUBLIC
     getContainingFileSymbol: KaFileSymbol(referenceReceiverInContract.kt)
     getContainingJvmClassName: ReferenceReceiverInContractKt

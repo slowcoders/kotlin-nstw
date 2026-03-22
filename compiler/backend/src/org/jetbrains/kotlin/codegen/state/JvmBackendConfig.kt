@@ -93,7 +93,7 @@ class JvmBackendConfig(configuration: CompilerConfiguration) {
 
     val noNewJavaAnnotationTargets: Boolean = configuration.getBoolean(JVMConfigurationKeys.NO_NEW_JAVA_ANNOTATION_TARGETS)
 
-    val supportMultiFieldValueClasses: Boolean = languageVersionSettings.supportsFeature(LanguageFeature.ValueClasses)
+    val supportJvmInlineMultiFieldValueClasses: Boolean = languageVersionSettings.supportsFeature(LanguageFeature.JvmInlineMultiFieldValueClasses)
 
     val enableDebugMode: Boolean = configuration.getBoolean(JVMConfigurationKeys.ENABLE_DEBUG_MODE)
 
@@ -108,6 +108,9 @@ class JvmBackendConfig(configuration: CompilerConfiguration) {
     // This way we avoid memory leaks in release builds and do not make coroutines undebuggable.
     val nullOutSpilledCoroutineLocalsUsingStdlibFunction: Boolean =
         languageVersionSettings.supportsFeature(LanguageFeature.JvmNullOutSpilledCoroutineLocals)
+
+    val wrapContinuationForTailCallFunctions: Boolean =
+        languageVersionSettings.supportsFeature(LanguageFeature.WrapContinuationForTailCallFunctions)
 
     val whenGenerationScheme: JvmWhenGenerationScheme =
         if (target.majorVersion >= JvmTarget.JVM_21.majorVersion)

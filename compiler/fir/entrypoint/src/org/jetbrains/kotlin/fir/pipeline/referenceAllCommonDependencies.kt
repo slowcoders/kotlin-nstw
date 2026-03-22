@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.visitors.FirDefaultVisitorVoid
 
-fun referenceAllCommonDependencies(outputs: List<ModuleCompilerAnalyzedOutput>) {
+fun referenceAllCommonDependencies(outputs: List<SingleModuleFrontendOutput>) {
     val platformSession = outputs.last().session
     if (!platformSession.languageVersionSettings.getFlag(AnalysisFlags.hierarchicalMultiplatformCompilation)) return
     val visitor = Visitor(platformSession)
@@ -49,8 +49,8 @@ private class Visitor(val session: FirSession) : FirDefaultVisitorVoid() {
     }
 
     override fun visitResolvedNamedReference(resolvedNamedReference: FirResolvedNamedReference) {
-        val symbol = resolvedNamedReference.resolvedSymbol as? FirCallableSymbol<*> ?: return
-        val id = symbol.callableId.takeUnless { it?.isLocal != false || it.classId != null } ?: return
+        val symbol = (resolvedNamedReference.resolvedSymbol as? FirCallableSymbol<*>)?.takeUnless { it.isLocal } ?: return
+        val id = symbol.callableId.takeUnless { it?.classId != null } ?: return
         session.symbolProvider.getTopLevelCallableSymbols(id.packageName, id.callableName)
     }
 

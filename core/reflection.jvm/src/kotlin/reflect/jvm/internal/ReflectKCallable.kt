@@ -7,11 +7,14 @@ package kotlin.reflect.jvm.internal
 
 import kotlin.coroutines.Continuation
 import kotlin.jvm.internal.CallableReference
+import kotlin.metadata.Modality
 import kotlin.reflect.KCallable
-import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.internal.calls.Caller
+import kotlin.reflect.jvm.internal.calls.getInlineClassUnboxMethod
+import kotlin.reflect.jvm.internal.calls.isUnderlyingPropertyOfValueClass
+import kotlin.reflect.jvm.internal.calls.toInlineClass
 import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.jvmErasure
 import java.lang.reflect.Array as ReflectArray
@@ -25,7 +28,10 @@ internal interface ReflectKCallable<out R> : KCallable<R>, KTypeParameterOwnerIm
 
     val rawBoundReceiver: Any?
 
-    val receiverParameters: List<KParameter>
+    /**
+     * In contrast to [parameters], includes instance/extension/context parameters, even if the callable is bound.
+     */
+    val allParameters: List<KParameter>
 
     /**
      * Instance which is used to perform a positional call, i.e. `call`.
@@ -35,7 +41,7 @@ internal interface ReflectKCallable<out R> : KCallable<R>, KTypeParameterOwnerIm
     /**
      * Instance which is used to perform a call "by name", i.e. `callBy`.
      */
-    val defaultCaller: Caller<*>?
+    val callerWithDefaults: Caller<*>?
 
     /**
      * Returns an array that contains default values of all parameter types, which is copied and filled on every `callBy`.
@@ -43,6 +49,17 @@ internal interface ReflectKCallable<out R> : KCallable<R>, KTypeParameterOwnerIm
      * @see computeAbsentArguments
      */
     fun getAbsentArguments(): Array<Any?>
+
+    val overriddenStorage: KCallableOverriddenStorage
+
+    val modality: Modality
+
+    val isPackagePrivate: Boolean
+
+    fun replaceContainerForFakeOverride(
+        container: KDeclarationContainerImpl,
+        overriddenStorage: KCallableOverriddenStorage,
+    ): ReflectKCallable<R>
 
     @Suppress("UNCHECKED_CAST")
     override fun call(vararg args: Any?): R = reflectionCall {
@@ -54,18 +71,30 @@ internal interface ReflectKCallable<out R> : KCallable<R>, KTypeParameterOwnerIm
     }
 }
 
-internal interface ReflectKFunction : ReflectKCallable<Any?>, KFunction<Any?> {
-    val signature: String
-}
-
 internal val ReflectKCallable<*>.isBound: Boolean
     get() = rawBoundReceiver !== CallableReference.NO_RECEIVER
+
+/**
+ * Same as [ReflectKCallable.rawBoundReceiver], except for when the receiver is an inline class value, in which case it's unboxed.
+ */
+internal val ReflectKCallable<*>.boundReceiver: Any?
+    get() = rawBoundReceiver.coerceToExpectedReceiverType(this)
+
+private fun Any?.coerceToExpectedReceiverType(callable: ReflectKCallable<*>): Any? {
+    if (callable is ReflectKProperty<*> && callable.isUnderlyingPropertyOfValueClass()) return this
+
+    val expectedReceiverType = callable.allParameters.singleOrNull { it.kind != KParameter.Kind.VALUE }?.type
+    val unboxMethod = expectedReceiverType?.toInlineClass()?.getInlineClassUnboxMethod(callable) ?: return this
+
+    return unboxMethod.invoke(this)
+}
 
 internal fun ReflectKCallable<*>.computeAbsentArguments(): Array<Any?> {
     val parameters = parameters
     val parameterSize = parameters.size + (if (isSuspend) 1 else 0)
-    val valueParameterCount = parameters.count { it.kind == KParameter.Kind.VALUE }
-    val maskSize = (valueParameterCount + Integer.SIZE - 1) / Integer.SIZE
+
+    val parametersWithAllocatedBitInMask = parameters.count { it.kind == KParameter.Kind.VALUE || it.kind == KParameter.Kind.CONTEXT }
+    val maskSize = (parametersWithAllocatedBitInMask + Integer.SIZE - 1) / Integer.SIZE
 
     // Array containing the actual function arguments, masks, and +1 for DefaultConstructorMarker or MethodHandle.
     val arguments = arrayOfNulls<Any?>(parameterSize + maskSize + 1)
@@ -125,8 +154,7 @@ internal fun <R> ReflectKCallable<R>.callDefaultMethod(args: Map<KParameter, Any
                 throw IllegalArgumentException("No argument provided for a required parameter: $parameter")
             }
         }
-
-        if (parameter.kind == KParameter.Kind.VALUE) {
+        if (parameter.kind == KParameter.Kind.VALUE || parameter.kind == KParameter.Kind.CONTEXT) {
             valueParameterIndex++
         }
     }
@@ -138,7 +166,7 @@ internal fun <R> ReflectKCallable<R>.callDefaultMethod(args: Map<KParameter, Any
         }
     }
 
-    val caller = defaultCaller ?: throw KotlinReflectionInternalError("This callable does not support a default call: $this")
+    val caller = callerWithDefaults ?: throw KotlinReflectionInternalError("This callable does not support a default call: $this")
 
     @Suppress("UNCHECKED_CAST")
     return reflectionCall {
@@ -158,7 +186,7 @@ internal fun <R> ReflectKCallable<R>.callAnnotationConstructor(args: Map<KParame
         }
     }
 
-    val caller = defaultCaller ?: throw KotlinReflectionInternalError("This callable does not support a default call: $this")
+    val caller = callerWithDefaults ?: throw KotlinReflectionInternalError("This callable does not support a default call: $this")
 
     @Suppress("UNCHECKED_CAST")
     return reflectionCall {
@@ -174,5 +202,8 @@ private fun defaultEmptyArray(type: KType): Any =
         )
     }
 
+internal val ReflectKCallable<*>.isConstructor: Boolean
+    get() = name == "<init>"
+
 internal val ReflectKCallable<*>.isAnnotationConstructor: Boolean
-    get() = name == "<init>" && container.jClass.isAnnotation
+    get() = isConstructor && container.jClass.isAnnotation

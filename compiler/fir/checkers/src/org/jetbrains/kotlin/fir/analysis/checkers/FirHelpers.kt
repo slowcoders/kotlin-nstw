@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.builtins.StandardNames.HASHCODE_NAME
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
+import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategy
@@ -63,8 +64,6 @@ private val INLINE_ONLY_ANNOTATION_CLASS_ID: ClassId = ClassId.topLevel(FqName("
 context(context: CheckerContext)
 fun FirClass.unsubstitutedScope(): FirTypeScope =
     this.unsubstitutedScope(
-        context.sessionHolder.session,
-        context.sessionHolder.scopeSession,
         withForcedTypeCalculator = true,
         memberRequiredPhase = FirResolvePhase.STATUS,
     )
@@ -291,9 +290,8 @@ fun isSubtypeForTypeMismatch(context: ConeInferenceContext, subtype: ConeKotlinT
  *
  * @param parentClassSymbol the contextual class for this query.
  */
-@OptIn(ScopeFunctionRequiresPrewarm::class)
+context(sessionHolder: SessionAndScopeSessionHolder) @OptIn(ScopeFunctionRequiresPrewarm::class)
 fun FirCallableSymbol<*>.getImplementationStatus(
-    sessionHolder: SessionAndScopeSessionHolder,
     parentClassSymbol: FirClassSymbol<*>
 ): ImplementationStatus {
     val containingClassSymbol = getContainingClassSymbol()
@@ -304,7 +302,7 @@ fun FirCallableSymbol<*>.getImplementationStatus(
     }
 
     if (symbol is FirIntersectionCallableSymbol) {
-        val dispatchReceiverScope = symbol.dispatchReceiverScope(sessionHolder.session, sessionHolder.scopeSession)
+        val dispatchReceiverScope = symbol.dispatchReceiverScope()
         val memberWithBaseScope = MemberWithBaseScope(symbol, dispatchReceiverScope)
         val nonSubsumed = memberWithBaseScope.getNonSubsumedOverriddenSymbols()
 
@@ -583,6 +581,14 @@ internal fun checkCondition(condition: FirExpression) {
     }
 }
 
+fun extractArgumentsTypeRefAndSource(qualifier: FirResolvedQualifier): List<FirTypeRefSource> {
+    return buildList {
+        for (typeArgument in qualifier.typeArguments) {
+            add(FirTypeRefSource((typeArgument as? FirTypeProjectionWithVariance)?.typeRef, typeArgument.source))
+        }
+    }
+}
+
 fun extractArgumentsTypeRefAndSource(typeRef: FirTypeRef?): List<FirTypeRefSource>? {
     if (typeRef !is FirResolvedTypeRef) return null
     val result = mutableListOf<FirTypeRefSource>()
@@ -599,6 +605,9 @@ fun extractArgumentsTypeRefAndSource(typeRef: FirTypeRef?): List<FirTypeRefSourc
         is FirFunctionTypeRef -> {
             val parameters = delegatedTypeRef.parameters
 
+            for (contextParameter in delegatedTypeRef.contextParameterTypeRefs) {
+                result.add(FirTypeRefSource(contextParameter, contextParameter.source))
+            }
             delegatedTypeRef.receiverTypeRef?.let { result.add(FirTypeRefSource(it, it.source)) }
             for (valueParameter in parameters) {
                 val valueParamTypeRef = valueParameter.returnTypeRef
@@ -654,11 +663,17 @@ fun FirFunctionSymbol<*>.isFunctionForExpectTypeFromCastFeature(): Boolean {
 private val FirCallableDeclaration.isMember get() = dispatchReceiverType != null
 
 @OptIn(SymbolInternals::class)
+context(sessionHolder: SessionHolder)
 fun getActualTargetList(container: FirBasedSymbol<*>): AnnotationTargetList {
-    return getActualTargetList(container.fir)
+    return getActualTargetList(container.fir, sessionHolder.session)
 }
 
+context(sessionHolder: SessionHolder)
 fun getActualTargetList(container: FirAnnotationContainer): AnnotationTargetList {
+    return getActualTargetList(container, sessionHolder.session)
+}
+
+fun getActualTargetList(container: FirAnnotationContainer, session: FirSession): AnnotationTargetList {
     val annotated =
         if (container is FirBackingField) {
             when {
@@ -685,9 +700,13 @@ fun getActualTargetList(container: FirAnnotationContainer): AnnotationTargetList
         )
         is FirProperty -> {
             when {
-                annotated.isLocal ->
+                annotated.symbol is FirLocalPropertySymbol ->
                     when {
-                        annotated.name == SpecialNames.DESTRUCT -> TargetLists.T_DESTRUCTURING_DECLARATION
+                        annotated.name == SpecialNames.DESTRUCT -> if (session.languageVersionSettings.supportsFeature(LanguageFeature.LocalVariableTargetedAnnotationOnDestructuring)) {
+                            TargetLists.T_DESTRUCTURING_DECLARATION_NEW
+                        } else {
+                            TargetLists.T_DESTRUCTURING_DECLARATION
+                        }
                         annotated.isCatchParameter == true -> TargetLists.T_CATCH_PARAMETER
                         annotated.isForLoopParameter == true -> TargetLists.T_VALUE_PARAMETER_WITHOUT_VAL
                         else -> TargetLists.T_LOCAL_VARIABLE
@@ -714,7 +733,7 @@ fun getActualTargetList(container: FirAnnotationContainer): AnnotationTargetList
         }
         is FirNamedFunction -> {
             when {
-                annotated.isLocal -> TargetLists.T_LOCAL_FUNCTION
+                annotated.status.visibility == Visibilities.Local -> TargetLists.T_LOCAL_FUNCTION
                 annotated.isMember -> TargetLists.T_MEMBER_FUNCTION
                 else -> TargetLists.T_TOP_LEVEL_FUNCTION
             }
@@ -846,10 +865,24 @@ private fun FirCallableSymbol<*>.containingClassUnsubstitutedScope(): FirTypeSco
     return containingClass.unsubstitutedScope()
 }
 
-val CheckerContext.closestNonLocal: FirBasedSymbol<*>? get() = containingDeclarations.takeWhile { it.isNonLocal }.lastOrNull()
+val CheckerContext.closestNonLocal: FirBasedSymbol<*>?
+    get() {
+        for (symbol in containingDeclarations) {
+            if (symbol is FirCallableSymbol || symbol is FirAnonymousInitializerSymbol) {
+                return symbol
+            }
+        }
+        return containingDeclarations.lastOrNull()
+    }
 
-fun CheckerContext.closestNonLocalWith(declaration: FirDeclaration): FirBasedSymbol<*>? =
-    (containingDeclarations + declaration.symbol).takeWhile { it.isNonLocal }.lastOrNull()
+fun CheckerContext.closestNonLocalWith(declaration: FirDeclaration): FirBasedSymbol<*>? {
+    for (symbol in containingDeclarations + declaration.symbol) {
+        if (symbol is FirCallableSymbol || symbol is FirAnonymousInitializerSymbol) {
+            return symbol
+        }
+    }
+    return declaration.symbol
+}
 
 val CheckerContext.isTopLevel: Boolean get() = containingDeclarations.lastOrNull().let { it is FirFileSymbol || it is FirScriptSymbol }
 
@@ -916,7 +949,7 @@ fun FirResolvedQualifier.isStandalone(
 ): Boolean {
     val lastQualifiedAccess = context.callsOrAssignments.lastOrNull() as? FirQualifiedAccessExpression
     // Note: qualifier isn't standalone when it's in receiver (SomeClass.foo) or getClass (SomeClass::class) position
-    if (lastQualifiedAccess?.explicitReceiver === this || lastQualifiedAccess?.dispatchReceiver === this) return false
+    if (lastQualifiedAccess?.explicitReceiver === this || lastQualifiedAccess?.dispatchReceiver === this || lastQualifiedAccess?.extensionReceiver == this) return false
     val lastGetClass = context.getClassCalls.lastOrNull()
     if (lastGetClass?.argument === this) return false
     if (isExplicitParentOfResolvedQualifier()) return false
@@ -924,10 +957,12 @@ fun FirResolvedQualifier.isStandalone(
     return true
 }
 
+/**
+ * @return `true` for qualifiers that are explicit parents (receivers) for other qualifiers, e.g., for `Outer` in `Outer.Nested`
+ */
 context(context: CheckerContext)
 fun FirResolvedQualifier.isExplicitParentOfResolvedQualifier(): Boolean {
-    val secondToLastElement = context.containingElements.elementAtOrNull(context.containingElements.size - 2)
-    return secondToLastElement.let { it is FirResolvedQualifier && it.explicitParent == this }
+    return context.secondToLastContainer.let { it is FirResolvedQualifier && it.explicitParent == this }
 }
 
 fun isExplicitTypeArgumentSource(source: KtSourceElement?): Boolean =
@@ -992,17 +1027,23 @@ fun FirElement.requireFeatureSupport(
     source.requireFeatureSupport(feature, positioningStrategy)
 }
 
+context(context: CheckerContext)
+internal val ConeKotlinType.hasStableIdentityForAtomicOperations: Boolean
+    get() = fullyExpandedType().unwrapToSimpleTypeUsingLowerBound().let {
+        !it.isPrimitiveOrNullablePrimitive && !it.isValueClass(context.session)
+    }
+
 context(context: CheckerContext, reporter: DiagnosticReporter)
-fun reportAtomicToPrimitiveProblematicAccess(
+fun checkAtomicCallReceiverForStableIdentity(
     type: ConeKotlinType,
     source: KtSourceElement?,
     atomicReferenceClassId: ClassId,
     appropriateCandidatesForArgument: Map<ClassId, ClassId>,
 ) {
     val expanded = type.fullyExpandedType()
-    val argument = expanded.typeArguments.firstOrNull()?.type?.unwrapToSimpleTypeUsingLowerBound() ?: return
+    val argument = expanded.typeArguments.firstOrNull()?.type ?: return
 
-    if (argument.isPrimitiveOrNullablePrimitive || argument.isValueClass(context.session)) {
+    if (!argument.hasStableIdentityForAtomicOperations) {
         val candidate = appropriateCandidatesForArgument[argument.classId]
         reporter.reportOn(source, FirErrors.ATOMIC_REF_WITHOUT_CONSISTENT_IDENTITY, atomicReferenceClassId, argument, candidate)
     }
@@ -1030,6 +1071,11 @@ fun FirResolvedQualifier.resolvedSymbolOrCompanionSymbol(): FirClassLikeSymbol<*
     return symbol?.applyIf(resolvedToCompanionObject) {
         fullyExpandedClass()?.resolvedCompanionObjectSymbol
     }
+}
+
+context(context: SessionHolder)
+fun FirResolvedQualifier.resolvedCompanionSymbol(): FirClassLikeSymbol<*>? {
+    return symbol.takeIf { resolvedToCompanionObject }?.fullyExpandedClass()?.resolvedCompanionObjectSymbol
 }
 
 context(context: CheckerContext)

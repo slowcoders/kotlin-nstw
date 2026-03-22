@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.incremental.dirtyFiles.DirtyFilesContainer
 import org.jetbrains.kotlin.incremental.dirtyFiles.DirtyFilesProvider
 import org.jetbrains.kotlin.incremental.storage.BasicFileToPathConverter
 import org.jetbrains.kotlin.incremental.storage.FileLocations
+import org.jetbrains.kotlin.incremental.storage.FileToPathConverter
 import org.jetbrains.kotlin.incremental.util.ExceptionLocation
 import org.jetbrains.kotlin.incremental.util.reportException
 import org.jetbrains.kotlin.metadata.deserialization.MetadataVersion
@@ -45,7 +46,7 @@ abstract class IncrementalCompilerRunner<
         Args : CommonCompilerArguments,
         CacheManager : IncrementalCachesManager<*>,
         >(
-    private val workingDir: File,
+    protected val workingDir: File,
     cacheDirName: String,
     protected val reporter: BuildReporter<BuildTimeMetric, BuildPerformanceMetric>,
     protected val buildHistoryFile: File?,
@@ -72,8 +73,11 @@ abstract class IncrementalCompilerRunner<
      * Non-trivial configuration should NOT be added there.
      */
     protected val icFeatures: IncrementalCompilationFeatures,
+
+    private val compilationCanceledStatus: CompilationCanceledStatus? = null,
 ) {
 
+    protected open val lookupTrackerDelegate: LookupTracker = LookupTracker.DO_NOTHING
     protected val cacheDirectory = File(workingDir, cacheDirName)
     protected val lastBuildInfoFile = File(workingDir, LAST_BUILD_INFO_FILE_NAME)
     private val abiSnapshotFile = File(workingDir, ABI_SNAPSHOT_FILE_NAME)
@@ -384,11 +388,12 @@ abstract class IncrementalCompilerRunner<
         caches: CacheManager,
         dirtySources: Set<File>,
         isIncremental: Boolean,
+        compilationCanceledStatus: CompilationCanceledStatus,
     ): Services.Builder =
         Services.Builder().apply {
             register(LookupTracker::class.java, lookupTracker)
             register(ExpectActualTracker::class.java, expectActualTracker)
-            register(CompilationCanceledStatus::class.java, EmptyCompilationCanceledStatus)
+            register(CompilationCanceledStatus::class.java, compilationCanceledStatus)
             register(ICFileMappingTracker::class.java, fileMappingTracker)
         }
 
@@ -476,7 +481,7 @@ abstract class IncrementalCompilerRunner<
             caches.inputsCache.removeOutputForSourceFiles(dirtySources)
             caches.compilerPluginFilesCache.removeOutputsGeneratedByPlugins()
 
-            val lookupTracker = LookupTrackerImpl(getLookupTrackerDelegate())
+            val lookupTracker = LookupTrackerImpl(lookupTrackerDelegate)
             val expectActualTracker = ExpectActualTrackerImpl()
 
             val outputItemsCollector = OutputItemsCollectorImpl()
@@ -493,7 +498,9 @@ abstract class IncrementalCompilerRunner<
 
             val services = makeServices(
                 args, lookupTracker, expectActualTracker, fileMappingTracker, caches,
-                dirtySources.toSet(), compilationMode is CompilationMode.Incremental
+                dirtySources.toSet(),
+                compilationMode is CompilationMode.Incremental,
+                compilationCanceledStatus ?: EmptyCompilationCanceledStatus
             ).build()
 
             args.reportOutputFiles = true
@@ -553,6 +560,11 @@ abstract class IncrementalCompilerRunner<
                 }
                 updateCaches(services, caches, generatedFiles, changesCollector)
             }
+
+            reporter.measure(IC_GEN_COMPILER_REF_INDEX) {
+                generateCompilerRefIndexIfNeeded(services, icContext.pathConverterForSourceFiles, compilationMode)
+            }
+
             if (compilationMode is CompilationMode.Rebuild) {
                 if (icFeatures.withAbiSnapshot) {
                     abiSnapshotData!!.snapshot.protos.putAll(changesCollector.protoDataChanges())
@@ -623,7 +635,11 @@ abstract class IncrementalCompilerRunner<
         return exitCode
     }
 
-    open fun getLookupTrackerDelegate(): LookupTracker = LookupTracker.DO_NOTHING
+    protected open fun generateCompilerRefIndexIfNeeded(
+        services: Services,
+        sourceFilesPathConverter: FileToPathConverter,
+        compilationMode: CompilationMode,
+    ): Unit = Unit
 
     open fun runWithNoDirtyKotlinSources(caches: CacheManager): Boolean = false
 

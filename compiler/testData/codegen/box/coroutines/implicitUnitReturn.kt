@@ -24,7 +24,21 @@ suspend fun simpleReturnsUnit() {
 
 suspend fun callTailReturnsUnit() {
     effects += "[callTailReturnsUnit]"
-    suspendHere()
+    return suspendHere()
+}
+
+val something = true
+
+suspend fun looksLikeTailReturnsButItsNot() {
+    effects += "[looksLikeTailReturnsButItsNot]"
+    if (something) return
+    return suspendHere()
+}
+
+suspend fun anotherLooksLikeTailReturnsButItsNot() {
+    effects += "[anotherLooksLikeTailReturnsButItsNot]"
+    if (true) return
+    return suspendHere()
 }
 
 suspend fun complexReturnsUnit(shouldSuspend: Boolean) {
@@ -51,6 +65,18 @@ fun box(): String {
             return@builder
         }
 
+        val notTailcallUnit = looksLikeTailReturnsButItsNot()
+        if (notTailcallUnit.toString() != "kotlin.Unit") {
+            failReason = "notTailcallUnit returns not Unit, but $notTailcallUnit"
+            return@builder
+        }
+
+        val anotherNotTailcallUnit = anotherLooksLikeTailReturnsButItsNot()
+        if (anotherNotTailcallUnit.toString() != "kotlin.Unit") {
+            failReason = "anotherNotTailcallUnit returns not Unit, but $anotherNotTailcallUnit"
+            return@builder
+        }
+
         val complexUnit = complexReturnsUnit(shouldSuspend = true)
         if (complexUnit.toString() != "kotlin.Unit") {
             failReason = "complexReturnsUnit returns not Unit, but $complexUnit"
@@ -60,7 +86,7 @@ fun box(): String {
 
     return when {
         failReason != null -> failReason
-        effects != "[simpleReturnsUnit][callTailReturnsUnit][complexReturnsUnit]" -> "Fail: effects are $effects"
+        effects != "[simpleReturnsUnit][callTailReturnsUnit][looksLikeTailReturnsButItsNot][anotherLooksLikeTailReturnsButItsNot][complexReturnsUnit]" -> "Fail: effects are $effects"
         else -> "OK"
     }
 }

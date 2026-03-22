@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     id("project-tests-convention")
+    id("test-inputs-check")
 }
 
 dependencies {
@@ -14,7 +14,7 @@ dependencies {
     testImplementation(kotlinStdlib())
     testImplementation(project(":libraries:tools:abi-comparator"))
 
-    testApi(platform(libs.junit.bom))
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.platform.suite)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.vintage.engine)
@@ -54,7 +54,8 @@ projectTests {
             taskName = "codegenTarget${targetInTestClass}Jvm${jvm}Test",
             jUnitMode = JUnitMode.JUnit5,
             maxMetaspaceSizeMb = 1024,
-            skipInLocalBuild = false
+            skipInLocalBuild = false,
+            defineJDKEnvVariables = listOf(jdk, JdkMajorVersion.JDK_11_0)
         ) {
             val testName = "JvmTarget${targetInTestClass}OnJvm${jvm}"
             filter.includeTestsMatching("org.jetbrains.kotlin.codegen.jdk.$testName")

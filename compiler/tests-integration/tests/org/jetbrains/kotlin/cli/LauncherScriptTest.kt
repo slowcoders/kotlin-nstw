@@ -71,8 +71,8 @@ class LauncherScriptTest : TestCaseWithTmpdir() {
         process.waitFor(10, TimeUnit.SECONDS)
         val exitCode = process.exitValue()
         try {
-            assertEquals(expectedStdout, stdout)
-            assertEquals(expectedStderr, stderr)
+            assertEquals(expectedStdout.trim(), stdout.trim())
+            assertEquals(expectedStderr.trim(), stderr.trim())
             assertEquals(expectedExitCode, exitCode)
         } catch (e: Throwable) {
             System.err.println("exit code $exitCode")
@@ -282,10 +282,7 @@ class LauncherScriptTest : TestCaseWithTmpdir() {
         runProcess(
             "kotlin", "-no-stdlib", "-e", "println(42)",
             expectedExitCode = 1,
-            expectedStderr = """script.kts:1:1: error: unresolved reference 'println'.
-println(42)
-^
-"""
+            expectedStderr = """error: unresolved reference 'println'."""
         )
     }
 
@@ -343,10 +340,12 @@ println(42)
 """
         )
         runProcess(
-            "kotlin", "-howtorun", ".main.kts", "$testDataDirectory/noInline.myscript",
+            "kotlin", "-howtorun", ".main.kts",
+            "-P", "plugin:kotlin.scripting:disable-script-compilation-cache=true",
+            "$testDataDirectory/noInline.myscript",
             expectedExitCode = 3,
-            expectedStderr = """java.lang.IllegalAccessError: tried to access method kotlin.io.ConsoleKt.println(Ljava/lang/Object;)V from class NoInline_main
-	at NoInline_main.<init>(noInline.myscript:3)
+            expectedStderr = """java.lang.IllegalAccessError: tried to access method kotlin.io.ConsoleKt.println(Ljava/lang/Object;)V from class NoInline
+	at NoInline.<init>(noInline.myscript:3)
 """
         )
     }
@@ -654,10 +653,6 @@ Caused by: java.lang.AssertionError: assert
 
     fun testKaptVersion() {
         val info = $$"info: kotlinc-jvm $VERSION$ (JRE $JVM_VERSION$)\n"
-        val k1 = "warning: language version 1.9 is deprecated in JVM and its support will be removed in a future version of Kotlin\n"
-
         runProcess("kapt", "-version", expectedStderr = info)
-        runProcess("kapt", "-language-version", "1.9", "-version", expectedStderr = info + k1)
-        runProcess("kapt", "-language-version=1.9", "-version", expectedStderr = info + k1)
     }
 }

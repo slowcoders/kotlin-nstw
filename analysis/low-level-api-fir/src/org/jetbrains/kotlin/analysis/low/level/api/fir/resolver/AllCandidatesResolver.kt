@@ -13,7 +13,6 @@ import org.jetbrains.kotlin.analysis.low.level.api.fir.util.ContextCollector
 import org.jetbrains.kotlin.analysis.utils.printer.parentsOfType
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
-import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.builder.buildAnonymousFunctionCopy
 import org.jetbrains.kotlin.fir.diagnostics.FirDiagnosticHolder
 import org.jetbrains.kotlin.fir.expressions.*
@@ -136,6 +135,7 @@ class AllCandidatesResolver(private val firSession: FirSession) {
         bodyResolveComponents.context.file = firFile
     }
 
+    @OptIn(ConstraintSystemCompletionMode.ExclusiveForOverloadResolutionByLambdaReturnType::class)
     private fun <T> List<OverloadCandidate>.postProcessCandidates(call: T) where T : FirExpression, T : FirResolvable {
         val callCompleter = bodyResolveComponents.callCompleter
         val analyzer = callCompleter.createPostponedArgumentsAnalyzer(resolutionContext)
@@ -150,7 +150,10 @@ class AllCandidatesResolver(private val firSession: FirSession) {
             // Runs completion for the candidate. This step is required to solve the constraint system
             callCompleter.runCompletionForCall(
                 candidate = candidate,
-                completionMode = ConstraintSystemCompletionMode.FULL,
+                // The lambda's processing logic modifies the original tree,
+                // so we cannot analyze them in the current state.
+                // See KT-82121 for more details.
+                completionMode = ConstraintSystemCompletionMode.UNTIL_FIRST_LAMBDA,
                 call = call,
                 initialType = components.initialTypeOfCandidate(candidate),
                 analyzer = analyzer,
@@ -198,16 +201,7 @@ private fun copyQualifiedAccess(
         argumentList = when (val argumentListToCopy = qualifiedAccess.argumentList) {
             is FirEmptyArgumentList -> argumentListToCopy
             is FirResolvedArgumentList -> {
-                var hasNullableParameter = false
-                val newArguments = argumentListToCopy.arguments.map(::copyArgument)
-                val newMapping = LinkedHashMap<FirExpression, FirValueParameter?>(newArguments.size)
-                for (newArgument in newArguments) {
-                    val parameter = argumentListToCopy.mapping[newArgument]
-                    newMapping[newArgument] = parameter
-                    if (parameter == null) {
-                        hasNullableParameter = true
-                    }
-                }
+                val newMapping = argumentListToCopy.mapping.mapKeysTo(LinkedHashMap()) { copyArgument(it.key) }
 
                 /**
                  * Arguments from the original argument list are used, so it has to be copied as well.
@@ -223,16 +217,10 @@ private fun copyQualifiedAccess(
                     null
                 }
 
-                if (hasNullableParameter && newOriginalList != null) {
-                    buildArgumentListForErrorCall(original = newOriginalList, mapping = newMapping)
-                } else {
-                    @Suppress("UNCHECKED_CAST") // The mapping is guaranteed to be of the correct type by `hasNullableParameter`
-                    buildResolvedArgumentList(
-                        original = newOriginalList,
-                        mapping = newMapping as LinkedHashMap<FirExpression, FirValueParameter>,
-                    )
-                }
-
+                buildResolvedArgumentList(
+                    original = newOriginalList,
+                    mapping = newMapping,
+                )
             }
 
             else -> {

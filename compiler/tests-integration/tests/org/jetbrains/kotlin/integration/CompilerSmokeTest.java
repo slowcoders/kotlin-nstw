@@ -63,7 +63,7 @@ public class CompilerSmokeTest extends CompilerSmokeTestBase {
     public void testHelloAppContextMain() throws Exception {
         String jar = tmpdir.getAbsolutePath() + File.separator + "hello.jar";
 
-        assertEquals("compilation failed", 0, runCompiler("hello.compile", "-include-runtime", "-Xcontext-parameters", "hello.kt", "-d", jar));
+        assertEquals("compilation failed", 0, runCompiler("hello.compile", "-include-runtime", "hello.kt", "-d", jar));
         run("hello.run", "-cp", jar, "Hello.HelloKt", "O", "K");
     }
 
@@ -133,7 +133,7 @@ public class CompilerSmokeTest extends CompilerSmokeTestBase {
     public void testCompileScript() throws Exception {
         String jar = tmpdir.getAbsolutePath() + File.separator + "script.jar";
 
-        runCompiler("script", "-Xuse-fir-lt=false", "-Xallow-any-scripts-in-source-roots", "script.kts", "-d", jar);
+        runCompiler("script", "-Xallow-any-scripts-in-source-roots", "script.kts", "-d", jar);
     }
 
     public void testInlineOnly() throws Exception {
